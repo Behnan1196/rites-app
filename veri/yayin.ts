@@ -1,8 +1,11 @@
 // Değişiklik yayını: yazma kapısı bir şey yazınca hangi konuların
 // değiştiğini duyurur; ekranlar ilgilendikleri konulara abone olur.
 
-/** Veritabanında değişebilecek konular. Yeni tablolar geldikçe eklenir. */
-export type Konu = 'ayar';
+/**
+ * Veritabanında değişebilecek konular. Yeni tablolar geldikçe eklenir.
+ * `kart`: kartlar, blokları ve günlük kayıtları.
+ */
+export type Konu = 'ayar' | 'kart';
 
 export type Dinleyici = (degisenler: ReadonlySet<Konu>) => void;
 

@@ -15,6 +15,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AdSorusu } from '@/bilesen/AdSorusu';
 import { KatmanSaglayici } from '@/bilesen/Katman';
+import { KisaMesajSaglayici } from '@/bilesen/KisaMesaj';
 import { ProfilSaglayici } from '@/bilesen/Profil';
 import { renk, yaziTipiDurumu } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
@@ -40,11 +41,13 @@ export default function KokDuzen() {
       <StatusBar style="dark" />
       <VeriSaglayici bekleme={null} hata={<AcilisHatasi />}>
         <AdKapisi>
-          <KatmanSaglayici>
-            <ProfilSaglayici>
-              <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: renk.zemin } }} />
-            </ProfilSaglayici>
-          </KatmanSaglayici>
+          <KisaMesajSaglayici>
+            <KatmanSaglayici>
+              <ProfilSaglayici>
+                <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: renk.zemin } }} />
+              </ProfilSaglayici>
+            </KatmanSaglayici>
+          </KisaMesajSaglayici>
         </AdKapisi>
       </VeriSaglayici>
     </SafeAreaProvider>

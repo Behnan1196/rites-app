@@ -35,7 +35,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#F3F5F7"
         }
-      ]
+      ],
+      "expo-sharing",
+      "@react-native-community/datetimepicker"
     ],
     "scheme": "rites"
   }

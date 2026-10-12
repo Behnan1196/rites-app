@@ -21,6 +21,57 @@ export const GOCLER: readonly Goc[] = [
       );
     `,
   },
+  {
+    // Kartlar, blokları ve günlük kayıtları (`03`).
+    surum: 2,
+    sql: `
+      CREATE TABLE IF NOT EXISTS kart (
+        id           TEXT PRIMARY KEY NOT NULL,
+        baslik       TEXT NOT NULL,
+        kisa         TEXT NOT NULL DEFAULT '',
+        tarih        TEXT,
+        tarihsiz     INTEGER NOT NULL DEFAULT 0,
+        saat         TEXT,
+        hatirlatma   TEXT,
+        tekrar       TEXT,
+        bitis        TEXT,
+        atlanan      TEXT NOT NULL DEFAULT '[]',
+        plan_id      TEXT,
+        kaynak       TEXT NOT NULL DEFAULT 'kendim',
+        gelen_kimden TEXT,
+        kilitli      INTEGER NOT NULL DEFAULT 0,
+        yapildi      INTEGER NOT NULL DEFAULT 0,
+        birakildi    INTEGER NOT NULL DEFAULT 0,
+        sira         REAL NOT NULL DEFAULT 0,
+        olusturma    TEXT NOT NULL,
+        guncelleme   TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS kart_tarih ON kart (tarih);
+      CREATE TABLE IF NOT EXISTS blok (
+        id       TEXT PRIMARY KEY NOT NULL,
+        kart_id  TEXT NOT NULL REFERENCES kart (id) ON DELETE CASCADE,
+        sira     INTEGER NOT NULL,
+        tur      TEXT NOT NULL,
+        ad       TEXT NOT NULL DEFAULT '',
+        metin    TEXT NOT NULL DEFAULT '',
+        birim    TEXT NOT NULL DEFAULT '',
+        dakika   INTEGER,
+        maddeler TEXT NOT NULL DEFAULT '[]',
+        dosya    TEXT
+      );
+      CREATE INDEX IF NOT EXISTS blok_kart ON blok (kart_id, sira);
+      CREATE TABLE IF NOT EXISTS kayit (
+        kart_id   TEXT NOT NULL REFERENCES kart (id) ON DELETE CASCADE,
+        tarih     TEXT NOT NULL,
+        yapildi   INTEGER NOT NULL DEFAULT 0,
+        degerler  TEXT NOT NULL DEFAULT '{}',
+        isaretler TEXT NOT NULL DEFAULT '{}',
+        fotolar   TEXT NOT NULL DEFAULT '{}',
+        PRIMARY KEY (kart_id, tarih)
+      );
+      CREATE INDEX IF NOT EXISTS kayit_tarih ON kayit (tarih);
+    `,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

@@ -24,7 +24,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Dugme } from './Dugme';
 import { Katman } from './Katman';
-import { OnayKutusu } from './OnayKutusu';
+import { OnayKutusu, type OnaySecenegi } from './OnayKutusu';
 import { olcu, renk } from './tema';
 import { Yazi } from './Yazi';
 
@@ -51,6 +51,8 @@ interface Ozellikler {
   altAlan?: ReactNode;
   /** Sayfa zemini (not sayfası sarıdır). */
   zemin?: string;
+  /** Sayfanın üstünde gösterilecek onay kutusu (ör. "Hangi günler silinsin?"). */
+  onay?: { baslik: string; aciklama?: string | null; secenekler: OnaySecenegi[] } | null;
   children: ReactNode;
 }
 
@@ -67,6 +69,7 @@ export function AltSayfa({
   degisti = false,
   altAlan,
   zemin = renk.zemin,
+  onay = null,
   children,
 }: Ozellikler) {
   const { height: ekranYuksekligi } = useWindowDimensions();
@@ -229,6 +232,8 @@ export function AltSayfa({
             </View>
           )}
         </Animated.View>
+
+        {onay && !onaySoruluyor && <OnayKutusu {...onay} />}
 
         {onaySoruluyor && (
           <OnayKutusu

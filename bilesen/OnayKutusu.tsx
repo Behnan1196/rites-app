@@ -6,13 +6,14 @@ import { Yazi } from './Yazi';
 
 export interface OnaySecenegi {
   etiket: string;
-  tur?: 'ana' | 'ikincil' | 'tehlike';
+  /** ana: dolu · ikincil: çerçeveli · tehlike: kırmızı çerçeveli · yazi: yalnız yazı (Vazgeç) */
+  tur?: 'ana' | 'ikincil' | 'tehlike' | 'yazi';
   onPress: () => void;
 }
 
 interface Ozellikler {
   baslik: string;
-  aciklama?: string;
+  aciklama?: string | null;
   secenekler: OnaySecenegi[];
 }
 
