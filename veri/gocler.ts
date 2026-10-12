@@ -72,6 +72,20 @@ export const GOCLER: readonly Goc[] = [
       CREATE INDEX IF NOT EXISTS kayit_tarih ON kayit (tarih);
     `,
   },
+  {
+    // Notlar (`03` → not).
+    surum: 3,
+    sql: `
+      CREATE TABLE IF NOT EXISTS "not" (
+        id        TEXT PRIMARY KEY NOT NULL,
+        metin     TEXT NOT NULL,
+        sesli     INTEGER NOT NULL DEFAULT 0,
+        ses_yolu  TEXT,
+        sira      REAL NOT NULL,
+        olusturma TEXT NOT NULL
+      );
+    `,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

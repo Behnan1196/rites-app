@@ -205,8 +205,8 @@ function SaatSecici({ saat, onDegis }: { saat: string | null; onDegis: (saat: st
         accessibilityLabel="Başka bir saat"
         defaultValue={saat ?? ''}
         placeholder="SS:dd"
-        onEndEditing={(e) => {
-          const m = /^(\d{1,2}):(\d{2})$/.exec(e.nativeEvent.text.trim());
+        onChangeText={(metin) => {
+          const m = /^(\d{1,2}):(\d{2})$/.exec(metin.trim());
           if (m && Number(m[1]) < 24 && Number(m[2]) < 60) onDegis(`${m[1]!.padStart(2, '0')}:${m[2]}`);
         }}
         style={[stiller.webSaat, yazi('normal')]}

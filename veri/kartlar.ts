@@ -207,7 +207,8 @@ export async function kayitVarMi(oku: Okuyucu, kartId: string): Promise<boolean>
 
 // ---- Yazma yardımcıları (yazma işleminin içinde) ------------------------------
 
-async function kartEkleY(y: Yazici, k: Kart, simdi: string) {
+/** Yazma işleminin içinde kart ekler (başka veri modülleri de kullanır). */
+export async function kartEkleY(y: Yazici, k: Kart, simdi: string) {
   await y.calistir(
     `INSERT INTO kart (id, ${KART_ALANLARI}, olusturma, guncelleme) VALUES (?, ${KART_ALANLARI.split(',').map(() => '?').join(', ')}, ?, ?)`,
     [k.id, ...kartDegerleri(k), simdi, simdi],
@@ -234,7 +235,7 @@ async function kartGuncelleY(y: Yazici, k: Kart, simdi: string) {
  * yenileri yeni kimlikle eklenir, formdan çıkarılanlar silinir.
  * Döner: form kimliği → karttaki kimlik (kayıt taşırken anahtar çevirmek için).
  */
-async function bloklariYazY(
+export async function bloklariYazY(
   y: Yazici,
   kartId: string,
   taslaklar: readonly BlokTaslagi[],
@@ -380,4 +381,21 @@ export function kayitDegistir(
 /** Ajandadaki işaret kutusu ve "Yaptım" / "Geri al": o günün kaydına yazar (`05` §2). */
 export function isaretle(kapi: Kapi, kartId: string, gun: Gun, yapildi: boolean): Promise<void> {
   return kayitDegistir(kapi, kartId, gun, (k) => ({ ...k, yapildi }));
+}
+
+/** Geçmişten kalanları bugüne al (`05` §5): `tarih = bugün`. */
+export function kartlariBuguneAl(
+  kapi: Kapi,
+  kartlar: readonly Kart[],
+  bugunGun: Gun,
+  simdi: string = new Date().toISOString(),
+): Promise<void> {
+  return kapi.yaz(['kart'], async (y) => {
+    for (const k of kartlar) await kartGuncelleY(y, { ...k, tarih: bugunGun }, simdi);
+  });
+}
+
+/** Geçmişten kalanı bırak: geçmişte yapılmamış olarak kalır. */
+export function kartiBirak(kapi: Kapi, kartId: string): Promise<void> {
+  return kapi.yaz(['kart'], (y) => y.calistir('UPDATE kart SET birakildi = 1 WHERE id = ?', [kartId]));
 }

@@ -1,11 +1,14 @@
 import { EkranKabi } from '@/bilesen/EkranKabi';
-import { Yakinda } from '@/bilesen/Yakinda';
+import { BugunSirada } from '@/bilesen/giris/BugunSirada';
+import { HizliNot } from '@/bilesen/giris/HizliNot';
 
-// Giriş: selam ve tarih yok; kutular 4. görevde gelecek.
+// Giriş: selam ve tarih yok; ekran Hızlı Not ile başlar. Kutuların açılıp
+// kapanması ve sırası 8. görevde; öteki kutular kendi görevlerinde gelecek.
 export default function Giris() {
   return (
     <EkranKabi>
-      <Yakinda />
+      <HizliNot />
+      <BugunSirada />
     </EkranKabi>
   );
 }
