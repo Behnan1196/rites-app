@@ -35,13 +35,21 @@ export function ZamanlamaCubugu({
   deger,
   bugunGun,
   onAc,
+  tarihYok = false,
 }: {
   deger: Zamanlama;
   bugunGun: Gun;
   onAc: (bolme: ZamanlamaBolmesi) => void;
+  /** Tarihsiz plan adımı: tarih bölmesi boş görünür. */
+  tarihYok?: boolean;
 }) {
   const bolmeler: { k: ZamanlamaBolmesi; ad: string; ikon: IkonAdi; deger: string | null }[] = [
-    { k: 'tarih', ad: 'Tarih', ikon: 'calendar-outline', deger: kisaGoreliTarih(deger.tarih, bugunGun) },
+    {
+      k: 'tarih',
+      ad: 'Tarih',
+      ikon: 'calendar-outline',
+      deger: tarihYok ? null : kisaGoreliTarih(deger.tarih, bugunGun),
+    },
     { k: 'saat', ad: 'Saat', ikon: 'time-outline', deger: deger.saat },
     {
       k: 'hatirlatma',
@@ -87,6 +95,8 @@ export function ZamanlamaCubugu({
 
 interface SayfaOzellikleri {
   acik: ZamanlamaBolmesi | null;
+  /** Tarihsiz plan adımı: tarih sayfasında seçili gün yok. */
+  tarihYok?: boolean;
   deger: Zamanlama;
   bugunGun: Gun;
   onDegis: (z: Zamanlama) => void;
@@ -94,7 +104,7 @@ interface SayfaOzellikleri {
 }
 
 /** Dört alt sayfanın hepsi; hangisinin açık olduğu `acik` ile verilir. */
-export function ZamanlamaSayfalari({ acik, deger, bugunGun, onDegis, onAc }: SayfaOzellikleri) {
+export function ZamanlamaSayfalari({ acik, deger, bugunGun, onDegis, onAc, tarihYok = false }: SayfaOzellikleri) {
   const kapat = () => onAc(null);
   return (
     <>
@@ -107,20 +117,20 @@ export function ZamanlamaSayfalari({ acik, deger, bugunGun, onDegis, onAc }: Say
         <View style={stiller.haplar}>
           <SecenekHapi
             etiket="Bugün"
-            secili={deger.tarih === bugunGun}
+            secili={!tarihYok && deger.tarih === bugunGun}
             onPress={() => onDegis({ ...deger, tarih: bugunGun })}
             style={stiller.esit}
           />
           <SecenekHapi
             etiket="Yarın"
-            secili={deger.tarih === gunEkle(bugunGun, 1)}
+            secili={!tarihYok && deger.tarih === gunEkle(bugunGun, 1)}
             onPress={() => onDegis({ ...deger, tarih: gunEkle(bugunGun, 1) })}
             style={stiller.esit}
           />
         </View>
         <Yazi kalinlik="kalin">Başka bir gün</Yazi>
         <Bolum>
-          <AyTakvimi secili={deger.tarih} bugunGun={bugunGun} onSec={(tarih) => onDegis({ ...deger, tarih })} />
+          <AyTakvimi secili={tarihYok ? null : deger.tarih} bugunGun={bugunGun} onSec={(tarih) => onDegis({ ...deger, tarih })} />
         </Bolum>
       </AltSayfa>
 

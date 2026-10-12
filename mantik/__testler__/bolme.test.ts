@@ -176,3 +176,17 @@ describe('kayıt taşıma', () => {
     });
   });
 });
+
+describe('tarihsiz plan adımı düzenleme', () => {
+  const adim = yeniKart('a', { baslik: 'Masaları ölç', tarih: null, tarihsiz: true, planId: 'p' });
+  it('tarih seçilmezse tarihsiz kalır', () => {
+    const s = duzenle(adim, BUGUN, tanim(adim, { baslik: 'Masaları ölç ve yaz', tarihsiz: true }), null, idUret());
+    expect(bul(s.islemler, 'kartGuncelle')[0]!.kart).toMatchObject({ baslik: 'Masaları ölç ve yaz', tarih: null, tarihsiz: true, planId: 'p' });
+  });
+  it('tarih seçilince ajandaya düşer', () => {
+    const s = duzenle(adim, BUGUN, tanim(adim, { tarih: '2026-10-15', tarihsiz: false }), null, idUret());
+    const k = bul(s.islemler, 'kartGuncelle')[0]!.kart;
+    expect([k.tarih, k.tarihsiz]).toEqual(['2026-10-15', false]);
+    expect(gorunurMu(k, '2026-10-15', BUGUN)).toBe(true);
+  });
+});

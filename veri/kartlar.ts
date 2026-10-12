@@ -153,9 +153,30 @@ function aralikKosulu(aralik: KayitAraligi): { sql: string; params: SqlDeger[] }
 // ---- Okuma -------------------------------------------------------------------
 
 /** Bütün kartlar ve blok sayıları. Kişisel ajanda ölçeğinde süzme bellekte yapılır. */
+/** Biten planların kartları ajandada görünmez (`08` açık soru 3). */
 export async function tumKartlar(oku: Okuyucu): Promise<KartOzeti[]> {
   const satirlar = await oku.hepsi<KartSatiri>(
-    `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi FROM kart k`,
+    `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi FROM kart k
+     WHERE k.plan_id IS NULL OR k.plan_id NOT IN (SELECT id FROM plan WHERE durum = 'bitti')`,
+  );
+  return satirlar.map(kartSatirdan);
+}
+
+/** Planlara bağlı bütün kartlar (Yaşam Tarzım ve Devam edenler ilerlemesi için). */
+export async function planliKartlar(oku: Okuyucu): Promise<KartOzeti[]> {
+  const satirlar = await oku.hepsi<KartSatiri>(
+    `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi FROM kart k
+     WHERE k.plan_id IS NOT NULL ORDER BY k.sira`,
+  );
+  return satirlar.map(kartSatirdan);
+}
+
+/** Bir planın bütün kartları (plan bitmiş olsa da). */
+export async function planKartlari(oku: Okuyucu, planId: string): Promise<KartOzeti[]> {
+  const satirlar = await oku.hepsi<KartSatiri>(
+    `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi FROM kart k
+     WHERE k.plan_id = ? ORDER BY k.sira`,
+    [planId],
   );
   return satirlar.map(kartSatirdan);
 }
@@ -206,6 +227,19 @@ export async function kartAyrinti(oku: Okuyucu, id: string): Promise<{ kart: Kar
   if (!satir) return null;
   const bloklar = await oku.hepsi<BlokSatiri>('SELECT * FROM blok WHERE kart_id = ? ORDER BY sira', [id]);
   return { kart: kartSatirdan(satir), bloklar: bloklar.map(blokSatirdan) };
+}
+
+/** Plan ekranı Gelişim için: plandaki kartların ölçüm blokları ve bütün kayıtları. */
+export async function planKayitlari(oku: Okuyucu, planId: string): Promise<{ olcumler: Blok[]; kayitlar: Kayit[] }> {
+  const bloklar = await oku.hepsi<BlokSatiri>(
+    `SELECT b.* FROM blok b JOIN kart k ON k.id = b.kart_id WHERE k.plan_id = ? AND b.tur = 'olcum' ORDER BY k.sira, b.sira`,
+    [planId],
+  );
+  const kayitlar = await oku.hepsi<KayitSatiri>(
+    'SELECT r.* FROM kayit r JOIN kart k ON k.id = r.kart_id WHERE k.plan_id = ? ORDER BY r.tarih',
+    [planId],
+  );
+  return { olcumler: bloklar.map(blokSatirdan), kayitlar: kayitlar.map(kayitSatirdan) };
 }
 
 /** Kartın bütün kayıtları, tarihe göre. */

@@ -25,6 +25,7 @@ import { kalanlar } from '@/mantik/kalanlar';
 import { kaynakAdi, kaynaklar, suz, TUMU, type KaynakAnahtari } from '@/mantik/kaynak';
 import { gecerliGunMu, gunEkle, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
+import { planlariOku } from '@/veri/planlar';
 import {
   blokMetinleri,
   gunlerinYapilanlari,
@@ -44,9 +45,8 @@ const GORUNUMLER = [
   { deger: 'hafta', etiket: 'Hafta' },
 ] as const;
 
-/** Planlar 6. görevde gelir; o zamana kadar plan adı yok. */
-const PLAN_ADLARI: ReadonlyMap<string, string> = new Map();
 const BOS_KUME: ReadonlySet<string> = new Set();
+const BOS_PLANLAR: ReadonlyMap<string, string> = new Map();
 
 export default function Ajandam() {
   const bugunGun = useBugun();
@@ -76,9 +76,10 @@ export default function Ajandam() {
   const aramaAcik = sorgu !== null;
 
   const veri = useSorgu(
-    ['kart'],
+    ['kart', 'plan'],
     async (oku) => ({
       kartlar: await tumKartlar(oku),
+      planAdlari: new Map((await planlariOku(oku)).map((p) => [p.id, p.ad])),
       yapilanlar: await gunlerinYapilanlari(oku, hafta[0]!, hafta[6]!),
       bloklar: aramaAcik ? await blokMetinleri(oku) : null,
     }),
@@ -86,6 +87,7 @@ export default function Ajandam() {
   );
 
   const kartlar = veri.veri?.kartlar;
+  const planAdlari = veri.veri?.planAdlari ?? BOS_PLANLAR;
   const yapilanlarHaritasi = veri.veri?.yapilanlar;
   const yapilanlar = (g: Gun) => yapilanlarHaritasi?.get(g) ?? BOS_KUME;
 
@@ -158,7 +160,7 @@ export default function Ajandam() {
             <AramaSonuclari
               sorgu={sorgu}
               sonuclar={sonuclar}
-              planAdlari={PLAN_ADLARI}
+              planAdlari={planAdlari}
               onKartiAc={(s) => {
                 setSorgu(null);
                 kartiAc(s.kart, s.gun ?? bugunGun);
@@ -166,6 +168,10 @@ export default function Ajandam() {
               onGuneGit={(s) => {
                 setSorgu(null);
                 if (s.gun) gunuAc(s.gun);
+              }}
+              onPlaniAc={(s) => {
+                setSorgu(null);
+                if (s.kart.planId) router.push({ pathname: '/yasam/plan/[id]', params: { id: s.kart.planId } });
               }}
             />
           )}
@@ -188,7 +194,7 @@ export default function Ajandam() {
           <KaynakCipleri
             kaynaklar={kaynakListesi}
             secili={etkinFiltre}
-            planAdlari={PLAN_ADLARI}
+            planAdlari={planAdlari}
             onSec={setFiltre}
           />
 
@@ -204,7 +210,7 @@ export default function Ajandam() {
                 {tamamMetni(
                   yapilanSayisi,
                   gununKartlariListesi.length,
-                  suzuldu ? kaynakAdi(etkinFiltre, PLAN_ADLARI) : null,
+                  suzuldu ? kaynakAdi(etkinFiltre, planAdlari) : null,
                 )}
               </Yazi>
               {gununKartlariListesi.length === 0 ? (
@@ -217,7 +223,7 @@ export default function Ajandam() {
                     <KartSatiri
                       key={kart.id}
                       kart={kart}
-                      planAdlari={PLAN_ADLARI}
+                      planAdlari={planAdlari}
                       yapildi={seciliYapilanlar.has(kart.id)}
                       onIsaretle={() => void isaretle(kapi, kart.id, secili, !seciliYapilanlar.has(kart.id))}
                       onAc={() => kartiAc(kart, secili)}

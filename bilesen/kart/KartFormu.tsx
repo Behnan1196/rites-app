@@ -38,6 +38,8 @@ export interface KartFormuSonucu {
 interface FormDurumu {
   baslik: string;
   kisa: string;
+  /** Tarihsiz plan adımı; tarih ya da tekrar seçilince false olur. */
+  tarihsiz: boolean;
   zamanlama: Zamanlama;
   bloklar: BlokTaslagi[];
 }
@@ -69,6 +71,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
     return {
       baslik: '',
       kisa: '',
+      tarihsiz: false,
       zamanlama: { tarih: hedef.gun, saat: null, hatirlatma: null, tekrar: null },
       bloklar: [],
     };
@@ -77,6 +80,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
   return {
     baslik: kart.baslik,
     kisa: kart.kisa,
+    tarihsiz: kart.tarihsiz,
     zamanlama: { tarih: kart.tarih ?? hedef.gun, saat: kart.saat, hatirlatma: kart.hatirlatma, tekrar: kart.tekrar },
     bloklar: hedef.bloklar.map(formaBlok),
   };
@@ -124,7 +128,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const tanim = (): KartTanimi => ({
     baslik: durum.baslik.trim(),
     kisa: durum.kisa.trim(),
-    tarih: durum.zamanlama.tarih,
+    tarih: durum.tarihsiz ? null : durum.zamanlama.tarih,
+    tarihsiz: durum.tarihsiz,
     saat: durum.zamanlama.saat,
     hatirlatma: durum.zamanlama.saat ? durum.zamanlama.hatirlatma : null,
     tekrar: durum.zamanlama.tekrar,
@@ -242,7 +247,12 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         onay={onay}
         altAlan={
           <View style={stiller.alt}>
-            <ZamanlamaCubugu deger={durum.zamanlama} bugunGun={bugunGun} onAc={setAltSayfa} />
+            <ZamanlamaCubugu
+              deger={durum.zamanlama}
+              bugunGun={bugunGun}
+              onAc={setAltSayfa}
+              tarihYok={durum.tarihsiz}
+            />
             <Dugme etiket="Kaydet" onPress={kaydet} pasif={calisiyor} />
           </View>
         }
@@ -296,7 +306,13 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         acik={altSayfa}
         deger={durum.zamanlama}
         bugunGun={bugunGun}
-        onDegis={(zamanlama) => guncelle({ zamanlama })}
+        tarihYok={durum.tarihsiz}
+        onDegis={(zamanlama) =>
+          guncelle({
+            zamanlama,
+            tarihsiz: durum.tarihsiz && altSayfa !== 'tarih' && zamanlama.tekrar === null,
+          })
+        }
         onAc={setAltSayfa}
       />
 

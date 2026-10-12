@@ -17,6 +17,8 @@ interface Ozellikler {
   altBaslik?: string;
   /** Alt ekranlarda sol üstteki "‹ [Geri gidilen yer]" (`04` Gezinme). */
   geri?: string;
+  /** Geri düğmesinin işi; verilmezse bir önceki ekrana döner. */
+  onGeri?: () => void;
   /** Sürükleme sırasında kaydırmayı durdurmak için. */
   kaydirilabilir?: boolean;
   /** Başlığın sağındaki yuvarlak simge düğmeleri (Ajandam: ara, takvim). */
@@ -24,7 +26,7 @@ interface Ozellikler {
   children?: ReactNode;
 }
 
-export function EkranKabi({ baslik, altBaslik, geri, kaydirilabilir = true, baslikSag, children }: Ozellikler) {
+export function EkranKabi({ baslik, altBaslik, geri, onGeri, kaydirilabilir = true, baslikSag, children }: Ozellikler) {
   const kenar = useSafeAreaInsets();
   const kaydirma = useRef<ScrollView>(null);
 
@@ -49,7 +51,7 @@ export function EkranKabi({ baslik, altBaslik, geri, kaydirilabilir = true, basl
       >
         {!!geri && (
           <Pressable
-            onPress={() => router.back()}
+            onPress={onGeri ?? (() => router.back())}
             accessibilityRole="button"
             accessibilityLabel={`${geri} ekranına dön`}
             style={stiller.geri}

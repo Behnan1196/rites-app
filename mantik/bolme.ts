@@ -9,8 +9,13 @@
 import type { Kart, Kayit, Tekrar } from './kart';
 import { gunEkle, gunFarki, uzunTarih, type Gun } from './tarih';
 
-/** Düzenleme formundan gelen tanım alanları. */
-export type KartTanimi = Pick<Kart, 'baslik' | 'kisa' | 'tarih' | 'saat' | 'hatirlatma' | 'tekrar'>;
+/**
+ * Düzenleme formundan gelen tanım alanları. `tarihsiz` yalnız plan adımı
+ * düzenlenirken verilir (tarih seçilince adım tarihsiz olmaktan çıkar).
+ */
+export type KartTanimi = Pick<Kart, 'baslik' | 'kisa' | 'tarih' | 'saat' | 'hatirlatma' | 'tekrar'> & {
+  tarihsiz?: boolean;
+};
 
 export type KayitAraligi =
   | { tur: 'tek'; gun: Gun }

@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlokUygulama } from '@/bilesen/kart/BlokUygulama';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { Dugme } from '@/bilesen/Dugme';
-import { olcu, renk } from '@/bilesen/tema';
+import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { gunBasligi, yapilanGunler } from '@/mantik/ajanda';
 import { seri, seriMetni, son7Gun, tekrarMetni, type SeritGunu } from '@/mantik/gorunurluk';
@@ -18,11 +18,13 @@ import { bosKayit, type Kart, type Kayit } from '@/mantik/kart';
 import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import { isaretle, kartAyrinti, kartKayitlari, kayitDegistir } from '@/veri/kartlar';
+import { planOku } from '@/veri/planlar';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 export default function KartGorunumu() {
-  const { id, gun: gunParam } = useLocalSearchParams<{ id: string; gun?: string }>();
+  const { id, gun: gunParam, geri } = useLocalSearchParams<{ id: string; gun?: string; geri?: string }>();
+  const geriYazisi = geri || 'Ajandam';
   const bugunGun = useBugun();
   const gun: Gun = gunParam ?? bugunGun;
   const kenar = useSafeAreaInsets();
@@ -34,10 +36,12 @@ export default function KartGorunumu() {
   });
 
   const veri = useSorgu(
-    ['kart'],
+    ['kart', 'plan'],
     async (oku) => {
       const ayrinti = await kartAyrinti(oku, id);
-      return ayrinti ? { ...ayrinti, kayitlar: await kartKayitlari(oku, id) } : null;
+      if (!ayrinti) return null;
+      const plan = ayrinti.kart.planId ? await planOku(oku, ayrinti.kart.planId) : null;
+      return { ...ayrinti, kayitlar: await kartKayitlari(oku, id), planAdi: plan?.ad ?? null };
     },
     [id],
   );
@@ -50,7 +54,7 @@ export default function KartGorunumu() {
 
   if (veri.yukleniyor || !veri.veri) return <View style={[stiller.kap, { paddingTop: kenar.top }]} />;
 
-  const { kart, bloklar, kayitlar } = veri.veri;
+  const { kart, bloklar, kayitlar, planAdi } = veri.veri;
   const kayit: Kayit = kayitlar.find((k) => k.tarih === gun) ?? bosKayit(kart.id, gun);
   const meta = [kart.saat, kart.tekrar ? tekrarMetni(kart.tekrar) : null].filter(Boolean).join(' · ');
   const kayitDegis = (degistir: (k: Kayit) => Kayit) => void kayitDegistir(kapi, kart.id, gun, degistir);
@@ -61,13 +65,13 @@ export default function KartGorunumu() {
         <Pressable
           onPress={() => router.back()}
           accessibilityRole="button"
-          accessibilityLabel="Ajandam'a dön"
+          accessibilityLabel={`${geriYazisi} ekranına dön`}
           style={stiller.geri}
           hitSlop={6}
         >
           <Ionicons name="chevron-back" size={22} color={renk.ana} />
           <Yazi renk={renk.ana} style={stiller.ustYazi}>
-            Ajandam
+            {geriYazisi}
           </Yazi>
         </Pressable>
         {!kart.kilitli && (
@@ -81,6 +85,13 @@ export default function KartGorunumu() {
             {kart.baslik}
           </Yazi>
           {!!meta && <Yazi tur="ikincil">{meta}</Yazi>}
+          {!!planAdi && (
+            <View style={stiller.planEtiketi}>
+              <Yazi tur="etiket" kalinlik="kalin" renk={kaynakRenk.plan.yazi}>
+                {planAdi}
+              </Yazi>
+            </View>
+          )}
         </View>
 
         {kart.tekrar && <SeriKutusu kart={kart} gun={gun} bugunGun={bugunGun} kayitlar={kayitlar} />}
@@ -183,6 +194,14 @@ function SeritHucresi({ s, acilan, bugunGun }: { s: SeritGunu; acilan: boolean; 
 }
 
 const stiller = StyleSheet.create({
+  planEtiketi: {
+    alignSelf: 'flex-start',
+    backgroundColor: kaynakRenk.plan.zemin,
+    borderRadius: olcu.kose.etiket,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginTop: 2,
+  },
   kap: { flex: 1, backgroundColor: renk.zemin },
   ust: {
     flexDirection: 'row',

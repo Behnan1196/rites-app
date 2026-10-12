@@ -42,6 +42,7 @@ export const GirisAlani = forwardRef<TextInput, Ozellikler>(function GirisAlani(
         style={[
           stiller.alan,
           yazi('normal'),
+          geri.multiline && stiller.cokSatir,
           odakta && { borderColor: renk.yazi },
           !!hata && { borderColor: renk.hata },
         ]}
@@ -57,6 +58,7 @@ export const GirisAlani = forwardRef<TextInput, Ozellikler>(function GirisAlani(
 
 const stiller = StyleSheet.create({
   kap: { gap: 8 },
+  cokSatir: { minHeight: 120, paddingTop: 12, paddingBottom: 12, textAlignVertical: 'top' },
   etiket: { marginBottom: 2 },
   alan: {
     minHeight: 56,

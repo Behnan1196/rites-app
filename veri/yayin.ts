@@ -3,9 +3,10 @@
 
 /**
  * Veritabanında değişebilecek konular. Yeni tablolar geldikçe eklenir.
- * `kart`: kartlar, blokları ve günlük kayıtları · `not`: notlar.
+ * `kart`: kartlar, blokları ve günlük kayıtları · `not`: notlar ·
+ * `plan`: planlar, alan durumları ve Günün sorusu cevapları.
  */
-export type Konu = 'ayar' | 'kart' | 'not';
+export type Konu = 'ayar' | 'kart' | 'not' | 'plan';
 
 export type Dinleyici = (degisenler: ReadonlySet<Konu>) => void;
 

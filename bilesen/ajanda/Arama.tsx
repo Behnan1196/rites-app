@@ -67,12 +67,14 @@ export function AramaSonuclari<T extends KaynakliKart>({
   planAdlari,
   onKartiAc,
   onGuneGit,
+  onPlaniAc,
 }: {
   sorgu: string;
   sonuclar: readonly AramaSonucu<T>[];
   planAdlari: ReadonlyMap<string, string>;
   onKartiAc: (s: AramaSonucu<T>) => void;
   onGuneGit: (s: AramaSonucu<T>) => void;
+  onPlaniAc: (s: AramaSonucu<T>) => void;
 }) {
   if (trKucuk(sorgu.trim()).length < ARAMA_EN_AZ) {
     return (
@@ -96,8 +98,7 @@ export function AramaSonuclari<T extends KaynakliKart>({
           </View>
           <View style={stiller.dugmeler}>
             <Dugme tur="ana" etiket="Kartı aç" onPress={() => onKartiAc(s)} style={stiller.dugme} />
-            {/* Tarihsiz adımda "Planı aç ›" 6. görevde (planlar) gelir. */}
-            {s.gun !== null && (
+            {s.gun !== null ? (
               <Dugme
                 tur="ikincil"
                 etiket="O güne git ›"
@@ -105,6 +106,16 @@ export function AramaSonuclari<T extends KaynakliKart>({
                 onPress={() => onGuneGit(s)}
                 style={[stiller.dugme, stiller.cerceveli]}
               />
+            ) : (
+              !!s.kart.planId && (
+                <Dugme
+                  tur="ikincil"
+                  etiket="Planı aç ›"
+                  yaziRengi={renk.ana}
+                  onPress={() => onPlaniAc(s)}
+                  style={[stiller.dugme, stiller.cerceveli]}
+                />
+              )
             )}
           </View>
         </View>

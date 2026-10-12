@@ -86,6 +86,39 @@ export const GOCLER: readonly Goc[] = [
       );
     `,
   },
+  {
+    // Planlar, alan durumları ve Günün sorusu cevapları (`03` → plan, alan_durumu, soru_cevap).
+    surum: 4,
+    sql: `
+      CREATE TABLE IF NOT EXISTS plan (
+        id              TEXT PRIMARY KEY NOT NULL,
+        ad              TEXT NOT NULL,
+        alan            TEXT NOT NULL,
+        kaynak          TEXT NOT NULL DEFAULT 'kendim',
+        neden           TEXT NOT NULL DEFAULT '',
+        hedef           TEXT NOT NULL DEFAULT '',
+        baslangic       TEXT NOT NULL,
+        bitis           TEXT,
+        baslangic_puani INTEGER NOT NULL DEFAULT 0,
+        gunun_sorusu    TEXT,
+        durum           TEXT NOT NULL DEFAULT 'etkin',
+        olusturma       TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS kart_plan ON kart (plan_id);
+      CREATE TABLE IF NOT EXISTS alan_durumu (
+        alan      TEXT PRIMARY KEY NOT NULL,
+        acik      INTEGER NOT NULL,
+        puan      INTEGER NOT NULL DEFAULT 0,
+        ilerlemek INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE TABLE IF NOT EXISTS soru_cevap (
+        plan_id TEXT NOT NULL REFERENCES plan (id) ON DELETE CASCADE,
+        tarih   TEXT NOT NULL,
+        deger   INTEGER NOT NULL,
+        PRIMARY KEY (plan_id, tarih)
+      );
+    `,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

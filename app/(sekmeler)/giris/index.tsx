@@ -1,5 +1,7 @@
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { BugunSirada } from '@/bilesen/giris/BugunSirada';
+import { DevamEdenler } from '@/bilesen/giris/DevamEdenler';
+import { GununSorusu } from '@/bilesen/giris/GununSorusu';
 import { HizliNot } from '@/bilesen/giris/HizliNot';
 
 // Giriş: selam ve tarih yok; ekran Hızlı Not ile başlar. Kutuların açılıp
@@ -9,6 +11,8 @@ export default function Giris() {
     <EkranKabi>
       <HizliNot />
       <BugunSirada />
+      <DevamEdenler />
+      <GununSorusu />
     </EkranKabi>
   );
 }
