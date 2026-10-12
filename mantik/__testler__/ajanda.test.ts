@@ -1,5 +1,5 @@
 import {
-  bosGunMetni, gunBasligi, gununKartlari, haftaninGunleri, kisaGoreliTarih, oncekiDeger, tamamMetni, yapilanGunler,
+  bosGunMetni, fazlaMetni, gunBasligi, gununKartlari, haftaninGunleri, kisaGoreliTarih, oncekiDeger, tamamMetni, yapilanGunler,
 } from '../ajanda';
 import { bosKayit, yeniKart, type Kayit } from '../kart';
 
@@ -32,6 +32,9 @@ describe('ajanda yardımcıları', () => {
     expect(tamamMetni(1, 4)).toBe('1 / 4 tamam');
     expect(bosGunMetni(BUGUN, BUGUN)).toBe('Bugün için kart yok');
     expect(bosGunMetni('2026-10-12', BUGUN)).toBe('Bu gün için kart yok');
+    expect(tamamMetni(1, 2, 'Sabah planım')).toBe('1 / 2 tamam · Sabah planım');
+    expect(bosGunMetni(BUGUN, BUGUN, true)).toBe('Bu kaynaktan kart yok');
+    expect(fazlaMetni(2)).toBe('+2 kart daha');
   });
 
   it('önceki değer: açılan günden önceki en yakın dolu değer', () => {

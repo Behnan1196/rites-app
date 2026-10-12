@@ -32,6 +32,8 @@ interface SagEylem {
   etiket: string;
   onPress: () => void;
   pasif?: boolean;
+  /** Yazı rengi (ör. takvimdeki kehribar "Bugün"). */
+  renk?: string;
 }
 
 interface Ozellikler {
@@ -41,6 +43,8 @@ interface Ozellikler {
   baslik?: string;
   /** Solda "Vazgeç" (kapatma isteği). */
   solVazgec?: boolean;
+  /** Solda kendi işini yapan yazı düğmesi (ör. takvimde "Bugün"). */
+  solEylem?: SagEylem;
   /** Sağda kapatan yazı düğmesi: "Kapat", "Tamam", "Bitti"… */
   sagKapat?: string;
   /** Sağda kendi işini yapan yazı düğmesi: "Kaydet"… (`sagKapat` ile birlikte verilmez). */
@@ -64,6 +68,7 @@ export function AltSayfa({
   onKapat,
   baslik,
   solVazgec,
+  solEylem,
   sagKapat,
   sagEylem,
   degisti = false,
@@ -197,10 +202,19 @@ export function AltSayfa({
             <View style={stiller.tutamacAlani}>
               <View style={stiller.tutamac} />
             </View>
-            {(baslik || solVazgec || sagKapat || sagEylem) && (
+            {(baslik || solVazgec || solEylem || sagKapat || sagEylem) && (
               <View style={stiller.ustSatir}>
                 <View style={stiller.yan}>
                   {solVazgec && <Dugme tur="yazi" etiket="Vazgeç" onPress={istekKapat} />}
+                  {solEylem && (
+                    <Dugme
+                      tur="yazi"
+                      etiket={solEylem.etiket}
+                      onPress={solEylem.onPress}
+                      pasif={solEylem.pasif}
+                      yaziRengi={solEylem.renk}
+                    />
+                  )}
                 </View>
                 <Yazi tur="bolumBasligi" style={stiller.baslik} numberOfLines={1} accessibilityRole="header">
                   {baslik ?? ''}

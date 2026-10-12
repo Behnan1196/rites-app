@@ -1,29 +1,40 @@
 // Ajandada bir kart satırı (A-8): solda işaret kutusu, başlık (en çok 2 satır),
-// tek meta satırı (saat, zil + hatırlatma, tekrar). Bloğu olan kartın sağında ›.
+// tek meta satırı (saat, zil + hatırlatma, tekrar, kaynak etiketi ya da kilit +
+// koç adı). Bloğu olan kartın sağında ›. Solda 6 pt kaynak şeridi (PL-4).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { HATIRLATMA_METNI } from '@/mantik/ajanda';
 import { tekrarMetni } from '@/mantik/gorunurluk';
+import { kaynakAnahtari, kaynakEtiketi, kaynakTuru } from '@/mantik/kaynak';
 import type { KartOzeti } from '@/veri/kartlar';
 
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
+import { kaynakStili } from './kaynakStili';
+
+const BOS_PLANLAR: ReadonlyMap<string, string> = new Map();
 
 interface Ozellikler {
   kart: KartOzeti;
   yapildi: boolean;
   onIsaretle: () => void;
   onAc: () => void;
+  planAdlari?: ReadonlyMap<string, string>;
 }
 
-export function KartSatiri({ kart, yapildi, onIsaretle, onAc }: Ozellikler) {
+export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_PLANLAR }: Ozellikler) {
   const blokluMu = kart.blokSayisi > 0 || kart.kilitli;
-  const metaVar = !!(kart.saat || kart.hatirlatma || kart.tekrar);
+  const anahtar = kaynakAnahtari(kart);
+  const stil = kaynakStili(anahtar);
+  const etiket = kaynakEtiketi(kart, planAdlari);
+  const kocMu = kaynakTuru(anahtar) === 'koc';
+  const metaVar = !!(kart.saat || kart.hatirlatma || kart.tekrar || etiket);
 
   return (
     <View style={stiller.kart}>
+      {stil && <View style={[stiller.serit, { backgroundColor: stil.serit }]} />}
       <Pressable
         onPress={onIsaretle}
         accessibilityRole="checkbox"
@@ -57,6 +68,14 @@ export function KartSatiri({ kart, yapildi, onIsaretle, onAc }: Ozellikler) {
               {!!kart.saat && <Meta ikon="time-outline" metin={kart.saat} />}
               {!!kart.hatirlatma && <Meta ikon="notifications-outline" metin={HATIRLATMA_METNI[kart.hatirlatma]} />}
               {!!kart.tekrar && <Meta ikon="repeat-outline" metin={tekrarMetni(kart.tekrar)} />}
+              {!!etiket && stil && (
+                <View style={[stiller.etiket, { backgroundColor: stil.zemin }]}>
+                  {kocMu && <Ionicons name="lock-closed" size={14} color={stil.yazi} />}
+                  <Yazi tur="etiket" kalinlik="kalin" renk={stil.yazi} numberOfLines={1}>
+                    {etiket}
+                  </Yazi>
+                </View>
+              )}
             </View>
           )}
         </View>
@@ -89,6 +108,16 @@ const stiller = StyleSheet.create({
     borderRadius: olcu.kose.kart,
     minHeight: 72,
     overflow: 'hidden',
+  },
+  serit: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 6 },
+  etiket: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: olcu.kose.etiket,
+    maxWidth: '100%',
   },
   isaretAlani: {
     width: 64,

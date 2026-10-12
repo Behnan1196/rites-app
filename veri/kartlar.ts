@@ -160,6 +160,20 @@ export async function tumKartlar(oku: Okuyucu): Promise<KartOzeti[]> {
   return satirlar.map(kartSatirdan);
 }
 
+/** Arama için her kartın blok metni (ad, talimat, liste maddeleri): kart → metin. */
+export async function blokMetinleri(oku: Okuyucu): Promise<Map<string, string>> {
+  const satirlar = await oku.hepsi<Pick<BlokSatiri, 'kart_id' | 'ad' | 'metin' | 'maddeler'>>(
+    'SELECT kart_id, ad, metin, maddeler FROM blok ORDER BY kart_id, sira',
+  );
+  const sonuc = new Map<string, string>();
+  for (const s of satirlar) {
+    const parca = [s.ad, s.metin, ...json<string[]>(s.maddeler, [])].filter(Boolean).join(' ');
+    const onceki = sonuc.get(s.kart_id);
+    sonuc.set(s.kart_id, onceki ? `${onceki} ${parca}` : parca);
+  }
+  return sonuc;
+}
+
 /** O gün yapıldı işaretli kartların kimlikleri. */
 export async function gunYapilanlari(oku: Okuyucu, gun: Gun): Promise<Set<string>> {
   const satirlar = await oku.hepsi<{ kart_id: string }>(

@@ -34,12 +34,19 @@ export function kisaGoreliTarih(gun: Gun, bugunGun: Gun): string {
   return goreli.split(' ').slice(0, 2).join(' ');
 }
 
-export function tamamMetni(yapilan: number, toplam: number): string {
-  return `${yapilan} / ${toplam} tamam`;
+/** "1 / 4 tamam"; süzme açıksa "1 / 2 tamam · Sabah planım" (`05` §8). */
+export function tamamMetni(yapilan: number, toplam: number, kaynakAdi?: string | null): string {
+  return `${yapilan} / ${toplam} tamam${kaynakAdi ? ` · ${kaynakAdi}` : ''}`;
 }
 
-export function bosGunMetni(gun: Gun, bugunGun: Gun): string {
+export function bosGunMetni(gun: Gun, bugunGun: Gun, suzuldu = false): string {
+  if (suzuldu) return 'Bu kaynaktan kart yok';
   return gun === bugunGun ? 'Bugün için kart yok' : 'Bu gün için kart yok';
+}
+
+/** Hafta kutusundaki fazlalık: "+2 kart daha". */
+export function fazlaMetni(adet: number): string {
+  return `+${adet} kart daha`;
 }
 
 export const HATIRLATMA_METNI: Record<HatirlatmaSecimi, string> = {

@@ -7,7 +7,7 @@ import { yeniKart, type Kart, type Tekrar } from '@/mantik/kart';
 import { gocleriUygula } from '../gocler';
 import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
 import {
-  gunYapilanlari, isaretle, islemleriUygula, kartAyrinti, kartKayitlari, kayitDegistir, kayitVarMi, tumKartlar,
+  blokMetinleri, gunYapilanlari, isaretle, islemleriUygula, kartAyrinti, kartKayitlari, kayitDegistir, kayitVarMi, tumKartlar,
   yeniKartKaydet, type BlokTaslagi,
 } from '../kartlar';
 import { yayinOlustur } from '../yayin';
@@ -49,6 +49,7 @@ describe('kart veri katmanı (gerçek SQLite)', () => {
       ['id1', 'olcum', 0, []],
       ['id2', 'liste', 1, ['a', 'b']],
     ]);
+    expect(await blokMetinleri(oku)).toEqual(new Map([['k1', 'Tekrar sayısı Tekrar sayısı a b']]));
   });
 
   it('işaretleme o günün kaydına yazar; tek seferlik kartın kısa yolu eşitlenir', async () => {

@@ -19,10 +19,12 @@ interface Ozellikler {
   geri?: string;
   /** Sürükleme sırasında kaydırmayı durdurmak için. */
   kaydirilabilir?: boolean;
+  /** Başlığın sağındaki yuvarlak simge düğmeleri (Ajandam: ara, takvim). */
+  baslikSag?: ReactNode;
   children?: ReactNode;
 }
 
-export function EkranKabi({ baslik, altBaslik, geri, kaydirilabilir = true, children }: Ozellikler) {
+export function EkranKabi({ baslik, altBaslik, geri, kaydirilabilir = true, baslikSag, children }: Ozellikler) {
   const kenar = useSafeAreaInsets();
   const kaydirma = useRef<ScrollView>(null);
 
@@ -62,9 +64,12 @@ export function EkranKabi({ baslik, altBaslik, geri, kaydirilabilir = true, chil
         {(baslik || altBaslik) && (
           <View style={stiller.baslikAlani}>
             {!!baslik && (
-              <Yazi tur="ekranBasligi" accessibilityRole="header">
-                {baslik}
-              </Yazi>
+              <View style={stiller.baslikSatiri}>
+                <Yazi tur="ekranBasligi" accessibilityRole="header" style={stiller.baslikYazi}>
+                  {baslik}
+                </Yazi>
+                {baslikSag && <View style={stiller.baslikSag}>{baslikSag}</View>}
+              </View>
             )}
             {!!altBaslik && <Yazi tur="ikincil">{altBaslik}</Yazi>}
           </View>
@@ -84,6 +89,9 @@ const stiller = StyleSheet.create({
     gap: olcu.bolumArasi,
   },
   baslikAlani: { gap: 4, marginBottom: 4 },
+  baslikSatiri: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  baslikYazi: { flex: 1 },
+  baslikSag: { flexDirection: 'row', gap: 10 },
   geri: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', minHeight: 44, marginLeft: -4 },
   geriYazi: { fontSize: 18 },
 });

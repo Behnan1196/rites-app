@@ -3,21 +3,26 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { gunBasligi } from '@/mantik/ajanda';
 import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
 
 import { renk } from '../tema';
 import { Yazi } from '../Yazi';
 
+/** Başlık, ‹ › ve "↩ Bugüne dön". Gün görünümünde gün, Hafta görünümünde hafta adımlar. */
 export function GunGezinme({
-  gun,
-  bugunGun,
+  baslik,
+  oncekiEtiket,
+  sonrakiEtiket,
+  uzakta,
   onOnceki,
   onSonraki,
   onBugun,
 }: {
-  gun: Gun;
-  bugunGun: Gun;
+  baslik: string;
+  oncekiEtiket: string;
+  sonrakiEtiket: string;
+  /** Gün'de seçili gün ≠ bugün; Hafta'da hafta bugünü içermiyor (`05` §8). */
+  uzakta: boolean;
   onOnceki: () => void;
   onSonraki: () => void;
   onBugun: () => void;
@@ -25,13 +30,13 @@ export function GunGezinme({
   return (
     <View style={stiller.kap}>
       <View style={stiller.satir}>
-        <OkDugmesi yon="geri" etiket="Önceki gün" onPress={onOnceki} />
+        <OkDugmesi yon="geri" etiket={oncekiEtiket} onPress={onOnceki} />
         <Yazi tur="bolumBasligi" style={stiller.baslik} accessibilityRole="header" accessibilityLiveRegion="polite">
-          {gunBasligi(gun, bugunGun)}
+          {baslik}
         </Yazi>
-        <OkDugmesi yon="ileri" etiket="Sonraki gün" onPress={onSonraki} />
+        <OkDugmesi yon="ileri" etiket={sonrakiEtiket} onPress={onSonraki} />
       </View>
-      {gun !== bugunGun && (
+      {uzakta && (
         <Pressable onPress={onBugun} accessibilityRole="button" style={stiller.bugune} hitSlop={6}>
           <Yazi kalinlik="kalin" renk={renk.ana}>
             ↩ Bugüne dön
