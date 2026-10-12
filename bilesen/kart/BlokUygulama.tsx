@@ -8,11 +8,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Image, Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { oncekiDeger } from '@/mantik/ajanda';
+import { sesDosyasiMi } from '@/mantik/dosya';
 import type { Blok, Kayit } from '@/mantik/kart';
 import { uzunTarih, type Gun } from '@/mantik/tarih';
 import { dosyayiSakla } from '@/veri/dosyalar';
 
 import { Dugme } from '../Dugme';
+import { SesOynatici } from '../not/SesOynatici';
 import { Bolum } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
@@ -108,6 +110,15 @@ function ListeBlogu({ blok, kayit, onKayit }: Ozellikler) {
 function DosyaBlogu({ blok }: { blok: Blok }) {
   if (!blok.dosya) return null;
   const uri = blok.dosya;
+  // Ses dosyası (ör. ajandaya alınan sesli not) kartın içinde dinlenir.
+  if (sesDosyasiMi(uri)) {
+    return (
+      <Bolum>
+        <Yazi kalinlik="kalin">{blok.ad || 'Ses kaydı'}</Yazi>
+        <SesOynatici uri={uri} />
+      </Bolum>
+    );
+  }
   return (
     <Pressable
       onPress={() => void Sharing.shareAsync(uri)}
