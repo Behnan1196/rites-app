@@ -5,25 +5,26 @@ import {
   AtkinsonHyperlegibleNext_600SemiBold,
   AtkinsonHyperlegibleNext_700Bold,
   useFonts,
-} from '@expo-google-fonts/atkinson-hyperlegible-next';
-import * as SplashScreen from 'expo-splash-screen';
-import { Stack } from 'expo-router/stack';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect, type ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+} from "@expo-google-fonts/atkinson-hyperlegible-next";
+import * as SplashScreen from "expo-splash-screen";
+import { Stack } from "expo-router/stack";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, type ReactNode } from "react";
+import { StyleSheet, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { AdSorusu } from '@/bilesen/AdSorusu';
-import { BildirimYoneticisi } from '@/bilesen/BildirimYoneticisi';
-import { GirisAyariSaglayici } from '@/bilesen/giris/GirisAyari';
-import { KatmanSaglayici } from '@/bilesen/Katman';
-import { KisaMesajSaglayici } from '@/bilesen/KisaMesaj';
-import { ProfilSaglayici } from '@/bilesen/Profil';
-import { renk, yaziTipiDurumu } from '@/bilesen/tema';
-import { Yazi } from '@/bilesen/Yazi';
-import { YedekSorusu } from '@/bilesen/YedekSorusu';
-import { useAyar } from '@/veri/kancalar';
-import { VeriSaglayici } from '@/veri/VeriSaglayici';
+import { AdSorusu } from "@/bilesen/AdSorusu";
+import { BildirimYoneticisi } from "@/bilesen/BildirimYoneticisi";
+import { GirisAyariSaglayici } from "@/bilesen/giris/GirisAyari";
+import { OturumSaglayici } from "@/bilesen/oturum/OturumSayfasi";
+import { KatmanSaglayici } from "@/bilesen/Katman";
+import { KisaMesajSaglayici } from "@/bilesen/KisaMesaj";
+import { ProfilSaglayici } from "@/bilesen/Profil";
+import { renk, yaziTipiDurumu } from "@/bilesen/tema";
+import { Yazi } from "@/bilesen/Yazi";
+import { YedekSorusu } from "@/bilesen/YedekSorusu";
+import { useAyar } from "@/veri/kancalar";
+import { VeriSaglayici } from "@/veri/VeriSaglayici";
 
 // Yazı tipi ve veri hazır olana kadar açılış ekranı kalsın.
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -46,13 +47,20 @@ export default function KokDuzen() {
         <AdKapisi>
           <KisaMesajSaglayici>
             <KatmanSaglayici>
-              <GirisAyariSaglayici>
-                <ProfilSaglayici>
-                  <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: renk.zemin } }} />
-                  <BildirimYoneticisi />
-                  <YedekSorusu />
-                </ProfilSaglayici>
-              </GirisAyariSaglayici>
+              <OturumSaglayici>
+                <GirisAyariSaglayici>
+                  <ProfilSaglayici>
+                    <Stack
+                      screenOptions={{
+                        headerShown: false,
+                        contentStyle: { backgroundColor: renk.zemin },
+                      }}
+                    />
+                    <BildirimYoneticisi />
+                    <YedekSorusu />
+                  </ProfilSaglayici>
+                </GirisAyariSaglayici>
+              </OturumSaglayici>
             </KatmanSaglayici>
           </KisaMesajSaglayici>
         </AdKapisi>
@@ -63,7 +71,7 @@ export default function KokDuzen() {
 
 /** Ad kaydedilmemişse önce adı sorar; kaydedilince uygulamayı açar. */
 function AdKapisi({ children }: { children: ReactNode }) {
-  const ad = useAyar('ad');
+  const ad = useAyar("ad");
   if (ad.yukleniyor) return null;
   return (
     <>
@@ -98,10 +106,10 @@ const stiller = StyleSheet.create({
   hata: {
     flex: 1,
     backgroundColor: renk.zemin,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 24,
     gap: 8,
   },
-  ortala: { textAlign: 'center' },
+  ortala: { textAlign: "center" },
 });

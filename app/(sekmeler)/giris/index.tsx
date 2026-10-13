@@ -1,5 +1,5 @@
 // Giriş: selam ve tarih yok; kutular kayıtlı sırasıyla (G-7, `05` §10).
-// Gelenler, Su ve Ortak Listeler kutuları kendi görevlerinde gelecek.
+// Su ve Ortak Listeler kutuları sonra gelecek.
 
 import { Fragment } from 'react';
 import { StyleSheet } from 'react-native';
@@ -9,6 +9,7 @@ import { EkranKabi } from '@/bilesen/EkranKabi';
 import { AnimsaticilarKutusu } from '@/bilesen/giris/AnimsaticilarKutusu';
 import { BugunSirada } from '@/bilesen/giris/BugunSirada';
 import { DevamEdenler } from '@/bilesen/giris/DevamEdenler';
+import { GelenlerKutusu } from '@/bilesen/giris/GelenlerKutusu';
 import { useGirisAyari, useKutuSirasi } from '@/bilesen/giris/GirisAyari';
 import { GununSorusu } from '@/bilesen/giris/GununSorusu';
 import { HizliNot } from '@/bilesen/giris/HizliNot';
@@ -16,6 +17,7 @@ import type { KutuAnahtari } from '@/mantik/giris';
 
 const KUTU_BILESENI: Partial<Record<KutuAnahtari, () => React.ReactNode>> = {
   not: () => <HizliNot />,
+  gelenler: () => <GelenlerKutusu />,
   bugun: () => <BugunSirada />,
   animsatici: () => <AnimsaticilarKutusu />,
   devam: () => <DevamEdenler />,

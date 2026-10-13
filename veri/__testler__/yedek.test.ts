@@ -7,7 +7,7 @@ import { etkinliktenKart, type Plan } from '@/mantik/plan';
 
 import { animsaticiEkle, animsaticilariOku } from '../animsaticilar';
 import { ayarOku, ayarYaz } from '../ayar';
-import { gocleriUygula } from '../gocler';
+import { GOCLER, gocleriUygula } from '../gocler';
 import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
 import { kartAyrinti, kayitDegistir, tumKartlar, yeniKartKaydet } from '../kartlar';
 import { notEkle, notlariOku } from '../notlar';
@@ -46,7 +46,7 @@ describe('yedek (gerçek SQLite)', () => {
     await animsaticiEkle(a.kapi, { id: 'g', ad: 'Göz', saatler: ['08:00'], gunler: 'hergun', sesli: true, erteleDk: 10 });
 
     const yedek = JSON.parse(JSON.stringify(await yedekVerisi(a.oku, 'file:///eski/dosyalar')));
-    expect(yedek.surum).toBe(5);
+    expect(yedek.surum).toBe(GOCLER.length);
 
     const b = await yeniDb();
     await ayarYaz(b.kapi, 'ad', 'Başka');

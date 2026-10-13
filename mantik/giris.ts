@@ -56,7 +56,7 @@ export interface KutuTanimi {
 /** Varsayılan sıra (`02`); hepsi açık. */
 export const KUTULAR: readonly KutuTanimi[] = [
   { k: 'not', ad: 'Hızlı Not', aciklama: 'Kapatırsan notların Ajandam’dan açılır', hazir: true },
-  { k: 'gelenler', ad: 'Gelenler', aciklama: 'Sana gönderilen kartlar', hazir: false },
+  { k: 'gelenler', ad: 'Gelenler', aciklama: 'Sana gönderilen kartlar', hazir: true },
   { k: 'bugun', ad: 'Bugün sırada', aciklama: 'Ajandandaki sıradaki iş', hazir: true },
   { k: 'animsatici', ad: 'Anımsatıcılar', aciklama: 'Sıradaki anımsatma', hazir: true },
   { k: 'devam', ad: 'Devam edenler', aciklama: 'Süren planların', hazir: true },

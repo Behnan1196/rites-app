@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlokUygulama } from '@/bilesen/kart/BlokUygulama';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { Dugme } from '@/bilesen/Dugme';
+import { usePaylas } from '@/bilesen/paylasim/PaylasSayfasi';
 import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { gunBasligi, yapilanGunler } from '@/mantik/ajanda';
@@ -35,6 +36,7 @@ export default function KartGorunumu() {
     else if (sonuc.yeniKartId) router.setParams({ id: sonuc.yeniKartId });
   });
 
+  const paylas = usePaylas();
   const veri = useSorgu(
     ['kart', 'plan'],
     async (oku) => {
@@ -108,6 +110,10 @@ export default function KartGorunumu() {
             onKayit={kayitDegis}
           />
         ))}
+
+        {!kart.kilitli && (
+          <Dugme tur="ikincil" etiket="Paylaş" yaziRengi={renk.ana} onPress={() => paylas.ac({ kart, bloklar })} />
+        )}
       </ScrollView>
 
       <View style={[stiller.alt, { paddingBottom: Math.max(kenar.bottom, 12) + 8 }]}>
@@ -133,6 +139,7 @@ export default function KartGorunumu() {
       </View>
 
       {form.oge}
+      {paylas.oge}
     </View>
   );
 }

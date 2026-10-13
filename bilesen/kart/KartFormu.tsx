@@ -14,6 +14,7 @@ import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { AltSayfa } from '../AltSayfa';
+import { usePaylas } from '../paylasim/PaylasSayfasi';
 import { Dugme } from '../Dugme';
 import { GirisAlani } from '../GirisAlani';
 import { useKisaMesaj } from '../KisaMesaj';
@@ -110,6 +111,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const [blokSeciciAcik, setBlokSeciciAcik] = useState(false);
   const [soru, setSoru] = useState<Soru | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
+  const paylas = usePaylas();
 
   const degisti = useMemo(() => JSON.stringify(durum) !== JSON.stringify(ilk), [durum, ilk]);
   const duzenleme = hedef.tur === 'duzenle' ? hedef : null;
@@ -299,6 +301,14 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           </Yazi>
         </Pressable>
 
+        {duzenleme && !duzenleme.kart.kilitli && (
+          <Dugme
+            tur="ikincil"
+            etiket="Paylaş"
+            yaziRengi={renk.ana}
+            onPress={() => paylas.ac({ kart: duzenleme.kart, bloklar: duzenleme.bloklar })}
+          />
+        )}
         {duzenleme && <Dugme tur="tehlike" etiket="Sil" onPress={() => void silmeyeBasla()} />}
       </AltSayfa>
 
@@ -315,6 +325,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         }
         onAc={setAltSayfa}
       />
+
+      {paylas.oge}
 
       <BlokSecici
         gorunur={blokSeciciAcik}

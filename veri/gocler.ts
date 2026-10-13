@@ -142,6 +142,21 @@ export const GOCLER: readonly Goc[] = [
       );
     `,
   },
+  {
+    // Kişilerim: kişinin verdiği adlarla telefondaki adres defteri (`03` → kisi).
+    surum: 6,
+    sql: `
+      CREATE TABLE IF NOT EXISTS kisi (
+        id           TEXT PRIMARY KEY NOT NULL,
+        ad           TEXT NOT NULL,
+        eposta       TEXT NOT NULL UNIQUE,
+        kullanici_id TEXT,
+        durum        TEXT NOT NULL,
+        ben_ekledim  INTEGER NOT NULL DEFAULT 1,
+        olusturma    TEXT NOT NULL
+      );
+    `,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */
