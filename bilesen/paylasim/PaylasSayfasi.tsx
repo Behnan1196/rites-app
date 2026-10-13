@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { Blok, Kart } from '@/mantik/kart';
 import { BAGLANAMIYOR, kisiBasHarf } from '@/mantik/kisiler';
-import { kartPaketi } from '@/mantik/paylasim';
+import { kartPaketi, type KartPaketi } from '@/mantik/paylasim';
 import { kartGonder } from '@/sunucu/gelenler';
 import { useOturum } from '@/sunucu/oturum';
 import { useSorgu } from '@/veri/kancalar';
@@ -17,7 +17,12 @@ import { OturumGerekli } from '../oturum/OturumGerekli';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 
-type Paylasilan = { kart: Kart; bloklar: readonly Pick<Blok, 'tur' | 'ad' | 'metin' | 'birim' | 'dakika' | 'maddeler'>[] };
+type Paylasilan =
+  | { kart: Kart; bloklar: readonly Pick<Blok, 'tur' | 'ad' | 'metin' | 'birim' | 'dakika' | 'maddeler'>[] }
+  /** Kütüphaneden: hazır paket (etiketleriyle). */
+  | { paket: KartPaketi };
+
+const paketi = (h: Paylasilan): KartPaketi => ('paket' in h ? h.paket : kartPaketi(h.kart, h.bloklar));
 
 function PaylasSayfasi({ hedef, gorunur, onKapat }: { hedef: Paylasilan; gorunur: boolean; onKapat: () => void }) {
   const oturum = useOturum();
@@ -30,7 +35,7 @@ function PaylasSayfasi({ hedef, gorunur, onKapat }: { hedef: Paylasilan; gorunur
     if (oturum.durum !== 'var' || gonderiliyor) return;
     setGonderiliyor(true);
     try {
-      await kartGonder(oturum.id, kime, kartPaketi(hedef.kart, hedef.bloklar));
+      await kartGonder(oturum.id, kime, paketi(hedef));
       kisaMesaj(`Gönderildi: ${ad}`);
       onKapat();
     } catch (e) {
@@ -48,7 +53,7 @@ function PaylasSayfasi({ hedef, gorunur, onKapat }: { hedef: Paylasilan; gorunur
       ) : (
         <>
           <Yazi tur="ikincil">
-            {`"${hedef.kart.baslik}" kartının bir kopyası gider; senin kartın değişmez. Fotoğraflar ve dosyalar gitmez.`}
+            {`"${paketi(hedef).baslik}" kartının bir kopyası gider; senin kartın değişmez. Fotoğraflar ve dosyalar gitmez.`}
           </Yazi>
           {baglilar.length === 0 ? (
             <Yazi>{"Bağlı kişin yok. Gruplar'dan kişi ekleyebilirsin."}</Yazi>

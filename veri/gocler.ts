@@ -157,6 +157,23 @@ export const GOCLER: readonly Goc[] = [
       );
     `,
   },
+  {
+    // Kütüphanem: kartın ya da planın kayıtsız kopyası, etiketleriyle (`03` → kutuphane).
+    surum: 7,
+    sql: `
+      CREATE TABLE IF NOT EXISTS kutuphane (
+        id             TEXT PRIMARY KEY NOT NULL,
+        tur            TEXT NOT NULL,
+        baslik         TEXT NOT NULL,
+        alanlar        TEXT NOT NULL DEFAULT '[]',
+        etiket_tur     TEXT NOT NULL,
+        kaynak         TEXT NOT NULL,
+        paylasilabilir INTEGER NOT NULL DEFAULT 1,
+        icerik         TEXT NOT NULL,
+        olusturma      TEXT NOT NULL
+      );
+    `,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

@@ -1,5 +1,5 @@
 // Gelenler ekranı (L-4): kimden, ne zaman, başlık, kısa açıklama, blok özeti,
-// uyarı notu; Bugün Ajandama ekle · Sil. ("Kütüphaneme kaydet" 11. görevde.)
+// etiketler, uyarı notu; Kütüphaneme kaydet · Bugün Ajandama ekle · Sil.
 
 import { StyleSheet, View } from 'react-native';
 
@@ -9,9 +9,11 @@ import { useGelenler } from '@/bilesen/giris/useGelenler';
 import { GrupDavetleri } from '@/bilesen/gruplar/GrupDavetleri';
 import { useGruplar } from '@/bilesen/gruplar/useGruplar';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
+import { useKutuphaneyeKaydet } from '@/bilesen/kutuphane/KaydetSayfasi';
 import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
 import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
+import { alanAdi } from '@/mantik/alanlar';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { blokOzeti, GELEN_UYARISI, gelenKarti } from '@/mantik/paylasim';
 import { bugun, gunFarki, kisaTarih } from '@/mantik/tarih';
@@ -35,6 +37,7 @@ export default function Gelenler() {
   const kisaMesaj = useKisaMesaj();
   const { ben, gelenler, yukleniyor, baglanamiyor, yenile } = useGelenler(oturum);
   const grup = useGruplar(oturum);
+  const kutuphane = useKutuphaneyeKaydet(() => void yenile());
 
   const ajandayaEkle = async (g: Gelen) => {
     try {
@@ -76,6 +79,9 @@ export default function Gelenler() {
               <Yazi tur="ikincil">{`${g.kimdenAd} gönderdi · ${neZaman(g.gonderim, bugunGun)}`}</Yazi>
               <Yazi tur="kartBasligi">{g.paket.baslik}</Yazi>
               {!!g.paket.kisa && <Yazi>{g.paket.kisa}</Yazi>}
+              {(!!g.paket.alanlar?.length || !!g.paket.etiketTur) && (
+                <Yazi tur="ikincil">{[...(g.paket.alanlar ?? []).map(alanAdi), g.paket.etiketTur].filter(Boolean).join(' · ')}</Yazi>
+              )}
               {g.paket.bloklar.length > 0 && (
                 <View style={stiller.ozet}>
                   {blokOzeti(g.paket).map((b, i) => (
@@ -88,12 +94,14 @@ export default function Gelenler() {
               <Yazi tur="etiket" renk={renk.vurguYazi}>
                 {GELEN_UYARISI}
               </Yazi>
+              <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Kütüphaneme kaydet" onPress={() => kutuphane.ac({ tur: 'gelen', gelen: g })} />
               <Dugme etiket="Bugün Ajandama ekle" onPress={() => void ajandayaEkle(g)} />
               <Dugme tur="tehlike" etiket="Sil" onPress={() => void sil(g)} />
             </View>
           ))}
         </>
       )}
+      {kutuphane.oge}
     </EkranKabi>
   );
 }

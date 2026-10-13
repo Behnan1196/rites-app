@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlokUygulama } from '@/bilesen/kart/BlokUygulama';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { Dugme } from '@/bilesen/Dugme';
+import { useKutuphaneyeKaydet } from '@/bilesen/kutuphane/KaydetSayfasi';
 import { usePaylas } from '@/bilesen/paylasim/PaylasSayfasi';
 import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
@@ -37,13 +38,16 @@ export default function KartGorunumu() {
   });
 
   const paylas = usePaylas();
+  const kutuphane = useKutuphaneyeKaydet(({ kaldirildi }) => {
+    if (kaldirildi) router.back();
+  });
   const veri = useSorgu(
     ['kart', 'plan'],
     async (oku) => {
       const ayrinti = await kartAyrinti(oku, id);
       if (!ayrinti) return null;
       const plan = ayrinti.kart.planId ? await planOku(oku, ayrinti.kart.planId) : null;
-      return { ...ayrinti, kayitlar: await kartKayitlari(oku, id), planAdi: plan?.ad ?? null };
+      return { ...ayrinti, kayitlar: await kartKayitlari(oku, id), planAdi: plan?.ad ?? null, planAlani: plan?.alan ?? null };
     },
     [id],
   );
@@ -56,7 +60,7 @@ export default function KartGorunumu() {
 
   if (veri.yukleniyor || !veri.veri) return <View style={[stiller.kap, { paddingTop: kenar.top }]} />;
 
-  const { kart, bloklar, kayitlar, planAdi } = veri.veri;
+  const { kart, bloklar, kayitlar, planAdi, planAlani } = veri.veri;
   const kayit: Kayit = kayitlar.find((k) => k.tarih === gun) ?? bosKayit(kart.id, gun);
   const meta = [kart.saat, kart.tekrar ? tekrarMetni(kart.tekrar) : null].filter(Boolean).join(' · ');
   const kayitDegis = (degistir: (k: Kayit) => Kayit) => void kayitDegistir(kapi, kart.id, gun, degistir);
@@ -111,8 +115,24 @@ export default function KartGorunumu() {
           />
         ))}
 
-        {!kart.kilitli && (
-          <Dugme tur="ikincil" etiket="Paylaş" yaziRengi={renk.ana} onPress={() => paylas.ac({ kart, bloklar })} />
+        <View style={stiller.eylemler}>
+          <Dugme
+            tur="ikincil"
+            etiket="Kütüphaneye kaydet"
+            yaziRengi={renk.ana}
+            onPress={() => kutuphane.ac({ tur: 'kart', kart, bloklar, alan: planAlani })}
+          />
+          {!kart.kilitli && (
+            <Dugme
+              tur="ikincil"
+              etiket="Paylaş"
+              yaziRengi={renk.ana}
+              onPress={() => paylas.ac({ kart, bloklar })}
+            />
+          )}
+        </View>
+        {kart.kilitli && (
+          <Yazi tur="ikincil">Koçundan gelen kart paylaşılamaz; kendi kütüphanene kaydedebilirsin.</Yazi>
         )}
       </ScrollView>
 
@@ -140,6 +160,7 @@ export default function KartGorunumu() {
 
       {form.oge}
       {paylas.oge}
+      {kutuphane.oge}
     </View>
   );
 }
@@ -201,6 +222,7 @@ function SeritHucresi({ s, acilan, bugunGun }: { s: SeritGunu; acilan: boolean; 
 }
 
 const stiller = StyleSheet.create({
+  eylemler: { gap: 10 },
   planEtiketi: {
     alignSelf: 'flex-start',
     backgroundColor: kaynakRenk.plan.zemin,

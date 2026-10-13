@@ -30,6 +30,8 @@ interface Ozellikler {
   onAjandayaAl: (kart: KartOzeti) => void;
   onAdimEkle: (baslik: string) => void;
   onAjandamdaGor: () => void;
+  /** L-3: planın kopyası kütüphaneye. */
+  onKutuphaneyeKaydet: () => void;
 }
 
 export function PlanSekmesi({
@@ -42,6 +44,7 @@ export function PlanSekmesi({
   onAjandayaAl,
   onAdimEkle,
   onAjandamdaGor,
+  onKutuphaneyeKaydet,
 }: Ozellikler) {
   const [yeniAdim, setYeniAdim] = useState('');
   const duzenliler = kartlar.filter((k) => k.tekrar);
@@ -147,6 +150,7 @@ export function PlanSekmesi({
       )}
 
       <Dugme tur="ikincil" etiket="Ajandam'da gör" yaziRengi={renk.ana} onPress={onAjandamdaGor} style={stiller.ajandamdaGor} />
+      <Dugme tur="ikincil" etiket="Planı kütüphaneye kaydet" yaziRengi={renk.ana} onPress={onKutuphaneyeKaydet} />
     </View>
   );
 }

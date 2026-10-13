@@ -10,10 +10,13 @@ import { yeniKart, type Blok, type BlokTuru, type Kart } from '@/mantik/kart';
 import type { Gun } from '@/mantik/tarih';
 import { islemleriUygula, kayitVarMi, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
+import { useSorgu } from '@/veri/kancalar';
+import { planOku } from '@/veri/planlar';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { AltSayfa } from '../AltSayfa';
+import { useKutuphaneyeKaydet } from '../kutuphane/KaydetSayfasi';
 import { usePaylas } from '../paylasim/PaylasSayfasi';
 import { Dugme } from '../Dugme';
 import { GirisAlani } from '../GirisAlani';
@@ -112,6 +115,12 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const [soru, setSoru] = useState<Soru | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
   const paylas = usePaylas();
+  const kutuphane = useKutuphaneyeKaydet(({ kaldirildi }) => {
+    if (kaldirildi) onKapat();
+  });
+  // Plan kartında tahmini alan planın alanıdır.
+  const planId = hedef.tur === 'duzenle' ? hedef.kart.planId : null;
+  const planAlani = useSorgu(['plan'], async (o) => (planId ? ((await planOku(o, planId))?.alan ?? null) : null), [planId]);
 
   const degisti = useMemo(() => JSON.stringify(durum) !== JSON.stringify(ilk), [durum, ilk]);
   const duzenleme = hedef.tur === 'duzenle' ? hedef : null;
@@ -301,6 +310,16 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           </Yazi>
         </Pressable>
 
+        {duzenleme && (
+          <Dugme
+            tur="ikincil"
+            etiket="Kütüphaneye kaydet"
+            yaziRengi={renk.ana}
+            onPress={() =>
+              kutuphane.ac({ tur: 'kart', kart: duzenleme.kart, bloklar: duzenleme.bloklar, alan: planAlani.veri ?? null })
+            }
+          />
+        )}
         {duzenleme && !duzenleme.kart.kilitli && (
           <Dugme
             tur="ikincil"
@@ -327,6 +346,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       />
 
       {paylas.oge}
+      {kutuphane.oge}
 
       <BlokSecici
         gorunur={blokSeciciAcik}

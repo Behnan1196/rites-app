@@ -21,6 +21,9 @@ export interface KartPaketi {
   saat: string | null;
   tekrar: Tekrar | null;
   bloklar: PaketBlok[];
+  /** Kütüphaneden paylaşılınca etiketler de gider (L-4); alıcı kaydederken önceden seçili gelir. */
+  alanlar?: string[];
+  etiketTur?: string;
 }
 
 /** Telefona bağlı içerik (fotoğraf, dosya) taşınmaz; o bloklar boş tanım olarak gider. */

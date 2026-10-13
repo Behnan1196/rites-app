@@ -5,9 +5,10 @@
  * Veritabanında değişebilecek konular. Yeni tablolar geldikçe eklenir.
  * `kart`: kartlar, blokları ve günlük kayıtları · `not`: notlar ·
  * `plan`: planlar, alan durumları ve Günün sorusu cevapları ·
- * `animsatici`: anımsatıcılar ve bugünkü durumları · `kisi`: Kişilerim.
+ * `animsatici`: anımsatıcılar ve bugünkü durumları · `kisi`: Kişilerim ·
+ * `kutuphane`: Kütüphanem.
  */
-export type Konu = 'ayar' | 'kart' | 'not' | 'plan' | 'animsatici' | 'kisi';
+export type Konu = 'ayar' | 'kart' | 'not' | 'plan' | 'animsatici' | 'kisi' | 'kutuphane';
 
 export type Dinleyici = (degisenler: ReadonlySet<Konu>) => void;
 

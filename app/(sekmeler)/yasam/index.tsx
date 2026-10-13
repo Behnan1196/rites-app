@@ -1,5 +1,6 @@
-// Yaşam Tarzım (Y-1): Alanlarım (iki sütun) ve Planlarım.
+// Yaşam Tarzım (Y-1): Alanlarım (iki sütun), Kütüphanem · N kayıt ve Planlarım.
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -13,7 +14,10 @@ import { Yazi } from '@/bilesen/Yazi';
 import { AlanSimgesi, PlanSatiri, PuanNoktalari } from '@/bilesen/yasam/parcalar';
 import { usePlanlar } from '@/bilesen/yasam/usePlanlar';
 import { ALANLAR } from '@/mantik/alanlar';
+import { kutuphaneSayiMetni } from '@/mantik/kutuphane';
 import { alanAltSatiri } from '@/mantik/plan';
+import { useSorgu } from '@/veri/kancalar';
+import { kutuphaneSayisi } from '@/veri/kutuphane';
 import { alanDurumuYaz, varsayilanAlanDurumu } from '@/veri/planlar';
 import { useVeri } from '@/veri/VeriSaglayici';
 
@@ -21,6 +25,7 @@ export default function YasamTarzim() {
   const { kapi } = useVeri();
   const { yukleniyor, ozetler, durumlar } = usePlanlar();
   const [secimAcik, setSecimAcik] = useState(false);
+  const kayitSayisi = useSorgu(['kutuphane'], (o) => kutuphaneSayisi(o), []);
 
   const durum = (a: (typeof ALANLAR)[number]) => durumlar?.get(a.anahtar) ?? varsayilanAlanDurumu(a.anahtar);
   const etkinler = ozetler.filter((o) => o.plan.durum === 'etkin');
@@ -62,6 +67,22 @@ export default function YasamTarzim() {
               );
             })}
           </View>
+
+          <Pressable
+            onPress={() => router.push('/yasam/kutuphane')}
+            accessibilityRole="button"
+            accessibilityLabel={`Kütüphanem, ${kutuphaneSayiMetni(kayitSayisi.veri ?? 0)}`}
+            style={({ pressed }) => [stiller.kutuphane, pressed && { opacity: 0.75 }]}
+          >
+            <View style={stiller.kutuphaneSimge}>
+              <Ionicons name="library-outline" size={22} color={renk.ana} />
+            </View>
+            <View style={stiller.esnek}>
+              <Yazi tur="kartBasligi">Kütüphanem</Yazi>
+              <Yazi tur="ikincil">{kutuphaneSayiMetni(kayitSayisi.veri ?? 0)}</Yazi>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
+          </Pressable>
 
           <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.planlarim}>
             Planlarım
@@ -108,6 +129,20 @@ export default function YasamTarzim() {
 
 const stiller = StyleSheet.create({
   basliklar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  kutuphane: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 4,
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: olcu.kose.kart,
+    paddingHorizontal: olcu.kartIci,
+    paddingVertical: 12,
+    minHeight: 64,
+  },
+  kutuphaneSimge: { width: 44, height: 44, borderRadius: 22, backgroundColor: renk.anaAcik, alignItems: 'center', justifyContent: 'center' },
   izgara: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 12 },
   alanKutusu: {
     width: '48.5%',

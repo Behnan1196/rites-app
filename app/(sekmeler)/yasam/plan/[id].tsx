@@ -23,6 +23,7 @@ import { gunEkle, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import { gunYapilanlari, planKartlari, planKayitlari, type KartOzeti } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
+import { planiKutuphaneyeKaydet } from '@/veri/kutuphane';
 import {
   adimEkle,
   adimiAjandayaAl,
@@ -46,7 +47,7 @@ const SEKMELER = [
 
 export default function PlanEkrani() {
   const { id, sekme: ilkSekme } = useLocalSearchParams<{ id: string; sekme?: string }>();
-  const { kapi } = useVeri();
+  const { kapi, oku } = useVeri();
   const bugunGun = useBugun();
   const kisaMesaj = useKisaMesaj();
   const form = useKartFormu();
@@ -171,6 +172,11 @@ export default function PlanEkrani() {
             onAdimEkle={(baslik) => adimEkle(kapi, adimKarti(yeniKimlik(), baslik, plan.id, Date.now())).catch(hata)}
             onAjandamdaGor={() =>
               router.navigate({ pathname: '/ajandam', params: { gun: bugunGun, an: String(Date.now()) } })
+            }
+            onKutuphaneyeKaydet={() =>
+              planiKutuphaneyeKaydet(kapi, oku, plan, yeniKimlik())
+                .then(() => kisaMesaj('Plan kütüphaneye kaydedildi'))
+                .catch(hata)
             }
           />
         )}
