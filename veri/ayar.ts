@@ -14,6 +14,8 @@ export interface Ayarlar {
   giris_kutulari: KutuAyari[];
   /** Son yedeğin günü. */
   son_yedek: Gun;
+  /** Uygulamanın ilk açıldığı gün (hiç yedek yoksa 7 günlük soru için). */
+  ilk_acilis: Gun;
 }
 
 export type AyarAnahtari = keyof Ayarlar;

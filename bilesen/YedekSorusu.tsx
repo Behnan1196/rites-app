@@ -1,10 +1,11 @@
 // Açılışta bir kez: son yedek 7 günden eskiyse "Son yedeğin N gün önce.
 // Şimdi yedekleyelim mi?" (`10` madde 10; gece kendiliğinden yedek yok).
+// Hiç yedek yoksa ilk açılıştan 7 gün sonra "Henüz yedeğin yok. …".
 
 import { useEffect, useState } from 'react';
 
 import { yedekSorusu } from '@/mantik/yedek';
-import { ayarOku } from '@/veri/ayar';
+import { ayarOku, ayarYaz } from '@/veri/ayar';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 import { yedekAl } from '@/veri/yedekDosyasi';
@@ -21,9 +22,15 @@ export function YedekSorusu() {
 
   useEffect(() => {
     let gecerli = true;
-    void ayarOku(oku, 'son_yedek').then((son) => {
-      if (gecerli) setSoru(yedekSorusu(son, bugunGun));
-    });
+    void (async () => {
+      const son = await ayarOku(oku, 'son_yedek');
+      let ilk = await ayarOku(oku, 'ilk_acilis');
+      if (!ilk) {
+        ilk = bugunGun;
+        await ayarYaz(kapi, 'ilk_acilis', ilk);
+      }
+      if (gecerli) setSoru(yedekSorusu(son, ilk, bugunGun));
+    })().catch((e: unknown) => console.error('Yedek sorusu okunamadı', e));
     return () => {
       gecerli = false;
     };

@@ -33,9 +33,13 @@ describe('yedek (PR-2, 10 madde 10)', () => {
     expect(sonYedekMetni('2026-10-04', BUGUN)).toBe('Son yedek: 4 Ekim (9 gün önce)');
   });
   it('7 günden eskiyse açılışta sorulur', () => {
-    expect(yedekSorusu('2026-10-04', BUGUN)).toBe('Son yedeğin 9 gün önce. Şimdi yedekleyelim mi?');
-    expect(yedekSorusu('2026-10-06', BUGUN)).toBeNull();
-    expect(yedekSorusu(null, BUGUN)).toBeNull();
+    expect(yedekSorusu('2026-10-04', '2026-09-01', BUGUN)).toBe('Son yedeğin 9 gün önce. Şimdi yedekleyelim mi?');
+    expect(yedekSorusu('2026-10-06', '2026-09-01', BUGUN)).toBeNull();
+  });
+  it('hiç yedek yoksa ilk açılıştan 7 gün sonra sorulur', () => {
+    expect(yedekSorusu(null, '2026-10-05', BUGUN)).toBe('Henüz yedeğin yok. Şimdi yedekleyelim mi?');
+    expect(yedekSorusu(null, '2026-10-06', BUGUN)).toBeNull();
+    expect(yedekSorusu(null, null, BUGUN)).toBeNull();
   });
   it('dosya denetimi', () => {
     expect(yedekSorunu({ bicim: 'rites-yedek', surum: 5, tablolar: {} }, 5)).toBeNull();

@@ -49,9 +49,14 @@ export function sonYedekMetni(sonYedek: Gun | null, bugunGun: Gun): string {
   return `Son yedek: ${kisaTarih(sonYedek)} (${ek})`;
 }
 
-/** Açılışta bir kez: son yedek 7 günden eskiyse sorulur (`10` madde 10). */
-export function yedekSorusu(sonYedek: Gun | null, bugunGun: Gun): string | null {
-  if (!sonYedek) return null;
+/**
+ * Açılışta bir kez: son yedek 7 günden eskiyse sorulur (`10` madde 10). Hiç
+ * yedek yoksa ilk açılıştan 7 gün sonra sorulur (ürün sahibinin onayı, 13 Ekim).
+ */
+export function yedekSorusu(sonYedek: Gun | null, ilkAcilis: Gun | null, bugunGun: Gun): string | null {
+  if (!sonYedek) {
+    return ilkAcilis && gunFarki(ilkAcilis, bugunGun) > 7 ? 'Henüz yedeğin yok. Şimdi yedekleyelim mi?' : null;
+  }
   const fark = gunFarki(sonYedek, bugunGun);
   return fark > 7 ? `Son yedeğin ${fark} gün önce. Şimdi yedekleyelim mi?` : null;
 }
