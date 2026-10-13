@@ -1,6 +1,8 @@
 // Ayarlar: anahtar–değer, değer JSON olarak saklanır (`03` → ayar).
 
+import type { KutuAyari } from '@/mantik/giris';
 import { adHatasi, adTemizle } from '@/mantik/metin';
+import type { Gun } from '@/mantik/tarih';
 
 import type { Kapi, Okuyucu } from './kapi';
 
@@ -8,6 +10,10 @@ import type { Kapi, Okuyucu } from './kapi';
 export interface Ayarlar {
   /** Kullanıcının "Sana nasıl hitap edelim?" sorusuna verdiği ad. */
   ad: string;
+  /** Giriş kutularının sırası ve açık/kapalı (`05` §10). */
+  giris_kutulari: KutuAyari[];
+  /** Son yedeğin günü. */
+  son_yedek: Gun;
 }
 
 export type AyarAnahtari = keyof Ayarlar;

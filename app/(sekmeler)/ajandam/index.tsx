@@ -11,6 +11,7 @@ import { HaftaGorunumu } from '@/bilesen/ajanda/HaftaGorunumu';
 import { Kalanlar } from '@/bilesen/ajanda/Kalanlar';
 import { KartSatiri } from '@/bilesen/ajanda/KartSatiri';
 import { KaynakCipleri } from '@/bilesen/ajanda/KaynakCipleri';
+import { NotlarimBaglantisi } from '@/bilesen/ajanda/NotlarimBaglantisi';
 import { TakvimSayfasi } from '@/bilesen/ajanda/TakvimSayfasi';
 import { BolumluDugme } from '@/bilesen/BolumluDugme';
 import { Dugme } from '@/bilesen/Dugme';
@@ -153,6 +154,7 @@ export default function Ajandam() {
         </>
       }
     >
+      <NotlarimBaglantisi />
       {aramaAcik ? (
         <>
           <AramaKutusu deger={sorgu} onDegis={setSorgu} onVazgec={() => setSorgu(null)} />

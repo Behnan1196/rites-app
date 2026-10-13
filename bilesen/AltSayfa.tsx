@@ -216,7 +216,7 @@ export function AltSayfa({
                     />
                   )}
                 </View>
-                <Yazi tur="bolumBasligi" style={stiller.baslik} numberOfLines={1} accessibilityRole="header">
+                <Yazi tur="bolumBasligi" style={stiller.baslik} numberOfLines={2} accessibilityRole="header">
                   {baslik ?? ''}
                 </Yazi>
                 <View style={[stiller.yan, stiller.sag]}>
