@@ -27,6 +27,13 @@ Gerçek yayından önce Rites'a ait bir alan adı ve gönderim servisi (ör. Bre
 Supabase → **SQL Editor** → **New query** → `sunucu/sema.sql` dosyasının tamamını yapıştır → **Run**.
 "Success. No rows returned" görmelisin. Dosyayı yeniden çalıştırmak güvenlidir.
 
+**10. görevde şema büyüdü** (gruplar, ortak listeler, maddeler). 9. görevde çalıştırdıysan
+güncel `sema.sql`'in tamamını aynı yolla bir kez daha çalıştır; var olan kayıtlar silinmez.
+
+Ortak listedeki değişikliklerin öteki telefona anında gitmesi için şema `madde` tablosunu
+Realtime'a ekler. Denetlemek istersen: **Database → Publications → supabase_realtime** satırında
+`madde` görünmeli. Görünmese de listeler ekran her açıldığında tazelenir.
+
 ## 2. E-posta şablonları (kod gönderilsin, bağlantı değil)
 
 Supabase → **Authentication** → **Emails** → **Templates**.

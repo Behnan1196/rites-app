@@ -8,6 +8,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { HATIRLATMA_METNI } from '@/mantik/ajanda';
 import { tekrarMetni } from '@/mantik/gorunurluk';
 import { kaynakAnahtari, kaynakEtiketi, kaynakTuru } from '@/mantik/kaynak';
+import { maddeKartiMi } from '@/mantik/listeler';
 import type { KartOzeti } from '@/veri/kartlar';
 
 import { olcu, renk } from '../tema';
@@ -25,7 +26,8 @@ interface Ozellikler {
 }
 
 export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_PLANLAR }: Ozellikler) {
-  const blokluMu = kart.blokSayisi > 0 || kart.kilitli;
+  const maddeMi = maddeKartiMi(kart);
+  const blokluMu = kart.blokSayisi > 0 || kart.kilitli || maddeMi;
   const anahtar = kaynakAnahtari(kart);
   const stil = kaynakStili(anahtar);
   const etiket = kaynakEtiketi(kart, planAdlari);
@@ -51,7 +53,7 @@ export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_P
       <Pressable
         onPress={onAc}
         accessibilityRole="button"
-        accessibilityLabel={`${kart.baslik}${blokluMu ? ', kartı aç' : ', düzenle'}`}
+        accessibilityLabel={`${kart.baslik}${maddeMi ? ', listeyi aç' : blokluMu ? ', kartı aç' : ', düzenle'}`}
         style={({ pressed }) => [stiller.govde, pressed && { opacity: 0.7 }]}
       >
         <View style={stiller.metinler}>

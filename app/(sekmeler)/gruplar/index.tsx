@@ -1,12 +1,18 @@
-// Gruplar (9. görev bölümü): Seni eklemek isteyenler, ücretsiz sınır, Kişilerim,
-// + Kişi ekle. Gruplarım ve ortak listeler 10. görevde.
+// Gruplar: Seni eklemek isteyenler, Seni gruba çağıranlar, ücretsiz sınır,
+// Kişilerim, + Kişi ekle (9. görev); Gruplarım, + Grup kur (10. görev).
+// Ortak listeler Giriş'ten açılır (`04`).
 
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
+import { GrupDavetleri } from '@/bilesen/gruplar/GrupDavetleri';
+import { GrupKurSayfasi } from '@/bilesen/gruplar/GrupKurSayfasi';
 import { KisiEkleSayfasi } from '@/bilesen/gruplar/KisiEkleSayfasi';
+import { useGruplar } from '@/bilesen/gruplar/useGruplar';
 import { useKisiler } from '@/bilesen/gruplar/useKisiler';
 import { Katman } from '@/bilesen/Katman';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
@@ -14,6 +20,7 @@ import { OnayKutusu } from '@/bilesen/OnayKutusu';
 import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
 import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
+import { grupSayiMetni } from '@/mantik/gruplar';
 import {
   BAGLANAMIYOR,
   DURUM_METNI,
@@ -35,7 +42,9 @@ export default function Gruplar() {
   const { kapi } = useVeri();
   const kisaMesaj = useKisaMesaj();
   const { ben, kisiler, istekler, baglanamiyor, yenile } = useKisiler(oturum);
+  const grup = useGruplar(oturum);
   const [ekleAcik, setEkleAcik] = useState(0);
+  const [grupKurAcik, setGrupKurAcik] = useState(0);
   const [silinecek, setSilinecek] = useState<Kisi | null>(null);
   const ekledigim = ekledigimSayi(kisiler);
 
@@ -78,7 +87,7 @@ export default function Gruplar() {
         )
       ) : (
         <>
-          {baglanamiyor && <Yazi tur="ikincil" renk={renk.hata}>{BAGLANAMIYOR}</Yazi>}
+          {(baglanamiyor || grup.baglanamiyor) && <Yazi tur="ikincil" renk={renk.hata}>{BAGLANAMIYOR}</Yazi>}
 
           {istekler.length > 0 && (
             <>
@@ -111,6 +120,8 @@ export default function Gruplar() {
               ))}
             </>
           )}
+
+          <GrupDavetleri davetler={grup.davetler} ad={grup.ad} onYanit={() => void grup.yenile()} />
 
           <View style={stiller.baslikSatiri}>
             <Yazi tur="bolumBasligi" accessibilityRole="header">
@@ -158,6 +169,30 @@ export default function Gruplar() {
             etiket="+ Kişi ekle"
             onPress={() => (ekledigim >= UCRETSIZ_SINIR ? kisaMesaj(`Ücretsiz üyelikte en çok ${UCRETSIZ_SINIR} kişi ekleyebilirsin.`) : setEkleAcik((n) => n + 1))}
           />
+
+          <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
+            Gruplarım
+          </Yazi>
+          {grup.gruplar.length === 0 && !grup.yukleniyor && <Yazi tur="ikincil">Henüz bir grubun yok.</Yazi>}
+          {grup.gruplar.map((g) => (
+            <Pressable
+              key={g.id}
+              onPress={() => router.push({ pathname: '/gruplar/grup/[id]', params: { id: g.id } })}
+              accessibilityRole="button"
+              accessibilityLabel={`${g.ad}, ${grupSayiMetni(g, ben)}`}
+              style={({ pressed }) => [stiller.grup, pressed && { opacity: 0.75 }]}
+            >
+              <View style={stiller.grupSimge}>
+                <Ionicons name="people-outline" size={22} color={renk.ana} />
+              </View>
+              <View style={stiller.esnek}>
+                <Yazi tur="kartBasligi">{g.ad}</Yazi>
+                <Yazi tur="ikincil">{grupSayiMetni(g, ben)}</Yazi>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
+            </Pressable>
+          ))}
+          <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Grup kur" onPress={() => setGrupKurAcik((n) => n + 1)} />
         </>
       )}
 
@@ -169,6 +204,15 @@ export default function Gruplar() {
           kisiler={kisiler}
           ekledigim={ekledigim}
           onEklendi={() => void yenile()}
+        />
+      )}
+
+      {grupKurAcik > 0 && (
+        <GrupKurSayfasi
+          key={grupKurAcik}
+          onKapat={() => setGrupKurAcik(0)}
+          kisiler={kisiler}
+          onKuruldu={() => void grup.yenile()}
         />
       )}
 
@@ -229,4 +273,18 @@ const stiller = StyleSheet.create({
   },
   kisi: { paddingVertical: 14 },
   cizgili: { borderTopWidth: 1, borderTopColor: renk.satirCizgi },
+  bolumArasi: { marginTop: 8 },
+  grup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: olcu.kose.kart,
+    paddingHorizontal: olcu.kartIci,
+    paddingVertical: 12,
+    minHeight: 72,
+  },
+  grupSimge: { width: 44, height: 44, borderRadius: 22, backgroundColor: renk.anaAcik, alignItems: 'center', justifyContent: 'center' },
 });

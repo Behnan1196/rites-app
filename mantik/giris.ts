@@ -62,8 +62,25 @@ export const KUTULAR: readonly KutuTanimi[] = [
   { k: 'devam', ad: 'Devam edenler', aciklama: 'Süren planların', hazir: true },
   { k: 'soru', ad: 'Günün sorusu', aciklama: 'Planında soru varsa görünür', hazir: true },
   { k: 'su', ad: 'Su', aciklama: 'Yarım kutu · günlük bardak sayacı', hazir: false },
-  { k: 'ortak', ad: 'Ortak Listeler', aciklama: 'Yarım kutu · başkalarıyla listeler', hazir: false },
+  { k: 'ortak', ad: 'Ortak Listeler', aciklama: 'Yarım kutu · başkalarıyla listeler', hazir: true },
 ];
+
+/** Yarım kutular (`05` §10). */
+export const YARIM_KUTULAR: ReadonlySet<KutuAnahtari> = new Set(['su', 'ortak']);
+
+/**
+ * Giriş'in satırları: tam kutu tek başına; arka arkaya gelen iki yarım kutu yan yana;
+ * tek kalan yarım kutu satırı doldurur.
+ */
+export function kutuSatirlari(kutular: readonly KutuAnahtari[]): KutuAnahtari[][] {
+  const satirlar: KutuAnahtari[][] = [];
+  for (const k of kutular) {
+    const son = satirlar[satirlar.length - 1];
+    if (YARIM_KUTULAR.has(k) && son && son.length === 1 && YARIM_KUTULAR.has(son[0]!)) son.push(k);
+    else satirlar.push([k]);
+  }
+  return satirlar;
+}
 
 export const GIRIS_AYARI_ACIKLAMASI = "Okla sırasını değiştir, düğmeyle aç ya da kapat. Kapattığın kutu silinmez, yalnız Giriş'ten kalkar.";
 

@@ -1,7 +1,7 @@
 // Ajandam: Gün ve Hafta görünümü, takvim, arama, kaynağa göre süzme
 // (A-1 … A-8, PL-4, `05` §8).
 
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -18,12 +18,15 @@ import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
+import { useBanaVerilenler } from '@/bilesen/listeler/BanaVerilenler';
 import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
 import { Yazi } from '@/bilesen/Yazi';
 import { bosGunMetni, gunBasligi, gununKartlari, haftaninGunleri, tamamMetni } from '@/mantik/ajanda';
 import { ara, haftaBasligi } from '@/mantik/arama';
 import { kalanlar } from '@/mantik/kalanlar';
 import { kaynakAdi, kaynaklar, suz, TUMU, type KaynakAnahtari } from '@/mantik/kaynak';
+import { BAGLANAMIYOR } from '@/mantik/kisiler';
+import { maddeKarti, maddeKartiMi, maddeYapilanlari, yapilanlariBirlestir } from '@/mantik/listeler';
 import { gecerliGunMu, gunEkle, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import { planlariOku } from '@/veri/planlar';
@@ -60,6 +63,14 @@ export default function Ajandam() {
   const [takvim, setTakvim] = useState({ acik: false, acilis: 0 });
   const form = useKartFormu();
   const kisaMesaj = useKisaMesaj();
+  // Ortak listelerden bana tarihle verilen maddeler (`05` §9).
+  const verilenler = useBanaVerilenler();
+  const maddeYenile = verilenler.yenile;
+  useFocusEffect(
+    useCallback(() => {
+      void maddeYenile();
+    }, [maddeYenile]),
+  );
 
   // Giriş'teki "Geçmişten kalan N iş ›" ajandayı bugünün Gün görünümünde açar.
   const { gun: istenenGun, an } = useLocalSearchParams<{ gun?: string; an?: string }>();
@@ -87,9 +98,17 @@ export default function Ajandam() {
     [hafta[0], aramaAcik],
   );
 
-  const kartlar = veri.veri?.kartlar;
+  const yerelKartlar = veri.veri?.kartlar;
+  const kartlar = useMemo(
+    () => (yerelKartlar ? [...yerelKartlar, ...verilenler.maddeler.map(maddeKarti)] : undefined),
+    [yerelKartlar, verilenler.maddeler],
+  );
   const planAdlari = veri.veri?.planAdlari ?? BOS_PLANLAR;
-  const yapilanlarHaritasi = veri.veri?.yapilanlar;
+  const yerelYapilanlar = veri.veri?.yapilanlar;
+  const yapilanlarHaritasi = useMemo(
+    () => yapilanlariBirlestir(yerelYapilanlar, maddeYapilanlari(verilenler.maddeler)),
+    [yerelYapilanlar, verilenler.maddeler],
+  );
   const yapilanlar = (g: Gun) => yapilanlarHaritasi?.get(g) ?? BOS_KUME;
 
   // Süzme: çipler yalnız kartı olan kaynaklar; seçili kaynağın kartı kalmazsa "Tümü".
@@ -110,13 +129,13 @@ export default function Ajandam() {
   const seciliYapilanlar = yapilanlar(secili);
   const yapilanSayisi = gununKartlariListesi.filter((k) => seciliYapilanlar.has(k.id)).length;
   const kalanListesi = useMemo(
-    () => (kartlar && secili === bugunGun ? kalanlar(kartlar, bugunGun) : []),
-    [kartlar, secili, bugunGun],
+    () => (yerelKartlar && secili === bugunGun ? kalanlar(yerelKartlar, bugunGun) : []),
+    [yerelKartlar, secili, bugunGun],
   );
 
   const sonuclar = useMemo(
-    () => (kartlar && sorgu !== null ? ara(kartlar, veri.veri?.bloklar ?? new Map(), sorgu, bugunGun) : []),
-    [kartlar, sorgu, veri.veri?.bloklar, bugunGun],
+    () => (yerelKartlar && sorgu !== null ? ara(yerelKartlar, veri.veri?.bloklar ?? new Map(), sorgu, bugunGun) : []),
+    [yerelKartlar, sorgu, veri.veri?.bloklar, bugunGun],
   );
 
   const buguneAl = async (liste: readonly KartOzeti[]) => {
@@ -125,6 +144,10 @@ export default function Ajandam() {
   };
 
   const kartiAc = (kart: KartOzeti, gun: Gun) => {
+    if (maddeKartiMi(kart)) {
+      router.push({ pathname: '/ajandam/liste/[id]', params: { id: kart.listeId } });
+      return;
+    }
     if (kart.blokSayisi > 0 || kart.kilitli) {
       router.push({ pathname: '/kart/[id]', params: { id: kart.id, gun } });
     } else {
@@ -158,7 +181,7 @@ export default function Ajandam() {
       {aramaAcik ? (
         <>
           <AramaKutusu deger={sorgu} onDegis={setSorgu} onVazgec={() => setSorgu(null)} />
-          {kartlar && (
+          {yerelKartlar && (
             <AramaSonuclari
               sorgu={sorgu}
               sonuclar={sonuclar}
@@ -227,7 +250,12 @@ export default function Ajandam() {
                       kart={kart}
                       planAdlari={planAdlari}
                       yapildi={seciliYapilanlar.has(kart.id)}
-                      onIsaretle={() => void isaretle(kapi, kart.id, secili, !seciliYapilanlar.has(kart.id))}
+                      onIsaretle={() => {
+                        const yapildi = !seciliYapilanlar.has(kart.id);
+                        if (maddeKartiMi(kart)) {
+                          void verilenler.isaretle(kart.maddeId, yapildi).then((ok) => ok || kisaMesaj(BAGLANAMIYOR));
+                        } else void isaretle(kapi, kart.id, secili, yapildi);
+                      }}
                       onAc={() => kartiAc(kart, secili)}
                     />
                   ))}

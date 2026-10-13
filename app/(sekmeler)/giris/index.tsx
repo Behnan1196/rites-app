@@ -1,8 +1,9 @@
 // Giriş: selam ve tarih yok; kutular kayıtlı sırasıyla (G-7, `05` §10).
-// Su ve Ortak Listeler kutuları sonra gelecek.
+// Yarım kutular (Ortak Listeler; Su sonra) arka arkaya gelirse yan yana dizilir,
+// tek kalırsa satırı doldurur. Su kutusu sonra gelecek.
 
 import { Fragment } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
@@ -13,7 +14,8 @@ import { GelenlerKutusu } from '@/bilesen/giris/GelenlerKutusu';
 import { useGirisAyari, useKutuSirasi } from '@/bilesen/giris/GirisAyari';
 import { GununSorusu } from '@/bilesen/giris/GununSorusu';
 import { HizliNot } from '@/bilesen/giris/HizliNot';
-import type { KutuAnahtari } from '@/mantik/giris';
+import { OrtakListelerKutusu } from '@/bilesen/giris/OrtakListelerKutusu';
+import { kutuSatirlari, type KutuAnahtari } from '@/mantik/giris';
 
 const KUTU_BILESENI: Partial<Record<KutuAnahtari, () => React.ReactNode>> = {
   not: () => <HizliNot />,
@@ -22,6 +24,7 @@ const KUTU_BILESENI: Partial<Record<KutuAnahtari, () => React.ReactNode>> = {
   animsatici: () => <AnimsaticilarKutusu />,
   devam: () => <DevamEdenler />,
   soru: () => <GununSorusu />,
+  ortak: () => <OrtakListelerKutusu />,
 };
 
 export default function Giris() {
@@ -29,10 +32,17 @@ export default function Giris() {
   const { girisAyariniAc } = useGirisAyari();
   return (
     <EkranKabi>
-      {sira?.filter((a) => a.acik).map((a) => {
-        const ciz = KUTU_BILESENI[a.k];
-        return ciz ? <Fragment key={a.k}>{ciz()}</Fragment> : null;
-      })}
+      {kutuSatirlari((sira ?? []).filter((a) => a.acik && KUTU_BILESENI[a.k]).map((a) => a.k)).map((satir) =>
+        satir.length === 1 ? (
+          <Fragment key={satir[0]}>{KUTU_BILESENI[satir[0]!]?.()}</Fragment>
+        ) : (
+          <View key={satir.join('-')} style={stiller.yanYana}>
+            {satir.map((k) => (
+              <Fragment key={k}>{KUTU_BILESENI[k]?.()}</Fragment>
+            ))}
+          </View>
+        ),
+      )}
       <Dugme tur="yazi" etiket="Giriş'te neler görünsün?" onPress={girisAyariniAc} style={stiller.ayar} />
     </EkranKabi>
   );
@@ -40,4 +50,5 @@ export default function Giris() {
 
 const stiller = StyleSheet.create({
   ayar: { alignSelf: 'center' },
+  yanYana: { flexDirection: 'row', gap: 12 },
 });

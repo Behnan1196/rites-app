@@ -7,6 +7,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { gununKartlari } from '@/mantik/ajanda';
 import { kalanIsMetni, siradaki } from '@/mantik/giris';
 import { kalanlar } from '@/mantik/kalanlar';
+import { BAGLANAMIYOR } from '@/mantik/kisiler';
+import { maddeKarti, maddeKartiMi } from '@/mantik/listeler';
 import { useSorgu } from '@/veri/kancalar';
 import { gunYapilanlari, isaretle, tumKartlar } from '@/veri/kartlar';
 import { useBugun } from '@/veri/useBugun';
@@ -14,6 +16,7 @@ import { useSimdi } from '@/veri/useSimdi';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { useKisaMesaj } from '../KisaMesaj';
+import { useBanaVerilenler } from '../listeler/BanaVerilenler';
 import { renk } from '../tema';
 import { Yazi } from '../Yazi';
 
@@ -22,6 +25,7 @@ export function BugunSirada() {
   const bugunGun = useBugun();
   const simdi = useSimdi();
   const kisaMesaj = useKisaMesaj();
+  const verilenler = useBanaVerilenler();
 
   const veri = useSorgu(
     ['kart'],
@@ -30,8 +34,11 @@ export function BugunSirada() {
   );
   if (!veri.veri) return <View style={[stiller.kutu, stiller.bos]} />;
 
-  const { kartlar, yapilanlar } = veri.veri;
-  const sira = siradaki(gununKartlari(kartlar, bugunGun, bugunGun), yapilanlar, simdi);
+  const { kartlar, yapilanlar: yerelYapilanlar } = veri.veri;
+  // Ortak listeden bana bugüne verilen maddeler de sıraya girer (`05` §9).
+  const bugununMaddeleri = verilenler.maddeler.filter((m) => m.tarih === bugunGun).map(maddeKarti);
+  const yapilanlar = new Set([...yerelYapilanlar, ...bugununMaddeleri.filter((m) => m.yapildi).map((m) => m.id)]);
+  const sira = siradaki(gununKartlari([...kartlar, ...bugununMaddeleri], bugunGun, bugunGun), yapilanlar, simdi);
   const kalanSayisi = kalanlar(kartlar, bugunGun).length;
 
   return (
@@ -49,9 +56,13 @@ export function BugunSirada() {
               </Yazi>
               <Yazi renk={renk.anaKoyuUstuYazi}>{sira.kart.saat ?? 'Bugün'}</Yazi>
             </View>
-            {(sira.kart.blokSayisi > 0 || sira.kart.kilitli) && (
+            {(sira.kart.blokSayisi > 0 || sira.kart.kilitli || maddeKartiMi(sira.kart)) && (
               <Pressable
-                onPress={() => router.push({ pathname: '/kart/[id]', params: { id: sira.kart.id, gun: bugunGun } })}
+                onPress={() => {
+                  const k = sira.kart;
+                  if (maddeKartiMi(k)) router.push({ pathname: '/giris/liste/[id]', params: { id: k.listeId } });
+                  else router.push({ pathname: '/kart/[id]', params: { id: k.id, gun: bugunGun } });
+                }}
                 accessibilityRole="button"
                 accessibilityLabel={`${sira.kart.baslik}: aç`}
                 style={({ pressed }) => [stiller.ac, pressed && { opacity: 0.7 }]}
@@ -64,8 +75,14 @@ export function BugunSirada() {
           </View>
           <Pressable
             onPress={async () => {
-              await isaretle(kapi, sira.kart.id, bugunGun, true);
-              kisaMesaj(`Yapıldı: ${sira.kart.baslik}`);
+              const k = sira.kart;
+              if (maddeKartiMi(k)) {
+                if (!(await verilenler.isaretle(k.maddeId, true))) {
+                  kisaMesaj(BAGLANAMIYOR);
+                  return;
+                }
+              } else await isaretle(kapi, k.id, bugunGun, true);
+              kisaMesaj(`Yapıldı: ${k.baslik}`);
             }}
             accessibilityRole="button"
             accessibilityLabel={`${sira.kart.baslik}: yaptım`}

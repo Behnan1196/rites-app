@@ -18,6 +18,7 @@ import { BildirimYoneticisi } from "@/bilesen/BildirimYoneticisi";
 import { GirisAyariSaglayici } from "@/bilesen/giris/GirisAyari";
 import { OturumSaglayici } from "@/bilesen/oturum/OturumSayfasi";
 import { KatmanSaglayici } from "@/bilesen/Katman";
+import { BanaVerilenlerSaglayici } from "@/bilesen/listeler/BanaVerilenler";
 import { KisaMesajSaglayici } from "@/bilesen/KisaMesaj";
 import { ProfilSaglayici } from "@/bilesen/Profil";
 import { renk, yaziTipiDurumu } from "@/bilesen/tema";
@@ -48,18 +49,20 @@ export default function KokDuzen() {
           <KisaMesajSaglayici>
             <KatmanSaglayici>
               <OturumSaglayici>
-                <GirisAyariSaglayici>
-                  <ProfilSaglayici>
-                    <Stack
-                      screenOptions={{
-                        headerShown: false,
-                        contentStyle: { backgroundColor: renk.zemin },
-                      }}
-                    />
-                    <BildirimYoneticisi />
-                    <YedekSorusu />
-                  </ProfilSaglayici>
-                </GirisAyariSaglayici>
+                <BanaVerilenlerSaglayici>
+                  <GirisAyariSaglayici>
+                    <ProfilSaglayici>
+                      <Stack
+                        screenOptions={{
+                          headerShown: false,
+                          contentStyle: { backgroundColor: renk.zemin },
+                        }}
+                      />
+                      <BildirimYoneticisi />
+                      <YedekSorusu />
+                    </ProfilSaglayici>
+                  </GirisAyariSaglayici>
+                </BanaVerilenlerSaglayici>
               </OturumSaglayici>
             </KatmanSaglayici>
           </KisaMesajSaglayici>

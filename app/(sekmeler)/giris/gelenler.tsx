@@ -6,6 +6,8 @@ import { StyleSheet, View } from 'react-native';
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { useGelenler } from '@/bilesen/giris/useGelenler';
+import { GrupDavetleri } from '@/bilesen/gruplar/GrupDavetleri';
+import { useGruplar } from '@/bilesen/gruplar/useGruplar';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
 import { olcu, renk } from '@/bilesen/tema';
@@ -32,6 +34,7 @@ export default function Gelenler() {
   const bugunGun = useBugun();
   const kisaMesaj = useKisaMesaj();
   const { ben, gelenler, yukleniyor, baglanamiyor, yenile } = useGelenler(oturum);
+  const grup = useGruplar(oturum);
 
   const ajandayaEkle = async (g: Gelen) => {
     try {
@@ -64,7 +67,10 @@ export default function Gelenler() {
       ) : (
         <>
           {baglanamiyor && <Yazi tur="ikincil" renk={renk.hata}>{BAGLANAMIYOR}</Yazi>}
-          {!yukleniyor && gelenler.length === 0 && !baglanamiyor && <Yazi tur="ikincil">Şu an yeni bir şey yok.</Yazi>}
+          <GrupDavetleri davetler={grup.davetler} ad={grup.ad} onYanit={() => void grup.yenile()} />
+          {!yukleniyor && gelenler.length === 0 && grup.davetler.length === 0 && !baglanamiyor && (
+            <Yazi tur="ikincil">Şu an yeni bir şey yok.</Yazi>
+          )}
           {gelenler.map((g) => (
             <View key={g.id} style={stiller.kart}>
               <Yazi tur="ikincil">{`${g.kimdenAd} gönderdi · ${neZaman(g.gonderim, bugunGun)}`}</Yazi>
