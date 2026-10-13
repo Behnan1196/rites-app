@@ -207,12 +207,23 @@ function tarihSaate(d: Date): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
-function SaatSecici({ saat, onDegis }: { saat: string | null; onDegis: (saat: string) => void }) {
+/** Saat seçici. `kompakt`: iOS'ta dokununca açılan küçük alan (anımsatıcı formu). */
+export function SaatSecici({
+  saat,
+  onDegis,
+  kompakt = false,
+  etiket = 'Başka bir saat',
+}: {
+  saat: string | null;
+  onDegis: (saat: string) => void;
+  kompakt?: boolean;
+  etiket?: string;
+}) {
   if (Platform.OS === 'web') {
     // Yalnız tarayıcıdaki denemeler için.
     return (
       <TextInput
-        accessibilityLabel="Başka bir saat"
+        accessibilityLabel={etiket}
         defaultValue={saat ?? ''}
         placeholder="SS:dd"
         onChangeText={(metin) => {
@@ -220,6 +231,20 @@ function SaatSecici({ saat, onDegis }: { saat: string | null; onDegis: (saat: st
           if (m && Number(m[1]) < 24 && Number(m[2]) < 60) onDegis(`${m[1]!.padStart(2, '0')}:${m[2]}`);
         }}
         style={[stiller.webSaat, yazi('normal')]}
+      />
+    );
+  }
+  if (kompakt) {
+    return (
+      <DateTimePicker
+        value={saatTarihe(saat)}
+        mode="time"
+        display="compact"
+        locale="tr-TR"
+        minuteInterval={5}
+        onValueChange={(_e, d) => onDegis(tarihSaate(d))}
+        themeVariant="light"
+        accessibilityLabel={etiket}
       />
     );
   }
@@ -235,7 +260,7 @@ function SaatSecici({ saat, onDegis }: { saat: string | null; onDegis: (saat: st
         onValueChange={(_e, d) => onDegis(tarihSaate(d))}
         textColor={renk.yazi}
         themeVariant="light"
-        accessibilityLabel="Başka bir saat"
+        accessibilityLabel={etiket}
       />
     </Bolum>
   );

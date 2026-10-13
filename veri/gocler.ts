@@ -119,6 +119,29 @@ export const GOCLER: readonly Goc[] = [
       );
     `,
   },
+  {
+    // Anımsatıcılar ve yalnız bugünün durumları (`03` → animsatici, animsatici_gun).
+    surum: 5,
+    sql: `
+      CREATE TABLE IF NOT EXISTS animsatici (
+        id        TEXT PRIMARY KEY NOT NULL,
+        ad        TEXT NOT NULL,
+        saatler   TEXT NOT NULL,
+        gunler    TEXT NOT NULL DEFAULT 'hergun',
+        sesli     INTEGER NOT NULL DEFAULT 1,
+        ertele_dk INTEGER NOT NULL DEFAULT 10,
+        olusturma TEXT NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS animsatici_gun (
+        animsatici_id  TEXT NOT NULL REFERENCES animsatici (id) ON DELETE CASCADE,
+        tarih          TEXT NOT NULL,
+        saat           TEXT NOT NULL,
+        durum          TEXT,
+        ertelenen_saat TEXT,
+        PRIMARY KEY (animsatici_id, tarih, saat)
+      );
+    `,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

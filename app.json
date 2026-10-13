@@ -39,7 +39,8 @@
       "expo-sharing",
       "@react-native-community/datetimepicker",
       "expo-audio",
-      "expo-asset"
+      "expo-asset",
+      "expo-notifications"
     ],
     "scheme": "rites"
   }

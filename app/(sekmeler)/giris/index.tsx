@@ -1,4 +1,5 @@
 import { EkranKabi } from '@/bilesen/EkranKabi';
+import { AnimsaticilarKutusu } from '@/bilesen/giris/AnimsaticilarKutusu';
 import { BugunSirada } from '@/bilesen/giris/BugunSirada';
 import { DevamEdenler } from '@/bilesen/giris/DevamEdenler';
 import { GununSorusu } from '@/bilesen/giris/GununSorusu';
@@ -11,6 +12,7 @@ export default function Giris() {
     <EkranKabi>
       <HizliNot />
       <BugunSirada />
+      <AnimsaticilarKutusu />
       <DevamEdenler />
       <GununSorusu />
     </EkranKabi>

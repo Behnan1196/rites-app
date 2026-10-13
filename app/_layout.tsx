@@ -14,6 +14,7 @@ import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AdSorusu } from '@/bilesen/AdSorusu';
+import { BildirimYoneticisi } from '@/bilesen/BildirimYoneticisi';
 import { KatmanSaglayici } from '@/bilesen/Katman';
 import { KisaMesajSaglayici } from '@/bilesen/KisaMesaj';
 import { ProfilSaglayici } from '@/bilesen/Profil';
@@ -45,6 +46,7 @@ export default function KokDuzen() {
             <KatmanSaglayici>
               <ProfilSaglayici>
                 <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: renk.zemin } }} />
+                <BildirimYoneticisi />
               </ProfilSaglayici>
             </KatmanSaglayici>
           </KisaMesajSaglayici>
