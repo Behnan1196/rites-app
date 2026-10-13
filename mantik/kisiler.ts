@@ -159,3 +159,12 @@ export function kalanKisiMetni(sayi: number): string {
   const kalan = UCRETSIZ_SINIR - sayi;
   return kalan > 0 ? `${kalan} kişi daha ekleyebilirsin.` : 'Sınır doldu.';
 }
+
+/**
+ * Telefon tek kişiye bağlıdır: ilk giriş yapılan e-postayla. Başka bir e-postayla
+ * girilmek istenirse uyarı metni döner (önce telefondaki veriler silinmeli).
+ */
+export function baskaEpostaUyarisi(bagliEposta: string | null, eposta: string): string | null {
+  if (!bagliEposta || epostaDuzelt(eposta) === bagliEposta) return null;
+  return `Bu telefon ${bagliEposta} ile kullanılıyor. Başka bir e-postayla girmek için önce telefondaki verilerin silinmeli.`;
+}

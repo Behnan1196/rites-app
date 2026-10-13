@@ -1,5 +1,5 @@
 import {
-  eklendiMetni, kalanKisiMetni, kisiBasHarf, epostaDuzelt, epostaGecerliMi, eslestir, gelenIstekler, kisiEklemeHatasi, kisiFormuHatasi,
+  baskaEpostaUyarisi, eklendiMetni, kalanKisiMetni, kisiBasHarf, epostaDuzelt, epostaGecerliMi, eslestir, gelenIstekler, kisiEklemeHatasi, kisiFormuHatasi,
   sinirMetni, type Kisi, type SunucuBaglantisi,
 } from '../kisiler';
 import { blokOzeti, gelenKarti, gelenlerOzeti, kartPaketi, paketGecerliMi } from '../paylasim';
@@ -29,6 +29,16 @@ describe('kişi formu (KS-1)', () => {
     expect(kalanKisiMetni(3)).toBe('2 kişi daha ekleyebilirsin.');
     expect(kalanKisiMetni(5)).toBe('Sınır doldu.');
     expect([kisiBasHarf('Gül Aksoy'), kisiBasHarf('Ali (eşim)'), kisiBasHarf('hasan bey'), kisiBasHarf('')]).toEqual(['GA', 'A', 'HB', '?']);
+  });
+});
+
+describe('telefon tek kişiye bağlı', () => {
+  it('ilk e-posta ya da aynı e-posta serbest; başkası uyarılır', () => {
+    expect(baskaEpostaUyarisi(null, 'a@b.com')).toBeNull();
+    expect(baskaEpostaUyarisi('ali@a.com', ' ALI@a.com ')).toBeNull();
+    expect(baskaEpostaUyarisi('ali@a.com', 'veli@a.com')).toBe(
+      'Bu telefon ali@a.com ile kullanılıyor. Başka bir e-postayla girmek için önce telefondaki verilerin silinmeli.',
+    );
   });
 });
 

@@ -16,6 +16,8 @@ export interface Ayarlar {
   son_yedek: Gun;
   /** Uygulamanın ilk açıldığı gün (hiç yedek yoksa 7 günlük soru için). */
   ilk_acilis: Gun;
+  /** Telefonun bağlı olduğu e-posta: ilk girişte yazılır; başka e-postayla girilemez (13 Ekim kararı). */
+  bagli_eposta: string;
 }
 
 export type AyarAnahtari = keyof Ayarlar;
@@ -31,6 +33,10 @@ export async function ayarOku<K extends AyarAnahtari>(
   } catch {
     return null;
   }
+}
+
+export function ayarSil(kapi: Kapi, anahtar: AyarAnahtari): Promise<void> {
+  return kapi.yaz(['ayar'], (y) => y.calistir('DELETE FROM ayar WHERE anahtar = ?', [anahtar]));
 }
 
 export function ayarYaz<K extends AyarAnahtari>(kapi: Kapi, anahtar: K, deger: Ayarlar[K]): Promise<void> {

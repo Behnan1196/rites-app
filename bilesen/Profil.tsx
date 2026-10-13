@@ -7,7 +7,7 @@ import { Keyboard, StyleSheet, View } from 'react-native';
 
 import { adTemizle, AD_EN_UZUN } from '@/mantik/metin';
 import { sonYedekMetni, YEDEK_ACIKLAMASI, type YedekDosyasi } from '@/mantik/yedek';
-import { adKaydet } from '@/veri/ayar';
+import { adKaydet, ayarSil } from '@/veri/ayar';
 import { BAGLANAMIYOR, ekledigimSayi, UCRETSIZ_SINIR } from '@/mantik/kisiler';
 import { adiGuncelle, cikisYap, hesabimiSil, useOturum } from '@/sunucu/oturum';
 import { useAyar, useSorgu } from '@/veri/kancalar';
@@ -100,6 +100,7 @@ function ProfilSayfasi({ ad, gorunur, onKapat }: { ad: string; gorunur: boolean;
         await telefondakileriSil(kapi);
       } else {
         await kisileriTemizle(kapi);
+        await ayarSil(kapi, 'bagli_eposta');
         kisaMesaj("Rites'taki kaydın silindi");
       }
     } catch (e) {
