@@ -64,13 +64,11 @@ export function HaftaSeridi({
   gunler,
   secili,
   bugunGun,
-  sayilar,
   onSec,
 }: {
   gunler: readonly Gun[];
   secili: Gun;
   bugunGun: Gun;
-  sayilar: ReadonlyMap<Gun, number>;
   onSec: (gun: Gun) => void;
 }) {
   return (
@@ -78,7 +76,6 @@ export function HaftaSeridi({
       {gunler.map((g) => {
         const seciliMi = g === secili;
         const bugunMu = g === bugunGun;
-        const sayi = sayilar.get(g) ?? 0;
         const yaziRengi = seciliMi ? renk.yuzey : renk.yazi;
         return (
           <Pressable
@@ -86,7 +83,7 @@ export function HaftaSeridi({
             onPress={() => onSec(g)}
             accessibilityRole="tab"
             accessibilityState={{ selected: seciliMi }}
-            accessibilityLabel={`${uzunTarih(g)}${bugunMu ? ', bugün' : ''}, ${sayi} kart`}
+            accessibilityLabel={`${uzunTarih(g)}${bugunMu ? ', bugün' : ''}`}
             style={[stiller.gun, bugunMu && stiller.bugun, seciliMi && stiller.secili]}
           >
             <Yazi tur="etiket" renk={seciliMi ? renk.anaKoyuUstuYazi : renk.ikincil} maxFontSizeMultiplier={1.2}>
@@ -94,9 +91,6 @@ export function HaftaSeridi({
             </Yazi>
             <Yazi kalinlik="kalin" renk={yaziRengi} style={stiller.numara} maxFontSizeMultiplier={1.2}>
               {Number(g.slice(8))}
-            </Yazi>
-            <Yazi tur="etiket" renk={seciliMi ? renk.anaKoyuUstuYazi : renk.ikincil} style={stiller.sayi} maxFontSizeMultiplier={1.2}>
-              {sayi > 0 ? String(sayi) : ' '}
             </Yazi>
           </Pressable>
         );
@@ -123,7 +117,7 @@ const stiller = StyleSheet.create({
   serit: { flexDirection: 'row', gap: 5 },
   gun: {
     flex: 1,
-    minHeight: 76,
+    minHeight: 60,
     borderRadius: 14,
     borderWidth: 2,
     borderColor: renk.cizgi,
@@ -135,5 +129,4 @@ const stiller = StyleSheet.create({
   bugun: { borderColor: renk.ana },
   secili: { backgroundColor: renk.ana, borderColor: renk.ana },
   numara: { fontSize: 22, lineHeight: 28 },
-  sayi: { fontSize: 14, lineHeight: 18 },
 });

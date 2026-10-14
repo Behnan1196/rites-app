@@ -11,10 +11,9 @@ import { GunGezinme, HaftaSeridi } from '@/bilesen/ajanda/GunGezinme';
 import { HaftaGorunumu } from '@/bilesen/ajanda/HaftaGorunumu';
 import { Kalanlar } from '@/bilesen/ajanda/Kalanlar';
 import { KartSatiri } from '@/bilesen/ajanda/KartSatiri';
-import { KaynakCipleri } from '@/bilesen/ajanda/KaynakCipleri';
+import { KaynakSuzgeci } from '@/bilesen/ajanda/KaynakSuzgeci';
 import { NotlarimBaglantisi } from '@/bilesen/ajanda/NotlarimBaglantisi';
 import { TakvimSayfasi } from '@/bilesen/ajanda/TakvimSayfasi';
-import { BolumluDugme } from '@/bilesen/BolumluDugme';
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
@@ -22,10 +21,10 @@ import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { useBanaVerilenler } from '@/bilesen/listeler/BanaVerilenler';
 import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
 import { Yazi } from '@/bilesen/Yazi';
-import { bosGunMetni, gunBasligi, gununKartlari, haftaninGunleri, tamamMetni } from '@/mantik/ajanda';
+import { bosGunMetni, gunBasligi, gununKartlari, haftaninGunleri } from '@/mantik/ajanda';
 import { ara, haftaBasligi } from '@/mantik/arama';
 import { kalanlar } from '@/mantik/kalanlar';
-import { kaynakAdi, kaynaklar, suz, TUMU, type KaynakAnahtari } from '@/mantik/kaynak';
+import { gizliyiSuz, kaynaklar, suzgecAcikMi, type KaynakAnahtari } from '@/mantik/kaynak';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { BAGLANTI_YOK, paylasilanAdres, paylasilanMetin, paylasimTaslagi } from '@/mantik/paylasimAl';
 import { maddeKarti, maddeKartiMi, maddeYapilanlari, yapilanlariBirlestir } from '@/mantik/listeler';
@@ -47,11 +46,6 @@ import { useVeri } from '@/veri/VeriSaglayici';
 
 type Gorunum = 'gun' | 'hafta';
 
-const GORUNUMLER = [
-  { deger: 'gun', etiket: 'Gün' },
-  { deger: 'hafta', etiket: 'Hafta' },
-] as const;
-
 const BOS_KUME: ReadonlySet<string> = new Set();
 const BOS_PLANLAR: ReadonlyMap<string, string> = new Map();
 
@@ -60,7 +54,9 @@ export default function Ajandam() {
   const { kapi } = useVeri();
   const [secili, setSecili] = useState<Gun>(bugunGun);
   const [gorunum, setGorunum] = useState<Gorunum>('gun');
-  const [filtre, setFiltre] = useState<KaynakAnahtari>(TUMU);
+  /** Süzgeçte işareti kaldırılan (gizlenen) kaynaklar. */
+  const [gizli, setGizli] = useState<ReadonlySet<KaynakAnahtari>>(new Set());
+  const [suzgecAcik, setSuzgecAcik] = useState(false);
   /** null: arama kapalı. */
   const [sorgu, setSorgu] = useState<string | null>(null);
   const [takvim, setTakvim] = useState({ acik: false, acilis: 0 });
@@ -139,15 +135,13 @@ export default function Ajandam() {
   );
   const yapilanlar = (g: Gun) => yapilanlarHaritasi?.get(g) ?? BOS_KUME;
 
-  // Süzme: çipler yalnız kartı olan kaynaklar; seçili kaynağın kartı kalmazsa "Tümü".
+  // Süzme: menüde yalnız kartı olan kaynaklar; işareti kaldırılanlar gizlenir.
   const kaynakListesi = useMemo(() => kaynaklar(kartlar ?? []), [kartlar]);
-  const etkinFiltre = kaynakListesi.includes(filtre) ? filtre : TUMU;
-  const suzulmus = useMemo(() => suz(kartlar ?? [], etkinFiltre), [kartlar, etkinFiltre]);
-  const suzuldu = etkinFiltre !== TUMU;
+  const suzulmus = useMemo(() => gizliyiSuz(kartlar ?? [], gizli), [kartlar, gizli]);
+  const suzuldu = suzgecAcikMi(kaynakListesi, gizli);
 
   const gunlukListe = useCallback((g: Gun) => gununKartlari(suzulmus, g, bugunGun), [suzulmus, bugunGun]);
   const gununKartlariListesi = useMemo(() => gunlukListe(secili), [gunlukListe, secili]);
-  const sayilar = useMemo(() => new Map(hafta.map((g) => [g, gunlukListe(g).length])), [hafta, gunlukListe]);
   const haftaGunleri = useMemo(
     () => hafta.map((g) => ({ gun: g, kartlar: gunlukListe(g), yapilanlar: yapilanlarHaritasi?.get(g) ?? BOS_KUME })),
     [hafta, gunlukListe, yapilanlarHaritasi],
@@ -155,7 +149,6 @@ export default function Ajandam() {
   const takvimSayisi = useCallback((g: Gun) => gunlukListe(g).length, [gunlukListe]);
 
   const seciliYapilanlar = yapilanlar(secili);
-  const yapilanSayisi = gununKartlariListesi.filter((k) => seciliYapilanlar.has(k.id)).length;
   const kalanListesi = useMemo(
     () => (yerelKartlar && secili === bugunGun ? kalanlar(yerelKartlar, bugunGun) : []),
     [yerelKartlar, secili, bugunGun],
@@ -193,10 +186,20 @@ export default function Ajandam() {
 
   return (
     <EkranKabi
-      baslik="Ajandam"
       baslikSag={
         <>
           <SimgeDugmesi ikon="search" etiket="Ajandada ara" onPress={() => setSorgu(sorgu ?? '')} />
+          <SimgeDugmesi
+            ikon={suzuldu ? 'funnel' : 'funnel-outline'}
+            etiket={suzuldu ? 'Süzgeç açık, kaynakları seç' : 'Kaynağa göre süz'}
+            secili={suzuldu}
+            onPress={() => setSuzgecAcik(true)}
+          />
+          <SimgeDugmesi
+            ikon={gorunum === 'gun' ? 'grid-outline' : 'reorder-four-outline'}
+            etiket={gorunum === 'gun' ? 'Hafta görünümüne geç' : 'Gün görünümüne geç'}
+            onPress={() => setGorunum(gorunum === 'gun' ? 'hafta' : 'gun')}
+          />
           <SimgeDugmesi
             ikon="calendar-outline"
             etiket="Takvimi aç"
@@ -231,7 +234,6 @@ export default function Ajandam() {
         </>
       ) : (
         <>
-          <BolumluDugme erisimEtiketi="Görünüm" secenekler={GORUNUMLER} secili={gorunum} onSec={setGorunum} />
           <GunGezinme
             baslik={gorunum === 'hafta' ? haftaBasligi(hafta[0]!) : gunBasligi(secili, bugunGun)}
             oncekiEtiket={gorunum === 'hafta' ? 'Önceki hafta' : 'Önceki gün'}
@@ -242,14 +244,8 @@ export default function Ajandam() {
             onBugun={() => setSecili(bugunGun)}
           />
           {gorunum === 'gun' && (
-            <HaftaSeridi gunler={hafta} secili={secili} bugunGun={bugunGun} sayilar={sayilar} onSec={setSecili} />
+            <HaftaSeridi gunler={hafta} secili={secili} bugunGun={bugunGun} onSec={setSecili} />
           )}
-          <KaynakCipleri
-            kaynaklar={kaynakListesi}
-            secili={etkinFiltre}
-            planAdlari={planAdlari}
-            onSec={setFiltre}
-          />
 
           {!veri.yukleniyor && gorunum === 'gun' && (
             <>
@@ -259,13 +255,6 @@ export default function Ajandam() {
                 onBuguneAl={(liste) => void buguneAl(liste as KartOzeti[])}
                 onBirak={(k) => void kartiBirak(kapi, k.id)}
               />
-              <Yazi tur="ikincil">
-                {tamamMetni(
-                  yapilanSayisi,
-                  gununKartlariListesi.length,
-                  suzuldu ? kaynakAdi(etkinFiltre, planAdlari) : null,
-                )}
-              </Yazi>
               {gununKartlariListesi.length === 0 ? (
                 <View style={stiller.bos}>
                   <Yazi tur="ikincil">{bosGunMetni(secili, bugunGun, suzuldu)}</Yazi>
@@ -312,6 +301,15 @@ export default function Ajandam() {
         }}
         onKapat={() => setTakvim((t) => ({ ...t, acik: false }))}
       />
+      {suzgecAcik && (
+        <KaynakSuzgeci
+          kaynaklar={kaynakListesi}
+          gizli={gizli}
+          planAdlari={planAdlari}
+          onDegis={setGizli}
+          onKapat={() => setSuzgecAcik(false)}
+        />
+      )}
       {form.oge}
     </EkranKabi>
   );

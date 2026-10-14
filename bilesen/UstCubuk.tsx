@@ -1,40 +1,35 @@
+// Ekranların üst satırı (pilot kararı, 14 Ekim): "Rites" yazısı yok. Solda ekran
+// başlığı ya da "‹ Geri", sağda ekranın simge düğmeleri ve avatar (→ Profil).
+// Ayrı bir marka satırı kalmadığı için kartlara daha çok yer kalır.
+
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useAyar } from '@/veri/kancalar';
 
 import { Avatar } from './Avatar';
 import { useProfil } from './Profil';
-import { olcu, renk } from './tema';
-import { Yazi } from './Yazi';
+import { olcu } from './tema';
 
-/** Ana ekranların üst çubuğu: solda "Rites", sağda ad ve avatar (→ Profil). */
-export function UstCubuk() {
+export function UstCubuk({ sol, sag }: { sol?: ReactNode; sag?: ReactNode }) {
   const { profiliAc } = useProfil();
   const ad = useAyar('ad').veri ?? '';
 
   return (
     <View style={stiller.cubuk}>
-      <Yazi
-        kalinlik="kalin"
-        renk={renk.ana}
-        style={stiller.marka}
-        accessibilityRole="header"
-        maxFontSizeMultiplier={1.4}
-      >
-        Rites
-      </Yazi>
-      <Pressable
-        onPress={profiliAc}
-        accessibilityRole="button"
-        accessibilityLabel={`Profil, ${ad}`}
-        hitSlop={8}
-        style={({ pressed }) => [stiller.kisi, pressed && { opacity: 0.7 }]}
-      >
-        <Yazi style={stiller.ad} numberOfLines={1} maxFontSizeMultiplier={1.4}>
-          {ad}
-        </Yazi>
-        <Avatar ad={ad} />
-      </Pressable>
+      <View style={stiller.sol}>{sol}</View>
+      <View style={stiller.sag}>
+        {sag}
+        <Pressable
+          onPress={profiliAc}
+          accessibilityRole="button"
+          accessibilityLabel={`Profil, ${ad}`}
+          hitSlop={8}
+          style={({ pressed }) => pressed && { opacity: 0.7 }}
+        >
+          <Avatar ad={ad} />
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -43,18 +38,11 @@ const stiller = StyleSheet.create({
   cubuk: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: olcu.ekranKenari,
-    paddingVertical: 10,
-    gap: 16,
+    paddingVertical: 6,
+    gap: 10,
+    minHeight: 56,
   },
-  marka: { fontSize: 28, lineHeight: 34 },
-  kisi: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    minHeight: olcu.enAzDokunma,
-    flexShrink: 1,
-  },
-  ad: { flexShrink: 1 },
+  sol: { flex: 1, minWidth: 0 },
+  sag: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 });

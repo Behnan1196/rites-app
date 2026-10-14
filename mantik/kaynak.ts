@@ -75,3 +75,17 @@ export function kaynaklar(kartlar: readonly KaynakliKart[]): KaynakAnahtari[] {
 export function suz<T extends KaynakliKart>(kartlar: readonly T[], filtre: KaynakAnahtari): T[] {
   return filtre === TUMU ? [...kartlar] : kartlar.filter((k) => kaynakAnahtari(k) === filtre);
 }
+
+/**
+ * Çoklu süzme (pilot kararı, 14 Ekim): kişi gizlemek istediği kaynakların işaretini
+ * kaldırır. `gizli`: gizlenen kaynaklar; boşsa hepsi görünür. Yeni bir kaynak
+ * (yeni plan) geldiğinde kendiliğinden görünür.
+ */
+export function gizliyiSuz<T extends KaynakliKart>(kartlar: readonly T[], gizli: ReadonlySet<KaynakAnahtari>): T[] {
+  return gizli.size === 0 ? [...kartlar] : kartlar.filter((k) => !gizli.has(kaynakAnahtari(k)));
+}
+
+/** Süzgeç açık mı: listedeki kaynaklardan en az biri gizli. */
+export function suzgecAcikMi(kaynakListesi: readonly KaynakAnahtari[], gizli: ReadonlySet<KaynakAnahtari>): boolean {
+  return kaynakListesi.some((k) => gizli.has(k));
+}
