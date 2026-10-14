@@ -14,7 +14,7 @@ import { sqljsVeriTabani } from './sqljsVeriTabani';
 const BUGUN = '2026-10-12';
 let kapi: Kapi;
 let oku: Okuyucu;
-const goz: Animsatici = { id: 'g', ad: ' Göz damlası ', saatler: ['20:00', '08:00'], gunler: 'hergun', sesli: false, erteleDk: 5 };
+const goz: Animsatici = { id: 'g', ad: ' Göz damlası ', saatler: ['20:00', '08:00'], gunler: 'hergun', sesli: false, erteleDk: 5, alarm: true };
 
 beforeEach(async () => {
   const db = await sqljsVeriTabani();

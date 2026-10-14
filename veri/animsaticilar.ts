@@ -13,6 +13,7 @@ interface AnimsaticiSatiri {
   gunler: string;
   sesli: number;
   ertele_dk: number;
+  alarm: number | null;
 }
 
 function satirdan(s: AnimsaticiSatiri): Animsatici {
@@ -29,6 +30,7 @@ function satirdan(s: AnimsaticiSatiri): Animsatici {
     gunler: (['hergun', 'haftaici', 'haftasonu'].includes(s.gunler) ? s.gunler : 'hergun') as AnimsaticiGunleri,
     sesli: s.sesli === 1,
     erteleDk: s.ertele_dk,
+    alarm: s.alarm === 1,
   };
 }
 
@@ -66,8 +68,8 @@ export function animsaticiEkle(
 ): Promise<void> {
   return kapi.yaz(['animsatici'], (y) =>
     y.calistir(
-      'INSERT INTO animsatici (id, ad, saatler, gunler, sesli, ertele_dk, olusturma) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [a.id, a.ad.trim(), JSON.stringify(saatleriSirala(a.saatler)), a.gunler, a.sesli ? 1 : 0, a.erteleDk, simdi],
+      'INSERT INTO animsatici (id, ad, saatler, gunler, sesli, ertele_dk, alarm, olusturma) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [a.id, a.ad.trim(), JSON.stringify(saatleriSirala(a.saatler)), a.gunler, a.sesli ? 1 : 0, a.erteleDk, a.alarm ? 1 : 0, simdi],
     ),
   );
 }

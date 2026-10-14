@@ -6,8 +6,8 @@ import {
 import { yeniKart } from '../kart';
 
 const BUGUN = '2026-10-12'; // Pazartesi
-const goz: Animsatici = { id: 'g', ad: 'Göz damlası', saatler: ['08:00', '14:00', '20:00'], gunler: 'hergun', sesli: true, erteleDk: 10 };
-const hs: Animsatici = { id: 'h', ad: 'Bitki sula', saatler: ['10:00'], gunler: 'haftasonu', sesli: false, erteleDk: 5 };
+const goz: Animsatici = { id: 'g', ad: 'Göz damlası', saatler: ['08:00', '14:00', '20:00'], gunler: 'hergun', sesli: true, erteleDk: 10, alarm: false };
+const hs: Animsatici = { id: 'h', ad: 'Bitki sula', saatler: ['10:00'], gunler: 'haftasonu', sesli: false, erteleDk: 5, alarm: false };
 
 describe('form ve metinler (AN-1)', () => {
   it('ad ve saat zorunlu', () => {

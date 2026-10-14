@@ -174,6 +174,11 @@ export const GOCLER: readonly Goc[] = [
       );
     `,
   },
+  {
+    // Alarm olarak çalan anımsatıcı (iOS 26 AlarmKit; pilot 14 Ekim).
+    surum: 8,
+    sql: `ALTER TABLE animsatici ADD COLUMN alarm INTEGER NOT NULL DEFAULT 0;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

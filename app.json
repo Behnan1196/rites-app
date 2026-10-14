@@ -2,7 +2,7 @@
   "expo": {
     "name": "Rites",
     "slug": "rites-pilot",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -81,6 +81,14 @@
       ],
       "expo-asset",
       "expo-notifications",
+      [
+        "react-native-alarm-scheduler",
+        {
+          "alarmKitUsageDescription": "Seçtiğin anımsatıcıları kilit ekranında alarm olarak çaldırmak için.",
+          "addExactAlarmPermission": false,
+          "addNotificationPermission": false
+        }
+      ],
       [
         "expo-image-picker",
         {

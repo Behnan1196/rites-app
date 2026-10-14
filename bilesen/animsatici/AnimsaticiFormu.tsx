@@ -1,8 +1,9 @@
 // Anımsatıcı ekle (AN-1): alttan sayfa.
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { ALARM_ACIKLAMASI, ALARM_ERTELEME } from '@/mantik/alarm';
 import {
   ANIMSATICI_BILGI,
   ERTELEME_SECENEKLERI,
@@ -13,6 +14,7 @@ import {
   VARSAYILAN_ERTELEME,
   type AnimsaticiGunleri,
 } from '@/mantik/animsatici';
+import { alarmIzni, alarmIzniIste } from '@/veri/alarmlar';
 import { animsaticiEkle } from '@/veri/animsaticilar';
 import { bildirimIzni } from '@/veri/bildirimler';
 import { yeniKimlik } from '@/veri/kimlik';
@@ -34,9 +36,21 @@ interface Form {
   gunler: AnimsaticiGunleri;
   sesli: boolean;
   erteleDk: number;
+  alarm: boolean;
 }
 
-const ILK: Form = { ad: '', saatler: ['09:00'], yeniSaat: '13:00', gunler: 'hergun', sesli: true, erteleDk: VARSAYILAN_ERTELEME };
+const ILK: Form = {
+  ad: '',
+  saatler: ['09:00'],
+  yeniSaat: '13:00',
+  gunler: 'hergun',
+  sesli: true,
+  erteleDk: VARSAYILAN_ERTELEME,
+  alarm: false,
+};
+
+export const ALARM_IZNI_YOK =
+  "Alarm izni kapalı. Ayarlar → Rites'tan açabilirsin; o zamana kadar bildirim olarak gelir.";
 
 function AnimsaticiFormu({ gorunur, onKapat }: { gorunur: boolean; onKapat: () => void }) {
   const { kapi } = useVeri();
@@ -44,10 +58,28 @@ function AnimsaticiFormu({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =
   const [form, setForm] = useState<Form>(ILK);
   const [hata, setHata] = useState<string | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
+  // Alarm seçeneği yalnız destekleyen telefonda (iOS 26, kendi derleme) görünür.
+  const [alarmDestegi, setAlarmDestegi] = useState(false);
+  useEffect(() => {
+    let iptal = false;
+    void alarmIzni().then((d) => {
+      if (!iptal) setAlarmDestegi(d !== 'desteklenmiyor');
+    });
+    return () => {
+      iptal = true;
+    };
+  }, []);
   const degisti = useMemo(() => JSON.stringify(form) !== JSON.stringify(ILK), [form]);
   const guncelle = (f: Partial<Form>) => {
     setForm((x) => ({ ...x, ...f }));
     setHata(null);
+  };
+
+  const alarmiDegistir = async (alarm: boolean) => {
+    guncelle({ alarm });
+    if (!alarm) return;
+    const izin = await alarmIzniIste();
+    if (izin === 'yok') kisaMesaj(ALARM_IZNI_YOK);
   };
 
   const kaydet = async () => {
@@ -64,8 +96,9 @@ function AnimsaticiFormu({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =
         ad: form.ad.trim(),
         saatler: saatleriSirala(form.saatler),
         gunler: form.gunler,
-        sesli: form.sesli,
-        erteleDk: form.erteleDk,
+        sesli: form.alarm || form.sesli,
+        erteleDk: form.alarm ? ALARM_ERTELEME : form.erteleDk,
+        alarm: form.alarm,
       });
       await bildirimIzni(true);
       kisaMesaj(`Anımsatıcı eklendi: ${form.ad.trim()}`);
@@ -116,19 +149,38 @@ function AnimsaticiFormu({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =
         </View>
         <View style={stiller.saatSatiri}>
           <View style={stiller.secici}>
-            <SaatSecici saat={form.yeniSaat} onDegis={(yeniSaat) => guncelle({ yeniSaat })} kompakt etiket="Yeni saat" />
+            <SaatSecici
+              saat={form.yeniSaat}
+              onDegis={(yeniSaat) => guncelle({ yeniSaat })}
+              kompakt
+              etiket="Yeni saat"
+            />
           </View>
           <Dugme
             tur="ikincil"
             etiket="Saat ekle"
             yaziRengi={renk.ana}
             style={stiller.ekle}
-            onPress={() => guncelle({ saatler: saatleriSirala([...form.saatler, form.yeniSaat]) })}
+            onPress={() =>
+              guncelle({
+                saatler: saatleriSirala([...form.saatler, form.yeniSaat]),
+              })
+            }
           />
         </View>
         <View style={stiller.ikili}>
-          <SecenekHapi etiket="Günde 2 kez" secili={false} onPress={() => guncelle({ saatler: [...HAZIR_SAATLER.ikiKez] })} style={stiller.esit} />
-          <SecenekHapi etiket="Günde 3 kez" secili={false} onPress={() => guncelle({ saatler: [...HAZIR_SAATLER.ucKez] })} style={stiller.esit} />
+          <SecenekHapi
+            etiket="Günde 2 kez"
+            secili={false}
+            onPress={() => guncelle({ saatler: [...HAZIR_SAATLER.ikiKez] })}
+            style={stiller.esit}
+          />
+          <SecenekHapi
+            etiket="Günde 3 kez"
+            secili={false}
+            onPress={() => guncelle({ saatler: [...HAZIR_SAATLER.ucKez] })}
+            style={stiller.esit}
+          />
         </View>
         {hata && form.ad.trim() !== '' && (
           <Yazi tur="ikincil" renk={renk.hata} accessibilityLiveRegion="polite">
@@ -148,23 +200,44 @@ function AnimsaticiFormu({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =
         </View>
       </Bolum>
 
-      <Bolum style={stiller.satir}>
-        <Yazi kalinlik="kalin" style={stiller.esnek}>
-          Sesli uyar
-        </Yazi>
-        <AcKapa acik={form.sesli} etiket="Sesli uyar" onDegis={(sesli) => guncelle({ sesli })} />
-      </Bolum>
+      {alarmDestegi && (
+        <Bolum>
+          <View style={stiller.satir}>
+            <Yazi kalinlik="kalin" style={stiller.esnek}>
+              Alarm olarak çalsın
+            </Yazi>
+            <AcKapa acik={form.alarm} etiket="Alarm olarak çalsın" onDegis={(alarm) => void alarmiDegistir(alarm)} />
+          </View>
+          <Yazi tur="ikincil">{ALARM_ACIKLAMASI}</Yazi>
+        </Bolum>
+      )}
 
-      <Bolum>
-        <Yazi kalinlik="kalin" accessibilityRole="header">
-          Ertele dersem
-        </Yazi>
-        <View style={stiller.cipler}>
-          {ERTELEME_SECENEKLERI.map((dk) => (
-            <SecenekHapi key={dk} etiket={`${dk} dk`} secili={form.erteleDk === dk} onPress={() => guncelle({ erteleDk: dk })} />
-          ))}
-        </View>
-      </Bolum>
+      {!form.alarm && (
+        <>
+          <Bolum style={stiller.satir}>
+            <Yazi kalinlik="kalin" style={stiller.esnek}>
+              Sesli uyar
+            </Yazi>
+            <AcKapa acik={form.sesli} etiket="Sesli uyar" onDegis={(sesli) => guncelle({ sesli })} />
+          </Bolum>
+
+          <Bolum>
+            <Yazi kalinlik="kalin" accessibilityRole="header">
+              Ertele dersem
+            </Yazi>
+            <View style={stiller.cipler}>
+              {ERTELEME_SECENEKLERI.map((dk) => (
+                <SecenekHapi
+                  key={dk}
+                  etiket={`${dk} dk`}
+                  secili={form.erteleDk === dk}
+                  onPress={() => guncelle({ erteleDk: dk })}
+                />
+              ))}
+            </View>
+          </Bolum>
+        </>
+      )}
     </AltSayfa>
   );
 }
@@ -174,7 +247,11 @@ export function useAnimsaticiFormu() {
   const [durum, setDurum] = useState<{ no: number; acik: boolean } | null>(null);
   const ac = useCallback(() => setDurum((d) => ({ no: (d?.no ?? 0) + 1, acik: true })), []);
   const oge = durum ? (
-    <AnimsaticiFormu key={durum.no} gorunur={durum.acik} onKapat={() => setDurum((d) => (d ? { ...d, acik: false } : d))} />
+    <AnimsaticiFormu
+      key={durum.no}
+      gorunur={durum.acik}
+      onKapat={() => setDurum((d) => (d ? { ...d, acik: false } : d))}
+    />
   ) : null;
   return { ac, oge };
 }
@@ -190,7 +267,12 @@ const stiller = StyleSheet.create({
     justifyContent: 'center',
   },
   saatSatiri: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  secici: { flex: 1, minHeight: 48, justifyContent: 'center', alignItems: 'flex-start' },
+  secici: {
+    flex: 1,
+    minHeight: 48,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
   ekle: { borderColor: renk.ana, borderWidth: 2, paddingHorizontal: 16 },
   ikili: { flexDirection: 'row', gap: 8 },
   esit: { flex: 1 },

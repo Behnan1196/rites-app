@@ -24,3 +24,8 @@ Sonuç: → kararlar.md (Görev 9: "Telefon tek kişiye bağlı")
 Ne dedi: "Bu anımsatmaların bildirim tarzında gelmesi zorunlu mu, yoksa yalnız Expo Go'da mı böyle?"
 Nerede: Anımsatıcılar
 Sonuç: → kararlar.md (Görev 7: bildirimle devam; AlarmKit ileride)
+
+### P-3 · 14 Ekim 2026 · Behnan · iPhone, Rites Dev
+Ne dedi: "İlaç gibi önemli anımsatıcılar ekleyeceğim, yalnız bildirim şeklinde gelmesi çok yardımcı olmuyor, alarm gibi bir yapı olabilir mi?"
+Nerede: Anımsatıcılar
+Sonuç: → kararlar.md (Alarm olarak çalan anımsatıcı)

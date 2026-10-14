@@ -2,12 +2,18 @@
 // - Anımsatıcılar ya da kartlar değişince, uygulama öne gelince ve gün
 //   değişince planı yeniden kurar (en çok 60, yakından uzağa).
 // - Bildirimdeki Durdur / Ertele'yi işler; bildirime dokunulunca ilgili ekranı açar.
+// - Alarmlı anımsatıcılar (iOS 26) telefonun alarmı olarak kurulur; izin yoksa ya da
+//   telefon desteklemiyorsa bildirimle gelir. Alarmdaki Durdur / Ertele Rites'ı
+//   açar ve burada işlenir.
 
 import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 
+import { ALARM_ERTELEME, alarmiEslestir, alarmPlani, erteleGecerliMi } from '@/mantik/alarm';
 import { bildirimPlani, erteleSaati, saatMetni } from '@/mantik/animsatici';
+import { bugun } from '@/mantik/tarih';
+import { alarmIzni, alarmPlaniniUygula, basislariDinle, basislariTemizle, bekleyenBasislar } from '@/veri/alarmlar';
 import { animsaticilariOku, durdur, eskiGunleriSil, ertele, gunDurumlari } from '@/veri/animsaticilar';
 import {
   BILDIRIME_DOKUNULDU,
@@ -30,15 +36,29 @@ function simdiSaat(): string {
   return saatMetni(d.getHours() * 60 + d.getMinutes());
 }
 
-async function planiHesapla(oku: Okuyucu, bugunGun: string) {
-  return bildirimPlani({
-    animsaticilar: await animsaticilariOku(oku),
-    gunDurumlari: await gunDurumlari(oku, bugunGun),
-    kartlar: await tumKartlar(oku),
-    bugunYapilanlar: await gunYapilanlari(oku, bugunGun),
-    bugunGun,
-    simdi: simdiSaat(),
-  });
+async function planlariHesapla(oku: Okuyucu, bugunGun: string) {
+  const animsaticilar = await animsaticilariOku(oku);
+  const durumlar = await gunDurumlari(oku, bugunGun);
+  const simdi = simdiSaat();
+  const alarmVar = (await alarmIzni()) === 'var';
+  return {
+    bildirimler: bildirimPlani({
+      animsaticilar,
+      gunDurumlari: durumlar,
+      kartlar: await tumKartlar(oku),
+      bugunYapilanlar: await gunYapilanlari(oku, bugunGun),
+      bugunGun,
+      simdi,
+      alarmlaCalanlar: alarmVar ? new Set(animsaticilar.filter((a) => a.alarm).map((a) => a.id)) : undefined,
+    }),
+    alarmlar: alarmPlani(animsaticilar, durumlar, bugunGun, simdi),
+    alarmVar,
+  };
+}
+
+async function planlariUygula(p: Awaited<ReturnType<typeof planlariHesapla>>) {
+  await planiUygula(p.bildirimler);
+  await alarmPlaniniUygula(p.alarmlar, p.alarmVar);
 }
 
 export function BildirimYoneticisi() {
@@ -58,7 +78,7 @@ export function BildirimYoneticisi() {
     const planla = () => {
       if (zamanlayici.current) clearTimeout(zamanlayici.current);
       zamanlayici.current = setTimeout(() => {
-        void planiHesapla(oku, bugunRef.current).then(planiUygula, (e: unknown) =>
+        void planlariHesapla(oku, bugunRef.current).then(planlariUygula, (e: unknown) =>
           console.error('Bildirim planı hesaplanamadı', e),
         );
       }, 400);
@@ -93,7 +113,11 @@ export function BildirimYoneticisi() {
     const isle = async ({ eylem, veri }: BildirimYaniti) => {
       if (!veri) return;
       if (veri.tur === 'kart') {
-        if (eylem === BILDIRIME_DOKUNULDU) router.push({ pathname: '/kart/[id]', params: { id: veri.kartId, gun: veri.gun } });
+        if (eylem === BILDIRIME_DOKUNULDU)
+          router.push({
+            pathname: '/kart/[id]',
+            params: { id: veri.kartId, gun: veri.gun },
+          });
         return;
       }
       const a = (await animsaticilariOku(oku)).find((x) => x.id === veri.animsaticiId);
@@ -115,7 +139,9 @@ export function BildirimYoneticisi() {
     const bekleyen: BildirimYaniti[] = [];
     const t = setTimeout(() => {
       hazir = true;
-      bekleyen.splice(0).forEach((y) => void isle(y).catch((e: unknown) => console.error('Bildirim yanıtı işlenemedi', e)));
+      bekleyen
+        .splice(0)
+        .forEach((y) => void isle(y).catch((e: unknown) => console.error('Bildirim yanıtı işlenemedi', e)));
     }, 600);
     const bitir = yanitlariDinle((y) => {
       if (!hazir) bekleyen.push(y);
@@ -124,6 +150,51 @@ export function BildirimYoneticisi() {
     return () => {
       clearTimeout(t);
       bitir();
+    };
+  }, [kapi, oku]);
+
+  // Alarmdaki Durdur / Ertele (Rites'ı açar; basış telefonda bekler).
+  useEffect(() => {
+    let isleniyor = false;
+    const isle = async () => {
+      if (isleniyor) return;
+      isleniyor = true;
+      try {
+        const basislar = await bekleyenBasislar();
+        if (basislar.length === 0) return;
+        const animsaticilar = await animsaticilariOku(oku);
+        const bugunGun = bugun();
+        for (const b of basislar) {
+          const e = alarmiEslestir(b.alarmId, animsaticilar, bugun(new Date(b.zamanMs)));
+          if (!e) continue;
+          const { animsatici: a, saat, gun } = e;
+          if (b.tur === 'durdur') {
+            await durdur(kapi, a.id, gun, saat);
+            kisaMesajRef.current(`Durduruldu: ${a.ad}`);
+          } else if (gun === bugunGun && erteleGecerliMi(b.zamanMs, Date.now())) {
+            const d = (await gunDurumlari(oku, gun)).find((g) => g.animsaticiId === a.id && g.saat === saat);
+            if (d?.durduruldu) continue;
+            const yeni = erteleSaati(d?.ertelenenSaat ?? saat, simdiSaat(), ALARM_ERTELEME);
+            await ertele(kapi, a.id, gun, saat, yeni);
+            kisaMesajRef.current(`Ertelendi: ${yeni} · ${a.ad}`);
+          }
+        }
+        await basislariTemizle();
+      } catch (e) {
+        console.error('Alarm düğmesi işlenemedi', e);
+      } finally {
+        isleniyor = false;
+      }
+    };
+    const t = setTimeout(() => void isle(), 600);
+    const bitir = basislariDinle(() => void isle());
+    const abonelik = AppState.addEventListener('change', (d) => {
+      if (d === 'active') void isle();
+    });
+    return () => {
+      clearTimeout(t);
+      bitir();
+      abonelik.remove();
     };
   }, [kapi, oku]);
 

@@ -17,6 +17,8 @@ export interface Animsatici {
   gunler: AnimsaticiGunleri;
   sesli: boolean;
   erteleDk: number;
+  /** Alarm olarak çalar (iOS 26 AlarmKit); bildirim gönderilmez. */
+  alarm: boolean;
 }
 
 /** Bugünkü bir saatin durumu (`animsatici_gun`). */
@@ -88,9 +90,10 @@ export function gunlerMetni(gunler: AnimsaticiGunleri): string {
   return GUN_SECENEKLERI.find(([k]) => k === gunler)?.[1] ?? 'Her gün';
 }
 
-/** "Her gün · Sesli · erteleme 10 dk" */
-export function animsaticiMeta(a: Pick<Animsatici, 'gunler' | 'sesli' | 'erteleDk'>): string {
-  return `${gunlerMetni(a.gunler)} · ${a.sesli ? 'Sesli' : 'Sessiz'} · erteleme ${a.erteleDk} dk`;
+/** "Her gün · Sesli · erteleme 10 dk" / "Her gün · Alarm · erteleme 5 dk" */
+export function animsaticiMeta(a: Pick<Animsatici, 'gunler' | 'sesli' | 'erteleDk' | 'alarm'>): string {
+  const tur = a.alarm ? 'Alarm' : a.sesli ? 'Sesli' : 'Sessiz';
+  return `${gunlerMetni(a.gunler)} · ${tur} · erteleme ${a.erteleDk} dk`;
 }
 
 export function erteleMetni(dk: number): string {
@@ -238,6 +241,8 @@ export interface PlanGirdisi {
   simdi: string;
   gunSayisi?: number;
   sinir?: number;
+  /** Alarm olarak çalan anımsatıcılar; bunlara bildirim planlanmaz. */
+  alarmlaCalanlar?: ReadonlySet<string>;
 }
 
 /**
@@ -254,6 +259,7 @@ export function bildirimPlani({
   simdi,
   gunSayisi = PLAN_GUNU,
   sinir = BILDIRIM_SINIRI,
+  alarmlaCalanlar,
 }: PlanGirdisi): PlanliBildirim[] {
   const simdiAnahtar = `${bugunGun} ${simdi}`;
   const liste: PlanliBildirim[] = [];
@@ -262,7 +268,7 @@ export function bildirimPlani({
     const gun = gunEkle(bugunGun, i);
 
     for (const a of animsaticilar) {
-      if (!gunuKapsarMi(a.gunler, gun)) continue;
+      if (!gunuKapsarMi(a.gunler, gun) || alarmlaCalanlar?.has(a.id)) continue;
       for (const saat of a.saatler) {
         const d = i === 0 ? gunDurumlari.find((g) => g.animsaticiId === a.id && g.saat === saat) : undefined;
         if (d?.durduruldu) continue;

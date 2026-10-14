@@ -1,12 +1,12 @@
 # Teknik yapı
 
-_Son güncelleme: 14 Ekim 2026_
+_Son güncelleme: 14 Ekim 2026 (alarm)_
 
 ## Yığın
 
 - Expo SDK 57, React Native 0.86, React 19.2, TypeScript (strict, `noUncheckedIndexedAccess`), expo-router.
 - Yerel veri: expo-sqlite. Sunucu: Supabase (Postgres + e-posta kodu ile giriş + satır düzeyi yetki + Realtime + bir Edge Function).
-- Bildirim: expo-notifications (yalnız yerel). Ses: expo-audio. Dosya/fotoğraf: expo-image-picker, expo-document-picker, expo-file-system. Rehber: expo-contacts (seçici).
+- Bildirim: expo-notifications (yalnız yerel). Alarm: react-native-alarm-scheduler (iOS 26 AlarmKit). Ses: expo-audio. Dosya/fotoğraf: expo-image-picker, expo-document-picker, expo-file-system. Rehber: expo-contacts (seçici).
 - Derleme ve dağıtım: EAS Build, TestFlight (EAS Submit), EAS Update.
 
 ## Klasörler
@@ -35,6 +35,7 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 5 | `animsatici`, `animsatici_gun` |
 | 6 | `kisi` (Kişilerim; kişinin verdiği adlar telefonda kalır) |
 | 7 | `kutuphane` (kart ya da planın kayıtsız kopyası, JSON içerik) |
+| 8 | `animsatici.alarm` (alarm olarak çalar) |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 
@@ -47,7 +48,7 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Tek JSON dosyası, adı `rites-yedek-YYYY-AA-GG.json`, parolasız.
 - Alanlar:
   - `bicim`: `"rites-yedek"`
-  - `surum`: veritabanı göç sürümü (şu an 7)
+  - `surum`: veritabanı göç sürümü (şu an 8)
   - `olusturma`: ISO zaman
   - `dosyaKlasoru`: yedeği alan telefondaki dosya klasörü (geri yüklemede yollar yeni klasöre çevrilir)
   - `tablolar`: `{ tabloAdı: satır[] }` — satırlar SQLite sütun adlarıyla; JSON sütunlar metin olarak
@@ -68,6 +69,14 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Sunucu adresi ve yayımlanabilir anahtar `.env.local`te (depoya girmez); EAS derlemeleri ve güncellemeleri için aynı değerler EAS ortam değişkenlerine (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) girilir.
 - **Paketler `npm ci` ile kurulur, `npm install` ile değil.** Windows'taki `npm install` kilit dosyasından (`package-lock.json`) isteğe bağlı bir paketi (react-native-worklets) düşürdü; EAS'ın `npm ci` adımı bu yüzden "Install dependencies" aşamasında hata verdi (14 Ekim). Yeni paket yalnız `npx expo install <paket>` ile eklenir ve kilit dosyası değişince EAS'tan önce `npm ci` denenir.
 - Expo Go ile kendi derleme arasında veri taşınmaz (iki ayrı uygulama); geçişte yedek alınıp geri yüklenir.
+
+## Alarmlar (iOS 26 AlarmKit)
+
+- `mantik/alarm.ts` planı kurar: alarmlı her (anımsatıcı, saat) için haftalık tekrarlı bir alarm; bugün ertelenmiş saat için tek seferlik alarm. Kimlikler metinden türetilen kararlı UUID'ler; `veri/alarmlar.ts` telefondakilerle farkı uygular (eksik eklenir, fazla ya da saati değişen kaldırılır).
+- Tekrarlı alarm telefonda durur; Rites açılmasa da her gün çalar. Bildirim planı alarmlı anımsatıcıları atlar (yalnız alarm izni varsa).
+- Alarmdaki Durdur / Ertele düğmesi Rites'ı açar; modül basışı telefonda kaydeder, `BildirimYoneticisi` açılışta ve öne gelişte okuyup işler.
+- Modül yalnız kendi derlemede vardır (`requireOptionalNativeModule`); yoksa her şey bildirimle sürer. Info.plist'e `NSAlarmKitUsageDescription` eklentiyle girer.
+- Yeni yerel modül olduğu için sürüm 1.1.0 (`runtimeVersion` değişti): 1.0.0 derlemeleri bu güncellemeyi almaz, yeni derleme gerekir.
 
 ## Paylaşımla içerik almak
 

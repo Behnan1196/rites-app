@@ -43,7 +43,7 @@ describe('yedek (gerçek SQLite)', () => {
       bitis: null, baslangicPuani: 0, gununSorusu: null, durum: 'etkin',
     };
     await planBaslat(a.kapi, { plan: p, duzenliler: [etkinliktenKart(alanBul('hareket')!.etkinlikler[0]!, p, BUGUN, id)], adimlar: [] }, id);
-    await animsaticiEkle(a.kapi, { id: 'g', ad: 'Göz', saatler: ['08:00'], gunler: 'hergun', sesli: true, erteleDk: 10 });
+    await animsaticiEkle(a.kapi, { id: 'g', ad: 'Göz', saatler: ['08:00'], gunler: 'hergun', sesli: true, erteleDk: 10, alarm: false });
 
     const yedek = JSON.parse(JSON.stringify(await yedekVerisi(a.oku, 'file:///eski/dosyalar')));
     expect(yedek.surum).toBe(GOCLER.length);
