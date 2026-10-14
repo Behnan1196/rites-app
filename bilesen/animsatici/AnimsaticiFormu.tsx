@@ -12,10 +12,11 @@ import {
   HAZIR_SAATLER,
   saatleriSirala,
   VARSAYILAN_ERTELEME,
+  type Animsatici,
   type AnimsaticiGunleri,
 } from '@/mantik/animsatici';
 import { alarmIzni, alarmIzniIste } from '@/veri/alarmlar';
-import { animsaticiEkle } from '@/veri/animsaticilar';
+import { animsaticiEkle, animsaticiGuncelle, animsaticiSil } from '@/veri/animsaticilar';
 import { bildirimIzni } from '@/veri/bildirimler';
 import { yeniKimlik } from '@/veri/kimlik';
 import { useVeri } from '@/veri/VeriSaglayici';
@@ -52,10 +53,33 @@ const ILK: Form = {
 export const ALARM_IZNI_YOK =
   "Alarm izni kapalı. Ayarlar → Rites'tan açabilirsin; o zamana kadar bildirim olarak gelir.";
 
-function AnimsaticiFormu({ gorunur, onKapat }: { gorunur: boolean; onKapat: () => void }) {
+function formdan(a: Animsatici): Form {
+  return {
+    ad: a.ad,
+    saatler: [...a.saatler],
+    yeniSaat: ILK.yeniSaat,
+    gunler: a.gunler,
+    sesli: a.sesli,
+    erteleDk: a.erteleDk,
+    alarm: a.alarm,
+  };
+}
+
+function AnimsaticiFormu({
+  gorunur,
+  onKapat,
+  duzenlenen,
+}: {
+  gorunur: boolean;
+  onKapat: () => void;
+  /** Verilirse düzenleme: form dolu açılır, altta "Anımsatıcıyı sil" var. */
+  duzenlenen: Animsatici | null;
+}) {
   const { kapi } = useVeri();
   const kisaMesaj = useKisaMesaj();
-  const [form, setForm] = useState<Form>(ILK);
+  const baslangic = useMemo(() => (duzenlenen ? formdan(duzenlenen) : ILK), [duzenlenen]);
+  const [form, setForm] = useState<Form>(baslangic);
+  const [silSoruluyor, setSilSoruluyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
   // Alarm seçeneği yalnız destekleyen telefonda (iOS 26, kendi derleme) görünür.
@@ -69,7 +93,7 @@ function AnimsaticiFormu({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =
       iptal = true;
     };
   }, []);
-  const degisti = useMemo(() => JSON.stringify(form) !== JSON.stringify(ILK), [form]);
+  const degisti = useMemo(() => JSON.stringify(form) !== JSON.stringify(baslangic), [form, baslangic]);
   const guncelle = (f: Partial<Form>) => {
     setForm((x) => ({ ...x, ...f }));
     setHata(null);
@@ -91,17 +115,19 @@ function AnimsaticiFormu({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =
     if (calisiyor) return;
     setCalisiyor(true);
     try {
-      await animsaticiEkle(kapi, {
-        id: yeniKimlik(),
+      const a: Animsatici = {
+        id: duzenlenen?.id ?? yeniKimlik(),
         ad: form.ad.trim(),
         saatler: saatleriSirala(form.saatler),
         gunler: form.gunler,
         sesli: form.alarm || form.sesli,
         erteleDk: form.alarm ? ALARM_ERTELEME : form.erteleDk,
         alarm: form.alarm,
-      });
+      };
+      if (duzenlenen) await animsaticiGuncelle(kapi, a);
+      else await animsaticiEkle(kapi, a);
       await bildirimIzni(true);
-      kisaMesaj(`Anımsatıcı eklendi: ${form.ad.trim()}`);
+      kisaMesaj(duzenlenen ? `Kaydedildi: ${a.ad}` : `Anımsatıcı eklendi: ${a.ad}`);
       onKapat();
     } catch (e) {
       console.error('Anımsatıcı kaydedilemedi', e);
@@ -111,16 +137,41 @@ function AnimsaticiFormu({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =
     }
   };
 
+  const sil = async () => {
+    if (!duzenlenen) return;
+    setSilSoruluyor(false);
+    try {
+      await animsaticiSil(kapi, duzenlenen.id);
+      kisaMesaj(`Silindi: ${duzenlenen.ad}`);
+      onKapat();
+    } catch (e) {
+      console.error('Anımsatıcı silinemedi', e);
+      kisaMesaj('Silinemedi. Yeniden dene.');
+    }
+  };
+
   return (
     <AltSayfa
       gorunur={gorunur}
       onKapat={onKapat}
-      baslik="Anımsatıcı ekle"
+      baslik={duzenlenen ? 'Düzenle' : 'Anımsatıcı ekle'}
       solVazgec
       degisti={degisti}
+      onay={
+        silSoruluyor && duzenlenen
+          ? {
+              baslik: 'Anımsatıcı silinsin mi?',
+              aciklama: duzenlenen.ad,
+              secenekler: [
+                { etiket: 'Sil', tur: 'tehlike', onPress: () => void sil() },
+                { etiket: 'Vazgeç', tur: 'yazi', onPress: () => setSilSoruluyor(false) },
+              ],
+            }
+          : null
+      }
       altAlan={<Dugme etiket="Kaydet" onPress={() => void kaydet()} pasif={calisiyor} />}
     >
-      <Yazi tur="ikincil">{ANIMSATICI_BILGI}</Yazi>
+      {!duzenlenen && <Yazi tur="ikincil">{ANIMSATICI_BILGI}</Yazi>}
       <GirisAlani
         etiket="Neyi anımsatalım?"
         value={form.ad}
@@ -238,17 +289,23 @@ function AnimsaticiFormu({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =
           </Bolum>
         </>
       )}
+      {duzenlenen && <Dugme tur="tehlike" etiket="Anımsatıcıyı sil" onPress={() => setSilSoruluyor(true)} />}
     </AltSayfa>
   );
 }
 
-/** `const form = useAnimsaticiFormu(); form.ac(); {form.oge}` */
+/** `const form = useAnimsaticiFormu(); form.ac(); form.ac(anımsatıcı); {form.oge}` */
 export function useAnimsaticiFormu() {
-  const [durum, setDurum] = useState<{ no: number; acik: boolean } | null>(null);
-  const ac = useCallback(() => setDurum((d) => ({ no: (d?.no ?? 0) + 1, acik: true })), []);
+  const [durum, setDurum] = useState<{ no: number; acik: boolean; duzenlenen: Animsatici | null } | null>(null);
+  /** Anımsatıcı verilirse düzenleme açılır. */
+  const ac = useCallback(
+    (duzenlenen: Animsatici | null = null) => setDurum((d) => ({ no: (d?.no ?? 0) + 1, acik: true, duzenlenen })),
+    [],
+  );
   const oge = durum ? (
     <AnimsaticiFormu
       key={durum.no}
+      duzenlenen={durum.duzenlenen}
       gorunur={durum.acik}
       onKapat={() => setDurum((d) => (d ? { ...d, acik: false } : d))}
     />

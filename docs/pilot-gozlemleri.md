@@ -29,3 +29,13 @@ Sonuç: → kararlar.md (Görev 7: bildirimle devam; AlarmKit ileride)
 Ne dedi: "İlaç gibi önemli anımsatıcılar ekleyeceğim, yalnız bildirim şeklinde gelmesi çok yardımcı olmuyor, alarm gibi bir yapı olabilir mi?"
 Nerede: Anımsatıcılar
 Sonuç: → kararlar.md (Alarm olarak çalan anımsatıcı)
+
+### P-4 · 14 Ekim 2026 · Behnan · iPhone, Rites Dev 1.1.0
+Ne dedi: "Ekran kilitliyken alarm çalmaya başlıyor, ertele diyorum uygulama açılıyor ve Ertelendi yazıyor ama alarm susmuyor, Durdur seçeneği de yoktu. Sanırım telefonun soldaki tuşuna basınca sustu."
+Nerede: Kilit ekranında alarm
+Sonuç: → kararlar.md (Alarm olarak çalan anımsatıcı: Ertele susturmuyordu)
+
+### P-5 · 14 Ekim 2026 · Behnan · iPhone, Rites Dev 1.1.0
+Ne dedi: "Anımsatıcılar ekranını basitleştirelim. Sadece eklediğim anımsatıcılar listelensin ve edit edilebilsin."
+Nerede: Giriş → Anımsatıcılar
+Sonuç: → kararlar.md (Anımsatıcılar ekranı sadeleşti)

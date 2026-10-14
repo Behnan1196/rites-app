@@ -16,7 +16,7 @@ import type {
   ScheduledAlarm,
 } from 'react-native-alarm-scheduler';
 
-import { ALARM_ERTELEME, alarmFarki, saatParcalari, type PlanliAlarm } from '@/mantik/alarm';
+import { ALARM_ERTELEME, alarmFarki, alarmImzasi, saatParcalari, type PlanliAlarm } from '@/mantik/alarm';
 import { erteleMetni, saatMetni } from '@/mantik/animsatici';
 
 interface AlarmModulu {
@@ -24,6 +24,7 @@ interface AlarmModulu {
   requestPermissionsAsync(): Promise<AlarmPermissionResponse>;
   scheduleAlarmAsync(alarm: AlarmScheduleInput): Promise<ScheduledAlarm>;
   cancelAlarmAsync(id: string): Promise<boolean>;
+  completeNativeAlarmAsync(alarmId: string): Promise<void>;
   getScheduledAlarmsAsync(): Promise<ScheduledAlarm[]>;
   getPendingAlarmActionsAsync(): Promise<AlarmAction[]>;
   clearPendingAlarmActionsAsync(ids?: string[]): Promise<void>;
@@ -104,7 +105,7 @@ export function alarmPlaniniUygula(plan: readonly PlanliAlarm[], izinVar: boolea
     .then(async () => {
       const telefondakiler = (await m.getScheduledAlarmsAsync()).map((a) => ({
         id: a.id,
-        saat: saatMetni(a.hour * 60 + a.minute),
+        imza: alarmImzasi(saatMetni(a.hour * 60 + a.minute), a.weekdays ?? [], a.title),
       }));
       const { eklenecek, kaldirilacak } = alarmFarki(izinVar ? plan : [], telefondakiler);
       for (const id of kaldirilacak) await m.cancelAlarmAsync(id);
@@ -118,6 +119,21 @@ export function alarmPlaniniUygula(plan: readonly PlanliAlarm[], izinVar: boolea
     })
     .catch((e: unknown) => console.error('Alarmlar planlanamadı', e));
   return sira;
+}
+
+/**
+ * Çalan alarmı susturur. Alarmdaki Ertele düğmesi alarmı kendisi susturmuyor
+ * (denemede görüldü, 14 Ekim); susturmak için alarm iptal edilir. Kaydı da
+ * silinir ki bir sonraki plan uygulamasında (tekrarlıysa) yeniden kurulsun.
+ */
+export async function alarmiSustur(id: string): Promise<void> {
+  if (!modul) return;
+  try {
+    await modul.completeNativeAlarmAsync(id);
+    await modul.cancelAlarmAsync(id);
+  } catch (e) {
+    console.error('Alarm susturulamadı', e);
+  }
 }
 
 export interface AlarmBasisi {

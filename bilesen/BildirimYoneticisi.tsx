@@ -13,7 +13,14 @@ import { AppState } from 'react-native';
 import { ALARM_ERTELEME, alarmiEslestir, alarmPlani, erteleGecerliMi } from '@/mantik/alarm';
 import { bildirimPlani, erteleSaati, saatMetni } from '@/mantik/animsatici';
 import { bugun } from '@/mantik/tarih';
-import { alarmIzni, alarmPlaniniUygula, basislariDinle, basislariTemizle, bekleyenBasislar } from '@/veri/alarmlar';
+import {
+  alarmiSustur,
+  alarmIzni,
+  alarmPlaniniUygula,
+  basislariDinle,
+  basislariTemizle,
+  bekleyenBasislar,
+} from '@/veri/alarmlar';
 import { animsaticilariOku, durdur, eskiGunleriSil, ertele, gunDurumlari } from '@/veri/animsaticilar';
 import {
   BILDIRIME_DOKUNULDU,
@@ -68,6 +75,7 @@ export function BildirimYoneticisi() {
 
   // Yeniden planlama; arka arkaya gelen değişiklikler tek seferde.
   const zamanlayici = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const planlaRef = useRef<() => void>(() => undefined);
   const bugunRef = useRef(bugunGun);
   useEffect(() => {
     bugunRef.current = bugunGun;
@@ -75,14 +83,14 @@ export function BildirimYoneticisi() {
 
   useEffect(() => {
     void bildirimleriKur();
-    const planla = () => {
+    const planla = (planlaRef.current = () => {
       if (zamanlayici.current) clearTimeout(zamanlayici.current);
       zamanlayici.current = setTimeout(() => {
         void planlariHesapla(oku, bugunRef.current).then(planlariUygula, (e: unknown) =>
           console.error('Bildirim planı hesaplanamadı', e),
         );
       }, 400);
-    };
+    });
     void eskiGunleriSil(kapi, bugunRef.current).finally(planla);
     const bitir = yayin.abone(['animsatici', 'kart', 'plan'], planla);
     const abonelik = AppState.addEventListener('change', (d) => {
@@ -168,6 +176,8 @@ export function BildirimYoneticisi() {
           const e = alarmiEslestir(b.alarmId, animsaticilar, bugun(new Date(b.zamanMs)));
           if (!e) continue;
           const { animsatici: a, saat, gun } = e;
+          // Alarmdaki Ertele alarmı susturmuyor; Rites susturur (tekrarlıysa plan yeniden kurar).
+          await alarmiSustur(b.alarmId);
           if (b.tur === 'durdur') {
             await durdur(kapi, a.id, gun, saat);
             kisaMesajRef.current(`Durduruldu: ${a.ad}`);
@@ -180,6 +190,8 @@ export function BildirimYoneticisi() {
           }
         }
         await basislariTemizle();
+        // Susturulan tekrarlı alarm yeniden kurulsun (yazma olmadıysa da).
+        planlaRef.current();
       } catch (e) {
         console.error('Alarm düğmesi işlenemedi', e);
       } finally {

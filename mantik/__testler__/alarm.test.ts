@@ -1,5 +1,6 @@
 import {
   alarmFarki,
+  alarmImzasi,
   alarmiEslestir,
   alarmPlani,
   erteleGecerliMi,
@@ -96,8 +97,8 @@ describe('telefondakiyle fark', () => {
   const plan = alarmPlani([ilac], [], BUGUN, '07:00');
   it('eksik eklenir, fazla kaldırılır, aynısı dokunulmaz', () => {
     const f = alarmFarki(plan, [
-      { id: plan[0]!.id, saat: '08:00' },
-      { id: 'eski', saat: '06:00' },
+      { id: plan[0]!.id, imza: alarmImzasi('08:00', [1, 2, 3, 4, 5, 6, 7], 'İlaç') },
+      { id: 'eski', imza: '06:00||x' },
     ]);
     expect(f.eklenecek.map((p) => p.saat)).toEqual(['20:00']);
     expect(f.kaldirilacak).toEqual(['eski']);
@@ -117,12 +118,22 @@ describe('telefondakiyle fark', () => {
       '08:06',
     );
     const tek = ertele.find((p) => p.gun)!;
-    const f = alarmFarki(ertele, [...plan.map((p) => ({ id: p.id, saat: p.saat })), { id: tek.id, saat: '08:05' }]);
+    const f = alarmFarki(ertele, [
+      ...plan.map((p) => ({ id: p.id, imza: alarmImzasi(p.saat, p.haftaGunleri, p.baslik) })),
+      { id: tek.id, imza: alarmImzasi('08:05', [], 'İlaç') },
+    ]);
     expect(f.kaldirilacak).toEqual([tek.id]);
     expect(f.eklenecek).toEqual([tek]);
   });
+  it('ad ya da günler değiştiyse (düzenleme) yeniden kurulur', () => {
+    const telefonda = plan.map((p) => ({ id: p.id, imza: alarmImzasi(p.saat, p.haftaGunleri, p.baslik) }));
+    const yeni = alarmPlani([{ ...ilac, ad: 'Tansiyon ilacı', gunler: 'haftaici' }], [], BUGUN, '07:00');
+    const f = alarmFarki(yeni, telefonda);
+    expect(f.kaldirilacak).toHaveLength(2);
+    expect(f.eklenecek.map((p) => p.baslik)).toEqual(['Tansiyon ilacı', 'Tansiyon ilacı']);
+  });
   it('izin yoksa (boş plan) hepsi kalkar', () => {
-    expect(alarmFarki([], [{ id: 'a', saat: '08:00' }]).kaldirilacak).toEqual(['a']);
+    expect(alarmFarki([], [{ id: 'a', imza: 'x' }]).kaldirilacak).toEqual(['a']);
   });
 });
 

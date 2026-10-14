@@ -112,22 +112,28 @@ export interface AlarmFarki {
 
 export interface TelefondakiAlarm {
   id: string;
-  /** "SS:dd" */
-  saat: string;
+  /** `alarmImzasi` ile aynı biçimde: saat, hafta günleri, başlık. */
+  imza: string;
 }
 
+/** Alarmın telefondaki hâlini belirleyen her şey; biri değişirse alarm yeniden kurulur. */
+export function alarmImzasi(saat: string, haftaGunleri: readonly number[], baslik: string): string {
+  return `${saat}|${[...haftaGunleri].sort((a, b) => a - b).join(',')}|${baslik}`;
+}
+
+const planImzasi = (p: PlanliAlarm) => alarmImzasi(p.saat, p.haftaGunleri, p.baslik);
+
 /**
- * Telefondaki alarmlarla plan arasındaki fark. Aynı kimlikli alarmın saati
- * değiştiyse (yeniden ertelendi) kaldırılıp yeniden eklenir.
+ * Telefondaki alarmlarla plan arasındaki fark. Aynı kimlikli alarmın saati,
+ * günleri ya da adı değiştiyse (yeniden ertelendi, düzenlendi) kaldırılıp
+ * yeniden eklenir.
  */
 export function alarmFarki(plan: readonly PlanliAlarm[], telefondakiler: readonly TelefondakiAlarm[]): AlarmFarki {
-  const istenen = new Map(plan.map((p) => [p.id, p.saat]));
-  const telefonda = new Map(telefondakiler.map((t) => [t.id, t.saat]));
+  const istenen = new Map(plan.map((p) => [p.id, planImzasi(p)]));
+  const telefonda = new Map(telefondakiler.map((t) => [t.id, t.imza]));
   return {
-    eklenecek: plan.filter((p) => telefonda.get(p.id) !== p.saat),
-    kaldirilacak: telefondakiler
-      .filter((t) => (istenen.has(t.id) ? istenen.get(t.id) !== t.saat : true))
-      .map((t) => t.id),
+    eklenecek: plan.filter((p) => telefonda.get(p.id) !== planImzasi(p)),
+    kaldirilacak: telefondakiler.filter((t) => istenen.get(t.id) !== t.imza).map((t) => t.id),
   };
 }
 

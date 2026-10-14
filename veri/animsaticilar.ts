@@ -40,10 +40,12 @@ export async function animsaticilariOku(oku: Okuyucu): Promise<Animsatici[]> {
 
 /** Yalnız o günün durumları. */
 export async function gunDurumlari(oku: Okuyucu, gun: Gun): Promise<AnimsaticiGunu[]> {
-  const satirlar = await oku.hepsi<{ animsatici_id: string; saat: string; durum: string | null; ertelenen_saat: string | null }>(
-    'SELECT animsatici_id, saat, durum, ertelenen_saat FROM animsatici_gun WHERE tarih = ?',
-    [gun],
-  );
+  const satirlar = await oku.hepsi<{
+    animsatici_id: string;
+    saat: string;
+    durum: string | null;
+    ertelenen_saat: string | null;
+  }>('SELECT animsatici_id, saat, durum, ertelenen_saat FROM animsatici_gun WHERE tarih = ?', [gun]);
   return satirlar.map((s) => ({
     animsaticiId: s.animsatici_id,
     saat: s.saat,
@@ -61,17 +63,37 @@ export function eskiGunleriSil(kapi: Kapi, bugunGun: Gun): Promise<void> {
   return kapi.yaz(['animsatici'], (y) => eskileriSilY(y, bugunGun));
 }
 
-export function animsaticiEkle(
-  kapi: Kapi,
-  a: Animsatici,
-  simdi: string = new Date().toISOString(),
-): Promise<void> {
+export function animsaticiEkle(kapi: Kapi, a: Animsatici, simdi: string = new Date().toISOString()): Promise<void> {
   return kapi.yaz(['animsatici'], (y) =>
     y.calistir(
       'INSERT INTO animsatici (id, ad, saatler, gunler, sesli, ertele_dk, alarm, olusturma) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [a.id, a.ad.trim(), JSON.stringify(saatleriSirala(a.saatler)), a.gunler, a.sesli ? 1 : 0, a.erteleDk, a.alarm ? 1 : 0, simdi],
+      [
+        a.id,
+        a.ad.trim(),
+        JSON.stringify(saatleriSirala(a.saatler)),
+        a.gunler,
+        a.sesli ? 1 : 0,
+        a.erteleDk,
+        a.alarm ? 1 : 0,
+        simdi,
+      ],
     ),
   );
+}
+
+/** Düzenleme: bugünün durumlarından artık olmayan saatlerinkiler silinir. */
+export function animsaticiGuncelle(kapi: Kapi, a: Animsatici): Promise<void> {
+  const saatler = saatleriSirala(a.saatler);
+  return kapi.yaz(['animsatici'], async (y) => {
+    await y.calistir(
+      'UPDATE animsatici SET ad = ?, saatler = ?, gunler = ?, sesli = ?, ertele_dk = ?, alarm = ? WHERE id = ?',
+      [a.ad.trim(), JSON.stringify(saatler), a.gunler, a.sesli ? 1 : 0, a.erteleDk, a.alarm ? 1 : 0, a.id],
+    );
+    await y.calistir(
+      `DELETE FROM animsatici_gun WHERE animsatici_id = ? AND saat NOT IN (${saatler.map(() => '?').join(', ')})`,
+      [a.id, ...saatler],
+    );
+  });
 }
 
 export function animsaticiSil(kapi: Kapi, id: string): Promise<void> {
