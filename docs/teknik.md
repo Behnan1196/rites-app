@@ -65,6 +65,7 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 
 - Paket kimliği: `com.behnanozturkmen.ritespilot`. `runtimeVersion` politikası `appVersion`: uygulama sürümü (`app.json` → `version`) artırılınca eski derlemeler yeni güncellemeyi almaz. Yerel bir şey değiştiğinde sürüm artırılır ve yeniden derlenir.
 - Sunucu adresi ve yayımlanabilir anahtar `.env.local`te (depoya girmez); EAS derlemeleri ve güncellemeleri için aynı değerler EAS ortam değişkenlerine (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) girilir.
+- **Paketler `npm ci` ile kurulur, `npm install` ile değil.** Windows'taki `npm install` kilit dosyasından (`package-lock.json`) isteğe bağlı bir paketi (react-native-worklets) düşürdü; EAS'ın `npm ci` adımı bu yüzden "Install dependencies" aşamasında hata verdi (14 Ekim). Yeni paket yalnız `npx expo install <paket>` ile eklenir ve kilit dosyası değişince EAS'tan önce `npm ci` denenir.
 - Expo Go ile kendi derleme arasında veri taşınmaz (iki ayrı uygulama); geçişte yedek alınıp geri yüklenir.
 
 ## Denetim

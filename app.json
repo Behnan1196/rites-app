@@ -21,7 +21,19 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.behnanozturkmen.ritespilot"
+      "package": "com.behnanozturkmen.ritespilot",
+      "permissions": [
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -69,6 +81,16 @@
     "scheme": "rites",
     "runtimeVersion": {
       "policy": "appVersion"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6443cebc-a2ff-46c4-8bbb-279ba4291fa5"
+      }
+    },
+    "owner": "behnan",
+    "updates": {
+      "url": "https://u.expo.dev/6443cebc-a2ff-46c4-8bbb-279ba4291fa5"
     }
   }
 }
