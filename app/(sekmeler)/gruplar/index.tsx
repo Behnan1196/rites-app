@@ -1,6 +1,6 @@
-// Gruplar: Seni eklemek isteyenler, Seni gruba çağıranlar, ücretsiz sınır,
-// Kişilerim, + Kişi ekle (9. görev); Gruplarım, + Grup kur (10. görev).
-// Ortak listeler Giriş'ten açılır (`04`).
+// Gruplar: Seni eklemek isteyenler, Seni gruba çağıranlar, Kişilerim, + Kişi ekle
+// (9. görev); Gruplarım, + Grup kur (10. görev).
+// Ortak listeler Giriş'ten açılır (`04`). Ücretsiz sınır göstergesi Ayarlar → Üyelik'te.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
@@ -25,9 +25,7 @@ import {
   BAGLANAMIYOR,
   DURUM_METNI,
   ekledigimSayi,
-  kalanKisiMetni,
   kisiBasHarf,
-  SINIR_ACIKLAMASI,
   UCRETSIZ_SINIR,
   type Kisi,
 } from '@/mantik/kisiler';
@@ -130,18 +128,6 @@ export default function Gruplar() {
             <Yazi tur="ikincil">{`${kisiler.length} kişi`}</Yazi>
           </View>
 
-          <View style={stiller.kutu}>
-            <View style={stiller.baslikSatiri}>
-              <Yazi tur="ikincil">Eklediğin kişiler (ücretsiz)</Yazi>
-              <Yazi tur="bolumBasligi">{`${ekledigim} / ${UCRETSIZ_SINIR}`}</Yazi>
-            </View>
-            <View style={stiller.cubuklar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              {Array.from({ length: UCRETSIZ_SINIR }, (_, i) => (
-                <View key={i} style={[stiller.cubuk, { backgroundColor: i < ekledigim ? renk.ana : renk.cizgi }]} />
-              ))}
-            </View>
-            <Yazi tur="ikincil">{`${kalanKisiMetni(ekledigim)} ${SINIR_ACIKLAMASI}`}</Yazi>
-          </View>
 
           {kisiler.length > 0 && (
             <View style={stiller.liste}>
@@ -253,16 +239,6 @@ const stiller = StyleSheet.create({
   esnek: { flex: 1 },
   dugmeler: { flexDirection: 'row', gap: 10 },
   baslikSatiri: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  kutu: {
-    backgroundColor: renk.yuzey,
-    borderWidth: 1,
-    borderColor: renk.cizgi,
-    borderRadius: olcu.kose.kart,
-    padding: olcu.kartIci,
-    gap: 10,
-  },
-  cubuklar: { flexDirection: 'row', gap: 8 },
-  cubuk: { flex: 1, height: 10, borderRadius: 5 },
   liste: {
     backgroundColor: renk.yuzey,
     borderWidth: 1,

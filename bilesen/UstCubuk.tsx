@@ -1,5 +1,5 @@
 // Ekranların üst satırı (pilot kararı, 14 Ekim): "Rites" yazısı yok. Solda ekran
-// başlığı ya da "‹ Geri", sağda ekranın simge düğmeleri ve avatar (→ Profil).
+// başlığı ya da "‹ Geri", sağda ekranın simge düğmeleri ve avatar (→ Profil · Ayarlar menüsü).
 // Ayrı bir marka satırı kalmadığı için kartlara daha çok yer kalır.
 
 import type { ReactNode } from 'react';
@@ -12,7 +12,7 @@ import { useProfil } from './Profil';
 import { olcu } from './tema';
 
 export function UstCubuk({ sol, sag }: { sol?: ReactNode; sag?: ReactNode }) {
-  const { profiliAc } = useProfil();
+  const { menuyuAc } = useProfil();
   const ad = useAyar('ad').veri ?? '';
 
   return (
@@ -21,9 +21,9 @@ export function UstCubuk({ sol, sag }: { sol?: ReactNode; sag?: ReactNode }) {
       <View style={stiller.sag}>
         {sag}
         <Pressable
-          onPress={profiliAc}
+          onPress={menuyuAc}
           accessibilityRole="button"
-          accessibilityLabel={`Profil, ${ad}`}
+          accessibilityLabel={`${ad}: Profil ve Ayarlar menüsü`}
           hitSlop={8}
           style={({ pressed }) => pressed && { opacity: 0.7 }}
         >

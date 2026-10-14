@@ -15,6 +15,8 @@ import { Yazi } from './Yazi';
 
 interface Ozellikler {
   baslik?: string;
+  /** Başlık marka gibi (petrol renk) yazılsın: Giriş'teki "Rites". */
+  marka?: boolean;
   altBaslik?: string;
   /** Alt ekranlarda sol üstteki "‹ [Geri gidilen yer]" (`04` Gezinme). */
   geri?: string;
@@ -27,7 +29,7 @@ interface Ozellikler {
   children?: ReactNode;
 }
 
-export function EkranKabi({ baslik, altBaslik, geri, onGeri, kaydirilabilir = true, baslikSag, children }: Ozellikler) {
+export function EkranKabi({ baslik, marka = false, altBaslik, geri, onGeri, kaydirilabilir = true, baslikSag, children }: Ozellikler) {
   const kenar = useSafeAreaInsets();
   const kaydirma = useRef<ScrollView>(null);
 
@@ -62,6 +64,7 @@ export function EkranKabi({ baslik, altBaslik, geri, onGeri, kaydirilabilir = tr
             <Yazi
               tur="ekranBasligi"
               accessibilityRole="header"
+              renk={marka ? renk.ana : undefined}
               numberOfLines={1}
               adjustsFontSizeToFit
               minimumFontScale={0.7}

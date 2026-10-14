@@ -1,4 +1,5 @@
-// Giriş: selam ve tarih yok; kutular kayıtlı sırasıyla (G-7, `05` §10).
+// Giriş: üst satırda "Rites" (pilot kararı, 14 Ekim); selam ve tarih yok;
+// kutular kayıtlı sırasıyla (G-7, `05` §10).
 // Yarım kutular (Ortak Listeler; Su sonra) arka arkaya gelirse yan yana dizilir,
 // tek kalırsa satırı doldurur. Su kutusu sonra gelecek.
 
@@ -31,7 +32,7 @@ export default function Giris() {
   const sira = useKutuSirasi();
   const { girisAyariniAc } = useGirisAyari();
   return (
-    <EkranKabi>
+    <EkranKabi baslik="Rites" marka>
       {kutuSatirlari((sira ?? []).filter((a) => a.acik && KUTU_BILESENI[a.k]).map((a) => a.k)).map((satir) =>
         satir.length === 1 ? (
           <Fragment key={satir[0]}>{KUTU_BILESENI[satir[0]!]?.()}</Fragment>
