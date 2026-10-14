@@ -1,13 +1,17 @@
 {
   "expo": {
     "name": "Rites",
-    "slug": "rites",
+    "slug": "rites-pilot",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.behnanozturkmen.ritespilot",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -16,7 +20,8 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.behnanozturkmen.ritespilot"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -38,10 +43,32 @@
       ],
       "expo-sharing",
       "@react-native-community/datetimepicker",
-      "expo-audio",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Sesli not kaydetmek için mikrofonu kullanır."
+        }
+      ],
       "expo-asset",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Kartlarına fotoğraf eklemek için fotoğraflarını açar.",
+          "cameraPermission": "Kartına ya da gelişim fotoğrafına fotoğraf çekmek için kamerayı kullanır.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Kişilerim'e eklemek için rehberinden bir kişi seçmeni sağlar. Rehberin Rites'a yüklenmez."
+        }
+      ]
     ],
-    "scheme": "rites"
+    "scheme": "rites",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
