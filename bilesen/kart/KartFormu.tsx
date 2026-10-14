@@ -29,7 +29,8 @@ import { BlokSecici } from './BlokSecici';
 import { ZamanlamaCubugu, ZamanlamaSayfalari, type Zamanlama, type ZamanlamaBolmesi } from './Zamanlama';
 
 export type KartFormuHedefi =
-  | { tur: 'yeni'; gun: Gun }
+  /** `taslak`: başka uygulamadan paylaşılan videodan dolu gelen yeni kart. */
+  | { tur: 'yeni'; gun: Gun; taslak?: { baslik: string; videoAdresi: string } }
   | { tur: 'duzenle'; kart: Kart; bloklar: readonly Blok[]; gun: Gun };
 
 export interface KartFormuSonucu {
@@ -77,7 +78,8 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
       kisa: '',
       tarihsiz: false,
       zamanlama: { tarih: hedef.gun, saat: null, hatirlatma: null, tekrar: null },
-      bloklar: [],
+      bloklar: hedef.taslak ? [{ ...bosBlok('video'), metin: hedef.taslak.videoAdresi }] : [],
+      ...(hedef.taslak ? { baslik: hedef.taslak.baslik } : {}),
     };
   }
   const { kart } = hedef;
@@ -122,7 +124,11 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const planId = hedef.tur === 'duzenle' ? hedef.kart.planId : null;
   const planAlani = useSorgu(['plan'], async (o) => (planId ? ((await planOku(o, planId))?.alan ?? null) : null), [planId]);
 
-  const degisti = useMemo(() => JSON.stringify(durum) !== JSON.stringify(ilk), [durum, ilk]);
+  // Paylaşımdan dolu gelen form kaydedilmeden kapatılırken de sorar.
+  const degisti = useMemo(
+    () => (hedef.tur === 'yeni' && !!hedef.taslak) || JSON.stringify(durum) !== JSON.stringify(ilk),
+    [durum, ilk, hedef],
+  );
   const duzenleme = hedef.tur === 'duzenle' ? hedef : null;
 
   const guncelle = (alanlar: Partial<FormDurumu>) => setDurum((d) => ({ ...d, ...alanlar }));

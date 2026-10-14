@@ -3,7 +3,8 @@
 
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import * as Sharing from 'expo-sharing';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { AramaKutusu, AramaSonuclari } from '@/bilesen/ajanda/Arama';
 import { GunGezinme, HaftaSeridi } from '@/bilesen/ajanda/GunGezinme';
@@ -26,6 +27,7 @@ import { ara, haftaBasligi } from '@/mantik/arama';
 import { kalanlar } from '@/mantik/kalanlar';
 import { kaynakAdi, kaynaklar, suz, TUMU, type KaynakAnahtari } from '@/mantik/kaynak';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
+import { BAGLANTI_YOK, paylasilanAdres, paylasilanMetin, paylasimTaslagi } from '@/mantik/paylasimAl';
 import { maddeKarti, maddeKartiMi, maddeYapilanlari, yapilanlariBirlestir } from '@/mantik/listeler';
 import { gecerliGunMu, gunEkle, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
@@ -40,6 +42,7 @@ import {
   type KartOzeti,
 } from '@/veri/kartlar';
 import { useBugun } from '@/veri/useBugun';
+import { videoBasligi } from '@/veri/videoBasligi';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 type Gorunum = 'gun' | 'hafta';
@@ -73,7 +76,7 @@ export default function Ajandam() {
   );
 
   // Giriş'teki "Geçmişten kalan N iş ›" ajandayı bugünün Gün görünümünde açar.
-  const { gun: istenenGun, an } = useLocalSearchParams<{ gun?: string; an?: string }>();
+  const { gun: istenenGun, an, paylasim } = useLocalSearchParams<{ gun?: string; an?: string; paylasim?: string }>();
   useEffect(() => {
     if (istenenGun && gecerliGunMu(istenenGun)) {
       /* eslint-disable react-hooks/set-state-in-effect -- dışarıdan gelen gezinme isteği */
@@ -83,6 +86,31 @@ export default function Ajandam() {
       /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [istenenGun, an]);
+
+  // Başka uygulamadan (ör. YouTube) paylaşılan bağlantı: bugünün yeni kart formu dolu açılır.
+  const formAc = form.ac;
+  useEffect(() => {
+    if (!paylasim || Platform.OS === 'web') return;
+    let iptal = false;
+    const ogeler = Sharing.getSharedPayloads();
+    Sharing.clearSharedPayloads();
+    const adres = paylasilanAdres(ogeler);
+    /* eslint-disable react-hooks/set-state-in-effect -- dışarıdan gelen paylaşım */
+    setSecili(bugunGun);
+    setGorunum('gun');
+    setSorgu(null);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    if (!adres) {
+      if (ogeler.length > 0) kisaMesaj(BAGLANTI_YOK);
+      return;
+    }
+    void videoBasligi(adres).then((baslik) => {
+      if (!iptal) formAc({ tur: 'yeni', gun: bugunGun, taslak: paylasimTaslagi(adres, baslik, paylasilanMetin(ogeler)) });
+    });
+    return () => {
+      iptal = true;
+    };
+  }, [paylasim]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hafta = useMemo(() => haftaninGunleri(secili), [secili]);
   const aramaAcik = sorgu !== null;

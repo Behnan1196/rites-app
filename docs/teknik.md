@@ -68,6 +68,14 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - **Paketler `npm ci` ile kurulur, `npm install` ile değil.** Windows'taki `npm install` kilit dosyasından (`package-lock.json`) isteğe bağlı bir paketi (react-native-worklets) düşürdü; EAS'ın `npm ci` adımı bu yüzden "Install dependencies" aşamasında hata verdi (14 Ekim). Yeni paket yalnız `npx expo install <paket>` ile eklenir ve kilit dosyası değişince EAS'tan önce `npm ci` denenir.
 - Expo Go ile kendi derleme arasında veri taşınmaz (iki ayrı uygulama); geçişte yedek alınıp geri yüklenir.
 
+## Paylaşımla içerik almak
+
+- `expo-sharing` eklentisi iOS'ta bir paylaşım eklentisi (share extension) ekler; App Group `group.com.behnanozturkmen.ritespilot` (EAS kendisi kaydeder). Kabul edilen: metin ve en çok 1 web adresi.
+- Eklenti paylaşılanı App Group'a yazar ve uygulamayı `rites://expo-sharing` ile açar; `app/+native-intent.tsx` bunu `/ajandam?paylasim=…`a çevirir; Ajandam `Sharing.getSharedPayloads()` ile alır, temizler ve kart formunu açar.
+- Video başlığı: `https://www.youtube.com/oembed?format=json&url=…` (anahtar yok, 4 sn zaman aşımı). Bu istek yalnız kişi paylaştığında, yalnız o bağlantı için gider.
+- Paylaşım menüsündeki ad: `eklentiler/paylasimAdi.js` eklentinin görünen adını "Rites" yapar (app.json'da expo-sharing'den önce yazılmalı).
+- Not: iOS'ta eklentinin ana uygulamayı açması Apple'ın resmi olarak desteklediği bir yol değil; Expo da bunu belgede belirtiyor. İleride iOS sürümünde bozulabilir.
+
 ## Denetim
 
 `npm run denetim` = tip denetimi + lint + Jest (mantık testleri ve gerçek SQLite (sql.js) üzerinde veri testleri). `npm run sunucu-denemesi` = sunucu şeması.
