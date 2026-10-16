@@ -1,17 +1,22 @@
 // Kart görünümü (K-7, K-12, K-13): tam ekran, alt menü görünmez. Kart hangi
 // günden açıldıysa o günün kaydını gösterir ve ona yazar.
+// Pilot 16 Ekim: alttaki "Yaptım" çubuğu kalktı (yapıldı işareti ajandadaki
+// satırda); Kütüphaneye kaydet · Paylaş · Sil sağ üstteki "⋯" menüsünde.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AcilirMenu } from '@/bilesen/AcilirMenu';
 import { BlokUygulama } from '@/bilesen/kart/BlokUygulama';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
+import { useKartSil } from '@/bilesen/kart/KartSil';
 import { Dugme } from '@/bilesen/Dugme';
 import { useKutuphaneyeKaydet } from '@/bilesen/kutuphane/KaydetSayfasi';
 import { usePaylas } from '@/bilesen/paylasim/PaylasSayfasi';
+import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
 import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { gunBasligi, yapilanGunler } from '@/mantik/ajanda';
@@ -19,7 +24,7 @@ import { seri, seriMetni, son7Gun, tekrarMetni, type SeritGunu } from '@/mantik/
 import { bosKayit, type Kart, type Kayit } from '@/mantik/kart';
 import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
-import { isaretle, kartAyrinti, kartKayitlari, kayitDegistir } from '@/veri/kartlar';
+import { kartAyrinti, kartKayitlari, kayitDegistir } from '@/veri/kartlar';
 import { planOku } from '@/veri/planlar';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
@@ -38,6 +43,8 @@ export default function KartGorunumu() {
   });
 
   const paylas = usePaylas();
+  const [menuAcik, setMenuAcik] = useState(false);
+  const kartSil = useKartSil(() => router.back());
   const kutuphane = useKutuphaneyeKaydet(({ kaldirildi }) => {
     if (kaldirildi) router.back();
   });
@@ -47,7 +54,12 @@ export default function KartGorunumu() {
       const ayrinti = await kartAyrinti(oku, id);
       if (!ayrinti) return null;
       const plan = ayrinti.kart.planId ? await planOku(oku, ayrinti.kart.planId) : null;
-      return { ...ayrinti, kayitlar: await kartKayitlari(oku, id), planAdi: plan?.ad ?? null, planAlani: plan?.alan ?? null };
+      return {
+        ...ayrinti,
+        kayitlar: await kartKayitlari(oku, id),
+        planAdi: plan?.ad ?? null,
+        planAlani: plan?.alan ?? null,
+      };
     },
     [id],
   );
@@ -80,9 +92,12 @@ export default function KartGorunumu() {
             {geriYazisi}
           </Yazi>
         </Pressable>
-        {!kart.kilitli && (
-          <Dugme tur="yazi" etiket="Düzenle" onPress={() => form.ac({ tur: 'duzenle', kart, bloklar, gun })} />
-        )}
+        <View style={stiller.ustSag}>
+          {!kart.kilitli && (
+            <Dugme tur="yazi" etiket="Düzenle" onPress={() => form.ac({ tur: 'duzenle', kart, bloklar, gun })} />
+          )}
+          <SimgeDugmesi ikon="ellipsis-horizontal" etiket="Diğer işlemler" onPress={() => setMenuAcik(true)} />
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={stiller.icerik} keyboardShouldPersistTaps="handled">
@@ -115,52 +130,39 @@ export default function KartGorunumu() {
           />
         ))}
 
-        <View style={stiller.eylemler}>
-          <Dugme
-            tur="ikincil"
-            etiket="Kütüphaneye kaydet"
-            yaziRengi={renk.ana}
-            onPress={() => kutuphane.ac({ tur: 'kart', kart, bloklar, alan: planAlani })}
-          />
-          {!kart.kilitli && (
-            <Dugme
-              tur="ikincil"
-              etiket="Paylaş"
-              yaziRengi={renk.ana}
-              onPress={() => paylas.ac({ kart, bloklar })}
-            />
-          )}
-        </View>
         {kart.kilitli && (
           <Yazi tur="ikincil">Koçundan gelen kart paylaşılamaz; kendi kütüphanene kaydedebilirsin.</Yazi>
         )}
       </ScrollView>
 
-      <View style={[stiller.alt, { paddingBottom: Math.max(kenar.bottom, 12) + 8 }]}>
-        {kayit.yapildi ? (
-          <View style={stiller.yapildi}>
-            <View style={stiller.yapildiSol}>
-              <Ionicons name="checkmark" size={26} color={renk.ana} />
-              <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.yapildiYazi}>
-                {gun === bugunGun ? 'Bugün yapıldı' : `Yapıldı · ${uzunTarih(gun)}`}
-              </Yazi>
-            </View>
-            <Dugme tur="yazi" etiket="Geri al" onPress={() => void isaretle(kapi, kart.id, gun, false)} />
-          </View>
-        ) : (
-          <Dugme
-            etiket="Yaptım"
-            onPress={async () => {
-              await isaretle(kapi, kart.id, gun, true);
-              router.back();
-            }}
-          />
-        )}
-      </View>
-
+      {menuAcik && (
+        <AcilirMenu
+          ust={kenar.top + 52}
+          onKapat={() => setMenuAcik(false)}
+          ogeler={[
+            {
+              etiket: 'Kütüphaneye kaydet',
+              ikon: 'bookmark-outline',
+              onPress: () => kutuphane.ac({ tur: 'kart', kart, bloklar, alan: planAlani }),
+            },
+            ...(kart.kilitli
+              ? []
+              : [
+                  { etiket: 'Paylaş', ikon: 'share-outline' as const, onPress: () => paylas.ac({ kart, bloklar }) },
+                  {
+                    etiket: 'Sil',
+                    ikon: 'trash-outline' as const,
+                    tehlike: true,
+                    onPress: () => kartSil.baslat(kart, gun),
+                  },
+                ]),
+          ]}
+        />
+      )}
       {form.oge}
       {paylas.oge}
       {kutuphane.oge}
+      {kartSil.oge}
     </View>
   );
 }
@@ -214,7 +216,12 @@ function SeritHucresi({ s, acilan, bugunGun }: { s: SeritGunu; acilan: boolean; 
         {s.durum === 'yapilmadi' && <Yazi renk={renk.soluk}>–</Yazi>}
         {s.durum === 'yok' && <Yazi renk={renk.pasif}>·</Yazi>}
       </View>
-      <Yazi tur="etiket" kalinlik={acilan ? 'kalin' : 'normal'} renk={acilan ? renk.yazi : renk.ikincil} maxFontSizeMultiplier={1.2}>
+      <Yazi
+        tur="etiket"
+        kalinlik={acilan ? 'kalin' : 'normal'}
+        renk={acilan ? renk.yazi : renk.ikincil}
+        maxFontSizeMultiplier={1.2}
+      >
         {s.gun === bugunGun ? 'Bugün' : gunKisa(s.gun)}
       </Yazi>
     </View>
@@ -222,7 +229,7 @@ function SeritHucresi({ s, acilan, bugunGun }: { s: SeritGunu; acilan: boolean; 
 }
 
 const stiller = StyleSheet.create({
-  eylemler: { gap: 10 },
+  ustSag: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   planEtiketi: {
     alignSelf: 'flex-start',
     backgroundColor: kaynakRenk.plan.zemin,
@@ -256,14 +263,4 @@ const stiller = StyleSheet.create({
   daire: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   daireDolu: { backgroundColor: renk.ana },
   daireBos: { borderWidth: 2, borderColor: renk.cizgi, backgroundColor: renk.yuzey },
-  alt: {
-    backgroundColor: renk.yuzey,
-    borderTopWidth: 1,
-    borderTopColor: renk.cizgi,
-    paddingHorizontal: olcu.ekranKenari,
-    paddingTop: 12,
-  },
-  yapildi: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 56 },
-  yapildiSol: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
-  yapildiYazi: { fontSize: 20 },
 });

@@ -27,7 +27,6 @@ interface Ozellikler {
 
 export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_PLANLAR }: Ozellikler) {
   const maddeMi = maddeKartiMi(kart);
-  const blokluMu = kart.blokSayisi > 0 || kart.kilitli || maddeMi;
   const anahtar = kaynakAnahtari(kart);
   const stil = kaynakStili(anahtar);
   const etiket = kaynakEtiketi(kart, planAdlari);
@@ -54,7 +53,7 @@ export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_P
       <Pressable
         onPress={onAc}
         accessibilityRole="button"
-        accessibilityLabel={`${kart.baslik}${maddeMi ? ', listeyi aç' : blokluMu ? ', kartı aç' : ', düzenle'}`}
+        accessibilityLabel={`${kart.baslik}${maddeMi ? ', listeyi aç' : ', kartı aç'}`}
         style={({ pressed }) => [stiller.govde, pressed && { opacity: 0.7 }]}
       >
         <View style={stiller.metinler}>
@@ -88,11 +87,9 @@ export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_P
             </View>
           )}
         </View>
-        {blokluMu && (
-          <View style={stiller.ac}>
-            <Ionicons name="chevron-forward" size={22} color={renk.ana} />
-          </View>
-        )}
+        <View style={stiller.ac}>
+          <Ionicons name="chevron-forward" size={22} color={renk.ana} />
+        </View>
       </Pressable>
     </View>
   );

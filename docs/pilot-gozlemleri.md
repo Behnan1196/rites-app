@@ -54,3 +54,8 @@ Sonuç: → kararlar.md (Kart alarmı, paylaşım Gelenler'e, gömülü video)
 Ne dedi: "Liste maddelerinin yapılma durumu her gün sıfırlanıyor. Böyle bir durum olması doğru, ancak bir de sıfırlanmadan devam etmesi, yani küçük proje gibi davranması gerekir." / "Buradan bir rutin vs proje ayrımına gitmek istiyorum; Yaşam Tarzım sekmesinde program ile proje mantığı birleştirildi ve karışık oldu. Kart bloğu olarak Liste dışında farklı bir adla, şimdilik 'proje adımları', yeni bir blok deneyelim; geliştirip gerçekten mini proje haline getirebilir miyiz?"
 Nerede: Kart formu → Liste bloğu
 Sonuç: → kararlar.md (Rutin ve proje: "Proje adımları" bloğu)
+
+### P-9 · 16 Ekim 2026 · Behnan · iPhone, Rites Dev
+Ne dedi: "Kartı açtığımda altta çıkan Yaptım butonu yanıltıcı oluyor; listede zaten Yaptım diyebiliyor. Kartı silmek için Düzenle moduna geçmek gerekiyor ve en altta Sil var; Sil'i kartın görünümüne koyalım, Paylaş gibi fonksiyonları da bir menüde toplayalım."
+Nerede: Kart görünümü, kart formu
+Sonuç: → kararlar.md (Kart görünümü sadeleşti)

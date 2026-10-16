@@ -142,11 +142,8 @@ export default function Ajandam() {
       router.push({ pathname: '/ajandam/liste/[id]', params: { id: kart.listeId } });
       return;
     }
-    if (kart.blokSayisi > 0 || kart.kilitli) {
-      router.push({ pathname: '/kart/[id]', params: { id: kart.id, gun } });
-    } else {
-      form.ac({ tur: 'duzenle', kart, bloklar: [], gun });
-    }
+    // Her kart görünümünde açılır (pilot 16 Ekim): Düzenle ve ⋯ menüsü (Sil) orada.
+    router.push({ pathname: '/kart/[id]', params: { id: kart.id, gun } });
   };
 
   const gunuAc = (gun: Gun) => {

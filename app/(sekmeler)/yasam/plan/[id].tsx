@@ -111,11 +111,7 @@ export default function PlanEkrani() {
 
   const kartiAc = (kart: KartOzeti) => {
     const gun = kart.tekrar ? bugunGun : (kart.tarih ?? bugunGun);
-    if (kart.blokSayisi > 0 || kart.kilitli) {
-      router.push({ pathname: '/kart/[id]', params: { id: kart.id, gun, geri: plan.ad } });
-    } else {
-      form.ac({ tur: 'duzenle', kart, bloklar: [], gun });
-    }
+    router.push({ pathname: '/kart/[id]', params: { id: kart.id, gun, geri: plan.ad } });
   };
 
   const hata = (e: unknown) => {

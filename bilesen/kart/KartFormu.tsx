@@ -3,28 +3,16 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import {
-  bolmeSecenekleri,
-  bolmeSorusuGerekirMi,
-  duzenle,
-  sil,
-  silmeOnayi,
-  type BolmeSecimi,
-  type KartTanimi,
-} from '@/mantik/bolme';
+import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
 import { adimDurumu, adimlariEsle } from '@/mantik/adimlar';
 import { yeniKart, type Blok, type BlokTuru, type Kart } from '@/mantik/kart';
 import type { Gun } from '@/mantik/tarih';
-import { islemleriUygula, kayitVarMi, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
+import { islemleriUygula, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
-import { useSorgu } from '@/veri/kancalar';
-import { planOku } from '@/veri/planlar';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { AltSayfa } from '../AltSayfa';
-import { useKutuphaneyeKaydet } from '../kutuphane/KaydetSayfasi';
-import { usePaylas } from '../paylasim/PaylasSayfasi';
 import { Dugme } from '../Dugme';
 import { GirisAlani } from '../GirisAlani';
 import { useKisaMesaj } from '../KisaMesaj';
@@ -117,7 +105,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
   };
 }
 
-type Soru = { tur: 'kaydet' } | { tur: 'sil' } | { tur: 'silOnay'; aciklama: string };
+type Soru = { tur: 'kaydet' };
 
 interface Ozellikler {
   hedef: KartFormuHedefi;
@@ -127,7 +115,7 @@ interface Ozellikler {
 }
 
 export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
-  const { kapi, oku } = useVeri();
+  const { kapi } = useVeri();
   const bugunGun = useBugun();
   const kisaMesaj = useKisaMesaj();
 
@@ -138,16 +126,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const [blokSeciciAcik, setBlokSeciciAcik] = useState(false);
   const [soru, setSoru] = useState<Soru | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
-  const paylas = usePaylas();
-  const kutuphane = useKutuphaneyeKaydet(({ kaldirildi }) => {
-    if (kaldirildi) onKapat();
-  });
-  // Plan kartında tahmini alan planın alanıdır.
-  const planId = hedef.tur === 'duzenle' ? hedef.kart.planId : null;
-  const planAlani = useSorgu(['plan'], async (o) => (planId ? ((await planOku(o, planId))?.alan ?? null) : null), [
-    planId,
-  ]);
-
   // Paylaşımdan dolu gelen form kaydedilmeden kapatılırken de sorar.
   const degisti = useMemo(
     () => (hedef.tur === 'yeni' && !!hedef.taslak) || JSON.stringify(durum) !== JSON.stringify(ilk),
@@ -223,28 +201,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       onKapat();
     });
 
-  const silmeyeBasla = () =>
-    calistir(async () => {
-      if (!duzenleme) return;
-      if (bolmeSorusuGerekirMi(duzenleme.kart, duzenleme.gun)) {
-        setSoru({ tur: 'sil' });
-        return;
-      }
-      const onay = silmeOnayi(duzenleme.kart, await kayitVarMi(oku, duzenleme.kart.id));
-      setSoru({ tur: 'silOnay', aciklama: onay.aciklama ?? 'Bu işlem geri alınamaz.' });
-    });
-
-  const uygulaSil = (secim: BolmeSecimi | null) =>
-    calistir(async () => {
-      if (!duzenleme) return;
-      setSoru(null);
-      const sonuc = sil(duzenleme.kart, duzenleme.gun, secim);
-      await islemleriUygula(kapi, sonuc.islemler, [], yeniKimlik);
-      if (sonuc.mesaj) kisaMesaj(sonuc.mesaj);
-      onSonuc?.({ silindi: true });
-      onKapat();
-    });
-
   const vazgec: OnaySecenegi = { etiket: 'Vazgeç', tur: 'yazi', onPress: () => setSoru(null) };
   const onay = (() => {
     if (!soru || !duzenleme) return null;
@@ -260,22 +216,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         ],
       };
     }
-    if (soru.tur === 'sil') {
-      return {
-        baslik: 'Hangi günler silinsin?',
-        aciklama: 'Geçmiş günlerin kayıtları silinmez.',
-        secenekler: [
-          { etiket: s.yalnizBuGun, tur: 'tehlike' as const, onPress: () => void uygulaSil('yalnizBuGun') },
-          { etiket: s.buGunVeSonrasi, tur: 'tehlike' as const, onPress: () => void uygulaSil('buGunVeSonrasi') },
-          vazgec,
-        ],
-      };
-    }
-    return {
-      baslik: 'Kart silinsin mi?',
-      aciklama: soru.aciklama,
-      secenekler: [{ etiket: 'Sil', tur: 'tehlike' as const, onPress: () => void uygulaSil(null) }, vazgec],
-    };
+    return null;
   })();
 
   return (
@@ -335,31 +276,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
             + Blok ekle
           </Yazi>
         </Pressable>
-
-        {duzenleme && (
-          <Dugme
-            tur="ikincil"
-            etiket="Kütüphaneye kaydet"
-            yaziRengi={renk.ana}
-            onPress={() =>
-              kutuphane.ac({
-                tur: 'kart',
-                kart: duzenleme.kart,
-                bloklar: duzenleme.bloklar,
-                alan: planAlani.veri ?? null,
-              })
-            }
-          />
-        )}
-        {duzenleme && !duzenleme.kart.kilitli && (
-          <Dugme
-            tur="ikincil"
-            etiket="Paylaş"
-            yaziRengi={renk.ana}
-            onPress={() => paylas.ac({ kart: duzenleme.kart, bloklar: duzenleme.bloklar })}
-          />
-        )}
-        {duzenleme && <Dugme tur="tehlike" etiket="Sil" onPress={() => void silmeyeBasla()} />}
       </AltSayfa>
 
       <ZamanlamaSayfalari
@@ -375,9 +291,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         }
         onAc={setAltSayfa}
       />
-
-      {paylas.oge}
-      {kutuphane.oge}
 
       <BlokSecici
         gorunur={blokSeciciAcik}
