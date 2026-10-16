@@ -2,6 +2,7 @@
 // Kartın tanımı (ne, ne zaman, hangi bloklar) ile bir gündeki durumu (kayıt)
 // ayrıdır: tekrarlı kartta her günün kaydı ayrıdır (K-12).
 
+import type { AdimDurumu } from './adimlar';
 import type { Gun, GunKisa } from './tarih';
 
 export type HatirlatmaSecimi = 'saatinde' | '15dk' | '1sa';
@@ -53,7 +54,7 @@ export interface Kart {
   sira: number;
 }
 
-export const ICERIK_BLOKLARI = ['talimat', 'video', 'liste', 'foto', 'dosya'] as const;
+export const ICERIK_BLOKLARI = ['talimat', 'video', 'liste', 'adimlar', 'foto', 'dosya'] as const;
 export const KAYIT_BLOKLARI = ['sayac', 'olcum', 'gunnot', 'gelfoto'] as const;
 export type BlokTuru = (typeof ICERIK_BLOKLARI)[number] | (typeof KAYIT_BLOKLARI)[number];
 
@@ -70,8 +71,10 @@ export interface Blok {
   birim: string;
   /** Zamanlayıcı süresi. */
   dakika: number | null;
-  /** Liste maddeleri. */
+  /** Liste maddeleri; proje adımları. */
   maddeler: string[];
+  /** Yalnız "Proje adımları": kalıcı işaretler (güne bağlı değil). */
+  durum?: AdimDurumu | null;
   /** Fotoğraf / dosya yerel yolu. */
   dosya: string | null;
 }

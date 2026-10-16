@@ -4,8 +4,15 @@ import { useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import {
-  bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, sil, silmeOnayi, type BolmeSecimi, type KartTanimi,
+  bolmeSecenekleri,
+  bolmeSorusuGerekirMi,
+  duzenle,
+  sil,
+  silmeOnayi,
+  type BolmeSecimi,
+  type KartTanimi,
 } from '@/mantik/bolme';
+import { adimDurumu, adimlariEsle } from '@/mantik/adimlar';
 import { yeniKart, type Blok, type BlokTuru, type Kart } from '@/mantik/kart';
 import type { Gun } from '@/mantik/tarih';
 import { islemleriUygula, kayitVarMi, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
@@ -55,20 +62,32 @@ const geciciKimlik = () => `yeni-${++geciciNo}`;
 /** Formda liste maddeleri `metin` içinde, her satırda bir madde olarak düzenlenir. */
 function formaBlok(b: Blok): BlokTaslagi {
   const { kartId: _k, sira: _s, ...taslak } = b;
-  return b.tur === 'liste' ? { ...taslak, metin: b.maddeler.join('\n') } : taslak;
+  return b.tur === 'liste' || b.tur === 'adimlar' ? { ...taslak, metin: b.maddeler.join('\n') } : taslak;
 }
 
 function kaydaBlok(b: BlokTaslagi): BlokTaslagi {
-  if (b.tur !== 'liste') return b;
+  if (b.tur !== 'liste' && b.tur !== 'adimlar') return b;
   const maddeler = b.metin
     .split('\n')
     .map((m) => m.trim())
     .filter((m) => m !== '');
-  return { ...b, maddeler, metin: '' };
+  if (b.tur === 'liste') return { ...b, maddeler, metin: '' };
+  // Proje adımları: yapılmış adımlar metnine göre yapılmış kalır.
+  const eski = adimDurumu(b.durum, b.maddeler.length);
+  return { ...b, maddeler, metin: '', durum: adimlariEsle(b.maddeler, eski, maddeler) };
 }
 
 function bosBlok(tur: BlokTuru): BlokTaslagi {
-  return { id: geciciKimlik(), tur, ad: '', metin: '', birim: '', dakika: tur === 'sayac' ? 10 : null, maddeler: [], dosya: null };
+  return {
+    id: geciciKimlik(),
+    tur,
+    ad: '',
+    metin: '',
+    birim: '',
+    dakika: tur === 'sayac' ? 10 : null,
+    maddeler: [],
+    dosya: null,
+  };
 }
 
 function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
@@ -98,10 +117,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
   };
 }
 
-type Soru =
-  | { tur: 'kaydet' }
-  | { tur: 'sil' }
-  | { tur: 'silOnay'; aciklama: string };
+type Soru = { tur: 'kaydet' } | { tur: 'sil' } | { tur: 'silOnay'; aciklama: string };
 
 interface Ozellikler {
   hedef: KartFormuHedefi;
@@ -128,7 +144,9 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   });
   // Plan kartında tahmini alan planın alanıdır.
   const planId = hedef.tur === 'duzenle' ? hedef.kart.planId : null;
-  const planAlani = useSorgu(['plan'], async (o) => (planId ? ((await planOku(o, planId))?.alan ?? null) : null), [planId]);
+  const planAlani = useSorgu(['plan'], async (o) => (planId ? ((await planOku(o, planId))?.alan ?? null) : null), [
+    planId,
+  ]);
 
   // Paylaşımdan dolu gelen form kaydedilmeden kapatılırken de sorar.
   const degisti = useMemo(
@@ -271,12 +289,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         onay={onay}
         altAlan={
           <View style={stiller.alt}>
-            <ZamanlamaCubugu
-              deger={durum.zamanlama}
-              bugunGun={bugunGun}
-              onAc={setAltSayfa}
-              tarihYok={durum.tarihsiz}
-            />
+            <ZamanlamaCubugu deger={durum.zamanlama} bugunGun={bugunGun} onAc={setAltSayfa} tarihYok={durum.tarihsiz} />
             <Dugme etiket="Kaydet" onPress={kaydet} pasif={calisiyor} />
           </View>
         }
@@ -329,7 +342,12 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
             etiket="Kütüphaneye kaydet"
             yaziRengi={renk.ana}
             onPress={() =>
-              kutuphane.ac({ tur: 'kart', kart: duzenleme.kart, bloklar: duzenleme.bloklar, alan: planAlani.veri ?? null })
+              kutuphane.ac({
+                tur: 'kart',
+                kart: duzenleme.kart,
+                bloklar: duzenleme.bloklar,
+                alan: planAlani.veri ?? null,
+              })
             }
           />
         )}
@@ -376,10 +394,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
 /** Kart formunu açıp kapatmak için: `const form = useKartFormu(); form.ac(hedef); {form.oge}` */
 export function useKartFormu(onSonuc?: (sonuc: KartFormuSonucu) => void) {
   const [form, setForm] = useState<{ no: number; hedef: KartFormuHedefi; acik: boolean } | null>(null);
-  const ac = useCallback(
-    (hedef: KartFormuHedefi) => setForm((f) => ({ no: (f?.no ?? 0) + 1, hedef, acik: true })),
-    [],
-  );
+  const ac = useCallback((hedef: KartFormuHedefi) => setForm((f) => ({ no: (f?.no ?? 0) + 1, hedef, acik: true })), []);
   const oge = form ? (
     <KartFormu
       key={form.no}

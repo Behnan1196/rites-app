@@ -193,6 +193,11 @@ export const GOCLER: readonly Goc[] = [
       ALTER TABLE kart ADD COLUMN alarm INTEGER NOT NULL DEFAULT 0;
     `,
   },
+  {
+    // "Proje adımları" bloğunun kalıcı durumu (JSON; pilot 16 Ekim).
+    surum: 10,
+    sql: `ALTER TABLE blok ADD COLUMN durum TEXT;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

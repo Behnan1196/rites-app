@@ -7,7 +7,7 @@ _Son güncelleme: 14 Ekim 2026_
 Rites, kişinin gününü ve kendine iyi bakma alışkanlıklarını tek yerde tuttuğu bir ajandadır. Ad **rituals**tan gelir: başlangıçta alışkanlık kazandırmaya odaklıydı; tasarım ilerledikçe **yaşam tarzına** (hayatın alanları ve onlar için planlar) genişledi.
 
 - **Giriş:** her şeyin özeti; kişinin açıp kapatabildiği ve sıraladığı kutular (Hızlı Not, Gelenler, Bugün sırada, Anımsatıcılar, Devam edenler, Günün sorusu, Ortak Listeler).
-- **Ajandam:** günün işleri. Tek tip kart; içine istenen kadar blok (talimat, video, liste, fotoğraf, dosya, zamanlayıcı, ölçüm, günün notu, gelişim fotoğrafı). Tekrar, seri, günlük kayıt.
+- **Ajandam:** günün işleri. Tek tip kart; içine istenen kadar blok (talimat, video, liste, proje adımları, fotoğraf, dosya, zamanlayıcı, ölçüm, günün notu, gelişim fotoğrafı). Tekrar, seri, günlük kayıt.
 - **Yaşam Tarzım:** dokuz alan (Hareket, Beslenme, Uyku, Zihin, Anlam, Sosyal bağlar, Öğrenme, İş, Uğraşlar), alan puanı ve her alanda **planlar** (düzenli kartlar ve/veya adımlar). Kütüphanem.
 - **Gruplar:** Kişilerim (bağlantı isteği, davet), gruplar, ortak listeler (maddeye Kime? / Ne zaman?).
 

@@ -32,7 +32,8 @@ export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_P
   const stil = kaynakStili(anahtar);
   const etiket = kaynakEtiketi(kart, planAdlari);
   const kocMu = kaynakTuru(anahtar) === 'koc';
-  const metaVar = !!(kart.saat || kart.hatirlatma || kart.tekrar || etiket);
+  const adim = kart.adimlar && kart.adimlar.toplam > 0 ? kart.adimlar : null;
+  const metaVar = !!(kart.saat || kart.hatirlatma || kart.tekrar || etiket || adim);
 
   return (
     <View style={stiller.kart}>
@@ -75,6 +76,7 @@ export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_P
                 />
               )}
               {!!kart.tekrar && <Meta ikon="repeat-outline" metin={tekrarMetni(kart.tekrar)} />}
+              {!!adim && <Meta ikon="git-commit-outline" metin={`${adim.yapilan}/${adim.toplam}`} />}
               {!!etiket && stil && (
                 <View style={[stiller.etiket, { backgroundColor: stil.zemin }]}>
                   {kocMu && <Ionicons name="lock-closed" size={14} color={stil.yazi} />}
@@ -96,7 +98,13 @@ export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_P
   );
 }
 
-function Meta({ ikon, metin }: { ikon: 'time-outline' | 'notifications-outline' | 'alarm-outline' | 'repeat-outline'; metin: string }) {
+function Meta({
+  ikon,
+  metin,
+}: {
+  ikon: 'time-outline' | 'notifications-outline' | 'alarm-outline' | 'repeat-outline' | 'git-commit-outline';
+  metin: string;
+}) {
   return (
     <View style={stiller.metaParca}>
       <Ionicons name={ikon} size={17} color={renk.ikincil} />

@@ -49,3 +49,8 @@ Sonuç: → kararlar.md (Kart alarmı, paylaşım Gelenler'e, gömülü video)
 Ne dedi: "YouTube videolarını paylaş ile alıyorduk, ajandada dolu bir kart olarak açıyordu; doğrusu paylaşıldığında Gelenler kutusunda hazır bir kart olması olacak. Ve yine bu video (YouTube ise) kartın içinde embed olarak oynatılabilmeli."
 Nerede: YouTube → Paylaş → Rites; kart görünümü
 Sonuç: → kararlar.md (Kart alarmı, paylaşım Gelenler'e, gömülü video)
+
+### P-8 · 16 Ekim 2026 · Behnan · iPhone, Rites Dev
+Ne dedi: "Liste maddelerinin yapılma durumu her gün sıfırlanıyor. Böyle bir durum olması doğru, ancak bir de sıfırlanmadan devam etmesi, yani küçük proje gibi davranması gerekir." / "Buradan bir rutin vs proje ayrımına gitmek istiyorum; Yaşam Tarzım sekmesinde program ile proje mantığı birleştirildi ve karışık oldu. Kart bloğu olarak Liste dışında farklı bir adla, şimdilik 'proje adımları', yeni bir blok deneyelim; geliştirip gerçekten mini proje haline getirebilir miyiz?"
+Nerede: Kart formu → Liste bloğu
+Sonuç: → kararlar.md (Rutin ve proje: "Proje adımları" bloğu)

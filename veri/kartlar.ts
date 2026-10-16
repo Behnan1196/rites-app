@@ -1,6 +1,7 @@
 // Kartlar, bloklar ve günlük kayıtlar: okuma ve (yazma kapısı üzerinden) yazma.
 // Kimlik üretici dışarıdan verilir (uygulamada `yeniKimlik`, testte sıralı).
 
+import { adimDurumu, adimiDegistir, ilerleme } from '@/mantik/adimlar';
 import type { KartIslemi, KayitAraligi } from '@/mantik/bolme';
 import { kayitAnahtarlariniEsle } from '@/mantik/bolme';
 import { bosKayit, type Blok, type BlokTuru, type Kart, type Kayit } from '@/mantik/kart';
@@ -15,6 +16,8 @@ export type BlokTaslagi = Omit<Blok, 'kartId' | 'sira'>;
 
 export interface KartOzeti extends Kart {
   blokSayisi: number;
+  /** "Proje adımları" bloğu varsa ilerlemesi. */
+  adimlar?: { yapilan: number; toplam: number } | null;
 }
 
 // ---- Satır dönüşümleri -------------------------------------------------------
@@ -39,6 +42,8 @@ interface KartSatiri {
   birakildi: number;
   sira: number;
   blok_sayisi?: number;
+  adim_maddeler?: string | null;
+  adim_durum?: string | null;
 }
 
 interface BlokSatiri {
@@ -52,6 +57,7 @@ interface BlokSatiri {
   dakika: number | null;
   maddeler: string;
   dosya: string | null;
+  durum?: string | null;
 }
 
 interface KayitSatiri {
@@ -71,6 +77,10 @@ function json<T>(metin: string | null, varsayilan: T): T {
     return varsayilan;
   }
 }
+
+/** Kartın (ilk) "Proje adımları" bloğunun maddeleri ve durumu: ajandada "3 / 7" için. */
+const ADIM_SUTUNLARI = `(SELECT b.maddeler FROM blok b WHERE b.kart_id = k.id AND b.tur = 'adimlar' ORDER BY b.sira LIMIT 1) AS adim_maddeler,
+  (SELECT b.durum FROM blok b WHERE b.kart_id = k.id AND b.tur = 'adimlar' ORDER BY b.sira LIMIT 1) AS adim_durum`;
 
 export function kartSatirdan(s: KartSatiri): KartOzeti {
   return {
@@ -93,6 +103,9 @@ export function kartSatirdan(s: KartSatiri): KartOzeti {
     birakildi: s.birakildi === 1,
     sira: s.sira,
     blokSayisi: s.blok_sayisi ?? 0,
+    adimlar: s.adim_maddeler
+      ? ilerleme(adimDurumu(json<unknown>(s.adim_durum ?? null, null), json<string[]>(s.adim_maddeler, []).length))
+      : null,
   };
 }
 
@@ -108,6 +121,9 @@ function blokSatirdan(s: BlokSatiri): Blok {
     dakika: s.dakika,
     maddeler: json<string[]>(s.maddeler, []),
     dosya: s.dosya,
+    ...(s.tur === 'adimlar'
+      ? { durum: adimDurumu(json<unknown>(s.durum ?? null, null), json<string[]>(s.maddeler, []).length) }
+      : {}),
   };
 }
 
@@ -159,7 +175,7 @@ function aralikKosulu(aralik: KayitAraligi): { sql: string; params: SqlDeger[] }
 /** Biten planların kartları ajandada görünmez (`08` açık soru 3). */
 export async function tumKartlar(oku: Okuyucu): Promise<KartOzeti[]> {
   const satirlar = await oku.hepsi<KartSatiri>(
-    `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi FROM kart k
+    `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi, ${ADIM_SUTUNLARI} FROM kart k
      WHERE k.plan_id IS NULL OR k.plan_id NOT IN (SELECT id FROM plan WHERE durum = 'bitti')`,
   );
   return satirlar.map(kartSatirdan);
@@ -168,7 +184,7 @@ export async function tumKartlar(oku: Okuyucu): Promise<KartOzeti[]> {
 /** Planlara bağlı bütün kartlar (Yaşam Tarzım ve Devam edenler ilerlemesi için). */
 export async function planliKartlar(oku: Okuyucu): Promise<KartOzeti[]> {
   const satirlar = await oku.hepsi<KartSatiri>(
-    `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi FROM kart k
+    `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi, ${ADIM_SUTUNLARI} FROM kart k
      WHERE k.plan_id IS NOT NULL ORDER BY k.sira`,
   );
   return satirlar.map(kartSatirdan);
@@ -177,7 +193,7 @@ export async function planliKartlar(oku: Okuyucu): Promise<KartOzeti[]> {
 /** Bir planın bütün kartları (plan bitmiş olsa da). */
 export async function planKartlari(oku: Okuyucu, planId: string): Promise<KartOzeti[]> {
   const satirlar = await oku.hepsi<KartSatiri>(
-    `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi FROM kart k
+    `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi, ${ADIM_SUTUNLARI} FROM kart k
      WHERE k.plan_id = ? ORDER BY k.sira`,
     [planId],
   );
@@ -200,10 +216,9 @@ export async function blokMetinleri(oku: Okuyucu): Promise<Map<string, string>> 
 
 /** O gün yapıldı işaretli kartların kimlikleri. */
 export async function gunYapilanlari(oku: Okuyucu, gun: Gun): Promise<Set<string>> {
-  const satirlar = await oku.hepsi<{ kart_id: string }>(
-    'SELECT kart_id FROM kayit WHERE tarih = ? AND yapildi = 1',
-    [gun],
-  );
+  const satirlar = await oku.hepsi<{ kart_id: string }>('SELECT kart_id FROM kayit WHERE tarih = ? AND yapildi = 1', [
+    gun,
+  ]);
   return new Set(satirlar.map((s) => s.kart_id));
 }
 
@@ -224,7 +239,7 @@ export async function gunlerinYapilanlari(oku: Okuyucu, ilk: Gun, son: Gun): Pro
 
 export async function kartAyrinti(oku: Okuyucu, id: string): Promise<{ kart: KartOzeti; bloklar: Blok[] } | null> {
   const satir = await oku.ilk<KartSatiri>(
-    `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi FROM kart k WHERE k.id = ?`,
+    `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi, ${ADIM_SUTUNLARI} FROM kart k WHERE k.id = ?`,
     [id],
   );
   if (!satir) return null;
@@ -261,7 +276,9 @@ export async function kayitVarMi(oku: Okuyucu, kartId: string): Promise<boolean>
 /** Yazma işleminin içinde kart ekler (başka veri modülleri de kullanır). */
 export async function kartEkleY(y: Yazici, k: Kart, simdi: string) {
   await y.calistir(
-    `INSERT INTO kart (id, ${KART_ALANLARI}, olusturma, guncelleme) VALUES (?, ${KART_ALANLARI.split(',').map(() => '?').join(', ')}, ?, ?)`,
+    `INSERT INTO kart (id, ${KART_ALANLARI}, olusturma, guncelleme) VALUES (?, ${KART_ALANLARI.split(',')
+      .map(() => '?')
+      .join(', ')}, ?, ?)`,
     [k.id, ...kartDegerleri(k), simdi, simdi],
   );
 }
@@ -298,10 +315,11 @@ export async function bloklariYazY(
   const esleme = new Map<string, string>();
   const tutulan = new Set<string>();
   for (const [sira, t] of taslaklar.entries()) {
-    const degerler: SqlDeger[] = [t.tur, t.ad, t.metin, t.birim, t.dakika, JSON.stringify(t.maddeler), t.dosya];
+    const durum = t.tur === 'adimlar' && t.durum ? JSON.stringify(t.durum) : null;
+    const degerler: SqlDeger[] = [t.tur, t.ad, t.metin, t.birim, t.dakika, JSON.stringify(t.maddeler), t.dosya, durum];
     if (mevcut.has(t.id)) {
       await y.calistir(
-        'UPDATE blok SET sira = ?, tur = ?, ad = ?, metin = ?, birim = ?, dakika = ?, maddeler = ?, dosya = ? WHERE id = ?',
+        'UPDATE blok SET sira = ?, tur = ?, ad = ?, metin = ?, birim = ?, dakika = ?, maddeler = ?, dosya = ?, durum = ? WHERE id = ?',
         [sira, ...degerler, t.id],
       );
       esleme.set(t.id, t.id);
@@ -309,7 +327,7 @@ export async function bloklariYazY(
     } else {
       const id = idUret();
       await y.calistir(
-        'INSERT INTO blok (id, kart_id, sira, tur, ad, metin, birim, dakika, maddeler, dosya) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO blok (id, kart_id, sira, tur, ad, metin, birim, dakika, maddeler, dosya, durum) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [id, kartId, sira, ...degerler],
       );
       esleme.set(t.id, id);
@@ -327,7 +345,14 @@ async function kayitYazY(y: Yazici, k: Kayit) {
      ON CONFLICT (kart_id, tarih) DO UPDATE SET
        yapildi = excluded.yapildi, degerler = excluded.degerler,
        isaretler = excluded.isaretler, fotolar = excluded.fotolar`,
-    [k.kartId, k.tarih, k.yapildi ? 1 : 0, JSON.stringify(k.degerler), JSON.stringify(k.isaretler), JSON.stringify(k.fotolar)],
+    [
+      k.kartId,
+      k.tarih,
+      k.yapildi ? 1 : 0,
+      JSON.stringify(k.degerler),
+      JSON.stringify(k.isaretler),
+      JSON.stringify(k.fotolar),
+    ],
   );
 }
 
@@ -392,7 +417,9 @@ export function islemleriUygula(
             const kayit = kayitSatirdan(satir);
             await kayitYazY(
               y,
-              esleme ? kayitAnahtarlariniEsle(kayit, islem.hedefKartId, esleme) : { ...kayit, kartId: islem.hedefKartId },
+              esleme
+                ? kayitAnahtarlariniEsle(kayit, islem.hedefKartId, esleme)
+                : { ...kayit, kartId: islem.hedefKartId },
             );
           }
           await y.calistir(`DELETE FROM kayit WHERE kart_id = ?${kosul.sql}`, [islem.kaynakKartId, ...kosul.params]);
@@ -415,17 +442,36 @@ export function islemleriUygula(
 }
 
 /** Kartın o günkü kaydını değiştirir (yoksa boş kayıttan başlar). */
-export function kayitDegistir(
-  kapi: Kapi,
-  kartId: string,
-  gun: Gun,
-  degistir: (kayit: Kayit) => Kayit,
-): Promise<void> {
+export function kayitDegistir(kapi: Kapi, kartId: string, gun: Gun, degistir: (kayit: Kayit) => Kayit): Promise<void> {
   return kapi.yaz(['kart'], async (y) => {
     const satir = await y.ilk<KayitSatiri>('SELECT * FROM kayit WHERE kart_id = ? AND tarih = ?', [kartId, gun]);
     const eski = satir ? kayitSatirdan(satir) : bosKayit(kartId, gun);
     await kayitYazY(y, { ...degistir(eski), kartId, tarih: gun });
     await kisaYoluEsitleY(y, kartId);
+  });
+}
+
+/**
+ * "Proje adımları": bir adımı işaretler / işaretini kaldırır (kalıcı; güne bağlı değil).
+ * Bütün adımlar bitince o günün kaydı yapıldı olur, tekrarlı kartın dizisi o gün
+ * biter; bir adım geri alınınca ikisi de geri döner.
+ */
+export function adimiIsaretle(kapi: Kapi, blokId: string, i: number, yapildi: boolean, gun: Gun): Promise<void> {
+  return kapi.yaz(['kart'], async (y) => {
+    const b = await y.ilk<BlokSatiri>('SELECT * FROM blok WHERE id = ?', [blokId]);
+    if (!b) return;
+    const k = await y.ilk<KartSatiri>('SELECT * FROM kart WHERE id = ?', [b.kart_id]);
+    if (!k) return;
+    const kart = kartSatirdan(k);
+    const eski = adimDurumu(json<unknown>(b.durum ?? null, null), json<string[]>(b.maddeler, []).length);
+    const { durum, etki } = adimiDegistir(eski, i, yapildi, gun, kart);
+    await y.calistir('UPDATE blok SET durum = ? WHERE id = ?', [JSON.stringify(durum), blokId]);
+    if (!etki) return;
+    if (etki.bitis !== undefined) await y.calistir('UPDATE kart SET bitis = ? WHERE id = ?', [etki.bitis, kart.id]);
+    const satir = await y.ilk<KayitSatiri>('SELECT * FROM kayit WHERE kart_id = ? AND tarih = ?', [kart.id, etki.gun]);
+    const kayit = satir ? kayitSatirdan(satir) : bosKayit(kart.id, etki.gun);
+    await kayitYazY(y, { ...kayit, yapildi: etki.tur === 'bitti' });
+    await kisaYoluEsitleY(y, kart.id);
   });
 }
 

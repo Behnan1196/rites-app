@@ -7,14 +7,18 @@ import * as Sharing from 'expo-sharing';
 import { useEffect, useRef, useState } from 'react';
 import { Image, Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
+import { adimDurumu, ilerleme, ilerlemeMetni } from '@/mantik/adimlar';
 import { oncekiDeger } from '@/mantik/ajanda';
 import { sesDosyasiMi } from '@/mantik/dosya';
 import type { Blok, Kayit } from '@/mantik/kart';
 import { youtubeVideosu } from '@/mantik/paylasimAl';
-import { uzunTarih, type Gun } from '@/mantik/tarih';
+import { kisaTarih, uzunTarih, type Gun } from '@/mantik/tarih';
 import { dosyayiSakla } from '@/veri/dosyalar';
+import { adimiIsaretle } from '@/veri/kartlar';
+import { useVeri } from '@/veri/VeriSaglayici';
 
 import { Dugme } from '../Dugme';
+import { useKisaMesaj } from '../KisaMesaj';
 import { SesOynatici } from '../not/SesOynatici';
 import { Bolum } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
@@ -39,6 +43,8 @@ export function BlokUygulama(o: Ozellikler) {
       return <VideoBlogu blok={o.blok} />;
     case 'liste':
       return <ListeBlogu {...o} />;
+    case 'adimlar':
+      return <AdimlarBlogu blok={o.blok} gun={o.gun} />;
     case 'foto':
       return o.blok.dosya ? (
         <Image source={{ uri: o.blok.dosya }} style={stiller.foto} accessibilityLabel="Fotoğraf" />
@@ -121,6 +127,69 @@ function ListeBlogu({ blok, kayit, onKayit }: Ozellikler) {
             <Yazi renk={isaretli ? renk.ikincil : renk.yazi} style={[stiller.esnek, isaretli && stiller.ustuCizili]}>
               {madde}
             </Yazi>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** Proje adımları: işaretler kalıcı (güne bağlı değil); her adımın yapıldığı gün görünür. */
+function AdimlarBlogu({ blok, gun }: { blok: Blok; gun: Gun }) {
+  const { kapi } = useVeri();
+  const kisaMesaj = useKisaMesaj();
+  const durum = adimDurumu(blok.durum, blok.maddeler.length);
+  const { yapilan, toplam } = ilerleme(durum);
+  const degistir = (i: number) => {
+    const yapildi = !durum.yapilan[i];
+    const bitecek = yapildi && yapilan + 1 === toplam;
+    void adimiIsaretle(kapi, blok.id, i, yapildi, gun)
+      .then(() => bitecek && kisaMesaj('Bütün adımlar bitti; kart yapıldı.'))
+      .catch((e: unknown) => {
+        console.error('Adım kaydedilemedi', e);
+        kisaMesaj('Kaydedilemedi. Yeniden dene.');
+      });
+  };
+  return (
+    <View style={stiller.liste}>
+      <View style={stiller.adimBaslik}>
+        <Yazi tur="kartBasligi" style={stiller.esnek}>
+          {blok.ad || 'Proje adımları'}
+        </Yazi>
+        <Yazi tur="ikincil" kalinlik="yariKalin" renk={yapilan === toplam && toplam > 0 ? renk.ana : renk.ikincil}>
+          {ilerlemeMetni(durum)}
+        </Yazi>
+      </View>
+      <View
+        style={stiller.cubuk}
+        accessible
+        accessibilityRole="progressbar"
+        accessibilityValue={{ min: 0, max: toplam, now: yapilan }}
+      >
+        <View style={[stiller.cubukDolu, { width: `${toplam ? (yapilan / toplam) * 100 : 0}%` }]} />
+      </View>
+      {blok.maddeler.map((madde, i) => {
+        const tarih = durum.yapilan[i];
+        return (
+          <Pressable
+            key={`${i}-${madde}`}
+            onPress={() => degistir(i)}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: !!tarih }}
+            accessibilityLabel={tarih ? `${madde}, ${kisaTarih(tarih)} yapıldı` : madde}
+            style={stiller.madde}
+          >
+            <View style={[stiller.kare, !!tarih && stiller.kareDolu]}>
+              {!!tarih && <Ionicons name="checkmark" size={20} color={renk.yuzey} />}
+            </View>
+            <Yazi renk={tarih ? renk.ikincil : renk.yazi} style={[stiller.esnek, !!tarih && stiller.ustuCizili]}>
+              {madde}
+            </Yazi>
+            {!!tarih && (
+              <Yazi tur="etiket" renk={renk.soluk}>
+                {kisaTarih(tarih)}
+              </Yazi>
+            )}
           </Pressable>
         );
       })}
@@ -320,6 +389,9 @@ function GelisimFotografi({ blok, kayit, onKayit }: Ozellikler) {
 }
 
 const stiller = StyleSheet.create({
+  adimBaslik: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  cubuk: { height: 6, borderRadius: 3, backgroundColor: renk.satirCizgi, overflow: 'hidden' },
+  cubukDolu: { height: 6, borderRadius: 3, backgroundColor: renk.ana },
   esnek: { flex: 1 },
   satir: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   foto: { width: '100%', aspectRatio: 4 / 3, borderRadius: olcu.kose.kart, backgroundColor: renk.satirCizgi },

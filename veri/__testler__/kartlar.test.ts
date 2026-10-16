@@ -43,7 +43,7 @@ describe('kart veri katmanı (gerçek SQLite)', () => {
     await yeniKartKaydet(kapi, k, [blok('f1'), blok('f2', { tur: 'liste', maddeler: ['a', 'b'] })], idUret);
     const kartlar = await tumKartlar(oku);
     expect(kartlar).toHaveLength(1);
-    expect(kartlar[0]).toEqual({ ...k, blokSayisi: 2 });
+    expect(kartlar[0]).toEqual({ ...k, blokSayisi: 2, adimlar: null });
     const ayrinti = await kartAyrinti(oku, 'k1');
     expect(ayrinti!.bloklar.map((b) => [b.id, b.tur, b.sira, b.maddeler])).toEqual([
       ['id1', 'olcum', 0, []],

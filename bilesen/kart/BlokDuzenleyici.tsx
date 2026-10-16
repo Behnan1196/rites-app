@@ -88,7 +88,12 @@ export function BlokDuzenleyici({ blok, ilkMi, onDegis, onYukari, onKaldir }: Oz
       )}
       {blok.tur === 'liste' && (
         <>
-          <Alan etiket="Liste adı" deger={blok.ad} onDegis={(ad) => degis({ ad })} ipucu="Liste adı (örneğin Malzemeler)" />
+          <Alan
+            etiket="Liste adı"
+            deger={blok.ad}
+            onDegis={(ad) => degis({ ad })}
+            ipucu="Liste adı (örneğin Malzemeler)"
+          />
           <Alan
             etiket="Maddeler"
             deger={blok.metin}
@@ -96,6 +101,22 @@ export function BlokDuzenleyici({ blok, ilkMi, onDegis, onYukari, onKaldir }: Oz
             ipucu="Her satıra bir madde"
             cokSatir
           />
+        </>
+      )}
+      {blok.tur === 'adimlar' && (
+        <>
+          <Alan etiket="Proje adı" deger={blok.ad} onDegis={(ad) => degis({ ad })} ipucu="Kısa ad (isteğe bağlı)" />
+          <Alan
+            etiket="Adımlar"
+            deger={blok.metin}
+            onDegis={(metin) => degis({ metin })}
+            ipucu="Her satıra bir adım"
+            cokSatir
+          />
+          <Yazi tur="ikincil">
+            Liste her gün sıfırlanır; proje adımları sıfırlanmaz, kaldığın yerden sürer. Hepsi bitince kart yapıldı
+            sayılır.
+          </Yazi>
         </>
       )}
       {blok.tur === 'foto' && (
@@ -147,12 +168,8 @@ export function BlokDuzenleyici({ blok, ilkMi, onDegis, onYukari, onKaldir }: Oz
           </View>
         </View>
       )}
-      {blok.tur === 'gunnot' && (
-        <Yazi tur="ikincil">Kartı uygularken o günle ilgili kısa bir not yazacaksın.</Yazi>
-      )}
-      {blok.tur === 'gelfoto' && (
-        <Yazi tur="ikincil">Kartı uygularken fotoğraf çekip gelişimini kaydedeceksin.</Yazi>
-      )}
+      {blok.tur === 'gunnot' && <Yazi tur="ikincil">Kartı uygularken o günle ilgili kısa bir not yazacaksın.</Yazi>}
+      {blok.tur === 'gelfoto' && <Yazi tur="ikincil">Kartı uygularken fotoğraf çekip gelişimini kaydedeceksin.</Yazi>}
     </Bolum>
   );
 }

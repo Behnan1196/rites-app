@@ -10,6 +10,7 @@ export const BLOK_TURLERI: Record<BlokTuru, { ad: string; ikon: IkonAdi; kayit: 
   talimat: { ad: 'Talimat', ikon: 'reader-outline', kayit: false },
   video: { ad: 'Video', ikon: 'play-circle-outline', kayit: false },
   liste: { ad: 'Liste', ikon: 'checkbox-outline', kayit: false },
+  adimlar: { ad: 'Proje adımları', ikon: 'git-commit-outline', kayit: false },
   foto: { ad: 'Fotoğraf', ikon: 'image-outline', kayit: false },
   dosya: { ad: 'Dosya', ikon: 'document-outline', kayit: false },
   sayac: { ad: 'Zamanlayıcı', ikon: 'timer-outline', kayit: true },
