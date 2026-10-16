@@ -140,6 +140,7 @@ export function maddeKarti(m: BanaVerilen): MaddeKarti {
     tarihsiz: false,
     saat: null,
     hatirlatma: null,
+    alarm: false,
     tekrar: null,
     bitis: null,
     atlanan: [],

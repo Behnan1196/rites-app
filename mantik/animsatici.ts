@@ -222,12 +222,17 @@ function anaGoreKonum(gun: Gun, dk: number): { gun: Gun; saat: string } {
   return { gun: gunEkle(gun, gunFark), saat: saatMetni(dk) };
 }
 
-const HATIRLATMA_ONCE: Record<HatirlatmaSecimi, number> = { saatinde: 0, '15dk': 15, '1sa': 60 };
+export const HATIRLATMA_ONCE: Record<HatirlatmaSecimi, number> = { saatinde: 0, '15dk': 15, '1sa': 60 };
 const HATIRLATMA_GOVDESI: Record<HatirlatmaSecimi, string> = {
   saatinde: 'Şimdi',
   '15dk': '15 dk sonra',
   '1sa': '1 saat sonra',
 };
+
+/** Kartın o günkü hatırlatmasının zamanı (önce çalan hatırlatma bir önceki güne düşebilir). */
+export function hatirlatmaZamani(gun: Gun, saat: string, h: HatirlatmaSecimi): { gun: Gun; saat: string } {
+  return anaGoreKonum(gun, dakika(saat) - HATIRLATMA_ONCE[h]);
+}
 
 export interface PlanGirdisi {
   animsaticilar: readonly Animsatici[];
@@ -241,7 +246,7 @@ export interface PlanGirdisi {
   simdi: string;
   gunSayisi?: number;
   sinir?: number;
-  /** Alarm olarak çalan anımsatıcılar; bunlara bildirim planlanmaz. */
+  /** Alarm olarak çalan anımsatıcılar ve kartlar (kimlik); bunlara bildirim planlanmaz. */
   alarmlaCalanlar?: ReadonlySet<string>;
 }
 
@@ -293,7 +298,8 @@ export function bildirimPlani({
       if (!k.saat || !k.hatirlatma || !gorunurMu(k, gun, bugunGun)) continue;
       if (i === 0 && bugunYapilanlar.has(k.id)) continue;
       if (!k.tekrar && k.yapildi) continue;
-      const yer = anaGoreKonum(gun, dakika(k.saat) - HATIRLATMA_ONCE[k.hatirlatma]);
+      if (alarmlaCalanlar?.has(k.id)) continue;
+      const yer = hatirlatmaZamani(gun, k.saat, k.hatirlatma);
       liste.push({
         id: `k_${k.id}_${gun}`,
         gun: yer.gun,

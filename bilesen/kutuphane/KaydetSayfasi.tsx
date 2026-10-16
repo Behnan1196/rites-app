@@ -18,9 +18,11 @@ import {
   type EtiketTuru,
   type KartIcerigi,
 } from '@/mantik/kutuphane';
+import { kaynakAdi, paylasilanPaketi } from '@/mantik/paylasimAl';
 import { geleniSil, type Gelen } from '@/sunucu/gelenler';
 import { yeniKimlik } from '@/veri/kimlik';
 import { kutuphaneyeKaydet } from '@/veri/kutuphane';
+import { paylasilanSil, type Paylasilan } from '@/veri/paylasilanlar';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { AltSayfa } from '../AltSayfa';
@@ -38,7 +40,9 @@ export type Kaydedilen =
       /** Plan kartında planın alanı. */
       alan: AlanAnahtari | null;
     }
-  | { tur: 'gelen'; gelen: Gelen };
+  | { tur: 'gelen'; gelen: Gelen }
+  /** Başka uygulamadan paylaşılan bağlantı (Gelenler'de, telefonda). */
+  | { tur: 'paylasilan'; paylasilan: Paylasilan };
 
 interface Hazirlik {
   icerik: KartIcerigi;
@@ -57,6 +61,16 @@ function hazirla(h: Kaydedilen): Hazirlik {
       etiketTur: turTahmini(h.bloklar),
       kaynak: kaynakMetni(h.kart),
       kaldirilacak: h.kart.planId || h.kart.kilitli ? null : h.kart,
+    };
+  }
+  if (h.tur === 'paylasilan') {
+    const p = paylasilanPaketi({ baslik: h.paylasilan.baslik, videoAdresi: h.paylasilan.adres });
+    return {
+      icerik: paketIcerigi(p),
+      alanlar: [],
+      etiketTur: turTahmini(p.bloklar),
+      kaynak: `Paylaştın: ${kaynakAdi(h.paylasilan.adres)}`,
+      kaldirilacak: null,
     };
   }
   const p = h.gelen.paket;
@@ -111,6 +125,7 @@ function KaydetSayfasi({
         // Alıcı kaydedince kart sunucudan silinir (`07`).
         await geleniSil(hedef.gelen.id).catch((e: unknown) => console.warn(e));
       }
+      if (hedef.tur === 'paylasilan') await paylasilanSil(kapi, hedef.paylasilan.id);
       kisaMesaj(kaldir ? "Kütüphaneye kaydedildi ve Ajandam'dan kaldırıldı" : 'Kütüphaneye kaydedildi');
       onKaydedildi?.({ kaldirildi: kaldir });
       onKapat();

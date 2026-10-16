@@ -9,7 +9,7 @@ import { YEDEK_TABLOLARI } from '@/mantik/yedek';
 import type { Kapi } from './kapi';
 
 export async function telefondakileriSil(kapi: Kapi): Promise<void> {
-  await kapi.yaz(['ayar', 'kart', 'not', 'plan', 'animsatici', 'kisi', 'kutuphane'], async (y) => {
+  await kapi.yaz(['ayar', 'kart', 'not', 'plan', 'animsatici', 'kisi', 'kutuphane', 'paylasilan'], async (y) => {
     for (const t of [...YEDEK_TABLOLARI].reverse()) await y.calistir(`DELETE FROM "${t}"`);
   });
   if (Platform.OS !== 'web') {

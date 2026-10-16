@@ -7,6 +7,7 @@ import type { ComponentProps } from 'react';
 import { Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { HATIRLATMA_METNI, kisaGoreliTarih } from '@/mantik/ajanda';
+import { KART_ALARM_ACIKLAMASI } from '@/mantik/alarm';
 import { tekrarMetni } from '@/mantik/gorunurluk';
 import type { HatirlatmaSecimi, Tekrar } from '@/mantik/kart';
 import { GUN_KISA, gunEkle, type Gun, type GunKisa } from '@/mantik/tarih';
@@ -16,6 +17,7 @@ import { AyTakvimi } from '../AyTakvimi';
 import { Dugme } from '../Dugme';
 import { AcKapa, ArtiEksi, Bolum, SecenekHapi } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
+import { useAlarmDestegi } from '../useAlarmDestegi';
 import { Yazi } from '../Yazi';
 
 export type ZamanlamaBolmesi = 'tarih' | 'saat' | 'hatirlatma' | 'tekrar';
@@ -24,6 +26,8 @@ export interface Zamanlama {
   tarih: Gun;
   saat: string | null;
   hatirlatma: HatirlatmaSecimi | null;
+  /** Hatırlatma alarm olarak çalar (iOS 26). */
+  alarm?: boolean;
   tekrar: Tekrar | null;
 }
 
@@ -54,7 +58,7 @@ export function ZamanlamaCubugu({
     {
       k: 'hatirlatma',
       ad: 'Hatırlat',
-      ikon: 'notifications-outline',
+      ikon: deger.hatirlatma && deger.alarm ? 'alarm-outline' : 'notifications-outline',
       deger: deger.hatirlatma ? HATIRLATMA_METNI[deger.hatirlatma] : null,
     },
     { k: 'tekrar', ad: 'Tekrar', ikon: 'repeat-outline', deger: deger.tekrar ? tekrarMetni(deger.tekrar) : null },
@@ -106,6 +110,7 @@ interface SayfaOzellikleri {
 /** Dört alt sayfanın hepsi; hangisinin açık olduğu `acik` ile verilir. */
 export function ZamanlamaSayfalari({ acik, deger, bugunGun, onDegis, onAc, tarihYok = false }: SayfaOzellikleri) {
   const kapat = () => onAc(null);
+  const alarm = useAlarmDestegi();
   return (
     <>
       <AltSayfa
@@ -130,7 +135,11 @@ export function ZamanlamaSayfalari({ acik, deger, bugunGun, onDegis, onAc, tarih
         </View>
         <Yazi kalinlik="kalin">Başka bir gün</Yazi>
         <Bolum>
-          <AyTakvimi secili={tarihYok ? null : deger.tarih} bugunGun={bugunGun} onSec={(tarih) => onDegis({ ...deger, tarih })} />
+          <AyTakvimi
+            secili={tarihYok ? null : deger.tarih}
+            bugunGun={bugunGun}
+            onSec={(tarih) => onDegis({ ...deger, tarih })}
+          />
         </Bolum>
       </AltSayfa>
 
@@ -159,7 +168,7 @@ export function ZamanlamaSayfalari({ acik, deger, bugunGun, onDegis, onAc, tarih
           <Dugme
             tur="tehlike"
             etiket="Saati kaldır"
-            onPress={() => onDegis({ ...deger, saat: null, hatirlatma: null })}
+            onPress={() => onDegis({ ...deger, saat: null, hatirlatma: null, alarm: false })}
           />
         )}
       </AltSayfa>
@@ -177,10 +186,28 @@ export function ZamanlamaSayfalari({ acik, deger, bugunGun, onDegis, onAc, tarih
                 key={h ?? 'yok'}
                 etiket={h ? HATIRLATMA_METNI[h] : 'Yok'}
                 secili={deger.hatirlatma === h}
-                onPress={() => onDegis({ ...deger, hatirlatma: h })}
+                onPress={() => onDegis({ ...deger, hatirlatma: h, alarm: h ? deger.alarm : false })}
               />
             ))}
           </View>
+        )}
+        {alarm.destek && deger.saat !== null && deger.hatirlatma !== null && (
+          <Bolum>
+            <View style={stiller.alarmSatiri}>
+              <Yazi kalinlik="kalin" style={stiller.esnek}>
+                Alarm olarak çalsın
+              </Yazi>
+              <AcKapa
+                acik={!!deger.alarm}
+                etiket="Alarm olarak çalsın"
+                onDegis={(a) => {
+                  onDegis({ ...deger, alarm: a });
+                  if (a) void alarm.izinIste();
+                }}
+              />
+            </View>
+            <Yazi tur="ikincil">{KART_ALARM_ACIKLAMASI}</Yazi>
+          </Bolum>
         )}
         <Yazi tur="ikincil">
           Göz damlası gibi günde birkaç kez çalması gerekenler için Giriş&apos;teki Anımsatıcılar daha uygun.
@@ -278,8 +305,7 @@ function seciliGunler(tekrar: Tekrar): GunKisa[] {
 }
 
 function TekrarAyari({ tekrar, onDegis }: { tekrar: Tekrar | null; onDegis: (t: Tekrar | null) => void }) {
-  const ac = (acik: boolean) =>
-    onDegis(acik ? { gunSayisi: VARSAYILAN_GUN, gunler: null, desen: null } : null);
+  const ac = (acik: boolean) => onDegis(acik ? { gunSayisi: VARSAYILAN_GUN, gunler: null, desen: null } : null);
 
   if (!tekrar) {
     return (
@@ -350,6 +376,8 @@ function TekrarAyari({ tekrar, onDegis }: { tekrar: Tekrar | null; onDegis: (t: 
 }
 
 const stiller = StyleSheet.create({
+  alarmSatiri: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  esnek: { flex: 1 },
   cubuk: {
     flexDirection: 'row',
     backgroundColor: renk.bolumluZemin,

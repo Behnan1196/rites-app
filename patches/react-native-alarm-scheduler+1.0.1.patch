@@ -1,0 +1,46 @@
+diff --git a/node_modules/react-native-alarm-scheduler/ios/AlarmScheduler/AlarmSchedulerModule+Scheduling.swift b/node_modules/react-native-alarm-scheduler/ios/AlarmScheduler/AlarmSchedulerModule+Scheduling.swift
+index efa20e2..764f61c 100644
+--- a/node_modules/react-native-alarm-scheduler/ios/AlarmScheduler/AlarmSchedulerModule+Scheduling.swift
++++ b/node_modules/react-native-alarm-scheduler/ios/AlarmScheduler/AlarmSchedulerModule+Scheduling.swift
+@@ -30,6 +30,11 @@ extension AlarmSchedulerModule {
+       soundName = normalizedSoundName(alarm.ios?.soundName)
+     }
+     var alarmKitDebugState: [String: Any]?
++    // Rites yaması: gün listesi boşsa ve gelecekteki bir zaman damgası verildiyse
++    // alarm o tarihte çalar (AlarmKit `.fixed`); yoksa eskisi gibi saatin ilk gelişinde.
++    let fixedDate: Date? = weekdays.isEmpty
++      ? alarm.timestamp.flatMap { $0 > Date().timeIntervalSince1970 * 1000 ? Date(timeIntervalSince1970: $0 / 1000) : nil }
++      : nil
+ 
+     #if canImport(AlarmKit)
+     if #available(iOS 26.0, *) {
+@@ -39,6 +44,7 @@ extension AlarmSchedulerModule {
+         hour: hour,
+         minute: minute,
+         weekdays: weekdays,
++        fixedDate: fixedDate,
+         options: alarm.ios,
+         metadata: metadata,
+         soundName: soundName,
+@@ -283,6 +289,7 @@ extension AlarmSchedulerModule {
+     hour: Int,
+     minute: Int,
+     weekdays: [Int],
++    fixedDate: Date?,
+     options: IosAlarmOptionsRecord?,
+     metadata: [String: Any],
+     soundName: String?,
+@@ -317,7 +324,12 @@ extension AlarmSchedulerModule {
+       metadata: AlarmSchedulerMetadata(alarmId: id, title: title, values: alarmKitMetadataValues(metadata)),
+       tintColor: Color.accentColor
+     )
+-    let schedule = try makeAlarmKitSchedule(hour: hour, minute: minute, weekdays: weekdays)
++    let schedule: Alarm.Schedule
++    if let fixedDate {
++      schedule = .fixed(fixedDate)
++    } else {
++      schedule = try makeAlarmKitSchedule(hour: hour, minute: minute, weekdays: weekdays)
++    }
+     let effectiveSoundName = alarmSchedulerEffectiveSoundName(soundName)
+     let stopIntent = makeStopIntent(
+       id: id,

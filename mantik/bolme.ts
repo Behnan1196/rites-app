@@ -15,6 +15,7 @@ import { gunEkle, gunFarki, uzunTarih, type Gun } from './tarih';
  */
 export type KartTanimi = Pick<Kart, 'baslik' | 'kisa' | 'tarih' | 'saat' | 'hatirlatma' | 'tekrar'> & {
   tarihsiz?: boolean;
+  alarm?: boolean;
 };
 
 export type KayitAraligi =

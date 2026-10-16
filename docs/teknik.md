@@ -1,6 +1,6 @@
 # Teknik yapı
 
-_Son güncelleme: 14 Ekim 2026 (alarm)_
+_Son güncelleme: 16 Ekim 2026_
 
 ## Yığın
 
@@ -36,6 +36,7 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 6 | `kisi` (Kişilerim; kişinin verdiği adlar telefonda kalır) |
 | 7 | `kutuphane` (kart ya da planın kayıtsız kopyası, JSON içerik) |
 | 8 | `animsatici.alarm` (alarm olarak çalar) |
+| 9 | `paylasilan` (başka uygulamadan paylaşılan bağlantılar, Gelenler'de), `kart.alarm` |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 
@@ -48,12 +49,12 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Tek JSON dosyası, adı `rites-yedek-YYYY-AA-GG.json`, parolasız.
 - Alanlar:
   - `bicim`: `"rites-yedek"`
-  - `surum`: veritabanı göç sürümü (şu an 8)
+  - `surum`: veritabanı göç sürümü (şu an 9)
   - `olusturma`: ISO zaman
   - `dosyaKlasoru`: yedeği alan telefondaki dosya klasörü (geri yüklemede yollar yeni klasöre çevrilir)
   - `tablolar`: `{ tabloAdı: satır[] }` — satırlar SQLite sütun adlarıyla; JSON sütunlar metin olarak
   - `dosyalar`: `{ dosyaAdı: base64 }` — fotoğraf, ses, belge
-- Yedeğe giren tablolar: `ayar, kart, blok, kayit, not, plan, alan_durumu, soru_cevap, animsatici, animsatici_gun, kisi, kutuphane`.
+- Yedeğe giren tablolar: `ayar, kart, blok, kayit, not, plan, alan_durumu, soru_cevap, animsatici, animsatici_gun, kisi, kutuphane, paylasilan`.
 - Geri yükleme tek işlemdir: telefondaki veriler silinir, yedektekiler yazılır; eski sürümden yedekte olmayan sütunlar varsayılanını alır; daha yeni sürümün yedeği reddedilir.
 
 ## Derleme ve dağıtım
@@ -76,15 +77,19 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Tekrarlı alarm telefonda durur; Rites açılmasa da her gün çalar. Bildirim planı alarmlı anımsatıcıları atlar (yalnız alarm izni varsa).
 - Alarmdaki Durdur / Ertele düğmesi Rites'ı açar; modül basışı telefonda kaydeder, `BildirimYoneticisi` açılışta ve öne gelişte okuyup işler.
 - Modül yalnız kendi derlemede vardır (`requireOptionalNativeModule`); yoksa her şey bildirimle sürer. Info.plist'e `NSAlarmKitUsageDescription` eklentiyle girer.
-- Yeni yerel modül olduğu için sürüm 1.1.0 (`runtimeVersion` değişti): 1.0.0 derlemeleri bu güncellemeyi almaz, yeni derleme gerekir.
+- Kart alarmı: alarmlı kartın önümüzdeki 3 gündeki hatırlatmaları belirli tarihli tek seferlik alarmlar (`kartAlarmPlani`); Ertele düğmesi yok, Durdur kartı açar.
+- Modüle yama: `patches/react-native-alarm-scheduler+1.0.1.patch` zaman damgası verilen tek seferlik alarmı AlarmKit `.fixed(Date)` ile kurar (modül normalde saatin ilk gelişinde çalar). `npm ci` sonrası `postinstall: patch-package` uygular; modül sürümü değişirse yama yeniden üretilmeli.
+- Alarmdaki Ertele (`.custom` ikinci düğme) alarmı susturmuyor (P-4); Rites basışı işlerken `completeNativeAlarmAsync` + `cancelAlarmAsync` ile susturur, plan tekrarlıyı yeniden kurar.
+- Sürüm 1.2.0 (16 Ekim: WebView ve modül yaması yeni derleme istedi). 14 Ekim: yeni yerel modül olduğu için sürüm 1.1.0 (`runtimeVersion` değişti): 1.0.0 derlemeleri bu güncellemeyi almaz, yeni derleme gerekir.
 
 ## Paylaşımla içerik almak
 
 - `expo-sharing` eklentisi iOS'ta bir paylaşım eklentisi (share extension) ekler; App Group `group.com.behnanozturkmen.ritespilot` (EAS kendisi kaydeder). Kabul edilen: metin ve en çok 1 web adresi.
-- Eklenti paylaşılanı App Group'a yazar ve uygulamayı `rites://expo-sharing` ile açar; `app/+native-intent.tsx` bunu `/ajandam?paylasim=…`a çevirir; Ajandam `Sharing.getSharedPayloads()` ile alır, temizler ve kart formunu açar.
+- 16 Ekim'den beri `eklentiler/paylasimAdi.js` eklentinin kodunu yamalar: paylaşılan App Group'taki listeye **eklenir** (her paylaşımın başında `rites-paylasim:<zaman>` işaret öğesi), "Gelenler'e eklendi." gösterilir, uygulama açılmaz. Yama uygulanamazsa (expo-sharing kodu değişmişse) derleme hata verir.
+- `bilesen/paylasim/PaylasimAlici.tsx` Rites açılınca / öne gelince `Sharing.getSharedPayloads()` ile listeyi okur, temizler, işaretlere göre paylaşımlara böler (`paylasimlaraBol`), her bağlantıyı başlığıyla `paylasilan` tablosuna yazar. Eski eklenti `rites://expo-sharing` ile açarsa `+native-intent` Gelenler'e götürür.
 - Video başlığı: `https://www.youtube.com/oembed?format=json&url=…` (anahtar yok, 4 sn zaman aşımı). Bu istek yalnız kişi paylaştığında, yalnız o bağlantı için gider.
 - Paylaşım menüsündeki ad: `eklentiler/paylasimAdi.js` eklentinin görünen adını "Rites" yapar (app.json'da expo-sharing'den önce yazılmalı).
-- Not: iOS'ta eklentinin ana uygulamayı açması Apple'ın resmi olarak desteklediği bir yol değil; Expo da bunu belgede belirtiyor. İleride iOS sürümünde bozulabilir.
+- Gömülü oynatma: `bilesen/kart/YoutubeOynatici.tsx`, `react-native-webview` içinde YouTube iframe'i. Sayfanın adresi (`baseUrl`) `https://<paket kimliği>`: YouTube gömülü oynatıcı Referer ister, yoksa "Hata 153" verir. Oynatıcıdaki bağlantılar dışarıda (YouTube uygulamasında) açılır.
 
 ## Denetim
 

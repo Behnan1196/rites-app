@@ -1,11 +1,24 @@
-// Alarm olarak çalan anımsatıcılar (iOS 26 AlarmKit; Pilot 14 Ekim).
+// Alarm olarak çalan anımsatıcılar ve ajanda kartları (iOS 26 AlarmKit; pilot 14 ve 16 Ekim).
 //
-// Her (anımsatıcı, saat) için telefonda haftalık tekrarlı bir alarm durur; telefon
-// bunu Rites açılmadan da çalar. Ertelenen saat için o güne ait tek seferlik bir
-// alarm eklenir. Alarm kimlikleri kararlıdır (aynı girdi → aynı UUID), böylece
-// plan her uygulandığında yalnız eksikler eklenir, fazlalar kaldırılır.
+// Anımsatıcı: her (anımsatıcı, saat) için telefonda haftalık tekrarlı bir alarm durur;
+// telefon bunu Rites açılmadan da çalar. Ertelenen saat için o güne ait tek seferlik
+// bir alarm eklenir.
+// Kart: hatırlatması "alarm" olan kartın önümüzdeki günlerdeki (bildirimdeki gibi
+// 3 gün) her hatırlatması belirli tarihli tek seferlik bir alarmdır; Ertele yok.
+// Alarm kimlikleri kararlıdır (aynı girdi → aynı UUID), böylece plan her
+// uygulandığında yalnız eksikler eklenir, fazlalar kaldırılır.
 
-import { dakika, gunuKapsarMi, type Animsatici, type AnimsaticiGunleri, type AnimsaticiGunu } from './animsatici';
+import {
+  dakika,
+  gunuKapsarMi,
+  hatirlatmaZamani,
+  PLAN_GUNU,
+  type Animsatici,
+  type AnimsaticiGunleri,
+  type AnimsaticiGunu,
+} from './animsatici';
+import { gorunurMu } from './gorunurluk';
+import type { Kart } from './kart';
 import { gunEkle, type Gun } from './tarih';
 
 /** Alarmda Ertele hep 5 dakika (ürün sahibi). */
@@ -16,6 +29,9 @@ export const ERTELE_GECERLILIK_DK = 10;
 export const ALARM_ACIKLAMASI =
   "Kilit ekranında alarm gibi çalar; sessiz modda ve Odak açıkken de duyulur. Durdur ya da Ertele (5 dk) Rites'ı açar.";
 
+export const KART_ALARM_ACIKLAMASI =
+  "Kilit ekranında alarm gibi çalar; sessiz modda ve Odak açıkken de duyulur. Durdur'a basınca Rites kartı açar.";
+
 export interface PlanliAlarm {
   /** UUID (iOS böyle istiyor). */
   id: string;
@@ -23,11 +39,13 @@ export interface PlanliAlarm {
   /** ISO hafta günleri (1 = Pazartesi … 7 = Pazar); boşsa tek seferlik (bugün). */
   haftaGunleri: number[];
   baslik: string;
-  animsaticiId: string;
-  /** Anımsatıcının kendi saati (kayıt anahtarı). */
-  kaynakSaat: string;
   /** Tek seferlik alarmın günü; tekrarlıda null. */
   gun: Gun | null;
+  /** Alarmda "5 dk ertele" düğmesi var mı (anımsatıcıda var, kartta yok). */
+  ertelenebilir: boolean;
+  kaynak:
+    | { tur: 'animsatici'; animsaticiId: string; /** Anımsatıcının kendi saati (kayıt anahtarı). */ saat: string }
+    | { tur: 'kart'; kartId: string; /** Kartın görüldüğü gün. */ gun: Gun };
 }
 
 // ---- Kararlı UUID -------------------------------------------------------------
@@ -84,9 +102,9 @@ export function alarmPlani(
         saat,
         haftaGunleri: isoHaftaGunleri(a.gunler),
         baslik: a.ad,
-        animsaticiId: a.id,
-        kaynakSaat: saat,
         gun: null,
+        ertelenebilir: true,
+        kaynak: { tur: 'animsatici', animsaticiId: a.id, saat },
       });
       const d = bugunDurumlari.find((g) => g.animsaticiId === a.id && g.saat === saat);
       if (!d?.ertelenenSaat || d.durduruldu || !gunuKapsarMi(a.gunler, bugunGun)) continue;
@@ -96,9 +114,46 @@ export function alarmPlani(
         saat: d.ertelenenSaat,
         haftaGunleri: [],
         baslik: a.ad,
-        animsaticiId: a.id,
-        kaynakSaat: saat,
         gun: bugunGun,
+        ertelenebilir: true,
+        kaynak: { tur: 'animsatici', animsaticiId: a.id, saat },
+      });
+    }
+  }
+  return plan;
+}
+
+export const kartAlarmKimligi = (kartId: string, gun: Gun) => kararliUuid(`rites-kart|${kartId}|${gun}`);
+
+/**
+ * Alarmlı kartların önümüzdeki `gunSayisi` gündeki hatırlatmaları (bildirim planıyla
+ * aynı kural: saatli, hatırlatmalı, o gün görünür, bugün yapılmamış).
+ */
+export function kartAlarmPlani(
+  kartlar: readonly Kart[],
+  bugunYapilanlar: ReadonlySet<string>,
+  bugunGun: Gun,
+  simdi: string,
+  gunSayisi: number = PLAN_GUNU,
+): PlanliAlarm[] {
+  const plan: PlanliAlarm[] = [];
+  const simdiAnahtar = `${bugunGun} ${simdi}`;
+  for (let i = 0; i < gunSayisi; i++) {
+    const gun = gunEkle(bugunGun, i);
+    for (const k of kartlar) {
+      if (!k.alarm || !k.saat || !k.hatirlatma || !gorunurMu(k, gun, bugunGun)) continue;
+      if (i === 0 && bugunYapilanlar.has(k.id)) continue;
+      if (!k.tekrar && k.yapildi) continue;
+      const yer = hatirlatmaZamani(gun, k.saat, k.hatirlatma);
+      if (`${yer.gun} ${yer.saat}` <= simdiAnahtar) continue;
+      plan.push({
+        id: kartAlarmKimligi(k.id, gun),
+        saat: yer.saat,
+        haftaGunleri: [],
+        baslik: k.baslik,
+        gun: yer.gun,
+        ertelenebilir: false,
+        kaynak: { tur: 'kart', kartId: k.id, gun },
       });
     }
   }
@@ -116,12 +171,21 @@ export interface TelefondakiAlarm {
   imza: string;
 }
 
-/** Alarmın telefondaki hâlini belirleyen her şey; biri değişirse alarm yeniden kurulur. */
-export function alarmImzasi(saat: string, haftaGunleri: readonly number[], baslik: string): string {
-  return `${saat}|${[...haftaGunleri].sort((a, b) => a - b).join(',')}|${baslik}`;
+/**
+ * Alarmın telefondaki hâlini belirleyen her şey; biri değişirse alarm yeniden kurulur.
+ * Tek seferlik alarmda günü de (telefondaki kayıtta zaman damgasından) içerir.
+ */
+export function alarmImzasi(
+  saat: string,
+  haftaGunleri: readonly number[],
+  baslik: string,
+  gun: Gun | null = null,
+): string {
+  return `${gun ?? ''}|${saat}|${[...haftaGunleri].sort((a, b) => a - b).join(',')}|${baslik}`;
 }
 
-const planImzasi = (p: PlanliAlarm) => alarmImzasi(p.saat, p.haftaGunleri, p.baslik);
+const planImzasi = (p: PlanliAlarm) =>
+  alarmImzasi(p.saat, p.haftaGunleri, p.baslik, p.haftaGunleri.length ? null : p.gun);
 
 /**
  * Telefondaki alarmlarla plan arasındaki fark. Aynı kimlikli alarmın saati,
@@ -159,6 +223,20 @@ export function alarmiEslestir(alarmId: string, animsaticilar: readonly Animsati
       if (ertelemeAlarmKimligi(a.id, gun, saat) === alarmId) return { animsatici: a, saat, gun };
       if (ertelemeAlarmKimligi(a.id, dun, saat) === alarmId) return { animsatici: a, saat, gun: dun };
     }
+  }
+  return null;
+}
+
+/** Kart alarmının kartı ve günü (düğmeye basılınca kart açılır). */
+export function kartAlarminiEslestir(
+  alarmId: string,
+  kartlar: readonly Kart[],
+  gun: Gun,
+): { kart: Kart; gun: Gun } | null {
+  for (let i = -1; i <= 1; i++) {
+    const g = gunEkle(gun, i);
+    const kart = kartlar.find((k) => k.alarm && kartAlarmKimligi(k.id, g) === alarmId);
+    if (kart) return { kart, gun: g };
   }
   return null;
 }

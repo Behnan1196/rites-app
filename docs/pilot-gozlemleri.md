@@ -39,3 +39,13 @@ Sonuç: → kararlar.md (Alarm olarak çalan anımsatıcı: Ertele susturmuyordu
 Ne dedi: "Anımsatıcılar ekranını basitleştirelim. Sadece eklediğim anımsatıcılar listelensin ve edit edilebilsin."
 Nerede: Giriş → Anımsatıcılar
 Sonuç: → kararlar.md (Anımsatıcılar ekranı sadeleşti)
+
+### P-6 · 16 Ekim 2026 · Behnan · iPhone, Rites Dev 1.1.0
+Ne dedi: "Ajanda kartındaki bildirim çeşidi olarak alarm da kurabilir miyiz?"
+Nerede: Kart formu → Hatırlat
+Sonuç: → kararlar.md (Kart alarmı, paylaşım Gelenler'e, gömülü video)
+
+### P-7 · 16 Ekim 2026 · Behnan · iPhone, Rites Dev 1.1.0
+Ne dedi: "YouTube videolarını paylaş ile alıyorduk, ajandada dolu bir kart olarak açıyordu; doğrusu paylaşıldığında Gelenler kutusunda hazır bir kart olması olacak. Ve yine bu video (YouTube ise) kartın içinde embed olarak oynatılabilmeli."
+Nerede: YouTube → Paylaş → Rites; kart görünümü
+Sonuç: → kararlar.md (Kart alarmı, paylaşım Gelenler'e, gömülü video)

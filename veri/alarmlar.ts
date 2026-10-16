@@ -18,6 +18,7 @@ import type {
 
 import { ALARM_ERTELEME, alarmFarki, alarmImzasi, saatParcalari, type PlanliAlarm } from '@/mantik/alarm';
 import { erteleMetni, saatMetni } from '@/mantik/animsatici';
+import { bugun } from '@/mantik/tarih';
 
 interface AlarmModulu {
   getPermissionsAsync(): Promise<AlarmPermissionResponse>;
@@ -68,25 +69,34 @@ export async function alarmIzniIste(): Promise<AlarmIzni> {
   }
 }
 
+function tarihe(gun: string, saat: string): Date {
+  const [y, a, g] = gun.split('-').map(Number);
+  const { hour, minute } = saatParcalari(saat);
+  return new Date(y!, a! - 1, g!, hour, minute, 0, 0);
+}
+
 function girdi(p: PlanliAlarm): AlarmScheduleInput {
   const { hour, minute } = saatParcalari(p.saat);
+  const tekSeferlik = p.haftaGunleri.length === 0 && p.gun !== null;
   return {
     id: p.id,
     hour,
     minute,
     title: p.baslik,
     weekdays: p.haftaGunleri as AlarmScheduleInput['weekdays'],
+    // Tek seferlik alarm belirli tarihte çalar (modüle eklenen yamayla, `patches/`).
+    ...(tekSeferlik ? { timestamp: tarihe(p.gun!, p.saat).getTime() } : {}),
     ios: {
       alertTitle: p.baslik,
       stopButtonTitle: 'Durdur',
       stopIntentBehavior: 'openApp',
-      secondaryButtonTitle: erteleMetni(ALARM_ERTELEME),
-      secondaryButtonBehavior: 'openApp',
-      metadata: {
-        animsaticiId: p.animsaticiId,
-        saat: p.kaynakSaat,
-        gun: p.gun ?? '',
-      },
+      ...(p.ertelenebilir
+        ? { secondaryButtonTitle: erteleMetni(ALARM_ERTELEME), secondaryButtonBehavior: 'openApp' as const }
+        : { secondaryButtonBehavior: 'none' as const }),
+      metadata:
+        p.kaynak.tur === 'animsatici'
+          ? { tur: 'animsatici', animsaticiId: p.kaynak.animsaticiId, saat: p.kaynak.saat, gun: p.gun ?? '' }
+          : { tur: 'kart', kartId: p.kaynak.kartId, gun: p.kaynak.gun },
     },
   };
 }
@@ -105,7 +115,12 @@ export function alarmPlaniniUygula(plan: readonly PlanliAlarm[], izinVar: boolea
     .then(async () => {
       const telefondakiler = (await m.getScheduledAlarmsAsync()).map((a) => ({
         id: a.id,
-        imza: alarmImzasi(saatMetni(a.hour * 60 + a.minute), a.weekdays ?? [], a.title),
+        imza: alarmImzasi(
+          saatMetni(a.hour * 60 + a.minute),
+          a.weekdays ?? [],
+          a.title,
+          (a.weekdays ?? []).length ? null : bugun(new Date(a.timestamp)),
+        ),
       }));
       const { eklenecek, kaldirilacak } = alarmFarki(izinVar ? plan : [], telefondakiler);
       for (const id of kaldirilacak) await m.cancelAlarmAsync(id);

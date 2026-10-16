@@ -1,6 +1,6 @@
 // Anımsatıcı ekle (AN-1): alttan sayfa.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ALARM_ACIKLAMASI, ALARM_ERTELEME } from '@/mantik/alarm';
@@ -15,7 +15,6 @@ import {
   type Animsatici,
   type AnimsaticiGunleri,
 } from '@/mantik/animsatici';
-import { alarmIzni, alarmIzniIste } from '@/veri/alarmlar';
 import { animsaticiEkle, animsaticiGuncelle, animsaticiSil } from '@/veri/animsaticilar';
 import { bildirimIzni } from '@/veri/bildirimler';
 import { yeniKimlik } from '@/veri/kimlik';
@@ -28,6 +27,7 @@ import { SaatSecici } from '../kart/Zamanlama';
 import { useKisaMesaj } from '../KisaMesaj';
 import { AcKapa, Bolum, SecenekHapi } from '../Secim';
 import { renk } from '../tema';
+import { useAlarmDestegi } from '../useAlarmDestegi';
 import { Yazi } from '../Yazi';
 
 interface Form {
@@ -49,9 +49,6 @@ const ILK: Form = {
   erteleDk: VARSAYILAN_ERTELEME,
   alarm: false,
 };
-
-export const ALARM_IZNI_YOK =
-  "Alarm izni kapalı. Ayarlar → Rites'tan açabilirsin; o zamana kadar bildirim olarak gelir.";
 
 function formdan(a: Animsatici): Form {
   return {
@@ -83,16 +80,7 @@ function AnimsaticiFormu({
   const [hata, setHata] = useState<string | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
   // Alarm seçeneği yalnız destekleyen telefonda (iOS 26, kendi derleme) görünür.
-  const [alarmDestegi, setAlarmDestegi] = useState(false);
-  useEffect(() => {
-    let iptal = false;
-    void alarmIzni().then((d) => {
-      if (!iptal) setAlarmDestegi(d !== 'desteklenmiyor');
-    });
-    return () => {
-      iptal = true;
-    };
-  }, []);
+  const { destek: alarmDestegi, izinIste } = useAlarmDestegi();
   const degisti = useMemo(() => JSON.stringify(form) !== JSON.stringify(baslangic), [form, baslangic]);
   const guncelle = (f: Partial<Form>) => {
     setForm((x) => ({ ...x, ...f }));
@@ -101,9 +89,7 @@ function AnimsaticiFormu({
 
   const alarmiDegistir = async (alarm: boolean) => {
     guncelle({ alarm });
-    if (!alarm) return;
-    const izin = await alarmIzniIste();
-    if (izin === 'yok') kisaMesaj(ALARM_IZNI_YOK);
+    if (alarm) await izinIste();
   };
 
   const kaydet = async () => {

@@ -15,6 +15,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AdSorusu } from "@/bilesen/AdSorusu";
 import { BildirimYoneticisi } from "@/bilesen/BildirimYoneticisi";
+import { PaylasimAlici } from "@/bilesen/paylasim/PaylasimAlici";
 import { GirisAyariSaglayici } from "@/bilesen/giris/GirisAyari";
 import { OturumSaglayici } from "@/bilesen/oturum/OturumSayfasi";
 import { KatmanSaglayici } from "@/bilesen/Katman";
@@ -59,6 +60,7 @@ export default function KokDuzen() {
                         }}
                       />
                       <BildirimYoneticisi />
+                      <PaylasimAlici />
                       <YedekSorusu />
                     </ProfilSaglayici>
                   </GirisAyariSaglayici>

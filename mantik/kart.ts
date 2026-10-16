@@ -31,6 +31,8 @@ export interface Kart {
   /** "SS:dd" */
   saat: string | null;
   hatirlatma: HatirlatmaSecimi | null;
+  /** Hatırlatma alarm olarak çalar (iOS 26; pilot 16 Ekim). */
+  alarm: boolean;
   /** null = tek seferlik. */
   tekrar: Tekrar | null;
   /** "Bu gün ve sonrası" bölmesinde eski dizinin son günü. */
@@ -100,6 +102,7 @@ export function yeniKart(id: string, alanlar: Partial<Omit<Kart, 'id'>> & { basl
     tarihsiz: false,
     saat: null,
     hatirlatma: null,
+    alarm: false,
     tekrar: null,
     bitis: null,
     atlanan: [],

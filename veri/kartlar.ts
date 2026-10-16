@@ -27,6 +27,7 @@ interface KartSatiri {
   tarihsiz: number;
   saat: string | null;
   hatirlatma: string | null;
+  alarm: number | null;
   tekrar: string | null;
   bitis: string | null;
   atlanan: string;
@@ -80,6 +81,7 @@ export function kartSatirdan(s: KartSatiri): KartOzeti {
     tarihsiz: s.tarihsiz === 1,
     saat: s.saat,
     hatirlatma: s.hatirlatma as Kart['hatirlatma'],
+    alarm: s.alarm === 1,
     tekrar: json(s.tekrar, null),
     bitis: s.bitis,
     atlanan: json<Gun[]>(s.atlanan, []),
@@ -121,7 +123,7 @@ function kayitSatirdan(s: KayitSatiri): Kayit {
 }
 
 const KART_ALANLARI =
-  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira';
+  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira';
 
 function kartDegerleri(k: Kart): SqlDeger[] {
   return [
@@ -131,6 +133,7 @@ function kartDegerleri(k: Kart): SqlDeger[] {
     k.tarihsiz ? 1 : 0,
     k.saat,
     k.hatirlatma,
+    k.alarm ? 1 : 0,
     k.tekrar ? JSON.stringify(k.tekrar) : null,
     k.bitis,
     JSON.stringify(k.atlanan),

@@ -68,7 +68,12 @@ export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_P
           {metaVar && (
             <View style={stiller.meta}>
               {!!kart.saat && <Meta ikon="time-outline" metin={kart.saat} />}
-              {!!kart.hatirlatma && <Meta ikon="notifications-outline" metin={HATIRLATMA_METNI[kart.hatirlatma]} />}
+              {!!kart.hatirlatma && (
+                <Meta
+                  ikon={kart.alarm ? 'alarm-outline' : 'notifications-outline'}
+                  metin={HATIRLATMA_METNI[kart.hatirlatma]}
+                />
+              )}
               {!!kart.tekrar && <Meta ikon="repeat-outline" metin={tekrarMetni(kart.tekrar)} />}
               {!!etiket && stil && (
                 <View style={[stiller.etiket, { backgroundColor: stil.zemin }]}>
@@ -91,7 +96,7 @@ export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_P
   );
 }
 
-function Meta({ ikon, metin }: { ikon: 'time-outline' | 'notifications-outline' | 'repeat-outline'; metin: string }) {
+function Meta({ ikon, metin }: { ikon: 'time-outline' | 'notifications-outline' | 'alarm-outline' | 'repeat-outline'; metin: string }) {
   return (
     <View style={stiller.metaParca}>
       <Ionicons name={ikon} size={17} color={renk.ikincil} />

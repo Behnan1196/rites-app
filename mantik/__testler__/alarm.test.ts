@@ -1,5 +1,8 @@
 import {
   alarmFarki,
+  kartAlarmKimligi,
+  kartAlarminiEslestir,
+  kartAlarmPlani,
   alarmImzasi,
   alarmiEslestir,
   alarmPlani,
@@ -11,6 +14,7 @@ import {
   tekrarliAlarmKimligi,
 } from '../alarm';
 import { animsaticiMeta, bildirimPlani, type Animsatici } from '../animsatici';
+import { yeniKart } from '../kart';
 
 const BUGUN = '2026-10-12'; // Pazartesi
 const ilac: Animsatici = {
@@ -77,7 +81,8 @@ describe('alarm planı', () => {
       id: ertelemeAlarmKimligi('i', BUGUN, '08:00'),
       saat: '08:05',
       haftaGunleri: [],
-      kaynakSaat: '08:00',
+      kaynak: { tur: 'animsatici', animsaticiId: 'i', saat: '08:00' },
+      ertelenebilir: true,
     });
     expect(alarmPlani([ilac], ertelendi, BUGUN, '08:05').some((p) => p.gun)).toBe(false);
     expect(alarmPlani([ilac], [{ ...ertelendi[0]!, durduruldu: true }], BUGUN, '08:01').some((p) => p.gun)).toBe(false);
@@ -120,7 +125,7 @@ describe('telefondakiyle fark', () => {
     const tek = ertele.find((p) => p.gun)!;
     const f = alarmFarki(ertele, [
       ...plan.map((p) => ({ id: p.id, imza: alarmImzasi(p.saat, p.haftaGunleri, p.baslik) })),
-      { id: tek.id, imza: alarmImzasi('08:05', [], 'İlaç') },
+      { id: tek.id, imza: alarmImzasi('08:05', [], 'İlaç', BUGUN) },
     ]);
     expect(f.kaldirilacak).toEqual([tek.id]);
     expect(f.eklenecek).toEqual([tek]);
@@ -172,5 +177,70 @@ describe('bildirimle ilişki', () => {
   });
   it('meta metni', () => {
     expect(animsaticiMeta(ilac)).toBe('Her gün · Alarm · erteleme 5 dk');
+  });
+});
+
+describe('kart alarmı', () => {
+  const doktor = yeniKart('d', {
+    baslik: 'Doktor',
+    tarih: '2026-10-13',
+    saat: '10:00',
+    hatirlatma: '1sa',
+    alarm: true,
+  });
+  const her = yeniKart('h', {
+    baslik: 'Yürüyüş',
+    tarih: BUGUN,
+    saat: '07:30',
+    hatirlatma: 'saatinde',
+    alarm: true,
+    tekrar: { gunSayisi: null, gunler: null, desen: 'hergun' },
+  });
+  const alarmsiz = yeniKart('a', { baslik: 'Toplantı', tarih: BUGUN, saat: '15:00', hatirlatma: 'saatinde' });
+
+  it('alarmlı kartın hatırlatması belirli günde tek seferlik alarm; Ertele yok', () => {
+    const plan = kartAlarmPlani([doktor, alarmsiz], new Set(), BUGUN, '08:00');
+    expect(plan).toEqual([
+      {
+        id: kartAlarmKimligi('d', '2026-10-13'),
+        saat: '09:00',
+        haftaGunleri: [],
+        baslik: 'Doktor',
+        gun: '2026-10-13',
+        ertelenebilir: false,
+        kaynak: { tur: 'kart', kartId: 'd', gun: '2026-10-13' },
+      },
+    ]);
+  });
+
+  it('geçmiş saat ve bugün yapılan atlanır', () => {
+    expect(kartAlarmPlani([her], new Set(), BUGUN, '08:00').map((p) => p.gun)).toEqual(['2026-10-13', '2026-10-14']);
+    expect(kartAlarmPlani([her], new Set(['h']), BUGUN, '06:00').map((p) => p.gun)).toEqual([
+      '2026-10-13',
+      '2026-10-14',
+    ]);
+    expect(kartAlarmPlani([her], new Set(), BUGUN, '06:00').map((p) => p.gun)).toEqual([
+      BUGUN,
+      '2026-10-13',
+      '2026-10-14',
+    ]);
+  });
+
+  it('alarmlı karta bildirim planlanmaz; alarm kimliği karta eşlenir', () => {
+    const girdi = {
+      animsaticilar: [],
+      gunDurumlari: [],
+      kartlar: [doktor],
+      bugunYapilanlar: new Set<string>(),
+      bugunGun: BUGUN,
+      simdi: '08:00',
+    };
+    expect(bildirimPlani(girdi)).toHaveLength(1);
+    expect(bildirimPlani({ ...girdi, alarmlaCalanlar: new Set(['d']) })).toHaveLength(0);
+    expect(kartAlarminiEslestir(kartAlarmKimligi('d', '2026-10-13'), [doktor], '2026-10-13')).toEqual({
+      kart: doktor,
+      gun: '2026-10-13',
+    });
+    expect(kartAlarminiEslestir('x', [doktor], BUGUN)).toBeNull();
   });
 });

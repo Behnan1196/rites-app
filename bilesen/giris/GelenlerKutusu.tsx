@@ -1,5 +1,6 @@
-// Gelenler (G-3): Hızlı Not'un altında tek satır. Oturum yoksa görünmez.
-// Grup davetleri de burada sayılır (10. görev kararı).
+// Gelenler (G-3): Hızlı Not'un altında tek satır. Grup davetleri de burada
+// sayılır (10. görev kararı); başka uygulamadan paylaşılan bağlantılar da
+// (16 Ekim). Oturum yoksa ve paylaşılan da yoksa görünmez.
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
@@ -7,6 +8,9 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { davetOzeti } from "@/mantik/gruplar";
 import { gelenlerOzeti } from "@/mantik/paylasim";
+import { kaynakAdi } from "@/mantik/paylasimAl";
+import { useSorgu } from "@/veri/kancalar";
+import { paylasilanlariOku } from "@/veri/paylasilanlar";
 import { useOturum } from "@/sunucu/oturum";
 
 import { olcu, renk } from "../tema";
@@ -18,18 +22,18 @@ export function GelenlerKutusu() {
   const oturum = useOturum();
   const { ben, gelenler } = useGelenler(oturum);
   const { davetler, ad } = useGruplar(oturum);
-  if (!ben) return null;
+  const paylasilanlar = useSorgu(["paylasilan"], (o) => paylasilanlariOku(o), []).veri ?? [];
+  if (!ben && paylasilanlar.length === 0) return null;
   const davet = davetOzeti(davetler, ad);
-  const sayi = gelenler.length + davetler.length;
+  const ogeler = [
+    ...paylasilanlar.map((p) => ({ kimden: kaynakAdi(p.adres), baslik: p.baslik })),
+    ...gelenler.map((g) => ({ kimden: g.kimdenAd, baslik: g.paket.baslik })),
+  ];
+  const sayi = ogeler.length + davetler.length;
   const ozet =
-    gelenler.length > 0 || !davet
+    ogeler.length > 0 || !davet
       ? [
-          gelenlerOzeti(
-            gelenler.map((g) => ({
-              kimden: g.kimdenAd,
-              baslik: g.paket.baslik,
-            })),
-          ),
+          gelenlerOzeti(ogeler),
           davet && davetler.length > 0
             ? `${davetler.length} grup daveti`
             : null,

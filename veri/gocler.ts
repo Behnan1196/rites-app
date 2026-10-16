@@ -179,6 +179,20 @@ export const GOCLER: readonly Goc[] = [
     surum: 8,
     sql: `ALTER TABLE animsatici ADD COLUMN alarm INTEGER NOT NULL DEFAULT 0;`,
   },
+  {
+    // Pilot 16 Ekim: başka uygulamadan paylaşılan bağlantılar Gelenler'de bekler;
+    // ajanda kartının hatırlatması alarm olarak çalabilir.
+    surum: 9,
+    sql: `
+      CREATE TABLE IF NOT EXISTS paylasilan (
+        id        TEXT PRIMARY KEY NOT NULL,
+        baslik    TEXT NOT NULL,
+        adres     TEXT NOT NULL,
+        olusturma TEXT NOT NULL
+      );
+      ALTER TABLE kart ADD COLUMN alarm INTEGER NOT NULL DEFAULT 0;
+    `,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

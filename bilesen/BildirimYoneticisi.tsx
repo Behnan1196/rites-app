@@ -10,7 +10,14 @@ import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 
-import { ALARM_ERTELEME, alarmiEslestir, alarmPlani, erteleGecerliMi } from '@/mantik/alarm';
+import {
+  ALARM_ERTELEME,
+  alarmiEslestir,
+  alarmPlani,
+  erteleGecerliMi,
+  kartAlarminiEslestir,
+  kartAlarmPlani,
+} from '@/mantik/alarm';
 import { bildirimPlani, erteleSaati, saatMetni } from '@/mantik/animsatici';
 import { bugun } from '@/mantik/tarih';
 import {
@@ -47,18 +54,28 @@ async function planlariHesapla(oku: Okuyucu, bugunGun: string) {
   const animsaticilar = await animsaticilariOku(oku);
   const durumlar = await gunDurumlari(oku, bugunGun);
   const simdi = simdiSaat();
+  const kartlar = await tumKartlar(oku);
+  const bugunYapilanlar = await gunYapilanlari(oku, bugunGun);
   const alarmVar = (await alarmIzni()) === 'var';
   return {
     bildirimler: bildirimPlani({
       animsaticilar,
       gunDurumlari: durumlar,
-      kartlar: await tumKartlar(oku),
-      bugunYapilanlar: await gunYapilanlari(oku, bugunGun),
+      kartlar,
+      bugunYapilanlar,
       bugunGun,
       simdi,
-      alarmlaCalanlar: alarmVar ? new Set(animsaticilar.filter((a) => a.alarm).map((a) => a.id)) : undefined,
+      alarmlaCalanlar: alarmVar
+        ? new Set([
+            ...animsaticilar.filter((a) => a.alarm).map((a) => a.id),
+            ...kartlar.filter((k) => k.alarm).map((k) => k.id),
+          ])
+        : undefined,
     }),
-    alarmlar: alarmPlani(animsaticilar, durumlar, bugunGun, simdi),
+    alarmlar: [
+      ...alarmPlani(animsaticilar, durumlar, bugunGun, simdi),
+      ...kartAlarmPlani(kartlar, bugunYapilanlar, bugunGun, simdi),
+    ],
     alarmVar,
   };
 }
@@ -172,9 +189,17 @@ export function BildirimYoneticisi() {
         if (basislar.length === 0) return;
         const animsaticilar = await animsaticilariOku(oku);
         const bugunGun = bugun();
+        let acilacakKart: { id: string; gun: string } | null = null;
         for (const b of basislar) {
-          const e = alarmiEslestir(b.alarmId, animsaticilar, bugun(new Date(b.zamanMs)));
-          if (!e) continue;
+          const basisGunu = bugun(new Date(b.zamanMs));
+          const e = alarmiEslestir(b.alarmId, animsaticilar, basisGunu);
+          if (!e) {
+            // Kart alarmı: yalnız susturulur; kart açılır.
+            await alarmiSustur(b.alarmId);
+            const k = kartAlarminiEslestir(b.alarmId, await tumKartlar(oku), basisGunu);
+            if (k) acilacakKart = { id: k.kart.id, gun: k.gun };
+            continue;
+          }
           const { animsatici: a, saat, gun } = e;
           // Alarmdaki Ertele alarmı susturmuyor; Rites susturur (tekrarlıysa plan yeniden kurar).
           await alarmiSustur(b.alarmId);
@@ -192,6 +217,7 @@ export function BildirimYoneticisi() {
         await basislariTemizle();
         // Susturulan tekrarlı alarm yeniden kurulsun (yazma olmadıysa da).
         planlaRef.current();
+        if (acilacakKart) router.push({ pathname: '/kart/[id]', params: acilacakKart });
       } catch (e) {
         console.error('Alarm düğmesi işlenemedi', e);
       } finally {

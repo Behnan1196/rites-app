@@ -10,6 +10,7 @@ import { Image, Linking, Pressable, StyleSheet, TextInput, View } from 'react-na
 import { oncekiDeger } from '@/mantik/ajanda';
 import { sesDosyasiMi } from '@/mantik/dosya';
 import type { Blok, Kayit } from '@/mantik/kart';
+import { youtubeVideosu } from '@/mantik/paylasimAl';
 import { uzunTarih, type Gun } from '@/mantik/tarih';
 import { dosyayiSakla } from '@/veri/dosyalar';
 
@@ -18,6 +19,8 @@ import { SesOynatici } from '../not/SesOynatici';
 import { Bolum } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
+
+import { gomuluOynatmaVar, YoutubeOynatici } from './YoutubeOynatici';
 
 interface Ozellikler {
   blok: Blok;
@@ -55,6 +58,24 @@ export function BlokUygulama(o: Ozellikler) {
 
 function VideoBlogu({ blok }: { blok: Blok }) {
   const gecerli = /^https?:\/\//i.test(blok.metin);
+  const youtube = gomuluOynatmaVar ? youtubeVideosu(blok.metin) : null;
+  if (youtube)
+    return (
+      <View style={stiller.videoKabi}>
+        <YoutubeOynatici kimlik={youtube.kimlik} baslangic={youtube.baslangic} />
+        <Pressable
+          onPress={() => void Linking.openURL(blok.metin)}
+          accessibilityRole="link"
+          hitSlop={8}
+          style={stiller.disariAc}
+        >
+          <Ionicons name="open-outline" size={16} color={renk.ana} />
+          <Yazi tur="ikincil" renk={renk.ana} kalinlik="yariKalin">
+            {"YouTube'da aç"}
+          </Yazi>
+        </Pressable>
+      </View>
+    );
   return (
     <Pressable
       onPress={() => gecerli && void Linking.openURL(blok.metin)}
@@ -302,6 +323,8 @@ const stiller = StyleSheet.create({
   esnek: { flex: 1 },
   satir: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   foto: { width: '100%', aspectRatio: 4 / 3, borderRadius: olcu.kose.kart, backgroundColor: renk.satirCizgi },
+  videoKabi: { gap: 8 },
+  disariAc: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', minHeight: 32 },
   video: {
     height: 200,
     borderRadius: olcu.kose.kart,

@@ -22,6 +22,7 @@ export const YEDEK_TABLOLARI = [
   'animsatici_gun',
   'kisi',
   'kutuphane',
+  'paylasilan',
 ] as const;
 
 export type Satir = Record<string, string | number | null>;

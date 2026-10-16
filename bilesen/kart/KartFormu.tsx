@@ -77,7 +77,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
       baslik: '',
       kisa: '',
       tarihsiz: false,
-      zamanlama: { tarih: hedef.gun, saat: null, hatirlatma: null, tekrar: null },
+      zamanlama: { tarih: hedef.gun, saat: null, hatirlatma: null, alarm: false, tekrar: null },
       bloklar: hedef.taslak ? [{ ...bosBlok('video'), metin: hedef.taslak.videoAdresi }] : [],
       ...(hedef.taslak ? { baslik: hedef.taslak.baslik } : {}),
     };
@@ -87,7 +87,13 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
     baslik: kart.baslik,
     kisa: kart.kisa,
     tarihsiz: kart.tarihsiz,
-    zamanlama: { tarih: kart.tarih ?? hedef.gun, saat: kart.saat, hatirlatma: kart.hatirlatma, tekrar: kart.tekrar },
+    zamanlama: {
+      tarih: kart.tarih ?? hedef.gun,
+      saat: kart.saat,
+      hatirlatma: kart.hatirlatma,
+      alarm: kart.alarm,
+      tekrar: kart.tekrar,
+    },
     bloklar: hedef.bloklar.map(formaBlok),
   };
 }
@@ -149,6 +155,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     tarihsiz: durum.tarihsiz,
     saat: durum.zamanlama.saat,
     hatirlatma: durum.zamanlama.saat ? durum.zamanlama.hatirlatma : null,
+    alarm: !!(durum.zamanlama.saat && durum.zamanlama.hatirlatma && durum.zamanlama.alarm),
     tekrar: durum.zamanlama.tekrar,
   });
 

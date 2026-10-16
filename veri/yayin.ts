@@ -8,7 +8,7 @@
  * `animsatici`: anımsatıcılar ve bugünkü durumları · `kisi`: Kişilerim ·
  * `kutuphane`: Kütüphanem.
  */
-export type Konu = 'ayar' | 'kart' | 'not' | 'plan' | 'animsatici' | 'kisi' | 'kutuphane';
+export type Konu = 'ayar' | 'kart' | 'not' | 'plan' | 'animsatici' | 'kisi' | 'kutuphane' | 'paylasilan';
 
 export type Dinleyici = (degisenler: ReadonlySet<Konu>) => void;
 

@@ -1,14 +1,19 @@
 // Gelenler ekranı (L-4): kimden, ne zaman, başlık, kısa açıklama, blok özeti,
 // etiketler, uyarı notu; Kütüphaneme kaydet · Bugün Ajandama ekle · Sil.
+// Pilot 16 Ekim: başka uygulamadan paylaşılan bağlantılar da burada, en üstte
+// (telefonda durur; e-postayla devam etmeden de görünür).
 
+import { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
+import { PaylasilanKarti } from '@/bilesen/giris/PaylasilanKarti';
 import { useGelenler } from '@/bilesen/giris/useGelenler';
 import { GrupDavetleri } from '@/bilesen/gruplar/GrupDavetleri';
 import { useGruplar } from '@/bilesen/gruplar/useGruplar';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
+import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { useKutuphaneyeKaydet } from '@/bilesen/kutuphane/KaydetSayfasi';
 import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
 import { olcu, renk } from '@/bilesen/tema';
@@ -20,7 +25,9 @@ import { bugun, gunFarki, kisaTarih } from '@/mantik/tarih';
 import { geleniSil, type Gelen } from '@/sunucu/gelenler';
 import { useOturum } from '@/sunucu/oturum';
 import { yeniKartKaydet } from '@/veri/kartlar';
+import { useSorgu } from '@/veri/kancalar';
 import { yeniKimlik } from '@/veri/kimlik';
+import { paylasilanlariOku, paylasilanSil, type Paylasilan } from '@/veri/paylasilanlar';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
@@ -38,6 +45,21 @@ export default function Gelenler() {
   const { ben, gelenler, yukleniyor, baglanamiyor, yenile } = useGelenler(oturum);
   const grup = useGruplar(oturum);
   const kutuphane = useKutuphaneyeKaydet(() => void yenile());
+  const paylasilanlar = useSorgu(['paylasilan'], (o) => paylasilanlariOku(o), []);
+  // "Ajandama ekle": kart formu dolu açılır; kart kaydedilince bağlantı Gelenler'den kalkar.
+  const eklenecek = useRef<Paylasilan | null>(null);
+  const kartFormu = useKartFormu(() => {
+    const p = eklenecek.current;
+    eklenecek.current = null;
+    if (p) void paylasilanSil(kapi, p.id).catch((e: unknown) => console.error('Paylaşılan silinemedi', e));
+  });
+  const paylasilaniSil = (p: Paylasilan) =>
+    void paylasilanSil(kapi, p.id)
+      .then(() => kisaMesaj(`Silindi: ${p.baslik}`))
+      .catch((e: unknown) => {
+        console.error('Paylaşılan silinemedi', e);
+        kisaMesaj('Silinemedi. Yeniden dene.');
+      });
 
   const ajandayaEkle = async (g: Gelen) => {
     try {
@@ -64,14 +86,31 @@ export default function Gelenler() {
   };
 
   return (
-    <EkranKabi geri="Giriş" baslik="Gelenler" altBaslik="Sana gönderilen kartlar.">
+    <EkranKabi geri="Giriş" baslik="Gelenler" altBaslik="Sana gönderilen ve paylaştığın kartlar.">
+      {(paylasilanlar.veri ?? []).map((p) => (
+        <PaylasilanKarti
+          key={p.id}
+          p={p}
+          neZaman={neZaman(p.olusturma, bugunGun)}
+          onAjandayaEkle={() => {
+            eklenecek.current = p;
+            kartFormu.ac({ tur: 'yeni', gun: bugunGun, taslak: { baslik: p.baslik, videoAdresi: p.adres } });
+          }}
+          onKutuphaneyeKaydet={() => kutuphane.ac({ tur: 'paylasilan', paylasilan: p })}
+          onSil={() => paylasilaniSil(p)}
+        />
+      ))}
       {!ben ? (
         <OturumGerekli oturum={oturum} aciklama="Sana gönderilen kartları görmek için e-postanla devam et." />
       ) : (
         <>
           {baglanamiyor && <Yazi tur="ikincil" renk={renk.hata}>{BAGLANAMIYOR}</Yazi>}
           <GrupDavetleri davetler={grup.davetler} ad={grup.ad} onYanit={() => void grup.yenile()} />
-          {!yukleniyor && gelenler.length === 0 && grup.davetler.length === 0 && !baglanamiyor && (
+          {!yukleniyor &&
+            gelenler.length === 0 &&
+            grup.davetler.length === 0 &&
+            !baglanamiyor &&
+            (paylasilanlar.veri ?? []).length === 0 && (
             <Yazi tur="ikincil">Şu an yeni bir şey yok.</Yazi>
           )}
           {gelenler.map((g) => (
@@ -102,6 +141,7 @@ export default function Gelenler() {
         </>
       )}
       {kutuphane.oge}
+      {kartFormu.oge}
     </EkranKabi>
   );
 }
