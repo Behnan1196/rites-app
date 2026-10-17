@@ -5,7 +5,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useRef, useState } from 'react';
-import { Image, Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { adimDurumu, ilerleme, ilerlemeMetni } from '@/mantik/adimlar';
 import { oncekiDeger } from '@/mantik/ajanda';
@@ -24,6 +24,7 @@ import { Bolum } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
 
+import { BuyutulebilirFoto } from './BuyutulebilirFoto';
 import { gomuluOynatmaVar, YoutubeOynatici } from './YoutubeOynatici';
 
 interface Ozellikler {
@@ -46,9 +47,7 @@ export function BlokUygulama(o: Ozellikler) {
     case 'adimlar':
       return <AdimlarBlogu blok={o.blok} gun={o.gun} />;
     case 'foto':
-      return o.blok.dosya ? (
-        <Image source={{ uri: o.blok.dosya }} style={stiller.foto} accessibilityLabel="Fotoğraf" />
-      ) : null;
+      return o.blok.dosya ? <BuyutulebilirFoto uri={o.blok.dosya} style={stiller.foto} etiket="Fotoğraf" /> : null;
     case 'dosya':
       return <DosyaBlogu blok={o.blok} />;
     case 'sayac':
@@ -373,7 +372,7 @@ function GelisimFotografi({ blok, kayit, onKayit }: Ozellikler) {
   };
   return (
     <View style={stiller.gelisim}>
-      {foto && <Image source={{ uri: foto }} style={stiller.foto} accessibilityLabel="Bugünün fotoğrafı" />}
+      {foto && <BuyutulebilirFoto uri={foto} style={stiller.foto} etiket="Bugünün fotoğrafı" />}
       <Pressable
         onPress={() => void cek()}
         accessibilityRole="button"

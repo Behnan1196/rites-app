@@ -156,3 +156,8 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - Mevcut kartlar güncellemede bugünkü görünen sırayla (önce saatliler saatine göre, sonra saatsizler) numaralandı; liste ilk açılışta değişmez. — Öneri
 - Ortak listelerden verilen maddeler günün kartlarının ardından gelir, sürüklenmez. Sıra bütün günler için tektir: bir kart taşındığında başka günlerdeki sırası da aynı göreli yerde kalır. Hafta görünümünde sürükleme yok. — Öneri
 
+## Kartta fotoğraf büyütülür (17 Ekim)
+
+- **Kart görünümünde fotoğrafa dokununca tam ekranda açılır;** iki parmakla 6 kata kadar büyütülür, büyütülmüşken kaydırılır, sağ üstteki × kapatır. — Ürün sahibi (P-14)
+- Çift dokunuş dokunulan yere 2,5 kat yakınlaştırır, yeniden çift dokunuş geri alır. Fotoğrafın sağ alt köşesinde küçük büyütme simgesi var (dokunulabildiği anlaşılsın diye). Gelişim fotoğrafında ve Kütüphane'deki kart ayrıntısında da aynı. Düzenleme formundaki önizleme büyümez. — Öneri
+

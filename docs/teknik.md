@@ -97,3 +97,8 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 ## Denetim
 
 `npm run denetim` = tip denetimi + lint + Jest (mantık testleri ve gerçek SQLite (sql.js) üzerinde veri testleri). `npm run sunucu-denemesi` = sunucu şeması.
+
+## Fotoğraf büyütme
+
+`bilesen/kart/BuyutulebilirFoto.tsx`: Modal içinde iOS `ScrollView` (`maximumZoomScale` 6, `centerContent`); çift dokunuş `scrollResponderZoomTo` ile. Ek yerel modül yok, EAS update ile gider. Yakınlaştırma yalnız iOS'ta (Android'de ScrollView zoom desteklemez; web'de yalnız tam ekran).
+

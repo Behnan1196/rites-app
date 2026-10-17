@@ -4,7 +4,7 @@
 
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Image, Linking, StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
@@ -28,6 +28,7 @@ import {
   type KutuphaneBlogu,
 } from '@/mantik/kutuphane';
 import { useSorgu } from '@/veri/kancalar';
+import { BuyutulebilirFoto } from '@/bilesen/kart/BuyutulebilirFoto';
 import { yeniKartKaydet } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
 import { kutuphaneKaydiOku, kutuphanedenCikar } from '@/veri/kutuphane';
@@ -137,7 +138,7 @@ export default function KayitAyrintisi() {
         <Katman>
           <OnayKutusu
             baslik={`"${k.baslik}" kütüphaneden çıkarılsın mı?`}
-            aciklama={k.tur === 'kart' ? "Ajandandaki kopyalar yerinde kalır." : 'Süren plan yerinde kalır.'}
+            aciklama={k.tur === 'kart' ? 'Ajandandaki kopyalar yerinde kalır.' : 'Süren plan yerinde kalır.'}
             secenekler={[
               { etiket: 'Çıkar', tur: 'tehlike', onPress: () => void cikar() },
               { etiket: 'Vazgeç', tur: 'yazi', onPress: () => setCikarSorusu(false) },
@@ -185,7 +186,7 @@ function BlokGorunumu({ b }: { b: KutuphaneBlogu }) {
         <Yazi tur="ikincil">Video</Yazi>
       );
     case 'foto':
-      return b.dosya ? <Image source={{ uri: b.dosya }} style={stiller.foto} accessibilityLabel="Fotoğraf" /> : null;
+      return b.dosya ? <BuyutulebilirFoto uri={b.dosya} style={stiller.foto} etiket="Fotoğraf" /> : null;
     default:
       return <Yazi tur="ikincil">{blokBasligi(b)}</Yazi>;
   }

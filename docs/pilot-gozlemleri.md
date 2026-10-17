@@ -80,3 +80,8 @@ Ne dedi: "Ajanda listesinde > işareti var kartın sağında, artık ona gerek k
 Nerede: Ajandam, Gün görünümü
 Sonuç: → kararlar.md (Ajandam: elle sıralama, ">" kalktı); uzun basma telefonda denenecek
 
+### P-14 · 17 Ekim 2026 · Behnan · iPhone
+Ne dedi: "Karta bir fotoğraf eklediğimde ya da kameradan çektiğimde, özellikle görünüm modunda detay görebilmek için fotoğrafı büyütme şansım olabilir mi?"
+Nerede: Kart görünümü, Fotoğraf bloğu
+Sonuç: → kararlar.md (Kartta fotoğraf büyütülür)
+
