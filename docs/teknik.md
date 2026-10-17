@@ -65,7 +65,7 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 |---|---|
 | Günlük geliştirme | Geliştirme derlemesi (`expo-dev-client`, EAS profili `development`), kod `npx expo start` ile bilgisayardan gelir |
 | Pilot kullanıcılar | TestFlight (EAS profili `production`, `eas build --platform ios --auto-submit`) |
-| Küçük düzeltmeler | EAS Update (`eas update --channel production --environment production --message "…"`); yalnız JavaScript değişikliklerinde. Yeni yerel modül ya da izin değişikliği yeni derleme ister. |
+| Küçük düzeltmeler | EAS Update (`eas update --channel production --environment production --platform ios --message "…"`); yalnız JavaScript değişikliklerinde. `--platform ios` şart: yoksa web paketi de üretilmeye çalışılır ve expo-sqlite'ın web dosyası (wa-sqlite.wasm) yüzünden hata verir (17 Ekim). Yeni yerel modül ya da izin değişikliği yeni derleme ister. |
 
 - **İki uygulama:** TestFlight sürümü "Rites" (`com.behnanozturkmen.ritespilot`, şema `rites`); geliştirme derlemesi "Rites Dev" (`com.behnanozturkmen.ritespilot.dev`, şema `rites-dev`, koyu simge). Ayrım `app.config.js`te, `APP_VARIANT=development` ile (eas.json → development profili). İkisi aynı telefonda yan yana durur; verileri ayrıdır.
 - Paket kimliği: `com.behnanozturkmen.ritespilot`. `runtimeVersion` politikası `appVersion`: uygulama sürümü (`app.json` → `version`) artırılınca eski derlemeler yeni güncellemeyi almaz. Yerel bir şey değiştiğinde sürüm artırılır ve yeniden derlenir.
