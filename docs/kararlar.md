@@ -123,3 +123,14 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Kart görünümünün altındaki "Yaptım" çubuğu kalktı;** yanıltıcıydı. Yapıldı işareti ajandadaki satırın işaret kutusunda. — Ürün sahibi (P-9)
 - **Kart görünümünde sağ üstte "⋯" menüsü:** Kütüphaneye kaydet · Paylaş · Sil (koç kartında yalnız Kütüphaneye kaydet). Sil eskisi gibi sorar: tekrarlı kartta "Hangi günler silinsin?", değilse onay. Kart formundaki Kütüphaneye kaydet / Paylaş / Sil düğmeleri kalktı; form yalnız düzenleme için. — Ürün sahibi (P-9; menüdeki sıra ve formdan kaldırma: Öneri)
 - **Bloksuz kart da kart görünümünde açılır** (önceden doğrudan düzenleme formu açılıyordu); Sil'in tek yeri menü olduğu için. Ajandadaki her satırda ">" var. — Öneri
+
+## Anımsatıcı sadeleşti: "Süre sonra" ve "Saatinde" (17 Ekim)
+
+- **İki tür:** ekleme sayfasının üstünde "Süre sonra | Saatinde" seçimi (son kullanılan açılır). — Ürün sahibi (P-10)
+- **Süre sonra (hızlı zamanlayıcı; ocağın altı, çamaşır):** hazır süreler 5 · 10 · 15 · 20 · 30 · 45 dk · 1 sa ve "Başka bir süre" (artı/eksi); "Çalacağı saat" görünür. Ad isteğe bağlı (boşsa "20 dk"). Varsayılan uyarı Alarm. Bir kez, saniyesiyle tam anında çalar; durdurulunca silinir (durdurulmasa da bir saat sonra). — Ürün sahibi (silinme: onaylı öneri; bir saat sonra silinme: Öneri)
+- **Giriş'teki Anımsatıcılar kutusunda** kurulu "Süre sonra"lar kalan süreleriyle ve İptal ile; altta **"⏱ Süre sonra"** düğmesi (iki dokunuşta kurulur). — Ürün sahibi (onaylı öneri)
+- **Saatinde (ilaç, göz damlası):** ad (örnek "Tansiyon ilacı 5 mg"; ilaç adı ve dozu yazılabilir, telefonda kalır), 1 dakika hassasiyetinde saatler (ilki o anın saati; "+ Saat ekle" bir saat sonrasını ekler; her satırda ×), haftanın günleri Pzt … Paz (hepsi seçili başlar). "Günde 2 / 3 kez" düğmeleri ve 13:00 varsayılanı kalktı. — Ürün sahibi
+- **"Sesli uyar" yerine "Nasıl uyarsın? Bildirim | Alarm";** Ertele 5 / 10 / 15 dk ikisinde de seçilir (alarmda sabit 5 dk kararının yerine). Alarm yalnız destekleyen telefonda görünür. — Ürün sahibi
+- Açıklamadaki "Ajandam'a kart ekle" yönlendirmesi kalktı. — Ürün sahibi
+- **Kaydet sağ üstte, Vazgeç solda** (Notlar'daki gibi); anımsatıcıda ve ajanda kartı formunda. Kart formunun altında yalnız zamanlama çubuğu kaldı. — Ürün sahibi (onaylı öneri)
+- "Süre sonra" anımsatıcısı düzenlenmez; listede yalnız İptal var. — Öneri

@@ -25,10 +25,11 @@ const goz: Animsatici = {
   id: 'g',
   ad: ' Göz damlası ',
   saatler: ['20:00', '08:00'],
-  gunler: 'hergun',
+  gunler: [0, 1, 2, 3, 4, 5, 6],
   sesli: false,
   erteleDk: 5,
   alarm: true,
+  bitis: null,
 };
 
 beforeEach(async () => {
@@ -71,12 +72,32 @@ describe('anımsatıcılar (gerçek SQLite)', () => {
       ...goz,
       ad: 'Tansiyon',
       saatler: ['20:00', '09:00'],
-      gunler: 'haftaici',
+      gunler: [0, 1, 2, 3, 4],
       alarm: false,
     });
     expect(await animsaticilariOku(oku)).toEqual([
-      { ...goz, ad: 'Tansiyon', saatler: ['09:00', '20:00'], gunler: 'haftaici', alarm: false },
+      { ...goz, ad: 'Tansiyon', saatler: ['09:00', '20:00'], gunler: [0, 1, 2, 3, 4], alarm: false, bitis: null },
     ]);
     expect((await gunDurumlari(oku, BUGUN)).map((d) => d.saat)).toEqual(['20:00']);
+  });
+
+  it('Süre sonra: durdurulunca ve bir saatten eskiyse silinir; eski gün değerleri çevrilir', async () => {
+    const bitis = '2026-10-12T11:52:40.000Z';
+    await animsaticiEkle(kapi, { ...goz, id: 'o', ad: 'Ocak', saatler: ['14:52'], gunler: [], bitis });
+    await animsaticiEkle(kapi, {
+      ...goz,
+      id: 'p',
+      ad: 'Pasta',
+      saatler: ['15:00'],
+      gunler: [],
+      bitis: '2026-10-12T12:00:00.000Z',
+    });
+    expect((await animsaticilariOku(oku)).find((a) => a.id === 'o')?.bitis).toBe(bitis);
+    await durdur(kapi, 'o', BUGUN, '14:52');
+    expect((await animsaticilariOku(oku)).map((a) => a.id)).toEqual(['p']);
+    await eskiGunleriSil(kapi, BUGUN, Date.parse('2026-10-12T12:30:00.000Z'));
+    expect((await animsaticilariOku(oku)).map((a) => a.id)).toEqual(['p']);
+    await eskiGunleriSil(kapi, BUGUN, Date.parse('2026-10-12T13:01:00.000Z'));
+    expect(await animsaticilariOku(oku)).toEqual([]);
   });
 });

@@ -240,11 +240,14 @@ export function SaatSecici({
   onDegis,
   kompakt = false,
   etiket = 'Başka bir saat',
+  dakikaAraligi = 5,
 }: {
   saat: string | null;
   onDegis: (saat: string) => void;
   kompakt?: boolean;
   etiket?: string;
+  /** Dakika adımı; anımsatıcıda 1 (pilot 17 Ekim). */
+  dakikaAraligi?: 1 | 5;
 }) {
   if (Platform.OS === 'web') {
     // Yalnız tarayıcıdaki denemeler için.
@@ -268,7 +271,7 @@ export function SaatSecici({
         mode="time"
         display="compact"
         locale="tr-TR"
-        minuteInterval={5}
+        minuteInterval={dakikaAraligi}
         onValueChange={(_e, d) => onDegis(tarihSaate(d))}
         themeVariant="light"
         accessibilityLabel={etiket}
@@ -283,7 +286,7 @@ export function SaatSecici({
         display="spinner"
         is24Hour
         locale="tr-TR"
-        minuteInterval={5}
+        minuteInterval={dakikaAraligi}
         onValueChange={(_e, d) => onDegis(tarihSaate(d))}
         textColor={renk.yazi}
         themeVariant="light"

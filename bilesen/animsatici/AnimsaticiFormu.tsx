@@ -1,64 +1,99 @@
-// Anımsatıcı ekle (AN-1): alttan sayfa.
+// Anımsatıcı ekle / düzenle (AN-1; pilot 17 Ekim'de yeniden): alttan sayfa,
+// solda Vazgeç, sağda Kaydet.
+//
+// İki tür:
+// - "Süre sonra": hızlı zamanlayıcı (ocağın altı). Hazır süreler ya da dakika;
+//   ad isteğe bağlı (yoksa "20 dk"). Bir kez çalar, durdurulunca silinir.
+// - "Saatinde": ilaç gibi düzenli olanlar. Ad, 1 dakika hassasiyetinde saatler,
+//   hafta günleri.
+// İkisinde de uyarı türü (Bildirim / Alarm) ve ertele süresi seçilir.
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ALARM_ACIKLAMASI, ALARM_ERTELEME } from '@/mantik/alarm';
+import { ALARM_ACIKLAMASI } from '@/mantik/alarm';
 import {
-  ANIMSATICI_BILGI,
+  EN_UZUN_SURE,
   ERTELEME_SECENEKLERI,
+  dakika,
   formHatasi,
-  GUN_SECENEKLERI,
-  HAZIR_SAATLER,
+  HER_GUN,
   saatleriSirala,
+  saatMetni,
+  SURE_SECENEKLERI,
+  sureMetni,
   VARSAYILAN_ERTELEME,
+  VARSAYILAN_SURE,
   type Animsatici,
-  type AnimsaticiGunleri,
 } from '@/mantik/animsatici';
+import { GUN_KISA } from '@/mantik/tarih';
 import { animsaticiEkle, animsaticiGuncelle, animsaticiSil } from '@/veri/animsaticilar';
 import { bildirimIzni } from '@/veri/bildirimler';
 import { yeniKimlik } from '@/veri/kimlik';
+import { useSimdiMs } from '@/veri/useSimdi';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { AltSayfa } from '../AltSayfa';
+import { BolumluDugme } from '../BolumluDugme';
 import { Dugme } from '../Dugme';
 import { GirisAlani } from '../GirisAlani';
 import { SaatSecici } from '../kart/Zamanlama';
 import { useKisaMesaj } from '../KisaMesaj';
-import { AcKapa, Bolum, SecenekHapi } from '../Secim';
+import { ArtiEksi, Bolum, SecenekHapi } from '../Secim';
 import { renk } from '../tema';
 import { useAlarmDestegi } from '../useAlarmDestegi';
 import { Yazi } from '../Yazi';
 
+export type AnimsaticiTuru = 'sure' | 'saat';
+
 interface Form {
+  tur: AnimsaticiTuru;
   ad: string;
   saatler: string[];
-  yeniSaat: string;
-  gunler: AnimsaticiGunleri;
-  sesli: boolean;
-  erteleDk: number;
+  gunler: number[];
+  sureDk: number;
   alarm: boolean;
+  erteleDk: number;
 }
 
-const ILK: Form = {
-  ad: '',
-  saatler: ['09:00'],
-  yeniSaat: '13:00',
-  gunler: 'hergun',
-  sesli: true,
-  erteleDk: VARSAYILAN_ERTELEME,
-  alarm: false,
-};
+/** En son hangi tür kullanıldıysa yeni anımsatıcı onunla açılır (oturum boyunca). */
+let sonTur: AnimsaticiTuru = 'saat';
 
-function formdan(a: Animsatici): Form {
+function simdiSaati(): string {
+  const d = new Date();
+  return saatMetni(d.getHours() * 60 + d.getMinutes());
+}
+
+/** "+ Saat ekle": son saatten bir saat sonrası (aynı saat iki kez olmasın). */
+function sonrakiSaat(saatler: readonly string[]): string {
+  const son = saatler[saatler.length - 1];
+  if (!son) return simdiSaati();
+  let dk = dakika(son) + 60;
+  while (saatler.includes(saatMetni(dk))) dk += 1;
+  return saatMetni(dk);
+}
+
+function ilkForm(duzenlenen: Animsatici | null, tur: AnimsaticiTuru | undefined): Form {
+  if (duzenlenen)
+    return {
+      tur: 'saat',
+      ad: duzenlenen.ad,
+      saatler: [...duzenlenen.saatler],
+      gunler: [...duzenlenen.gunler],
+      sureDk: VARSAYILAN_SURE,
+      alarm: duzenlenen.alarm,
+      erteleDk: duzenlenen.erteleDk,
+    };
+  const t = tur ?? sonTur;
   return {
-    ad: a.ad,
-    saatler: [...a.saatler],
-    yeniSaat: ILK.yeniSaat,
-    gunler: a.gunler,
-    sesli: a.sesli,
-    erteleDk: a.erteleDk,
-    alarm: a.alarm,
+    tur: t,
+    ad: '',
+    saatler: [simdiSaati()],
+    gunler: [...HER_GUN],
+    sureDk: VARSAYILAN_SURE,
+    alarm: false,
+    erteleDk: VARSAYILAN_ERTELEME,
   };
 }
 
@@ -66,54 +101,73 @@ function AnimsaticiFormu({
   gorunur,
   onKapat,
   duzenlenen,
+  tur,
 }: {
   gorunur: boolean;
   onKapat: () => void;
-  /** Verilirse düzenleme: form dolu açılır, altta "Anımsatıcıyı sil" var. */
+  /** Verilirse düzenleme ("Saatinde"): form dolu açılır, altta "Anımsatıcıyı sil" var. */
   duzenlenen: Animsatici | null;
+  /** Yeni anımsatıcının türü (ör. Giriş'teki "Süre sonra" kısayolu). */
+  tur?: AnimsaticiTuru;
 }) {
   const { kapi } = useVeri();
   const kisaMesaj = useKisaMesaj();
-  const baslangic = useMemo(() => (duzenlenen ? formdan(duzenlenen) : ILK), [duzenlenen]);
+  const { destek: alarmDestegi, izinIste } = useAlarmDestegi();
+  const simdiMs = useSimdiMs();
+  const [baslangic] = useState(() => ilkForm(duzenlenen, tur));
   const [form, setForm] = useState<Form>(baslangic);
-  const [silSoruluyor, setSilSoruluyor] = useState(false);
+  const [alarmDokunuldu, setAlarmDokunuldu] = useState(!!duzenlenen);
   const [hata, setHata] = useState<string | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
-  // Alarm seçeneği yalnız destekleyen telefonda (iOS 26, kendi derleme) görünür.
-  const { destek: alarmDestegi, izinIste } = useAlarmDestegi();
+  const [silSoruluyor, setSilSoruluyor] = useState(false);
   const degisti = useMemo(() => JSON.stringify(form) !== JSON.stringify(baslangic), [form, baslangic]);
   const guncelle = (f: Partial<Form>) => {
     setForm((x) => ({ ...x, ...f }));
     setHata(null);
   };
 
-  const alarmiDegistir = async (alarm: boolean) => {
-    guncelle({ alarm });
-    if (alarm) await izinIste();
+  // "Süre sonra" varsayılan olarak alarmdır (gözden kaçmamalı); kişi seçtiyse ona dokunulmaz.
+  const alarm = alarmDestegi && (alarmDokunuldu ? form.alarm : form.tur === 'sure');
+  const alarmSec = (a: boolean) => {
+    setAlarmDokunuldu(true);
+    guncelle({ alarm: a });
+    if (a) void izinIste();
   };
 
   const kaydet = async () => {
-    const h = formHatasi(form.ad, form.saatler);
-    if (h) {
-      setHata(h);
-      return;
-    }
     if (calisiyor) return;
+    const sure = form.tur === 'sure';
+    if (!sure) {
+      const h = formHatasi(form.ad, form.saatler, form.gunler);
+      if (h) {
+        setHata(h);
+        return;
+      }
+    }
     setCalisiyor(true);
     try {
+      const bitis = sure ? new Date(Date.now() + form.sureDk * 60_000) : null;
       const a: Animsatici = {
         id: duzenlenen?.id ?? yeniKimlik(),
-        ad: form.ad.trim(),
-        saatler: saatleriSirala(form.saatler),
-        gunler: form.gunler,
-        sesli: form.alarm || form.sesli,
-        erteleDk: form.alarm ? ALARM_ERTELEME : form.erteleDk,
-        alarm: form.alarm,
+        ad: form.ad.trim() || (sure ? sureMetni(form.sureDk) : ''),
+        saatler: bitis ? [saatMetni(bitis.getHours() * 60 + bitis.getMinutes())] : saatleriSirala(form.saatler),
+        gunler: sure ? [] : [...form.gunler].sort(),
+        sesli: true,
+        erteleDk: form.erteleDk,
+        alarm,
+        bitis: bitis ? bitis.toISOString() : null,
       };
       if (duzenlenen) await animsaticiGuncelle(kapi, a);
       else await animsaticiEkle(kapi, a);
+      if (!duzenlenen) sonTur = form.tur;
       await bildirimIzni(true);
-      kisaMesaj(duzenlenen ? `Kaydedildi: ${a.ad}` : `Anımsatıcı eklendi: ${a.ad}`);
+      kisaMesaj(
+        duzenlenen
+          ? `Kaydedildi: ${a.ad}`
+          : sure
+            ? `Kuruldu: ${a.ad} · ${a.saatler[0]}`
+            : `Anımsatıcı eklendi: ${a.ad}`,
+      );
       onKapat();
     } catch (e) {
       console.error('Anımsatıcı kaydedilemedi', e);
@@ -136,12 +190,24 @@ function AnimsaticiFormu({
     }
   };
 
+  const saatDegis = (i: number, saat: string) =>
+    guncelle({ saatler: form.saatler.map((s, j) => (j === i ? saat : s)) });
+  const gunDegis = (g: number) =>
+    guncelle({ gunler: form.gunler.includes(g) ? form.gunler.filter((x) => x !== g) : [...form.gunler, g].sort() });
+  const caldigiSaat = (() => {
+    const d = new Date(simdiMs + form.sureDk * 60_000);
+    return saatMetni(d.getHours() * 60 + d.getMinutes());
+  })();
+  const hazirSure = (SURE_SECENEKLERI as readonly number[]).includes(form.sureDk);
+  const adim = form.sureDk < 30 ? 1 : 5;
+
   return (
     <AltSayfa
       gorunur={gorunur}
       onKapat={onKapat}
-      baslik={duzenlenen ? 'Düzenle' : 'Anımsatıcı ekle'}
+      baslik={duzenlenen ? 'Düzenle' : 'Anımsatıcı'}
       solVazgec
+      sagEylem={{ etiket: 'Kaydet', onPress: () => void kaydet(), pasif: calisiyor }}
       degisti={degisti}
       onay={
         silSoruluyor && duzenlenen
@@ -155,143 +221,183 @@ function AnimsaticiFormu({
             }
           : null
       }
-      altAlan={<Dugme etiket="Kaydet" onPress={() => void kaydet()} pasif={calisiyor} />}
     >
-      {!duzenlenen && <Yazi tur="ikincil">{ANIMSATICI_BILGI}</Yazi>}
-      <GirisAlani
-        etiket="Neyi anımsatalım?"
-        value={form.ad}
-        onChangeText={(ad) => guncelle({ ad })}
-        placeholder="Örneğin: Göz damlası, su iç"
-        returnKeyType="done"
-        hata={hata && form.ad.trim() === '' ? hata : null}
-      />
-
-      <Bolum>
-        <Yazi kalinlik="kalin" accessibilityRole="header">
-          Saatler
-        </Yazi>
-        <View style={stiller.cipler}>
-          {saatleriSirala(form.saatler).map((s) => (
-            <Pressable
-              key={s}
-              onPress={() => guncelle({ saatler: form.saatler.filter((x) => x !== s) })}
-              accessibilityRole="button"
-              accessibilityLabel={`${s} saatini kaldır`}
-              style={stiller.saatCipi}
-            >
-              <Yazi kalinlik="kalin" renk={renk.yuzey}>{`${s}  ×`}</Yazi>
-            </Pressable>
-          ))}
-        </View>
-        <View style={stiller.saatSatiri}>
-          <View style={stiller.secici}>
-            <SaatSecici
-              saat={form.yeniSaat}
-              onDegis={(yeniSaat) => guncelle({ yeniSaat })}
-              kompakt
-              etiket="Yeni saat"
-            />
-          </View>
-          <Dugme
-            tur="ikincil"
-            etiket="Saat ekle"
-            yaziRengi={renk.ana}
-            style={stiller.ekle}
-            onPress={() =>
-              guncelle({
-                saatler: saatleriSirala([...form.saatler, form.yeniSaat]),
-              })
-            }
-          />
-        </View>
-        <View style={stiller.ikili}>
-          <SecenekHapi
-            etiket="Günde 2 kez"
-            secili={false}
-            onPress={() => guncelle({ saatler: [...HAZIR_SAATLER.ikiKez] })}
-            style={stiller.esit}
-          />
-          <SecenekHapi
-            etiket="Günde 3 kez"
-            secili={false}
-            onPress={() => guncelle({ saatler: [...HAZIR_SAATLER.ucKez] })}
-            style={stiller.esit}
-          />
-        </View>
-        {hata && form.ad.trim() !== '' && (
-          <Yazi tur="ikincil" renk={renk.hata} accessibilityLiveRegion="polite">
-            {hata}
-          </Yazi>
-        )}
-      </Bolum>
-
-      <Bolum>
-        <Yazi kalinlik="kalin" accessibilityRole="header">
-          Hangi günler?
-        </Yazi>
-        <View style={stiller.cipler}>
-          {GUN_SECENEKLERI.map(([k, ad]) => (
-            <SecenekHapi key={k} etiket={ad} secili={form.gunler === k} onPress={() => guncelle({ gunler: k })} />
-          ))}
-        </View>
-      </Bolum>
-
-      {alarmDestegi && (
-        <Bolum>
-          <View style={stiller.satir}>
-            <Yazi kalinlik="kalin" style={stiller.esnek}>
-              Alarm olarak çalsın
-            </Yazi>
-            <AcKapa acik={form.alarm} etiket="Alarm olarak çalsın" onDegis={(alarm) => void alarmiDegistir(alarm)} />
-          </View>
-          <Yazi tur="ikincil">{ALARM_ACIKLAMASI}</Yazi>
-        </Bolum>
+      {!duzenlenen && (
+        <BolumluDugme
+          erisimEtiketi="Anımsatıcı türü"
+          secenekler={[
+            { deger: 'sure', etiket: 'Süre sonra' },
+            { deger: 'saat', etiket: 'Saatinde' },
+          ]}
+          secili={form.tur}
+          onSec={(t) => guncelle({ tur: t })}
+        />
       )}
 
-      {!form.alarm && (
+      {form.tur === 'sure' ? (
         <>
-          <Bolum style={stiller.satir}>
-            <Yazi kalinlik="kalin" style={stiller.esnek}>
-              Sesli uyar
-            </Yazi>
-            <AcKapa acik={form.sesli} etiket="Sesli uyar" onDegis={(sesli) => guncelle({ sesli })} />
-          </Bolum>
-
           <Bolum>
             <Yazi kalinlik="kalin" accessibilityRole="header">
-              Ertele dersem
+              Ne kadar sonra?
             </Yazi>
             <View style={stiller.cipler}>
-              {ERTELEME_SECENEKLERI.map((dk) => (
+              {SURE_SECENEKLERI.map((dk) => (
                 <SecenekHapi
                   key={dk}
-                  etiket={`${dk} dk`}
-                  secili={form.erteleDk === dk}
-                  onPress={() => guncelle({ erteleDk: dk })}
+                  etiket={sureMetni(dk)}
+                  secili={form.sureDk === dk}
+                  onPress={() => guncelle({ sureDk: dk })}
                 />
               ))}
             </View>
+            <View style={stiller.satir}>
+              <Yazi style={stiller.esnek} renk={hazirSure ? renk.ikincil : renk.yazi}>
+                Başka bir süre
+              </Yazi>
+              <ArtiEksi
+                deger={sureMetni(form.sureDk)}
+                onEksi={() => guncelle({ sureDk: Math.max(1, form.sureDk - adim) })}
+                onArti={() => guncelle({ sureDk: Math.min(EN_UZUN_SURE, form.sureDk + adim) })}
+                eksiEtiket="Süreyi azalt"
+                artiEtiket="Süreyi artır"
+              />
+            </View>
+            <Yazi kalinlik="kalin" renk={renk.ana} accessibilityLiveRegion="polite">
+              {`Çalacağı saat: ${caldigiSaat}`}
+            </Yazi>
           </Bolum>
+          <GirisAlani
+            etiket="Ad (isteğe bağlı)"
+            value={form.ad}
+            onChangeText={(ad) => guncelle({ ad })}
+            placeholder={`Örneğin: Ocağın altı (boş kalırsa "${sureMetni(form.sureDk)}")`}
+            returnKeyType="done"
+          />
+        </>
+      ) : (
+        <>
+          <GirisAlani
+            etiket="Neyi anımsatalım?"
+            value={form.ad}
+            onChangeText={(ad) => guncelle({ ad })}
+            placeholder="Örneğin: Tansiyon ilacı 5 mg"
+            returnKeyType="done"
+            hata={hata && form.ad.trim() === '' ? hata : null}
+          />
+          <Bolum>
+            <Yazi kalinlik="kalin" accessibilityRole="header">
+              Saatler
+            </Yazi>
+            {form.saatler.map((s, i) => (
+              <View key={i} style={stiller.satir}>
+                <View style={stiller.esnek}>
+                  <SaatSecici
+                    saat={s}
+                    onDegis={(saat) => saatDegis(i, saat)}
+                    kompakt
+                    dakikaAraligi={1}
+                    etiket={`${i + 1}. saat`}
+                  />
+                </View>
+                {form.saatler.length > 1 && (
+                  <Pressable
+                    onPress={() => guncelle({ saatler: form.saatler.filter((_, j) => j !== i) })}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${s} saatini kaldır`}
+                    hitSlop={8}
+                    style={stiller.kaldir}
+                  >
+                    <Ionicons name="close-circle" size={26} color={renk.soluk} />
+                  </Pressable>
+                )}
+              </View>
+            ))}
+            <Dugme
+              tur="yazi"
+              etiket="+ Saat ekle"
+              onPress={() => guncelle({ saatler: [...form.saatler, sonrakiSaat(form.saatler)] })}
+            />
+          </Bolum>
+          <Bolum>
+            <Yazi kalinlik="kalin" accessibilityRole="header">
+              Günler
+            </Yazi>
+            <View style={stiller.gunler}>
+              {GUN_KISA.map((ad, g) => {
+                const secili = form.gunler.includes(g);
+                return (
+                  <Pressable
+                    key={ad}
+                    onPress={() => gunDegis(g)}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: secili }}
+                    accessibilityLabel={ad}
+                    style={[stiller.gun, secili && stiller.gunSecili]}
+                  >
+                    <Yazi tur="etiket" kalinlik="kalin" renk={secili ? renk.yuzey : renk.yazi}>
+                      {ad}
+                    </Yazi>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </Bolum>
+          {hata && form.ad.trim() !== '' && (
+            <Yazi tur="ikincil" renk={renk.hata} accessibilityLiveRegion="polite">
+              {hata}
+            </Yazi>
+          )}
         </>
       )}
+
+      <Bolum>
+        <Yazi kalinlik="kalin" accessibilityRole="header">
+          Nasıl uyarsın?
+        </Yazi>
+        <View style={stiller.ikili}>
+          <SecenekHapi etiket="Bildirim" secili={!alarm} onPress={() => alarmSec(false)} style={stiller.esnek} />
+          {alarmDestegi && (
+            <SecenekHapi etiket="Alarm" secili={alarm} onPress={() => alarmSec(true)} style={stiller.esnek} />
+          )}
+        </View>
+        {alarm && <Yazi tur="ikincil">{ALARM_ACIKLAMASI}</Yazi>}
+        <Yazi kalinlik="kalin">Ertele dersem</Yazi>
+        <View style={stiller.cipler}>
+          {ERTELEME_SECENEKLERI.map((dk) => (
+            <SecenekHapi
+              key={dk}
+              etiket={`${dk} dk`}
+              secili={form.erteleDk === dk}
+              onPress={() => guncelle({ erteleDk: dk })}
+            />
+          ))}
+        </View>
+      </Bolum>
+
       {duzenlenen && <Dugme tur="tehlike" etiket="Anımsatıcıyı sil" onPress={() => setSilSoruluyor(true)} />}
     </AltSayfa>
   );
 }
 
-/** `const form = useAnimsaticiFormu(); form.ac(); form.ac(anımsatıcı); {form.oge}` */
+/** `const form = useAnimsaticiFormu(); form.ac(); form.ac(anımsatıcı); form.ac(null, 'sure'); {form.oge}` */
 export function useAnimsaticiFormu() {
-  const [durum, setDurum] = useState<{ no: number; acik: boolean; duzenlenen: Animsatici | null } | null>(null);
-  /** Anımsatıcı verilirse düzenleme açılır. */
+  const [durum, setDurum] = useState<{
+    no: number;
+    acik: boolean;
+    duzenlenen: Animsatici | null;
+    tur?: AnimsaticiTuru;
+  } | null>(null);
+  /** Anımsatıcı verilirse düzenleme açılır; `tur` yeni anımsatıcının türü. */
   const ac = useCallback(
-    (duzenlenen: Animsatici | null = null) => setDurum((d) => ({ no: (d?.no ?? 0) + 1, acik: true, duzenlenen })),
+    (duzenlenen: Animsatici | null = null, tur?: AnimsaticiTuru) =>
+      setDurum((d) => ({ no: (d?.no ?? 0) + 1, acik: true, duzenlenen, tur })),
     [],
   );
   const oge = durum ? (
     <AnimsaticiFormu
       key={durum.no}
       duzenlenen={durum.duzenlenen}
+      tur={durum.tur}
       gorunur={durum.acik}
       onKapat={() => setDurum((d) => (d ? { ...d, acik: false } : d))}
     />
@@ -301,24 +407,20 @@ export function useAnimsaticiFormu() {
 
 const stiller = StyleSheet.create({
   cipler: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  saatCipi: {
+  satir: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48 },
+  kaldir: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  ikili: { flexDirection: 'row', gap: 8 },
+  esnek: { flex: 1 },
+  gunler: { flexDirection: 'row', gap: 6 },
+  gun: {
+    flex: 1,
     minHeight: 44,
-    paddingHorizontal: 16,
-    borderRadius: 22,
-    backgroundColor: renk.ana,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: renk.cizgi,
+    backgroundColor: renk.yuzey,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  saatSatiri: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  secici: {
-    flex: 1,
-    minHeight: 48,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  ekle: { borderColor: renk.ana, borderWidth: 2, paddingHorizontal: 16 },
-  ikili: { flexDirection: 'row', gap: 8 },
-  esit: { flex: 1 },
-  satir: { flexDirection: 'row', alignItems: 'center' },
-  esnek: { flex: 1 },
+  gunSecili: { backgroundColor: renk.ana, borderColor: renk.ana },
 });

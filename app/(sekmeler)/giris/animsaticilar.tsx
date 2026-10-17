@@ -9,20 +9,53 @@ import { useAnimsaticiFormu } from '@/bilesen/animsatici/AnimsaticiFormu';
 import { useAnimsatmalar } from '@/bilesen/animsatici/useAnimsatmalar';
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
+import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
-import { ANIMSATICI_GIZLILIK, animsaticiMeta } from '@/mantik/animsatici';
+import { ANIMSATICI_GIZLILIK, animsaticiMeta, kalanSureMetni } from '@/mantik/animsatici';
+import { animsaticiSil } from '@/veri/animsaticilar';
+import { useSimdiMs } from '@/veri/useSimdi';
+import { useVeri } from '@/veri/VeriSaglayici';
 
 export default function Animsaticilar() {
   const form = useAnimsaticiFormu();
-  const { yukleniyor, animsaticilar } = useAnimsatmalar();
+  const { yukleniyor, animsaticilar: hepsi } = useAnimsatmalar();
+  const { kapi } = useVeri();
+  const kisaMesaj = useKisaMesaj();
+  const simdiMs = useSimdiMs();
+  const animsaticilar = hepsi.filter((a) => !a.bitis);
+  const sureler = hepsi.filter((a) => a.bitis);
 
   return (
     <>
       <EkranKabi geri="Giriş" baslik="Anımsatıcılar">
+        {sureler.map((a) => (
+          <View key={a.id} style={stiller.kart}>
+            <View style={stiller.simge}>
+              <Ionicons name="timer-outline" size={20} color={renk.ana} />
+            </View>
+            <View style={stiller.esnek}>
+              <Yazi tur="kartBasligi">{a.ad}</Yazi>
+              <Yazi kalinlik="kalin" renk={renk.ana}>
+                {`${a.saatler[0] ?? ''} · ${kalanSureMetni(a.bitis!, simdiMs)}`}
+              </Yazi>
+              <Yazi tur="ikincil">{animsaticiMeta(a)}</Yazi>
+            </View>
+            <Dugme
+              tur="yazi"
+              etiket="İptal"
+              onPress={() =>
+                void animsaticiSil(kapi, a.id)
+                  .then(() => kisaMesaj(`İptal edildi: ${a.ad}`))
+                  .catch((e: unknown) => console.error('Anımsatıcı silinemedi', e))
+              }
+            />
+          </View>
+        ))}
         {!yukleniyor && animsaticilar.length === 0 && (
           <Yazi tur="ikincil">
-            Henüz anımsatıcın yok. İlaç, su, göz damlası gibi her gün tekrarlanan şeyler için ekle.
+            Henüz saatli anımsatıcın yok. İlaç, su, göz damlası gibi düzenli olanlar ya da “Süre sonra” ile hızlı bir
+            zamanlayıcı ekleyebilirsin.
           </Yazi>
         )}
         {animsaticilar.map((a) => (

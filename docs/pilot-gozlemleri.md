@@ -59,3 +59,8 @@ Sonuç: → kararlar.md (Rutin ve proje: "Proje adımları" bloğu)
 Ne dedi: "Kartı açtığımda altta çıkan Yaptım butonu yanıltıcı oluyor; listede zaten Yaptım diyebiliyor. Kartı silmek için Düzenle moduna geçmek gerekiyor ve en altta Sil var; Sil'i kartın görünümüne koyalım, Paylaş gibi fonksiyonları da bir menüde toplayalım."
 Nerede: Kart görünümü, kart formu
 Sonuç: → kararlar.md (Kart görünümü sadeleşti)
+
+### P-10 · 17 Ekim 2026 · Behnan · iPhone
+Ne dedi: Anımsatıcı ekleme karışık: açıklama ajandaya kart eklemekten bahsediyor; saat ekleme (hazır 09:00, seçicide 13:00, "Saat ekle", "Günde 2/3 kez") gereksiz karışık; "Hangi günler" yerine ajanda kartındaki gibi hafta günleri seçilmeli; "Sesli uyar" bildirim gibi bir şey olmalı, alarm seçilince erteleme seçenekleri kapanıp 5 dk'ya sabitleniyor; Kaydet Notlar'daki gibi sağ üstte olmalı. İki senaryo: ilaç saatleri (ad ve dozla, 1 dakika hassasiyet) ve "20 dakika sonra ocağın altını kapat" gibi hızlı alarm (saat seçimi o anki saatten, ad gerekmeyebilir).
+Nerede: Giriş → Anımsatıcılar → Ekle
+Sonuç: → kararlar.md (Anımsatıcı sadeleşti: "Süre sonra" ve "Saatinde")

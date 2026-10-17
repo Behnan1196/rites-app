@@ -9,6 +9,7 @@
 // uygulandığında yalnız eksikler eklenir, fazlalar kaldırılır.
 
 import {
+  bitisGunu,
   dakika,
   gunuKapsarMi,
   hatirlatmaZamani,
@@ -21,13 +22,11 @@ import { gorunurMu } from './gorunurluk';
 import type { Kart } from './kart';
 import { gunEkle, type Gun } from './tarih';
 
-/** Alarmda Ertele hep 5 dakika (ürün sahibi). */
-export const ALARM_ERTELEME = 5;
 /** Alarmdaki Ertele'ye basıldıktan bu kadar dakika sonra işlenen basış eskimiş sayılır. */
 export const ERTELE_GECERLILIK_DK = 10;
 
 export const ALARM_ACIKLAMASI =
-  "Kilit ekranında alarm gibi çalar; sessiz modda ve Odak açıkken de duyulur. Durdur ya da Ertele (5 dk) Rites'ı açar.";
+  "Kilit ekranında alarm gibi çalar; sessiz modda ve Odak açıkken de duyulur. Durdur ya da Ertele Rites'ı açar.";
 
 export const KART_ALARM_ACIKLAMASI =
   "Kilit ekranında alarm gibi çalar; sessiz modda ve Odak açıkken de duyulur. Durdur'a basınca Rites kartı açar.";
@@ -41,8 +40,12 @@ export interface PlanliAlarm {
   baslik: string;
   /** Tek seferlik alarmın günü; tekrarlıda null. */
   gun: Gun | null;
-  /** Alarmda "5 dk ertele" düğmesi var mı (anımsatıcıda var, kartta yok). */
+  /** Alarmda "N dk ertele" düğmesi var mı (anımsatıcıda var, kartta yok). */
   ertelenebilir: boolean;
+  /** Ertele süresi (dakika); anımsatıcıda seçilen. */
+  erteleDk: number;
+  /** Tek seferlik alarmın saniyesiyle tam anı (ms; "Süre sonra"). */
+  zamanMs?: number;
   kaynak:
     | { tur: 'animsatici'; animsaticiId: string; /** Anımsatıcının kendi saati (kayıt anahtarı). */ saat: string }
     | { tur: 'kart'; kartId: string; /** Kartın görüldüğü gün. */ gun: Gun };
@@ -77,9 +80,7 @@ export const ertelemeAlarmKimligi = (animsaticiId: string, gun: Gun, saat: strin
 
 /** Rites gün seçimi → ISO hafta günleri. */
 export function isoHaftaGunleri(gunler: AnimsaticiGunleri): number[] {
-  if (gunler === 'haftaici') return [1, 2, 3, 4, 5];
-  if (gunler === 'haftasonu') return [6, 7];
-  return [1, 2, 3, 4, 5, 6, 7];
+  return [...gunler].sort().map((g) => g + 1);
 }
 
 /**
@@ -96,18 +97,43 @@ export function alarmPlani(
   const plan: PlanliAlarm[] = [];
   for (const a of animsaticilar) {
     if (!a.alarm) continue;
-    for (const saat of a.saatler) {
-      plan.push({
-        id: tekrarliAlarmKimligi(a.id, saat),
-        saat,
-        haftaGunleri: isoHaftaGunleri(a.gunler),
-        baslik: a.ad,
-        gun: null,
-        ertelenebilir: true,
-        kaynak: { tur: 'animsatici', animsaticiId: a.id, saat },
-      });
+    if (a.bitis) {
+      // "Süre sonra": tek seferlik; ertelendiyse aşağıdaki erteleme alarmı çalar.
+      const saat = a.saatler[0];
+      if (!saat) continue;
+      const gun = bitisGunu(a.bitis);
       const d = bugunDurumlari.find((g) => g.animsaticiId === a.id && g.saat === saat);
-      if (!d?.ertelenenSaat || d.durduruldu || !gunuKapsarMi(a.gunler, bugunGun)) continue;
+      if (d?.durduruldu) continue;
+      if (!d?.ertelenenSaat) {
+        if (`${gun} ${saat}` < `${bugunGun} ${simdi}`) continue;
+        plan.push({
+          id: tekrarliAlarmKimligi(a.id, saat),
+          saat,
+          haftaGunleri: [],
+          baslik: a.ad,
+          gun,
+          ertelenebilir: true,
+          erteleDk: a.erteleDk,
+          zamanMs: new Date(a.bitis).getTime(),
+          kaynak: { tur: 'animsatici', animsaticiId: a.id, saat },
+        });
+        continue;
+      }
+    }
+    for (const saat of a.saatler) {
+      if (!a.bitis)
+        plan.push({
+          id: tekrarliAlarmKimligi(a.id, saat),
+          saat,
+          haftaGunleri: isoHaftaGunleri(a.gunler),
+          baslik: a.ad,
+          gun: null,
+          ertelenebilir: true,
+          erteleDk: a.erteleDk,
+          kaynak: { tur: 'animsatici', animsaticiId: a.id, saat },
+        });
+      const d = bugunDurumlari.find((g) => g.animsaticiId === a.id && g.saat === saat);
+      if (!d?.ertelenenSaat || d.durduruldu || !gunuKapsarMi(a, bugunGun)) continue;
       if (dakika(d.ertelenenSaat) <= dakika(simdi)) continue;
       plan.push({
         id: ertelemeAlarmKimligi(a.id, bugunGun, saat),
@@ -116,6 +142,7 @@ export function alarmPlani(
         baslik: a.ad,
         gun: bugunGun,
         ertelenebilir: true,
+        erteleDk: a.erteleDk,
         kaynak: { tur: 'animsatici', animsaticiId: a.id, saat },
       });
     }
@@ -153,6 +180,7 @@ export function kartAlarmPlani(
         baslik: k.baslik,
         gun: yer.gun,
         ertelenebilir: false,
+        erteleDk: 0,
         kaynak: { tur: 'kart', kartId: k.id, gun },
       });
     }

@@ -82,7 +82,10 @@ export function planiUygula(plan: readonly PlanliBildirim[]): Promise<void> {
             categoryIdentifier: b.erteleDk ? kategori(b.erteleDk) : undefined,
             data: b.veri,
           },
-          trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: tarihe(b.gun, b.saat) },
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.DATE,
+            date: b.zamanMs !== undefined ? new Date(b.zamanMs) : tarihe(b.gun, b.saat),
+          },
         });
       }
     })

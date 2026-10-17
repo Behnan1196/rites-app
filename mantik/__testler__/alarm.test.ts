@@ -21,28 +21,31 @@ const ilac: Animsatici = {
   id: 'i',
   ad: 'İlaç',
   saatler: ['08:00', '20:00'],
-  gunler: 'hergun',
+  gunler: [0, 1, 2, 3, 4, 5, 6],
   sesli: true,
   erteleDk: 5,
   alarm: true,
+  bitis: null,
 };
 const su: Animsatici = {
   id: 's',
   ad: 'Su',
   saatler: ['10:00'],
-  gunler: 'hergun',
+  gunler: [0, 1, 2, 3, 4, 5, 6],
   sesli: true,
   erteleDk: 10,
   alarm: false,
+  bitis: null,
 };
 const hs: Animsatici = {
   id: 'h',
   ad: 'Hafta sonu ilacı',
   saatler: ['09:00'],
-  gunler: 'haftasonu',
+  gunler: [5, 6],
   sesli: true,
   erteleDk: 5,
   alarm: true,
+  bitis: null,
 };
 
 describe('kararlı UUID', () => {
@@ -89,8 +92,8 @@ describe('alarm planı', () => {
   });
 
   it('ISO hafta günleri', () => {
-    expect(isoHaftaGunleri('haftaici')).toEqual([1, 2, 3, 4, 5]);
-    expect(isoHaftaGunleri('haftasonu')).toEqual([6, 7]);
+    expect(isoHaftaGunleri([0, 1, 2, 3, 4])).toEqual([1, 2, 3, 4, 5]);
+    expect(isoHaftaGunleri([6, 5])).toEqual([6, 7]);
   });
 
   it('saat parçaları', () => {
@@ -132,7 +135,7 @@ describe('telefondakiyle fark', () => {
   });
   it('ad ya da günler değiştiyse (düzenleme) yeniden kurulur', () => {
     const telefonda = plan.map((p) => ({ id: p.id, imza: alarmImzasi(p.saat, p.haftaGunleri, p.baslik) }));
-    const yeni = alarmPlani([{ ...ilac, ad: 'Tansiyon ilacı', gunler: 'haftaici' }], [], BUGUN, '07:00');
+    const yeni = alarmPlani([{ ...ilac, ad: 'Tansiyon ilacı', gunler: [0, 1, 2, 3, 4] }], [], BUGUN, '07:00');
     const f = alarmFarki(yeni, telefonda);
     expect(f.kaldirilacak).toHaveLength(2);
     expect(f.eklenecek.map((p) => p.baslik)).toEqual(['Tansiyon ilacı', 'Tansiyon ilacı']);
@@ -208,6 +211,7 @@ describe('kart alarmı', () => {
         baslik: 'Doktor',
         gun: '2026-10-13',
         ertelenebilir: false,
+        erteleDk: 0,
         kaynak: { tur: 'kart', kartId: 'd', gun: '2026-10-13' },
       },
     ]);
@@ -242,5 +246,46 @@ describe('kart alarmı', () => {
       gun: '2026-10-13',
     });
     expect(kartAlarminiEslestir('x', [doktor], BUGUN)).toBeNull();
+  });
+});
+
+describe('Süre sonra (zamanlayıcı)', () => {
+  const ocak: Animsatici = {
+    id: 'o',
+    ad: 'Ocağın altı',
+    saatler: ['14:52'],
+    gunler: [],
+    sesli: true,
+    erteleDk: 5,
+    alarm: true,
+    bitis: new Date(2026, 9, 12, 14, 52, 40).toISOString(),
+  };
+  it('tam anında tek seferlik alarm; ertelediyse erteleme alarmı', () => {
+    const plan = alarmPlani([ocak], [], BUGUN, '14:32');
+    expect(plan).toHaveLength(1);
+    expect(plan[0]).toMatchObject({ saat: '14:52', haftaGunleri: [], gun: BUGUN, erteleDk: 5 });
+    expect(plan[0]!.zamanMs).toBe(new Date(2026, 9, 12, 14, 52, 40).getTime());
+    const ertelendi = alarmPlani(
+      [ocak],
+      [{ animsaticiId: 'o', saat: '14:52', durduruldu: false, ertelenenSaat: '14:58' }],
+      BUGUN,
+      '14:53',
+    );
+    expect(ertelendi.map((p) => p.saat)).toEqual(['14:58']);
+    expect(alarmPlani([ocak], [], BUGUN, '15:00')).toEqual([]);
+  });
+  it('bildirimde saniyesiyle; başka gün yok', () => {
+    const girdi = {
+      animsaticilar: [{ ...ocak, alarm: false }],
+      gunDurumlari: [],
+      kartlar: [],
+      bugunYapilanlar: new Set<string>(),
+      bugunGun: BUGUN,
+      simdi: '14:52',
+      simdiMs: new Date(2026, 9, 12, 14, 52, 10).getTime(),
+    };
+    const b = bildirimPlani(girdi);
+    expect(b[0]!.zamanMs).toBe(new Date(2026, 9, 12, 14, 52, 40).getTime());
+    expect(b).toHaveLength(4); // tam an + durdurulmazsa 3 kez daha
   });
 });

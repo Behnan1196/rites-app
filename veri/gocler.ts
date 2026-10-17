@@ -198,6 +198,12 @@ export const GOCLER: readonly Goc[] = [
     surum: 10,
     sql: `ALTER TABLE blok ADD COLUMN durum TEXT;`,
   },
+  {
+    // "Süre sonra" anımsatıcısının çalacağı an (ISO; pilot 17 Ekim). Günler artık
+    // hafta günü listesi olarak (JSON) yazılır; eski değerler okurken çevrilir.
+    surum: 11,
+    sql: `ALTER TABLE animsatici ADD COLUMN bitis TEXT;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

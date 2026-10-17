@@ -13,7 +13,6 @@ import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { AltSayfa } from '../AltSayfa';
-import { Dugme } from '../Dugme';
 import { GirisAlani } from '../GirisAlani';
 import { useKisaMesaj } from '../KisaMesaj';
 import type { OnaySecenegi } from '../OnayKutusu';
@@ -228,10 +227,10 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         solVazgec
         degisti={degisti}
         onay={onay}
+        sagEylem={{ etiket: 'Kaydet', onPress: () => void kaydet(), pasif: calisiyor }}
         altAlan={
           <View style={stiller.alt}>
             <ZamanlamaCubugu deger={durum.zamanlama} bugunGun={bugunGun} onAc={setAltSayfa} tarihYok={durum.tarihsiz} />
-            <Dugme etiket="Kaydet" onPress={kaydet} pasif={calisiyor} />
           </View>
         }
       >

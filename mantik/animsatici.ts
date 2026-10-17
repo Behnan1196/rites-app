@@ -2,12 +2,19 @@
 //
 // Anımsatıcı kart değildir: günde bir ya da birkaç kez çalan saatli uyarıdır.
 // Yalnız bugünün durumu (durduruldu / ertelendi) tutulur; geçmiş günler tutulmaz.
+//
+// Pilot 17 Ekim: iki tür. "Saatinde": seçili hafta günlerinde, saatlerinde
+// (ilaç, göz damlası). "Süre sonra": hızlı zamanlayıcı (ocağın altı); bir kez,
+// saniyesiyle belli bir anda çalar, durdurulunca silinir.
 
 import { gorunurMu } from './gorunurluk';
 import type { HatirlatmaSecimi, Kart } from './kart';
 import { gunEkle, haftaGunu, type Gun } from './tarih';
 
-export type AnimsaticiGunleri = 'hergun' | 'haftaici' | 'haftasonu';
+/** Haftanın günleri: 0 = Pazartesi … 6 = Pazar (`haftaGunu` ile aynı). */
+export type AnimsaticiGunleri = number[];
+
+export const HER_GUN: readonly number[] = [0, 1, 2, 3, 4, 5, 6];
 
 export interface Animsatici {
   id: string;
@@ -19,6 +26,8 @@ export interface Animsatici {
   erteleDk: number;
   /** Alarm olarak çalar (iOS 26 AlarmKit); bildirim gönderilmez. */
   alarm: boolean;
+  /** Yalnız "Süre sonra": çalacağı an (ISO). Bir kez çalar; `saatler` bunun saatidir. */
+  bitis: string | null;
 }
 
 /** Bugünkü bir saatin durumu (`animsatici_gun`). */
@@ -39,19 +48,11 @@ export const BILDIRIM_SINIRI = 60;
 /** Kaç günlük pencere planlanır (bugün dahil). */
 export const PLAN_GUNU = 3;
 
-export const GUN_SECENEKLERI: readonly [AnimsaticiGunleri, string][] = [
-  ['hergun', 'Her gün'],
-  ['haftaici', 'Hafta içi'],
-  ['haftasonu', 'Hafta sonu'],
-];
+/** "Süre sonra" için hazır süreler (dakika). */
+export const SURE_SECENEKLERI = [5, 10, 15, 20, 30, 45, 60] as const;
+export const VARSAYILAN_SURE = 20;
+export const EN_UZUN_SURE = 24 * 60;
 
-export const HAZIR_SAATLER = {
-  ikiKez: ['09:00', '21:00'],
-  ucKez: ['08:00', '14:00', '20:00'],
-} as const;
-
-export const ANIMSATICI_BILGI =
-  "Günde bir ya da birkaç kez çalan uyarılar için. Randevu ya da tek seferlik iş için Ajandam'a kart ekle.";
 export const ANIMSATICI_ACIKLAMA = 'Saatinde çalar. Durdurmazsan birkaç dakika arayla yeniden çalar.';
 export const ANIMSATICI_GIZLILIK =
   'Anımsatıcıların yalnız bu telefonda durur, kimseyle paylaşılmaz. Geçmiş günler tutulmaz.';
@@ -79,31 +80,87 @@ export function saatleriSirala(saatler: readonly string[]): string[] {
 
 // ---- Günler ve metinler ------------------------------------------------------
 
-export function gunuKapsarMi(gunler: AnimsaticiGunleri, gun: Gun): boolean {
-  const hg = haftaGunu(gun);
-  if (gunler === 'haftaici') return hg <= 4;
-  if (gunler === 'haftasonu') return hg >= 5;
-  return true;
+/** Kayıttaki gün bilgisi (yeni: "[0,1,2]"; eski: hergun / haftaici / haftasonu). */
+export function gunleriCoz(ham: string | null | undefined): AnimsaticiGunleri {
+  if (ham === 'haftaici') return [0, 1, 2, 3, 4];
+  if (ham === 'haftasonu') return [5, 6];
+  if (!ham || ham === 'hergun') return [...HER_GUN];
+  try {
+    const d = JSON.parse(ham) as unknown;
+    if (Array.isArray(d)) {
+      const g = [...new Set(d.filter((x): x is number => Number.isInteger(x) && x >= 0 && x <= 6))].sort();
+      return g;
+    }
+  } catch {
+    // aşağıda her gün
+  }
+  return [...HER_GUN];
 }
 
+/** "Süre sonra" anımsatıcısının günü (yerel). */
+export function bitisGunu(bitis: string): Gun {
+  const d = new Date(bitis);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export function bitisSaati(bitis: string): string {
+  const d = new Date(bitis);
+  return saatMetni(d.getHours() * 60 + d.getMinutes());
+}
+
+export function gunuKapsarMi(a: Pick<Animsatici, 'gunler' | 'bitis'>, gun: Gun): boolean {
+  if (a.bitis) return bitisGunu(a.bitis) === gun;
+  return a.gunler.includes(haftaGunu(gun));
+}
+
+const GUN_KISA_ADLARI = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+
+/** "Her gün" · "Hafta içi" · "Hafta sonu" · "Pzt, Çar, Cum" */
 export function gunlerMetni(gunler: AnimsaticiGunleri): string {
-  return GUN_SECENEKLERI.find(([k]) => k === gunler)?.[1] ?? 'Her gün';
+  const g = [...gunler].sort().join('');
+  if (g === '0123456') return 'Her gün';
+  if (g === '01234') return 'Hafta içi';
+  if (g === '56') return 'Hafta sonu';
+  if (g === '') return 'Hiçbir gün';
+  return [...gunler]
+    .sort()
+    .map((i) => GUN_KISA_ADLARI[i])
+    .join(', ');
 }
 
-/** "Her gün · Sesli · erteleme 10 dk" / "Her gün · Alarm · erteleme 5 dk" */
-export function animsaticiMeta(a: Pick<Animsatici, 'gunler' | 'sesli' | 'erteleDk' | 'alarm'>): string {
-  const tur = a.alarm ? 'Alarm' : a.sesli ? 'Sesli' : 'Sessiz';
-  return `${gunlerMetni(a.gunler)} · ${tur} · erteleme ${a.erteleDk} dk`;
+/** "20 dk" · "1 sa" · "1 sa 30 dk" */
+export function sureMetni(dk: number): string {
+  const s = Math.floor(dk / 60);
+  const d = dk % 60;
+  if (s === 0) return `${d} dk`;
+  return d === 0 ? `${s} sa` : `${s} sa ${d} dk`;
+}
+
+/** "Her gün · Bildirim · erteleme 10 dk" / "Bir kez · Alarm · erteleme 5 dk" */
+export function animsaticiMeta(a: Pick<Animsatici, 'gunler' | 'erteleDk' | 'alarm' | 'bitis'>): string {
+  const ne = a.bitis ? 'Bir kez' : gunlerMetni(a.gunler);
+  return `${ne} · ${a.alarm ? 'Alarm' : 'Bildirim'} · erteleme ${a.erteleDk} dk`;
+}
+
+/** "Süre sonra" anımsatıcısında kalan süre: "18 dk kaldı" / "1 sa 5 dk kaldı" / "şimdi". */
+export function kalanSureMetni(bitis: string, simdiMs: number): string {
+  const dk = Math.ceil((new Date(bitis).getTime() - simdiMs) / 60000);
+  return dk <= 0 ? 'şimdi' : `${sureMetni(dk)} kaldı`;
 }
 
 export function erteleMetni(dk: number): string {
   return `${dk} dk ertele`;
 }
 
-/** Kaydetmeden önce: ad ve en az bir saat (AN-1). */
-export function formHatasi(ad: string, saatler: readonly string[]): string | null {
+/** Kaydetmeden önce ("Saatinde"): ad, en az bir saat ve bir gün (AN-1). */
+export function formHatasi(
+  ad: string,
+  saatler: readonly string[],
+  gunler: AnimsaticiGunleri = HER_GUN as number[],
+): string | null {
   if (ad.trim() === '') return 'Neyi anımsatalım? Bir ad yaz.';
   if (saatler.length === 0) return 'En az bir saat ekle.';
+  if (gunler.length === 0) return 'En az bir gün seç.';
   return null;
 }
 
@@ -150,7 +207,7 @@ export function bugununAnimsatmalari(
 ): Animsatma[] {
   const sonuc: Animsatma[] = [];
   for (const a of animsaticilar) {
-    if (!gunuKapsarMi(a.gunler, bugunGun)) continue;
+    if (!gunuKapsarMi(a, bugunGun)) continue;
     for (const saat of a.saatler) {
       const d = gunDurumlari.find((g) => g.animsaticiId === a.id && g.saat === saat);
       const gosterilen = d?.ertelenenSaat ?? saat;
@@ -162,7 +219,9 @@ export function bugununAnimsatmalari(
       });
     }
   }
-  return sonuc.sort((x, y) => x.gosterilen.localeCompare(y.gosterilen) || x.animsatici.ad.localeCompare(y.animsatici.ad));
+  return sonuc.sort(
+    (x, y) => x.gosterilen.localeCompare(y.gosterilen) || x.animsatici.ad.localeCompare(y.animsatici.ad),
+  );
 }
 
 /** "Ertele": ertelenen saat = max(gösterilen, şimdi) + erteleme (gün içinde kalır). */
@@ -199,8 +258,7 @@ export function kalanMetni(kalan: number): string {
 // ---- Bildirim planı ----------------------------------------------------------
 
 export type BildirimVerisi =
-  | { tur: 'animsatici'; animsaticiId: string; gun: Gun; saat: string }
-  | { tur: 'kart'; kartId: string; gun: Gun };
+  { tur: 'animsatici'; animsaticiId: string; gun: Gun; saat: string } | { tur: 'kart'; kartId: string; gun: Gun };
 
 export interface PlanliBildirim {
   /** Kararlı kimlik: aynı bildirim yeniden planlanınca aynı kalır. */
@@ -214,6 +272,8 @@ export interface PlanliBildirim {
   /** Durdur / Ertele düğmeleri için; kart hatırlatmasında yok. */
   erteleDk: number | null;
   veri: BildirimVerisi;
+  /** "Süre sonra": saniyesiyle tam an (ms); varsa `gun`/`saat` yerine bu kullanılır. */
+  zamanMs?: number;
 }
 
 /** Gün sınırını aşan dakikayı (gece yarısından sonrası, öncesi) güne çevirir. */
@@ -246,6 +306,8 @@ export interface PlanGirdisi {
   simdi: string;
   gunSayisi?: number;
   sinir?: number;
+  /** Şu an (ms); "Süre sonra"nın tam anını karşılaştırmak için. */
+  simdiMs?: number;
   /** Alarm olarak çalan anımsatıcılar ve kartlar (kimlik); bunlara bildirim planlanmaz. */
   alarmlaCalanlar?: ReadonlySet<string>;
 }
@@ -264,6 +326,7 @@ export function bildirimPlani({
   simdi,
   gunSayisi = PLAN_GUNU,
   sinir = BILDIRIM_SINIRI,
+  simdiMs,
   alarmlaCalanlar,
 }: PlanGirdisi): PlanliBildirim[] {
   const simdiAnahtar = `${bugunGun} ${simdi}`;
@@ -273,11 +336,13 @@ export function bildirimPlani({
     const gun = gunEkle(bugunGun, i);
 
     for (const a of animsaticilar) {
-      if (!gunuKapsarMi(a.gunler, gun) || alarmlaCalanlar?.has(a.id)) continue;
+      if (!gunuKapsarMi(a, gun) || alarmlaCalanlar?.has(a.id)) continue;
       for (const saat of a.saatler) {
         const d = i === 0 ? gunDurumlari.find((g) => g.animsaticiId === a.id && g.saat === saat) : undefined;
         if (d?.durduruldu) continue;
         const bas = dakika(d?.ertelenenSaat ?? saat);
+        // "Süre sonra" ertelenmediyse saniyesiyle tam anında çalar.
+        const tamAn = a.bitis && !d?.ertelenenSaat ? new Date(a.bitis).getTime() : null;
         for (let k = 0; k <= YENIDEN_CALMA; k++) {
           const yer = anaGoreKonum(gun, bas + k * a.erteleDk);
           liste.push({
@@ -289,6 +354,7 @@ export function bildirimPlani({
             sesli: a.sesli,
             erteleDk: a.erteleDk,
             veri: { tur: 'animsatici', animsaticiId: a.id, gun, saat },
+            ...(tamAn !== null ? { zamanMs: tamAn + k * a.erteleDk * 60_000 } : {}),
           });
         }
       }
@@ -314,7 +380,9 @@ export function bildirimPlani({
   }
 
   return liste
-    .filter((b) => `${b.gun} ${b.saat}` > simdiAnahtar)
+    .filter((b) =>
+      b.zamanMs !== undefined && simdiMs !== undefined ? b.zamanMs > simdiMs : `${b.gun} ${b.saat}` > simdiAnahtar,
+    )
     .sort((x, y) => `${x.gun} ${x.saat}`.localeCompare(`${y.gun} ${y.saat}`) || x.id.localeCompare(y.id))
     .slice(0, sinir);
 }

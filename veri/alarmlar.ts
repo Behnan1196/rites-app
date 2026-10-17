@@ -16,7 +16,7 @@ import type {
   ScheduledAlarm,
 } from 'react-native-alarm-scheduler';
 
-import { ALARM_ERTELEME, alarmFarki, alarmImzasi, saatParcalari, type PlanliAlarm } from '@/mantik/alarm';
+import { alarmFarki, alarmImzasi, saatParcalari, type PlanliAlarm } from '@/mantik/alarm';
 import { erteleMetni, saatMetni } from '@/mantik/animsatici';
 import { bugun } from '@/mantik/tarih';
 
@@ -85,13 +85,13 @@ function girdi(p: PlanliAlarm): AlarmScheduleInput {
     title: p.baslik,
     weekdays: p.haftaGunleri as AlarmScheduleInput['weekdays'],
     // Tek seferlik alarm belirli tarihte çalar (modüle eklenen yamayla, `patches/`).
-    ...(tekSeferlik ? { timestamp: tarihe(p.gun!, p.saat).getTime() } : {}),
+    ...(tekSeferlik ? { timestamp: p.zamanMs ?? tarihe(p.gun!, p.saat).getTime() } : {}),
     ios: {
       alertTitle: p.baslik,
       stopButtonTitle: 'Durdur',
       stopIntentBehavior: 'openApp',
       ...(p.ertelenebilir
-        ? { secondaryButtonTitle: erteleMetni(ALARM_ERTELEME), secondaryButtonBehavior: 'openApp' as const }
+        ? { secondaryButtonTitle: erteleMetni(p.erteleDk), secondaryButtonBehavior: 'openApp' as const }
         : { secondaryButtonBehavior: 'none' as const }),
       metadata:
         p.kaynak.tur === 'animsatici'

@@ -11,7 +11,6 @@ import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 
 import {
-  ALARM_ERTELEME,
   alarmiEslestir,
   alarmPlani,
   erteleGecerliMi,
@@ -65,6 +64,7 @@ async function planlariHesapla(oku: Okuyucu, bugunGun: string) {
       bugunYapilanlar,
       bugunGun,
       simdi,
+      simdiMs: Date.now(),
       alarmlaCalanlar: alarmVar
         ? new Set([
             ...animsaticilar.filter((a) => a.alarm).map((a) => a.id),
@@ -209,7 +209,7 @@ export function BildirimYoneticisi() {
           } else if (gun === bugunGun && erteleGecerliMi(b.zamanMs, Date.now())) {
             const d = (await gunDurumlari(oku, gun)).find((g) => g.animsaticiId === a.id && g.saat === saat);
             if (d?.durduruldu) continue;
-            const yeni = erteleSaati(d?.ertelenenSaat ?? saat, simdiSaat(), ALARM_ERTELEME);
+            const yeni = erteleSaati(d?.ertelenenSaat ?? saat, simdiSaat(), a.erteleDk);
             await ertele(kapi, a.id, gun, saat, yeni);
             kisaMesajRef.current(`Ertelendi: ${yeni} · ${a.ad}`);
           }

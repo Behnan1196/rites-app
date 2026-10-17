@@ -38,6 +38,7 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 8 | `animsatici.alarm` (alarm olarak çalar) |
 | 9 | `paylasilan` (başka uygulamadan paylaşılan bağlantılar, Gelenler'de), `kart.alarm` |
 | 10 | `blok.durum` ("Proje adımları"nın kalıcı durumu, JSON: adım başına yapıldığı gün, bitiş günü) |
+| 11 | `animsatici.bitis` ("Süre sonra"nın çalacağı an, ISO); `animsatici.gunler` artık hafta günü listesi (JSON, 0 = Pzt); eski `hergun / haftaici / haftasonu` okurken çevrilir |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 
@@ -50,7 +51,7 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Tek JSON dosyası, adı `rites-yedek-YYYY-AA-GG.json`, parolasız.
 - Alanlar:
   - `bicim`: `"rites-yedek"`
-  - `surum`: veritabanı göç sürümü (şu an 10)
+  - `surum`: veritabanı göç sürümü (şu an 11)
   - `olusturma`: ISO zaman
   - `dosyaKlasoru`: yedeği alan telefondaki dosya klasörü (geri yüklemede yollar yeni klasöre çevrilir)
   - `tablolar`: `{ tabloAdı: satır[] }` — satırlar SQLite sütun adlarıyla; JSON sütunlar metin olarak
