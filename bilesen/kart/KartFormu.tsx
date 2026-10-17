@@ -1,7 +1,7 @@
 // Kart formu (alttan sayfa): yeni kart ve düzenleme (K-1, K-4, K-6, K-11, K-14).
 
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 
 import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
 import { adimDurumu, adimlariEsle } from '@/mantik/adimlar';
@@ -20,7 +20,7 @@ import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 import { BlokDuzenleyici } from './BlokDuzenleyici';
 import { BlokSecici } from './BlokSecici';
-import { ZamanlamaCubugu, ZamanlamaSayfalari, type Zamanlama, type ZamanlamaBolmesi } from './Zamanlama';
+import { ZamanlamaCubugu, ZamanlamaPaneli, type Zamanlama, type ZamanlamaBolmesi } from './Zamanlama';
 
 export type KartFormuHedefi =
   /** `taslak`: başka uygulamadan paylaşılan videodan dolu gelen yeni kart. */
@@ -123,6 +123,11 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const [hata, setHata] = useState<string | null>(null);
   const [altSayfa, setAltSayfa] = useState<ZamanlamaBolmesi | null>(null);
   const [blokSeciciAcik, setBlokSeciciAcik] = useState(false);
+  /** Çubuktaki bölme: klavye kapanır, ayarı çubuğun altında açılır; aynı bölme yeniden kapatır. */
+  const bolmeAc = (b: ZamanlamaBolmesi | null) => {
+    Keyboard.dismiss();
+    setAltSayfa((a) => (a === b ? null : b));
+  };
   const [soru, setSoru] = useState<Soru | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
   // Paylaşımdan dolu gelen form kaydedilmeden kapatılırken de sorar.
@@ -230,7 +235,26 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         sagEylem={{ etiket: 'Kaydet', onPress: () => void kaydet(), pasif: calisiyor }}
         altAlan={
           <View style={stiller.alt}>
-            <ZamanlamaCubugu deger={durum.zamanlama} bugunGun={bugunGun} onAc={setAltSayfa} tarihYok={durum.tarihsiz} />
+            <ZamanlamaCubugu
+              deger={durum.zamanlama}
+              bugunGun={bugunGun}
+              onAc={bolmeAc}
+              tarihYok={durum.tarihsiz}
+              acik={altSayfa}
+            />
+            <ZamanlamaPaneli
+              acik={altSayfa}
+              deger={durum.zamanlama}
+              bugunGun={bugunGun}
+              tarihYok={durum.tarihsiz}
+              onDegis={(zamanlama) =>
+                guncelle({
+                  zamanlama,
+                  tarihsiz: durum.tarihsiz && altSayfa !== 'tarih' && zamanlama.tekrar === null,
+                })
+              }
+              onAc={setAltSayfa}
+            />
           </View>
         }
       >
@@ -267,7 +291,11 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         ))}
 
         <Pressable
-          onPress={() => setBlokSeciciAcik(true)}
+          onPress={() => {
+            Keyboard.dismiss();
+            setAltSayfa(null);
+            setBlokSeciciAcik(true);
+          }}
           accessibilityRole="button"
           style={({ pressed }) => [stiller.blokEkle, pressed && { opacity: 0.7 }]}
         >
@@ -276,20 +304,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           </Yazi>
         </Pressable>
       </AltSayfa>
-
-      <ZamanlamaSayfalari
-        acik={altSayfa}
-        deger={durum.zamanlama}
-        bugunGun={bugunGun}
-        tarihYok={durum.tarihsiz}
-        onDegis={(zamanlama) =>
-          guncelle({
-            zamanlama,
-            tarihsiz: durum.tarihsiz && altSayfa !== 'tarih' && zamanlama.tekrar === null,
-          })
-        }
-        onAc={setAltSayfa}
-      />
 
       <BlokSecici
         gorunur={blokSeciciAcik}

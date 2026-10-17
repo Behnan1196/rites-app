@@ -4,7 +4,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import type { ComponentProps } from 'react';
-import { Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { HATIRLATMA_METNI, kisaGoreliTarih } from '@/mantik/ajanda';
 import { KART_ALARM_ACIKLAMASI } from '@/mantik/alarm';
@@ -12,7 +12,6 @@ import { tekrarMetni } from '@/mantik/gorunurluk';
 import type { HatirlatmaSecimi, Tekrar } from '@/mantik/kart';
 import { GUN_KISA, gunEkle, type Gun, type GunKisa } from '@/mantik/tarih';
 
-import { AltSayfa } from '../AltSayfa';
 import { AyTakvimi } from '../AyTakvimi';
 import { Dugme } from '../Dugme';
 import { AcKapa, ArtiEksi, Bolum, SecenekHapi } from '../Secim';
@@ -40,10 +39,13 @@ export function ZamanlamaCubugu({
   bugunGun,
   onAc,
   tarihYok = false,
+  acik = null,
 }: {
   deger: Zamanlama;
   bugunGun: Gun;
   onAc: (bolme: ZamanlamaBolmesi) => void;
+  /** Ayarı altta açık olan bölme (vurgulanır). */
+  acik?: ZamanlamaBolmesi | null;
   /** Tarihsiz plan adımı: tarih bölmesi boş görünür. */
   tarihYok?: boolean;
 }) {
@@ -73,7 +75,13 @@ export function ZamanlamaCubugu({
             onPress={() => onAc(b.k)}
             accessibilityRole="button"
             accessibilityLabel={`${b.ad}: ${b.deger ?? 'seçilmedi'}`}
-            style={({ pressed }) => [stiller.bolme, ayarli && stiller.bolmeAyarli, pressed && { opacity: 0.7 }]}
+            accessibilityState={{ expanded: acik === b.k }}
+            style={({ pressed }) => [
+              stiller.bolme,
+              ayarli && stiller.bolmeAyarli,
+              acik === b.k && stiller.bolmeAcik,
+              pressed && { opacity: 0.7 },
+            ]}
           >
             <Ionicons name={b.ikon} size={22} color={ayarli ? renk.ana : renk.soluk} />
             <Yazi
@@ -95,7 +103,7 @@ export function ZamanlamaCubugu({
   );
 }
 
-// ---- Alt sayfalar ------------------------------------------------------------
+// ---- Bölme ayarları (çubuğun altında) -----------------------------------------
 
 interface SayfaOzellikleri {
   acik: ZamanlamaBolmesi | null;
@@ -107,117 +115,132 @@ interface SayfaOzellikleri {
   onAc: (b: ZamanlamaBolmesi | null) => void;
 }
 
-/** Dört alt sayfanın hepsi; hangisinin açık olduğu `acik` ile verilir. */
-export function ZamanlamaSayfalari({ acik, deger, bugunGun, onDegis, onAc, tarihYok = false }: SayfaOzellikleri) {
-  const kapat = () => onAc(null);
+const BOLME_BASLIGI: Record<ZamanlamaBolmesi, string> = {
+  tarih: 'Tarih',
+  saat: 'Saat',
+  hatirlatma: 'Hatırlatma',
+  tekrar: 'Tekrar',
+};
+
+/**
+ * Seçili bölmenin ayarları, çubuğun hemen altında açılan alanda (pilot 17 Ekim:
+ * alttan açılan sayfalar klavyenin altında kalıyordu). "Tamam" ya da aynı bölmeye
+ * yeniden dokunmak kapatır.
+ */
+export function ZamanlamaPaneli({ acik, deger, bugunGun, onDegis, onAc, tarihYok = false }: SayfaOzellikleri) {
   const alarm = useAlarmDestegi();
+  if (!acik) return null;
+  const baslik = acik === 'tarih' && deger.tekrar ? 'Başlangıç tarihi' : BOLME_BASLIGI[acik];
   return (
-    <>
-      <AltSayfa
-        gorunur={acik === 'tarih'}
-        onKapat={kapat}
-        baslik={deger.tekrar ? 'Başlangıç tarihi' : 'Tarih'}
-        sagKapat="Tamam"
+    <View style={stiller.panel}>
+      <View style={stiller.panelUst}>
+        <Yazi kalinlik="kalin" style={stiller.esnek} accessibilityRole="header">
+          {baslik}
+        </Yazi>
+        <Dugme tur="yazi" etiket="Tamam" onPress={() => onAc(null)} />
+      </View>
+      <ScrollView
+        style={stiller.panelIcerik}
+        contentContainerStyle={stiller.panelIcerikKap}
+        keyboardShouldPersistTaps="handled"
       >
-        <View style={stiller.haplar}>
-          <SecenekHapi
-            etiket="Bugün"
-            secili={!tarihYok && deger.tarih === bugunGun}
-            onPress={() => onDegis({ ...deger, tarih: bugunGun })}
-            style={stiller.esit}
-          />
-          <SecenekHapi
-            etiket="Yarın"
-            secili={!tarihYok && deger.tarih === gunEkle(bugunGun, 1)}
-            onPress={() => onDegis({ ...deger, tarih: gunEkle(bugunGun, 1) })}
-            style={stiller.esit}
-          />
-        </View>
-        <Yazi kalinlik="kalin">Başka bir gün</Yazi>
-        <Bolum>
-          <AyTakvimi
-            secili={tarihYok ? null : deger.tarih}
-            bugunGun={bugunGun}
-            onSec={(tarih) => onDegis({ ...deger, tarih })}
-          />
-        </Bolum>
-      </AltSayfa>
-
-      <AltSayfa gorunur={acik === 'saat'} onKapat={kapat} baslik="Saat" sagKapat="Tamam">
-        <View style={stiller.haplar}>
-          {(
-            [
-              ['Sabah', '08:00'],
-              ['Öğle', '12:00'],
-              ['Akşam', '19:00'],
-            ] as const
-          ).map(([ad, saat]) => (
-            <SecenekHapi
-              key={saat}
-              etiket={ad}
-              altEtiket={saat}
-              secili={deger.saat === saat}
-              onPress={() => onDegis({ ...deger, saat })}
-              style={stiller.esit}
-            />
-          ))}
-        </View>
-        <Yazi kalinlik="kalin">Başka bir saat</Yazi>
-        <SaatSecici saat={deger.saat} onDegis={(saat) => onDegis({ ...deger, saat })} />
-        {deger.saat !== null && (
-          <Dugme
-            tur="tehlike"
-            etiket="Saati kaldır"
-            onPress={() => onDegis({ ...deger, saat: null, hatirlatma: null, alarm: false })}
-          />
-        )}
-      </AltSayfa>
-
-      <AltSayfa gorunur={acik === 'hatirlatma'} onKapat={kapat} baslik="Hatırlatma" sagKapat="Tamam">
-        {deger.saat === null ? (
+        {acik === 'tarih' && (
           <>
-            <Yazi>Hatırlatma için önce kartın saatini seç.</Yazi>
-            <Dugme tur="ikincil" etiket="Saat seç" onPress={() => onAc('saat')} />
-          </>
-        ) : (
-          <View style={stiller.dikey}>
-            {([null, 'saatinde', '15dk', '1sa'] as const).map((h) => (
+            <View style={stiller.haplar}>
               <SecenekHapi
-                key={h ?? 'yok'}
-                etiket={h ? HATIRLATMA_METNI[h] : 'Yok'}
-                secili={deger.hatirlatma === h}
-                onPress={() => onDegis({ ...deger, hatirlatma: h, alarm: h ? deger.alarm : false })}
+                etiket="Bugün"
+                secili={!tarihYok && deger.tarih === bugunGun}
+                onPress={() => onDegis({ ...deger, tarih: bugunGun })}
+                style={stiller.esit}
               />
-            ))}
-          </View>
-        )}
-        {alarm.destek && deger.saat !== null && deger.hatirlatma !== null && (
-          <Bolum>
-            <View style={stiller.alarmSatiri}>
-              <Yazi kalinlik="kalin" style={stiller.esnek}>
-                Alarm olarak çalsın
-              </Yazi>
-              <AcKapa
-                acik={!!deger.alarm}
-                etiket="Alarm olarak çalsın"
-                onDegis={(a) => {
-                  onDegis({ ...deger, alarm: a });
-                  if (a) void alarm.izinIste();
-                }}
+              <SecenekHapi
+                etiket="Yarın"
+                secili={!tarihYok && deger.tarih === gunEkle(bugunGun, 1)}
+                onPress={() => onDegis({ ...deger, tarih: gunEkle(bugunGun, 1) })}
+                style={stiller.esit}
               />
             </View>
-            <Yazi tur="ikincil">{KART_ALARM_ACIKLAMASI}</Yazi>
-          </Bolum>
+            <AyTakvimi
+              secili={tarihYok ? null : deger.tarih}
+              bugunGun={bugunGun}
+              onSec={(tarih) => onDegis({ ...deger, tarih })}
+            />
+          </>
         )}
-        <Yazi tur="ikincil">
-          Göz damlası gibi günde birkaç kez çalması gerekenler için Giriş&apos;teki Anımsatıcılar daha uygun.
-        </Yazi>
-      </AltSayfa>
 
-      <AltSayfa gorunur={acik === 'tekrar'} onKapat={kapat} baslik="Tekrar" sagKapat="Tamam">
-        <TekrarAyari tekrar={deger.tekrar} onDegis={(tekrar) => onDegis({ ...deger, tekrar })} />
-      </AltSayfa>
-    </>
+        {acik === 'saat' && (
+          <>
+            <View style={stiller.haplar}>
+              {(
+                [
+                  ['Sabah', '08:00'],
+                  ['Öğle', '12:00'],
+                  ['Akşam', '19:00'],
+                ] as const
+              ).map(([ad, saat]) => (
+                <SecenekHapi
+                  key={saat}
+                  etiket={ad}
+                  altEtiket={saat}
+                  secili={deger.saat === saat}
+                  onPress={() => onDegis({ ...deger, saat })}
+                  style={stiller.esit}
+                />
+              ))}
+            </View>
+            <SaatSecici saat={deger.saat} onDegis={(saat) => onDegis({ ...deger, saat })} />
+            {deger.saat !== null && (
+              <Dugme
+                tur="tehlike"
+                etiket="Saati kaldır"
+                onPress={() => onDegis({ ...deger, saat: null, hatirlatma: null, alarm: false })}
+              />
+            )}
+          </>
+        )}
+
+        {acik === 'hatirlatma' &&
+          (deger.saat === null ? (
+            <>
+              <Yazi>Hatırlatma için önce kartın saatini seç.</Yazi>
+              <Dugme tur="ikincil" etiket="Saat seç" onPress={() => onAc('saat')} />
+            </>
+          ) : (
+            <>
+              <View style={stiller.haplar}>
+                {([null, 'saatinde', '15dk', '1sa'] as const).map((h) => (
+                  <SecenekHapi
+                    key={h ?? 'yok'}
+                    etiket={h ? HATIRLATMA_METNI[h] : 'Yok'}
+                    secili={deger.hatirlatma === h}
+                    onPress={() => onDegis({ ...deger, hatirlatma: h, alarm: h ? deger.alarm : false })}
+                  />
+                ))}
+              </View>
+              {alarm.destek && deger.hatirlatma !== null && (
+                <>
+                  <View style={stiller.alarmSatiri}>
+                    <Yazi kalinlik="kalin" style={stiller.esnek}>
+                      Alarm olarak çalsın
+                    </Yazi>
+                    <AcKapa
+                      acik={!!deger.alarm}
+                      etiket="Alarm olarak çalsın"
+                      onDegis={(a) => {
+                        onDegis({ ...deger, alarm: a });
+                        if (a) void alarm.izinIste();
+                      }}
+                    />
+                  </View>
+                  <Yazi tur="ikincil">{KART_ALARM_ACIKLAMASI}</Yazi>
+                </>
+              )}
+            </>
+          ))}
+
+        {acik === 'tekrar' && <TekrarAyari tekrar={deger.tekrar} onDegis={(tekrar) => onDegis({ ...deger, tekrar })} />}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -379,6 +402,15 @@ function TekrarAyari({ tekrar, onDegis }: { tekrar: Tekrar | null; onDegis: (t: 
 }
 
 const stiller = StyleSheet.create({
+  bolmeAcik: { borderColor: renk.ana, borderWidth: 2 },
+  panel: {
+    borderTopWidth: 1,
+    borderTopColor: renk.satirCizgi,
+    paddingTop: 4,
+  },
+  panelUst: { flexDirection: 'row', alignItems: 'center', minHeight: 44 },
+  panelIcerik: { maxHeight: 380 },
+  panelIcerikKap: { gap: 12, paddingBottom: 8 },
   alarmSatiri: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   esnek: { flex: 1 },
   cubuk: {

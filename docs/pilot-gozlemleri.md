@@ -64,3 +64,8 @@ Sonuç: → kararlar.md (Kart görünümü sadeleşti)
 Ne dedi: Anımsatıcı ekleme karışık: açıklama ajandaya kart eklemekten bahsediyor; saat ekleme (hazır 09:00, seçicide 13:00, "Saat ekle", "Günde 2/3 kez") gereksiz karışık; "Hangi günler" yerine ajanda kartındaki gibi hafta günleri seçilmeli; "Sesli uyar" bildirim gibi bir şey olmalı, alarm seçilince erteleme seçenekleri kapanıp 5 dk'ya sabitleniyor; Kaydet Notlar'daki gibi sağ üstte olmalı. İki senaryo: ilaç saatleri (ad ve dozla, 1 dakika hassasiyet) ve "20 dakika sonra ocağın altını kapat" gibi hızlı alarm (saat seçimi o anki saatten, ad gerekmeyebilir).
 Nerede: Giriş → Anımsatıcılar → Ekle
 Sonuç: → kararlar.md (Anımsatıcı sadeleşti: "Süre sonra" ve "Saatinde")
+
+### P-11 · 17 Ekim 2026 · Behnan · iPhone
+Ne dedi: Ajandam'ın üstü sadeleşmeli: hafta şeridi ve oklar arasındaki yazılar küçülsün; "Bugün · 17 Ekim Cumartesi", "Yarın/Dün" yazmasın, bugün değilse yalnız yanında bugüne dön simgesi çıksın. Yeni kartta alttaki tarih/saat şeridine basınca açılan sayfalar ve Blok ekle klavyenin altında kalıyor; şeridin altında açılan bir alanla çözülebilir.
+Nerede: Ajandam üst kısmı; kart formu
+Sonuç: → kararlar.md (Ajandam üst kısmı ve kart formunda zamanlama)

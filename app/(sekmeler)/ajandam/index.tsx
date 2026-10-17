@@ -20,13 +20,13 @@ import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { useBanaVerilenler } from '@/bilesen/listeler/BanaVerilenler';
 import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
 import { Yazi } from '@/bilesen/Yazi';
-import { bosGunMetni, gunBasligi, gununKartlari, haftaninGunleri } from '@/mantik/ajanda';
+import { bosGunMetni, gununKartlari, haftaninGunleri } from '@/mantik/ajanda';
 import { ara, haftaBasligi } from '@/mantik/arama';
 import { kalanlar } from '@/mantik/kalanlar';
 import { gizliyiSuz, kaynaklar, suzgecAcikMi, type KaynakAnahtari } from '@/mantik/kaynak';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { maddeKarti, maddeKartiMi, maddeYapilanlari, yapilanlariBirlestir } from '@/mantik/listeler';
-import { gecerliGunMu, gunEkle, type Gun } from '@/mantik/tarih';
+import { gecerliGunMu, gunEkle, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import { planlariOku } from '@/veri/planlar';
 import {
@@ -205,7 +205,7 @@ export default function Ajandam() {
       ) : (
         <>
           <GunGezinme
-            baslik={gorunum === 'hafta' ? haftaBasligi(hafta[0]!) : gunBasligi(secili, bugunGun)}
+            baslik={gorunum === 'hafta' ? haftaBasligi(hafta[0]!) : uzunTarih(secili)}
             oncekiEtiket={gorunum === 'hafta' ? 'Önceki hafta' : 'Önceki gün'}
             sonrakiEtiket={gorunum === 'hafta' ? 'Sonraki hafta' : 'Sonraki gün'}
             uzakta={uzakta}
