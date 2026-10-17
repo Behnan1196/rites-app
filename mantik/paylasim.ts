@@ -78,7 +78,7 @@ export function gelenKarti(
       saat: p.saat,
       kaynak: 'gelen',
       gelenKimden: kimden,
-      sira: Date.now(),
+      sira: 0,
     }),
     bloklar: p.bloklar.map((b) => ({ ...b, id: kimlik(), dosya: null })),
   };

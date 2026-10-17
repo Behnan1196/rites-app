@@ -4,11 +4,11 @@
 import { duzenle, sil, type KartTanimi } from '@/mantik/bolme';
 import { yeniKart, type Kart, type Tekrar } from '@/mantik/kart';
 
-import { gocleriUygula } from '../gocler';
+import { GOCLER, gocleriUygula } from '../gocler';
 import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
 import {
   blokMetinleri, gunYapilanlari, isaretle, islemleriUygula, kartAyrinti, kartKayitlari, kayitDegistir, kayitVarMi, tumKartlar,
-  yeniKartKaydet, type BlokTaslagi,
+  siralariYaz, yeniKartKaydet, type BlokTaslagi,
 } from '../kartlar';
 import { yayinOlustur } from '../yayin';
 import { sqljsVeriTabani } from './sqljsVeriTabani';
@@ -43,7 +43,7 @@ describe('kart veri katmanı (gerçek SQLite)', () => {
     await yeniKartKaydet(kapi, k, [blok('f1'), blok('f2', { tur: 'liste', maddeler: ['a', 'b'] })], idUret);
     const kartlar = await tumKartlar(oku);
     expect(kartlar).toHaveLength(1);
-    expect(kartlar[0]).toEqual({ ...k, blokSayisi: 2, adimlar: null });
+    expect(kartlar[0]).toEqual({ ...k, sira: 1, blokSayisi: 2, adimlar: null });
     const ayrinti = await kartAyrinti(oku, 'k1');
     expect(ayrinti!.bloklar.map((b) => [b.id, b.tur, b.sira, b.maddeler])).toEqual([
       ['id1', 'olcum', 0, []],
@@ -160,5 +160,41 @@ describe('kart veri katmanı (gerçek SQLite)', () => {
       ),
     ).rejects.toThrow();
     expect((await kartAyrinti(oku, 'k'))!.kart.baslik).toBe('x');
+  });
+});
+
+describe('ajandada elle sıralama (pilot 17 Ekim)', () => {
+  const sirali = async () => (await tumKartlar(oku)).sort((a, b) => a.sira - b.sira).map((k) => k.id);
+
+  it('yeni saatsiz kart sona, saatli kart saatlilerin arasına girer', async () => {
+    await yeniKartKaydet(kapi, yeniKart('a', { baslik: 'a', tarih: '2026-10-17', saat: '09:00' }), [], idUret);
+    await yeniKartKaydet(kapi, yeniKart('b', { baslik: 'b', tarih: '2026-10-17' }), [], idUret);
+    await yeniKartKaydet(kapi, yeniKart('c', { baslik: 'c', tarih: '2026-10-17', saat: '20:00' }), [], idUret);
+    await yeniKartKaydet(kapi, yeniKart('d', { baslik: 'd', tarih: '2026-10-17', saat: '12:00' }), [], idUret);
+    expect(await sirali()).toEqual(['a', 'b', 'd', 'c']);
+    await siralariYaz(kapi, new Map([['c', 0]]));
+    expect(await sirali()).toEqual(['c', 'a', 'b', 'd']);
+  });
+
+  it('göç 12 görünen sırayı (saat, sonra eski sıra) 1, 2, 3… diye numaralar', async () => {
+    const db = await sqljsVeriTabani();
+    await gocleriUygula(db, GOCLER.filter((g) => g.surum <= 11));
+    const ekle = (id: string, saat: string | null, sira: number) =>
+      db.runAsync(
+        `INSERT INTO kart (id, baslik, saat, sira, olusturma, guncelleme) VALUES (?, ?, ?, ?, '', '')`,
+        [id, id, saat, sira],
+      );
+    await ekle('x', null, 5);
+    await ekle('y', '18:00', 9);
+    await ekle('z', '07:00', 100);
+    await ekle('w', null, 1);
+    await gocleriUygula(db);
+    const satirlar = await db.getAllAsync<{ id: string; sira: number }>('SELECT id, sira FROM kart ORDER BY sira', []);
+    expect(satirlar).toEqual([
+      { id: 'z', sira: 1 },
+      { id: 'y', sira: 2 },
+      { id: 'w', sira: 3 },
+      { id: 'x', sira: 4 },
+    ]);
   });
 });

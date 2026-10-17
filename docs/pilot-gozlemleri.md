@@ -74,3 +74,9 @@ Sonuç: → kararlar.md (Ajandam üst kısmı ve kart formunda zamanlama)
 Ne dedi: "Bir tek sorun alarm 2 tane geldi, 15 dk önce uyar demiştim. Hatırlatma olabilmesi için saat belirlenmesi şart olmamalı; hatırlatma birkaç gün önce de olabilecek bir şey, istenen tarih ve saatin seçilebilmesi gerekecek."
 Nerede: Kart formu → Hatırlat
 Sonuç: → kararlar.md (Kart hatırlatması: saat şart değil, "Başka zaman"); çift alarm: bekliyor (ayrıntı soruldu)
+
+### P-13 · 17 Ekim 2026 · Behnan · iPhone
+Ne dedi: "Ajanda listesinde > işareti var kartın sağında, artık ona gerek kalmadı çünkü tüm kartları görünüm modunda açıyor. Şu anda saati olanlara göre bir sıralama yapıyor ancak çoğu kartın saati olmayacak ve notlarda olduğu gibi sürükleyerek yerlerini değiştirebilmeliyiz. Notlarda sürüklemek için solunda tutamaç var; ajandaya da konulabilir ama alan kaybına neden olacak, uzun basarak sürükleme yapsak notlardaki gibi akıcı olur mu, olmazsa tutamaç koymamız gerekecek."
+Nerede: Ajandam, Gün görünümü
+Sonuç: → kararlar.md (Ajandam: elle sıralama, ">" kalktı); uzun basma telefonda denenecek
+

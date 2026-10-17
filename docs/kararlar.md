@@ -122,7 +122,7 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 
 - **Kart görünümünün altındaki "Yaptım" çubuğu kalktı;** yanıltıcıydı. Yapıldı işareti ajandadaki satırın işaret kutusunda. — Ürün sahibi (P-9)
 - **Kart görünümünde sağ üstte "⋯" menüsü:** Kütüphaneye kaydet · Paylaş · Sil (koç kartında yalnız Kütüphaneye kaydet). Sil eskisi gibi sorar: tekrarlı kartta "Hangi günler silinsin?", değilse onay. Kart formundaki Kütüphaneye kaydet / Paylaş / Sil düğmeleri kalktı; form yalnız düzenleme için. — Ürün sahibi (P-9; menüdeki sıra ve formdan kaldırma: Öneri)
-- **Bloksuz kart da kart görünümünde açılır** (önceden doğrudan düzenleme formu açılıyordu); Sil'in tek yeri menü olduğu için. Ajandadaki her satırda ">" var. — Öneri
+- **Bloksuz kart da kart görünümünde açılır** (önceden doğrudan düzenleme formu açılıyordu); Sil'in tek yeri menü olduğu için. ~~Ajandadaki her satırda ">" var.~~ (17 Ekim: ">" kaldırıldı, P-13) — Öneri
 
 ## Anımsatıcı sadeleşti: "Süre sonra" ve "Saatinde" (17 Ekim)
 
@@ -146,3 +146,13 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Hatırlatma için kartın saati şart değil.** Hatırlatma seçenekleri: Yok · (kartın saati varsa) Saatinde / 15 dk önce / 1 saat önce · **Başka zaman**. — Ürün sahibi (P-12)
 - **"Başka zaman": kartın gününden kaç gün önce (0–30) ve saat kaçta** (1 dakika hassasiyet); altında hatırlatmanın tarihi ve saati görünür ("15 Ekim Perşembe · 09:00"). Tekrarlı kartta her seferinde aynı uzaklıkta çalar. Alarm seçeneği bunda da var. Varsayılan: saatli kartta 1 gün önce kartın saatinde, saatsiz kartta aynı gün 09:00. — Ürün sahibi (biçim: Öneri — tarih takvimden değil "kaç gün önce" ile seçilir; tekrarlı kartta da çalışsın diye)
 - Bildirim ve alarm planı, günler önce çalan hatırlatmalar için kartın 30 gün ilerisine kadar bakar; yine yalnız önümüzdeki 3 günde çalacaklar kurulur. — Öneri
+
+## Ajandam: elle sıralama, ">" kalktı (17 Ekim)
+
+- **Satırların sağındaki ">" kalktı;** her kart zaten görünümünde açılıyor. — Ürün sahibi (P-13)
+- **Kartlar saate göre değil, elle verilen sırayla dizilir;** saatli kartlar da serbestçe taşınır (tek sıra). — Ürün sahibi ("Hepsi serbest")
+- **Yeni kart:** saatsizse en sona; saatliyse saatlilerin arasına saatine göre (saati kendisinden sonra olan ilk saatli kartın önüne). Sonra istenen yere taşınabilir. — Ürün sahibi (onaylı öneri)
+- **Sürükleme: karta uzun basıp (0,3 sn) sürüklemek;** tutamaç yok (yer kaplamasın). Kısa dokunuş kartı açar. Telefonda akıcı olmazsa Notlar'daki gibi tutamaca dönülür. Ekran okuyucuda kartın "Yukarı taşı / Aşağı taşı" eylemleri var. — Ürün sahibi ("Uzun bas, sürükle")
+- Mevcut kartlar güncellemede bugünkü görünen sırayla (önce saatliler saatine göre, sonra saatsizler) numaralandı; liste ilk açılışta değişmez. — Öneri
+- Ortak listelerden verilen maddeler günün kartlarının ardından gelir, sürüklenmez. Sıra bütün günler için tektir: bir kart taşındığında başka günlerdeki sırası da aynı göreli yerde kalır. Hafta görünümünde sürükleme yok. — Öneri
+

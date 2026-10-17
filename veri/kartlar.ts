@@ -5,6 +5,7 @@ import { adimDurumu, adimiDegistir, ilerleme } from '@/mantik/adimlar';
 import type { KartIslemi, KayitAraligi } from '@/mantik/bolme';
 import { kayitAnahtarlariniEsle } from '@/mantik/bolme';
 import { bosKayit, hatirlatmaCoz, hatirlatmaYaz, type Blok, type BlokTuru, type Kart, type Kayit } from '@/mantik/kart';
+import { yeniKartSirasi } from '@/mantik/ajanda';
 import type { Gun } from '@/mantik/tarih';
 
 import type { Kapi, Okuyucu, SqlDeger, Yazici } from './kapi';
@@ -368,7 +369,10 @@ async function kisaYoluEsitleY(y: Yazici, kartId: string) {
 
 // ---- Yazma -------------------------------------------------------------------
 
-/** Yeni kart ve blokları. */
+/**
+ * Yeni kart ve blokları. Kartın sırası burada verilir (`yeniKartSirasi`):
+ * saatsizse en sona, saatliyse saatlilerin arasına saatine göre.
+ */
 export function yeniKartKaydet(
   kapi: Kapi,
   kart: Kart,
@@ -377,7 +381,8 @@ export function yeniKartKaydet(
   simdi: string = new Date().toISOString(),
 ): Promise<void> {
   return kapi.yaz(['kart'], async (y) => {
-    await kartEkleY(y, kart, simdi);
+    const mevcut = await y.hepsi<{ sira: number; saat: string | null }>('SELECT sira, saat FROM kart');
+    await kartEkleY(y, { ...kart, sira: yeniKartSirasi(mevcut, kart.saat) }, simdi);
     await bloklariYazY(y, kart.id, bloklar, idUret);
   });
 }
@@ -472,6 +477,13 @@ export function adimiIsaretle(kapi: Kapi, blokId: string, i: number, yapildi: bo
     const kayit = satir ? kayitSatirdan(satir) : bosKayit(kart.id, etki.gun);
     await kayitYazY(y, { ...kayit, yapildi: etki.tur === 'bitti' });
     await kisaYoluEsitleY(y, kart.id);
+  });
+}
+
+/** Ajandada sürükleyerek sıralama: tek kartın yeni sırası ya da (eşit komşularda) hepsi. */
+export function siralariYaz(kapi: Kapi, siralar: ReadonlyMap<string, number>): Promise<void> {
+  return kapi.yaz(['kart'], async (y) => {
+    for (const [id, sira] of siralar) await y.calistir('UPDATE kart SET sira = ? WHERE id = ?', [sira, id]);
   });
 }
 

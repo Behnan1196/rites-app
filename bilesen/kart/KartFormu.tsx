@@ -192,7 +192,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       setSoru(null);
       const bloklar = durum.bloklar.map(kaydaBlok);
       if (!duzenleme) {
-        const kart = yeniKart(yeniKimlik(), { ...tanim(), sira: Date.now() });
+        const kart = yeniKart(yeniKimlik(), { ...tanim(), sira: 0 });
         await yeniKartKaydet(kapi, kart, bloklar, yeniKimlik);
         onSonuc?.({});
       } else {

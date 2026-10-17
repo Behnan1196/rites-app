@@ -118,7 +118,10 @@ export function maddeleriSirala(maddeler: readonly Madde[]): Madde[] {
 }
 
 /** Listeye kişi olarak eklendiysem "Listeden ayrıl" diyebilirim; gruptan görüyorsam grubun adı döner. */
-export function erisimYolu(liste: OrtakListe, ben: string): { tur: 'sahip' } | { tur: 'kisi' } | { tur: 'grup'; gruplar: string[] } {
+export function erisimYolu(
+  liste: OrtakListe,
+  ben: string,
+): { tur: 'sahip' } | { tur: 'kisi' } | { tur: 'grup'; gruplar: string[] } {
   if (liste.sahip === ben) return { tur: 'sahip' };
   if (liste.kisiler.includes(ben)) return { tur: 'kisi' };
   return { tur: 'grup', gruplar: liste.gruplar.map((g) => g.ad) };
@@ -150,7 +153,8 @@ export function maddeKarti(m: BanaVerilen): MaddeKarti {
     kilitli: false,
     yapildi: m.yapildi,
     birakildi: false,
-    sira: 0,
+    // Ortak liste maddeleri günün kartlarının ardından gelir (sürüklenmez).
+    sira: Number.MAX_SAFE_INTEGER,
     blokSayisi: 0,
     listeAdi: m.listeAdi,
     maddeId: m.id,

@@ -1,9 +1,10 @@
 // Ajandada bir kart satırı (A-8): solda işaret kutusu, başlık (en çok 2 satır),
 // tek meta satırı (saat, zil + hatırlatma, tekrar, kaynak etiketi ya da kilit +
-// koç adı). Bloğu olan kartın sağında ›. Solda 6 pt kaynak şeridi (PL-4).
+// koç adı). Solda 6 pt kaynak şeridi (PL-4). Sağdaki › kaldırıldı (pilot 17 Ekim:
+// her kart görünümünde açılıyor). Uzun basınca sürükleme başlar (`SiraliKartlar`).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, type AccessibilityActionEvent } from 'react-native';
 
 import { hatirlatmaMetni } from '@/mantik/kart';
 import { tekrarMetni } from '@/mantik/gorunurluk';
@@ -23,9 +24,16 @@ interface Ozellikler {
   onIsaretle: () => void;
   onAc: () => void;
   planAdlari?: ReadonlyMap<string, string>;
+  /** Sürükleyerek sıralama (yalnız Gün görünümünde). */
+  surukle?: {
+    onUzunBas: () => void;
+    onBirak: () => void;
+    eylemler: { name: string; label: string }[];
+    onEylem: (e: AccessibilityActionEvent) => void;
+  };
 }
 
-export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_PLANLAR }: Ozellikler) {
+export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_PLANLAR, surukle }: Ozellikler) {
   const maddeMi = maddeKartiMi(kart);
   const anahtar = kaynakAnahtari(kart);
   const stil = kaynakStili(anahtar);
@@ -52,6 +60,11 @@ export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_P
 
       <Pressable
         onPress={onAc}
+        onLongPress={surukle?.onUzunBas}
+        delayLongPress={300}
+        onPressOut={surukle?.onBirak}
+        accessibilityActions={surukle?.eylemler}
+        onAccessibilityAction={surukle?.onEylem}
         accessibilityRole="button"
         accessibilityLabel={`${kart.baslik}${maddeMi ? ', listeyi aç' : ', kartı aç'}`}
         style={({ pressed }) => [stiller.govde, pressed && { opacity: 0.7 }]}
@@ -86,9 +99,6 @@ export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_P
               )}
             </View>
           )}
-        </View>
-        <View style={stiller.ac}>
-          <Ionicons name="chevron-forward" size={22} color={renk.ana} />
         </View>
       </Pressable>
     </View>
@@ -154,19 +164,11 @@ const stiller = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'stretch',
     paddingVertical: 12,
-    paddingRight: 12,
+    paddingRight: 16,
     gap: 8,
   },
   metinler: { flex: 1, gap: 4 },
   ustuCizili: { textDecorationLine: 'line-through' },
   meta: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 14, rowGap: 2 },
   metaParca: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  ac: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: renk.anaAcik,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 });

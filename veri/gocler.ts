@@ -204,6 +204,19 @@ export const GOCLER: readonly Goc[] = [
     surum: 11,
     sql: `ALTER TABLE animsatici ADD COLUMN bitis TEXT;`,
   },
+  {
+    // Ajanda elle sıralanır (pilot 17 Ekim): görünen sıra (önce saatliler saatine
+    // göre, sonra saatsizler) korunarak kartlar 1, 2, 3… diye numaralanır.
+    surum: 12,
+    sql: `
+      UPDATE kart SET sira = (
+        SELECT COUNT(*) FROM kart k2
+        WHERE COALESCE(k2.saat, '99:99') < COALESCE(kart.saat, '99:99')
+           OR (COALESCE(k2.saat, '99:99') = COALESCE(kart.saat, '99:99') AND k2.sira < kart.sira)
+           OR (COALESCE(k2.saat, '99:99') = COALESCE(kart.saat, '99:99') AND k2.sira = kart.sira AND k2.id < kart.id)
+      ) + 1;
+    `,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */
@@ -221,10 +234,7 @@ export function gocListesiHatasi(gocler: readonly Goc[]): string | null {
  * Eksik göçleri uygular ve veritabanının son sürümünü döndürür.
  * Kurulum ayarları (WAL, yabancı anahtar) her açılışta yapılır.
  */
-export async function gocleriUygula(
-  db: HamVeriTabani,
-  gocler: readonly Goc[] = GOCLER,
-): Promise<number> {
+export async function gocleriUygula(db: HamVeriTabani, gocler: readonly Goc[] = GOCLER): Promise<number> {
   const hata = gocListesiHatasi(gocler);
   if (hata) throw new Error(hata);
 

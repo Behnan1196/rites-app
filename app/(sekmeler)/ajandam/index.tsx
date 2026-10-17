@@ -10,6 +10,7 @@ import { GunGezinme, HaftaSeridi } from '@/bilesen/ajanda/GunGezinme';
 import { HaftaGorunumu } from '@/bilesen/ajanda/HaftaGorunumu';
 import { Kalanlar } from '@/bilesen/ajanda/Kalanlar';
 import { KartSatiri } from '@/bilesen/ajanda/KartSatiri';
+import { SiraliKartlar, type SurukleIslemleri } from '@/bilesen/ajanda/SiraliKartlar';
 import { KaynakSuzgeci } from '@/bilesen/ajanda/KaynakSuzgeci';
 import { NotlarimBaglantisi } from '@/bilesen/ajanda/NotlarimBaglantisi';
 import { TakvimSayfasi } from '@/bilesen/ajanda/TakvimSayfasi';
@@ -35,6 +36,7 @@ import {
   isaretle,
   kartiBirak,
   kartlariBuguneAl,
+  siralariYaz,
   tumKartlar,
   type KartOzeti,
 } from '@/veri/kartlar';
@@ -57,6 +59,7 @@ export default function Ajandam() {
   /** null: arama kapalı. */
   const [sorgu, setSorgu] = useState<string | null>(null);
   const [takvim, setTakvim] = useState({ acik: false, acilis: 0 });
+  const [surukleniyor, setSurukleniyor] = useState(false);
   const form = useKartFormu();
   const kisaMesaj = useKisaMesaj();
   // Ortak listelerden bana tarihle verilen maddeler (`05` §9).
@@ -79,7 +82,6 @@ export default function Ajandam() {
       /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [istenenGun, an]);
-
 
   const hafta = useMemo(() => haftaninGunleri(secili), [secili]);
   const aramaAcik = sorgu !== null;
@@ -122,6 +124,9 @@ export default function Ajandam() {
   const takvimSayisi = useCallback((g: Gun) => gunlukListe(g).length, [gunlukListe]);
 
   const seciliYapilanlar = yapilanlar(secili);
+  // Kendi kartlarım elle sıralanır; ortak liste maddeleri ardından gelir (sürüklenmez).
+  const siralanabilir = useMemo(() => gununKartlariListesi.filter((k) => !maddeKartiMi(k)), [gununKartlariListesi]);
+  const maddeler = useMemo(() => gununKartlariListesi.filter((k) => maddeKartiMi(k)), [gununKartlariListesi]);
   const kalanListesi = useMemo(
     () => (yerelKartlar && secili === bugunGun ? kalanlar(yerelKartlar, bugunGun) : []),
     [yerelKartlar, secili, bugunGun],
@@ -146,6 +151,23 @@ export default function Ajandam() {
     router.push({ pathname: '/kart/[id]', params: { id: kart.id, gun } });
   };
 
+  const satirCiz = (kart: KartOzeti, surukle?: SurukleIslemleri) => (
+    <KartSatiri
+      key={kart.id}
+      kart={kart}
+      planAdlari={planAdlari}
+      yapildi={seciliYapilanlar.has(kart.id)}
+      surukle={surukle}
+      onIsaretle={() => {
+        const yapildi = !seciliYapilanlar.has(kart.id);
+        if (maddeKartiMi(kart)) {
+          void verilenler.isaretle(kart.maddeId, yapildi).then((ok) => ok || kisaMesaj(BAGLANAMIYOR));
+        } else void isaretle(kapi, kart.id, secili, yapildi);
+      }}
+      onAc={() => kartiAc(kart, secili)}
+    />
+  );
+
   const gunuAc = (gun: Gun) => {
     setSecili(gun);
     setGorunum('gun');
@@ -156,6 +178,7 @@ export default function Ajandam() {
 
   return (
     <EkranKabi
+      kaydirilabilir={!surukleniyor}
       baslikSag={
         <>
           <SimgeDugmesi ikon="search" etiket="Ajandada ara" onPress={() => setSorgu(sorgu ?? '')} />
@@ -213,9 +236,7 @@ export default function Ajandam() {
             onSonraki={() => setSecili(gunEkle(secili, adim))}
             onBugun={() => setSecili(bugunGun)}
           />
-          {gorunum === 'gun' && (
-            <HaftaSeridi gunler={hafta} secili={secili} bugunGun={bugunGun} onSec={setSecili} />
-          )}
+          {gorunum === 'gun' && <HaftaSeridi gunler={hafta} secili={secili} bugunGun={bugunGun} onSec={setSecili} />}
 
           {!veri.yukleniyor && gorunum === 'gun' && (
             <>
@@ -231,21 +252,15 @@ export default function Ajandam() {
                 </View>
               ) : (
                 <View style={stiller.liste}>
-                  {gununKartlariListesi.map((kart) => (
-                    <KartSatiri
-                      key={kart.id}
-                      kart={kart}
-                      planAdlari={planAdlari}
-                      yapildi={seciliYapilanlar.has(kart.id)}
-                      onIsaretle={() => {
-                        const yapildi = !seciliYapilanlar.has(kart.id);
-                        if (maddeKartiMi(kart)) {
-                          void verilenler.isaretle(kart.maddeId, yapildi).then((ok) => ok || kisaMesaj(BAGLANAMIYOR));
-                        } else void isaretle(kapi, kart.id, secili, yapildi);
-                      }}
-                      onAc={() => kartiAc(kart, secili)}
-                    />
-                  ))}
+                  <SiraliKartlar
+                    kartlar={siralanabilir}
+                    onSurukleme={setSurukleniyor}
+                    onSiralar={(m) =>
+                      void siralariYaz(kapi, m).catch((e: unknown) => console.error('Sıra yazılamadı', e))
+                    }
+                    satir={(kart, surukle) => satirCiz(kart, surukle)}
+                  />
+                  {maddeler.map((kart) => satirCiz(kart))}
                 </View>
               )}
             </>

@@ -39,6 +39,7 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 9 | `paylasilan` (başka uygulamadan paylaşılan bağlantılar, Gelenler'de), `kart.alarm` |
 | 10 | `blok.durum` ("Proje adımları"nın kalıcı durumu, JSON: adım başına yapıldığı gün, bitiş günü) |
 | 11 | `animsatici.bitis` ("Süre sonra"nın çalacağı an, ISO); `animsatici.gunler` artık hafta günü listesi (JSON, 0 = Pzt); eski `hergun / haftaici / haftasonu` okurken çevrilir |
+| 12 | `kart.sira` görünen sırayla yeniden numaralanır (saat, sonra eski sıra); ajanda artık yalnız `sira`ya göre dizilir. Yeni kartın sırası `yeniKartKaydet` içinde `yeniKartSirasi` ile verilir; sürüklemede `siraDegisikligi` (komşuların ortası) → `siralariYaz` |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 
