@@ -4,7 +4,7 @@
 import { adimDurumu, adimiDegistir, ilerleme } from '@/mantik/adimlar';
 import type { KartIslemi, KayitAraligi } from '@/mantik/bolme';
 import { kayitAnahtarlariniEsle } from '@/mantik/bolme';
-import { bosKayit, type Blok, type BlokTuru, type Kart, type Kayit } from '@/mantik/kart';
+import { bosKayit, hatirlatmaCoz, hatirlatmaYaz, type Blok, type BlokTuru, type Kart, type Kayit } from '@/mantik/kart';
 import type { Gun } from '@/mantik/tarih';
 
 import type { Kapi, Okuyucu, SqlDeger, Yazici } from './kapi';
@@ -90,7 +90,7 @@ export function kartSatirdan(s: KartSatiri): KartOzeti {
     tarih: s.tarih,
     tarihsiz: s.tarihsiz === 1,
     saat: s.saat,
-    hatirlatma: s.hatirlatma as Kart['hatirlatma'],
+    hatirlatma: hatirlatmaCoz(s.hatirlatma),
     alarm: s.alarm === 1,
     tekrar: json(s.tekrar, null),
     bitis: s.bitis,
@@ -148,7 +148,7 @@ function kartDegerleri(k: Kart): SqlDeger[] {
     k.tarih,
     k.tarihsiz ? 1 : 0,
     k.saat,
-    k.hatirlatma,
+    hatirlatmaYaz(k.hatirlatma),
     k.alarm ? 1 : 0,
     k.tekrar ? JSON.stringify(k.tekrar) : null,
     k.bitis,

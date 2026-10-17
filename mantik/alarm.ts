@@ -12,13 +12,12 @@ import {
   bitisGunu,
   dakika,
   gunuKapsarMi,
-  hatirlatmaZamani,
+  kartHatirlatmalari,
   PLAN_GUNU,
   type Animsatici,
   type AnimsaticiGunleri,
   type AnimsaticiGunu,
 } from './animsatici';
-import { gorunurMu } from './gorunurluk';
 import type { Kart } from './kart';
 import { gunEkle, type Gun } from './tarih';
 
@@ -165,25 +164,18 @@ export function kartAlarmPlani(
 ): PlanliAlarm[] {
   const plan: PlanliAlarm[] = [];
   const simdiAnahtar = `${bugunGun} ${simdi}`;
-  for (let i = 0; i < gunSayisi; i++) {
-    const gun = gunEkle(bugunGun, i);
-    for (const k of kartlar) {
-      if (!k.alarm || !k.saat || !k.hatirlatma || !gorunurMu(k, gun, bugunGun)) continue;
-      if (i === 0 && bugunYapilanlar.has(k.id)) continue;
-      if (!k.tekrar && k.yapildi) continue;
-      const yer = hatirlatmaZamani(gun, k.saat, k.hatirlatma);
-      if (`${yer.gun} ${yer.saat}` <= simdiAnahtar) continue;
-      plan.push({
-        id: kartAlarmKimligi(k.id, gun),
-        saat: yer.saat,
-        haftaGunleri: [],
-        baslik: k.baslik,
-        gun: yer.gun,
-        ertelenebilir: false,
-        erteleDk: 0,
-        kaynak: { tur: 'kart', kartId: k.id, gun },
-      });
-    }
+  for (const { kart: k, gun, an } of kartHatirlatmalari(kartlar, bugunYapilanlar, bugunGun, gunSayisi)) {
+    if (!k.alarm || `${an.gun} ${an.saat}` <= simdiAnahtar) continue;
+    plan.push({
+      id: kartAlarmKimligi(k.id, gun),
+      saat: an.saat,
+      haftaGunleri: [],
+      baslik: k.baslik,
+      gun: an.gun,
+      ertelenebilir: false,
+      erteleDk: 0,
+      kaynak: { tur: 'kart', kartId: k.id, gun },
+    });
   }
   return plan;
 }

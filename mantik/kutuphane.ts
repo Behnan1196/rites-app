@@ -4,7 +4,7 @@
 
 import { alanAdi, type AlanAnahtari } from './alanlar';
 import { tekrarMetni } from './gorunurluk';
-import { yeniKart, type Blok, type BlokTuru, type HatirlatmaSecimi, type Kart, type Tekrar } from './kart';
+import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Hatirlatma, type Kart, type Tekrar } from './kart';
 import { trKucuk } from './metin';
 import type { KartPaketi } from './paylasim';
 import type { GununSorusu, Plan } from './plan';
@@ -30,7 +30,7 @@ export interface KartIcerigi {
   baslik: string;
   kisa: string;
   saat: string | null;
-  hatirlatma: HatirlatmaSecimi | null;
+  hatirlatma: Hatirlatma | null;
   tekrar: Tekrar | null;
   bloklar: KutuphaneBlogu[];
 }
@@ -196,7 +196,7 @@ export function kutuphanedenKart(c: KartIcerigi, bugunGun: Gun, kimlik: () => st
       kisa: c.kisa,
       tarih: bugunGun,
       saat: c.saat,
-      hatirlatma: c.saat ? c.hatirlatma : null,
+      hatirlatma: gecerliHatirlatma(c.hatirlatma, c.saat),
       tekrar: c.tekrar ? { ...c.tekrar, gunler: c.tekrar.gunler ? [...c.tekrar.gunler] : null } : null,
       sira,
     }),
@@ -259,7 +259,7 @@ export function planiYenidenBaslat(
       tarih: c.gun === null ? null : gunEkle(bugunGun, c.gun),
       tarihsiz: c.gun === null,
       saat: c.saat,
-      hatirlatma: c.saat ? c.hatirlatma : null,
+      hatirlatma: gecerliHatirlatma(c.hatirlatma, c.saat),
       tekrar: c.tekrar ? { ...c.tekrar, gunler: c.tekrar.gunler ? [...c.tekrar.gunler] : null } : null,
       bitis: c.tekrar ? bitis : null,
       planId,

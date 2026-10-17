@@ -14,7 +14,7 @@ import {
   tekrarliAlarmKimligi,
 } from '../alarm';
 import { animsaticiMeta, bildirimPlani, type Animsatici } from '../animsatici';
-import { yeniKart } from '../kart';
+import { gecerliHatirlatma, hatirlatmaAni, hatirlatmaCoz, hatirlatmaMetni, hatirlatmaYaz, yeniKart } from '../kart';
 
 const BUGUN = '2026-10-12'; // Pazartesi
 const ilac: Animsatici = {
@@ -287,5 +287,45 @@ describe('Süre sonra (zamanlayıcı)', () => {
     const b = bildirimPlani(girdi);
     expect(b[0]!.zamanMs).toBe(new Date(2026, 9, 12, 14, 52, 40).getTime());
     expect(b).toHaveLength(4); // tam an + durdurulmazsa 3 kez daha
+  });
+});
+
+describe('Başka zaman hatırlatması (gün önce, saat)', () => {
+  it('kayıt metni gidip gelir; zaman hesaplanır', () => {
+    const h = { gunOnce: 2, saat: '18:30' };
+    expect(hatirlatmaCoz(hatirlatmaYaz(h))).toEqual(h);
+    expect(hatirlatmaCoz('15dk')).toBe('15dk');
+    expect(hatirlatmaCoz('bozuk')).toBeNull();
+    expect(hatirlatmaAni('2026-10-20', null, h)).toEqual({ gun: '2026-10-18', saat: '18:30' });
+    expect(hatirlatmaAni('2026-10-20', null, '15dk')).toBeNull();
+    expect(hatirlatmaAni('2026-10-20', '00:10', '15dk')).toEqual({ gun: '2026-10-19', saat: '23:55' });
+    expect(hatirlatmaMetni(h)).toBe('2 gün önce 18:30');
+    expect(hatirlatmaMetni({ gunOnce: 0, saat: '09:00' })).toBe('Aynı gün 09:00');
+    expect(gecerliHatirlatma('1sa', null)).toBeNull();
+    expect(gecerliHatirlatma(h, null)).toEqual(h);
+  });
+  it('saatsiz ve pencereden uzak kartın hatırlatması da planlanır', () => {
+    // BUGUN 12 Ekim; kart 16 Ekim'de, saatsiz; 3 gün önce 09:00 → 13 Ekim 09:00
+    const k = yeniKart('u', {
+      baslik: 'Uçuş',
+      tarih: '2026-10-16',
+      hatirlatma: { gunOnce: 3, saat: '09:00' },
+      alarm: true,
+    });
+    const girdi = {
+      animsaticilar: [],
+      gunDurumlari: [],
+      kartlar: [k],
+      bugunYapilanlar: new Set<string>(),
+      bugunGun: BUGUN,
+      simdi: '08:00',
+    };
+    const b = bildirimPlani(girdi);
+    expect(b.map((x) => [x.gun, x.saat, x.govde])).toEqual([['2026-10-13', '09:00', '16 Ekim Cuma']]);
+    expect(kartAlarmPlani([k], new Set(), BUGUN, '08:00').map((p) => [p.gun, p.saat])).toEqual([
+      ['2026-10-13', '09:00'],
+    ]);
+    // 10 gün önce → pencerenin dışında (geçmişte) kalır
+    expect(bildirimPlani({ ...girdi, kartlar: [{ ...k, hatirlatma: { gunOnce: 10, saat: '09:00' } }] })).toEqual([]);
   });
 });

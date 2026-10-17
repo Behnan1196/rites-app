@@ -55,6 +55,8 @@ export const HATIRLATMA_METNI: Record<HatirlatmaSecimi, string> = {
   '1sa': '1 saat önce',
 };
 
+export { hatirlatmaMetni } from './kart';
+
 /** Kayıtlardan yapılan günler (seri ve şerit için). */
 export function yapilanGunler(kayitlar: readonly Kayit[]): Set<Gun> {
   return new Set(kayitlar.filter((k) => k.yapildi).map((k) => k.tarih));

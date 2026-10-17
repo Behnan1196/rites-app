@@ -69,3 +69,8 @@ Sonuç: → kararlar.md (Anımsatıcı sadeleşti: "Süre sonra" ve "Saatinde")
 Ne dedi: Ajandam'ın üstü sadeleşmeli: hafta şeridi ve oklar arasındaki yazılar küçülsün; "Bugün · 17 Ekim Cumartesi", "Yarın/Dün" yazmasın, bugün değilse yalnız yanında bugüne dön simgesi çıksın. Yeni kartta alttaki tarih/saat şeridine basınca açılan sayfalar ve Blok ekle klavyenin altında kalıyor; şeridin altında açılan bir alanla çözülebilir.
 Nerede: Ajandam üst kısmı; kart formu
 Sonuç: → kararlar.md (Ajandam üst kısmı ve kart formunda zamanlama)
+
+### P-12 · 17 Ekim 2026 · Behnan · iPhone
+Ne dedi: "Bir tek sorun alarm 2 tane geldi, 15 dk önce uyar demiştim. Hatırlatma olabilmesi için saat belirlenmesi şart olmamalı; hatırlatma birkaç gün önce de olabilecek bir şey, istenen tarih ve saatin seçilebilmesi gerekecek."
+Nerede: Kart formu → Hatırlat
+Sonuç: → kararlar.md (Kart hatırlatması: saat şart değil, "Başka zaman"); çift alarm: bekliyor (ayrıntı soruldu)

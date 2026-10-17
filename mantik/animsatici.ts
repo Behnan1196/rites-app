@@ -8,8 +8,8 @@
 // saniyesiyle belli bir anda çalar, durdurulunca silinir.
 
 import { gorunurMu } from './gorunurluk';
-import type { HatirlatmaSecimi, Kart } from './kart';
-import { gunEkle, haftaGunu, type Gun } from './tarih';
+import { EN_COK_GUN_ONCE, hatirlatmaAni, ozelHatirlatmaMi, type HatirlatmaSecimi, type Kart } from './kart';
+import { gunEkle, haftaGunu, uzunTarih, type Gun } from './tarih';
 
 /** Haftanın günleri: 0 = Pazartesi … 6 = Pazar (`haftaGunu` ile aynı). */
 export type AnimsaticiGunleri = number[];
@@ -282,16 +282,44 @@ function anaGoreKonum(gun: Gun, dk: number): { gun: Gun; saat: string } {
   return { gun: gunEkle(gun, gunFark), saat: saatMetni(dk) };
 }
 
-export const HATIRLATMA_ONCE: Record<HatirlatmaSecimi, number> = { saatinde: 0, '15dk': 15, '1sa': 60 };
 const HATIRLATMA_GOVDESI: Record<HatirlatmaSecimi, string> = {
   saatinde: 'Şimdi',
   '15dk': '15 dk sonra',
   '1sa': '1 saat sonra',
 };
 
-/** Kartın o günkü hatırlatmasının zamanı (önce çalan hatırlatma bir önceki güne düşebilir). */
-export function hatirlatmaZamani(gun: Gun, saat: string, h: HatirlatmaSecimi): { gun: Gun; saat: string } {
-  return anaGoreKonum(gun, dakika(saat) - HATIRLATMA_ONCE[h]);
+/** Kart hatırlatmasının bildirim metni: "15 dk sonra · 10:00" / "18 Ekim Pazar · 10:00". */
+export function kartHatirlatmaGovdesi(k: Pick<Kart, 'saat' | 'hatirlatma'>, gun: Gun): string {
+  if (k.hatirlatma && !ozelHatirlatmaMi(k.hatirlatma) && k.saat)
+    return `${HATIRLATMA_GOVDESI[k.hatirlatma]} · ${k.saat}`;
+  return k.saat ? `${uzunTarih(gun)} · ${k.saat}` : uzunTarih(gun);
+}
+
+/**
+ * Hatırlatmalı kartların, `bugunGun`den başlayan `gunSayisi` günlük pencereye düşen
+ * hatırlatmaları. "Başka zaman" günler önce çalabildiği için kartın daha ileriki
+ * günlerine de bakılır.
+ */
+export function kartHatirlatmalari(
+  kartlar: readonly Kart[],
+  bugunYapilanlar: ReadonlySet<string>,
+  bugunGun: Gun,
+  gunSayisi: number,
+): { kart: Kart; gun: Gun; an: { gun: Gun; saat: string } }[] {
+  const sinirGun = gunEkle(bugunGun, gunSayisi);
+  const sonuc: { kart: Kart; gun: Gun; an: { gun: Gun; saat: string } }[] = [];
+  for (let i = 0; i < gunSayisi + EN_COK_GUN_ONCE; i++) {
+    const gun = gunEkle(bugunGun, i);
+    for (const k of kartlar) {
+      if (!k.hatirlatma || !gorunurMu(k, gun, bugunGun)) continue;
+      if (i === 0 && bugunYapilanlar.has(k.id)) continue;
+      if (!k.tekrar && k.yapildi) continue;
+      const an = hatirlatmaAni(gun, k.saat, k.hatirlatma);
+      if (!an || an.gun >= sinirGun || an.gun < bugunGun) continue;
+      sonuc.push({ kart: k, gun, an });
+    }
+  }
+  return sonuc;
 }
 
 export interface PlanGirdisi {
@@ -359,24 +387,20 @@ export function bildirimPlani({
         }
       }
     }
+  }
 
-    for (const k of kartlar) {
-      if (!k.saat || !k.hatirlatma || !gorunurMu(k, gun, bugunGun)) continue;
-      if (i === 0 && bugunYapilanlar.has(k.id)) continue;
-      if (!k.tekrar && k.yapildi) continue;
-      if (alarmlaCalanlar?.has(k.id)) continue;
-      const yer = hatirlatmaZamani(gun, k.saat, k.hatirlatma);
-      liste.push({
-        id: `k_${k.id}_${gun}`,
-        gun: yer.gun,
-        saat: yer.saat,
-        baslik: k.baslik,
-        govde: `${HATIRLATMA_GOVDESI[k.hatirlatma]} · ${k.saat}`,
-        sesli: true,
-        erteleDk: null,
-        veri: { tur: 'kart', kartId: k.id, gun },
-      });
-    }
+  for (const { kart: k, gun, an } of kartHatirlatmalari(kartlar, bugunYapilanlar, bugunGun, gunSayisi)) {
+    if (alarmlaCalanlar?.has(k.id)) continue;
+    liste.push({
+      id: `k_${k.id}_${gun}`,
+      gun: an.gun,
+      saat: an.saat,
+      baslik: k.baslik,
+      govde: kartHatirlatmaGovdesi(k, gun),
+      sesli: true,
+      erteleDk: null,
+      veri: { tur: 'kart', kartId: k.id, gun },
+    });
   }
 
   return liste

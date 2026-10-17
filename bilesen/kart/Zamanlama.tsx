@@ -6,11 +6,19 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import type { ComponentProps } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
-import { HATIRLATMA_METNI, kisaGoreliTarih } from '@/mantik/ajanda';
+import { kisaGoreliTarih } from '@/mantik/ajanda';
 import { KART_ALARM_ACIKLAMASI } from '@/mantik/alarm';
 import { tekrarMetni } from '@/mantik/gorunurluk';
-import type { HatirlatmaSecimi, Tekrar } from '@/mantik/kart';
-import { GUN_KISA, gunEkle, type Gun, type GunKisa } from '@/mantik/tarih';
+import {
+  EN_COK_GUN_ONCE,
+  gecerliHatirlatma,
+  hatirlatmaMetni,
+  ozelHatirlatmaMi,
+  type Hatirlatma,
+  type OzelHatirlatma,
+  type Tekrar,
+} from '@/mantik/kart';
+import { GUN_KISA, gunEkle, uzunTarih, type Gun, type GunKisa } from '@/mantik/tarih';
 
 import { AyTakvimi } from '../AyTakvimi';
 import { Dugme } from '../Dugme';
@@ -24,7 +32,7 @@ export type ZamanlamaBolmesi = 'tarih' | 'saat' | 'hatirlatma' | 'tekrar';
 export interface Zamanlama {
   tarih: Gun;
   saat: string | null;
-  hatirlatma: HatirlatmaSecimi | null;
+  hatirlatma: Hatirlatma | null;
   /** Hatırlatma alarm olarak çalar (iOS 26). */
   alarm?: boolean;
   tekrar: Tekrar | null;
@@ -61,7 +69,13 @@ export function ZamanlamaCubugu({
       k: 'hatirlatma',
       ad: 'Hatırlat',
       ikon: deger.hatirlatma && deger.alarm ? 'alarm-outline' : 'notifications-outline',
-      deger: deger.hatirlatma ? HATIRLATMA_METNI[deger.hatirlatma] : null,
+      deger: !deger.hatirlatma
+        ? null
+        : ozelHatirlatmaMi(deger.hatirlatma)
+          ? deger.hatirlatma.gunOnce === 0
+            ? deger.hatirlatma.saat
+            : `${deger.hatirlatma.gunOnce} gün önce`
+          : hatirlatmaMetni(deger.hatirlatma),
     },
     { k: 'tekrar', ad: 'Tekrar', ikon: 'repeat-outline', deger: deger.tekrar ? tekrarMetni(deger.tekrar) : null },
   ];
@@ -193,53 +207,111 @@ export function ZamanlamaPaneli({ acik, deger, bugunGun, onDegis, onAc, tarihYok
               <Dugme
                 tur="tehlike"
                 etiket="Saati kaldır"
-                onPress={() => onDegis({ ...deger, saat: null, hatirlatma: null, alarm: false })}
+                onPress={() => {
+                  const hatirlatma = gecerliHatirlatma(deger.hatirlatma, null);
+                  onDegis({ ...deger, saat: null, hatirlatma, alarm: hatirlatma ? deger.alarm : false });
+                }}
               />
             )}
           </>
         )}
 
-        {acik === 'hatirlatma' &&
-          (deger.saat === null ? (
-            <>
-              <Yazi>Hatırlatma için önce kartın saatini seç.</Yazi>
-              <Dugme tur="ikincil" etiket="Saat seç" onPress={() => onAc('saat')} />
-            </>
-          ) : (
-            <>
-              <View style={stiller.haplar}>
-                {([null, 'saatinde', '15dk', '1sa'] as const).map((h) => (
-                  <SecenekHapi
-                    key={h ?? 'yok'}
-                    etiket={h ? HATIRLATMA_METNI[h] : 'Yok'}
-                    secili={deger.hatirlatma === h}
-                    onPress={() => onDegis({ ...deger, hatirlatma: h, alarm: h ? deger.alarm : false })}
+        {acik === 'hatirlatma' && (
+          <>
+            <View style={stiller.cipler}>
+              {([null, ...(deger.saat ? (['saatinde', '15dk', '1sa'] as const) : [])] as const).map((h) => (
+                <SecenekHapi
+                  key={h ?? 'yok'}
+                  etiket={h ? hatirlatmaMetni(h) : 'Yok'}
+                  secili={deger.hatirlatma === h}
+                  onPress={() => onDegis({ ...deger, hatirlatma: h, alarm: h ? deger.alarm : false })}
+                />
+              ))}
+              <SecenekHapi
+                etiket="Başka zaman"
+                secili={ozelHatirlatmaMi(deger.hatirlatma)}
+                onPress={() =>
+                  ozelHatirlatmaMi(deger.hatirlatma) ||
+                  onDegis({
+                    ...deger,
+                    hatirlatma: { gunOnce: deger.saat ? 1 : 0, saat: deger.saat ?? '09:00' },
+                  })
+                }
+              />
+            </View>
+            {ozelHatirlatmaMi(deger.hatirlatma) && (
+              <OzelHatirlatmaAyari
+                deger={deger}
+                tarihYok={tarihYok}
+                onDegis={(h) => onDegis({ ...deger, hatirlatma: h })}
+              />
+            )}
+            {alarm.destek && deger.hatirlatma !== null && (
+              <>
+                <View style={stiller.alarmSatiri}>
+                  <Yazi kalinlik="kalin" style={stiller.esnek}>
+                    Alarm olarak çalsın
+                  </Yazi>
+                  <AcKapa
+                    acik={!!deger.alarm}
+                    etiket="Alarm olarak çalsın"
+                    onDegis={(a) => {
+                      onDegis({ ...deger, alarm: a });
+                      if (a) void alarm.izinIste();
+                    }}
                   />
-                ))}
-              </View>
-              {alarm.destek && deger.hatirlatma !== null && (
-                <>
-                  <View style={stiller.alarmSatiri}>
-                    <Yazi kalinlik="kalin" style={stiller.esnek}>
-                      Alarm olarak çalsın
-                    </Yazi>
-                    <AcKapa
-                      acik={!!deger.alarm}
-                      etiket="Alarm olarak çalsın"
-                      onDegis={(a) => {
-                        onDegis({ ...deger, alarm: a });
-                        if (a) void alarm.izinIste();
-                      }}
-                    />
-                  </View>
-                  <Yazi tur="ikincil">{KART_ALARM_ACIKLAMASI}</Yazi>
-                </>
-              )}
-            </>
-          ))}
+                </View>
+                <Yazi tur="ikincil">{KART_ALARM_ACIKLAMASI}</Yazi>
+              </>
+            )}
+          </>
+        )}
 
         {acik === 'tekrar' && <TekrarAyari tekrar={deger.tekrar} onDegis={(tekrar) => onDegis({ ...deger, tekrar })} />}
       </ScrollView>
+    </View>
+  );
+}
+
+/** "Başka zaman": kartın gününden kaç gün önce ve saat kaçta (pilot 17 Ekim). */
+function OzelHatirlatmaAyari({
+  deger,
+  tarihYok,
+  onDegis,
+}: {
+  deger: Zamanlama;
+  tarihYok: boolean;
+  onDegis: (h: OzelHatirlatma) => void;
+}) {
+  const h = deger.hatirlatma as OzelHatirlatma;
+  const gun = gunEkle(deger.tarih, -h.gunOnce);
+  return (
+    <View style={stiller.ozel}>
+      <View style={stiller.alarmSatiri}>
+        <Yazi style={stiller.esnek}>{h.gunOnce === 0 ? 'Kartın günü' : `${h.gunOnce} gün önce`}</Yazi>
+        <ArtiEksi
+          deger={String(h.gunOnce)}
+          onEksi={() => onDegis({ ...h, gunOnce: Math.max(0, h.gunOnce - 1) })}
+          onArti={() => onDegis({ ...h, gunOnce: Math.min(EN_COK_GUN_ONCE, h.gunOnce + 1) })}
+          eksiEtiket="Bir gün az"
+          artiEtiket="Bir gün daha önce"
+        />
+      </View>
+      <View style={stiller.alarmSatiri}>
+        <Yazi style={stiller.esnek}>Saat</Yazi>
+        <SaatSecici
+          saat={h.saat}
+          onDegis={(saat) => onDegis({ ...h, saat })}
+          kompakt
+          dakikaAraligi={1}
+          etiket="Hatırlatma saati"
+        />
+      </View>
+      <Yazi kalinlik="kalin" renk={renk.ana}>
+        {deger.tekrar || tarihYok
+          ? `Her seferinde kartın gününden ${h.gunOnce === 0 ? 'aynı gün' : `${h.gunOnce} gün önce`}, ${h.saat}`
+          : `${uzunTarih(gun)} · ${h.saat}`}
+      </Yazi>
     </View>
   );
 }
@@ -403,6 +475,8 @@ function TekrarAyari({ tekrar, onDegis }: { tekrar: Tekrar | null; onDegis: (t: 
 
 const stiller = StyleSheet.create({
   bolmeAcik: { borderColor: renk.ana, borderWidth: 2 },
+  cipler: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  ozel: { gap: 10 },
   panel: {
     borderTopWidth: 1,
     borderTopColor: renk.satirCizgi,

@@ -5,7 +5,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { HATIRLATMA_METNI } from '@/mantik/ajanda';
+import { hatirlatmaMetni } from '@/mantik/kart';
 import { tekrarMetni } from '@/mantik/gorunurluk';
 import { kaynakAnahtari, kaynakEtiketi, kaynakTuru } from '@/mantik/kaynak';
 import { maddeKartiMi } from '@/mantik/listeler';
@@ -71,7 +71,7 @@ export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_P
               {!!kart.hatirlatma && (
                 <Meta
                   ikon={kart.alarm ? 'alarm-outline' : 'notifications-outline'}
-                  metin={HATIRLATMA_METNI[kart.hatirlatma]}
+                  metin={hatirlatmaMetni(kart.hatirlatma)}
                 />
               )}
               {!!kart.tekrar && <Meta ikon="repeat-outline" metin={tekrarMetni(kart.tekrar)} />}

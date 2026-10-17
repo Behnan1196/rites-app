@@ -140,3 +140,9 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Gün başlığında yalnız tarih** ("18 Ekim Pazar"); "Bugün · / Yarın · / Dün ·" yazılmaz. Bugün değilse başlığın yanında küçük **bugüne dön simgesi** (↶); alttaki "↩ Bugüne dön" satırı kalktı. — Ürün sahibi (P-11)
 - **Yazılar ve düğmeler küçüldü:** başlık 18 pt, ‹ › 44 pt, hafta şeridindeki gün numaraları 18 pt. — Ürün sahibi (ölçüler: Öneri)
 - **Kart formunda Tarih / Saat / Hatırlat / Tekrar ayarları alttan açılan sayfa yerine çubuğun hemen altında açılır;** klavye kapanır, açık bölme çubukta vurgulanır, "Tamam" ya da aynı bölmeye yeniden dokunmak kapatır. "+ Blok ekle" de önce klavyeyi kapatır. Neden: klavye açıkken alttan açılan sayfalar klavyenin altında kalıyordu. — Ürün sahibi (P-11)
+
+## Kart hatırlatması: saat şart değil, "Başka zaman" (17 Ekim)
+
+- **Hatırlatma için kartın saati şart değil.** Hatırlatma seçenekleri: Yok · (kartın saati varsa) Saatinde / 15 dk önce / 1 saat önce · **Başka zaman**. — Ürün sahibi (P-12)
+- **"Başka zaman": kartın gününden kaç gün önce (0–30) ve saat kaçta** (1 dakika hassasiyet); altında hatırlatmanın tarihi ve saati görünür ("15 Ekim Perşembe · 09:00"). Tekrarlı kartta her seferinde aynı uzaklıkta çalar. Alarm seçeneği bunda da var. Varsayılan: saatli kartta 1 gün önce kartın saatinde, saatsiz kartta aynı gün 09:00. — Ürün sahibi (biçim: Öneri — tarih takvimden değil "kaç gün önce" ile seçilir; tekrarlı kartta da çalışsın diye)
+- Bildirim ve alarm planı, günler önce çalan hatırlatmalar için kartın 30 gün ilerisine kadar bakar; yine yalnız önümüzdeki 3 günde çalacaklar kurulur. — Öneri

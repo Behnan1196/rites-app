@@ -5,7 +5,7 @@ import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 
 import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
 import { adimDurumu, adimlariEsle } from '@/mantik/adimlar';
-import { yeniKart, type Blok, type BlokTuru, type Kart } from '@/mantik/kart';
+import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Kart } from '@/mantik/kart';
 import type { Gun } from '@/mantik/tarih';
 import { islemleriUygula, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
@@ -154,8 +154,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     tarih: durum.tarihsiz ? null : durum.zamanlama.tarih,
     tarihsiz: durum.tarihsiz,
     saat: durum.zamanlama.saat,
-    hatirlatma: durum.zamanlama.saat ? durum.zamanlama.hatirlatma : null,
-    alarm: !!(durum.zamanlama.saat && durum.zamanlama.hatirlatma && durum.zamanlama.alarm),
+    hatirlatma: gecerliHatirlatma(durum.zamanlama.hatirlatma, durum.zamanlama.saat),
+    alarm: !!(gecerliHatirlatma(durum.zamanlama.hatirlatma, durum.zamanlama.saat) && durum.zamanlama.alarm),
     tekrar: durum.zamanlama.tekrar,
   });
 

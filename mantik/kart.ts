@@ -3,9 +3,70 @@
 // ayrıdır: tekrarlı kartta her günün kaydı ayrıdır (K-12).
 
 import type { AdimDurumu } from './adimlar';
-import type { Gun, GunKisa } from './tarih';
+import { gunEkle, type Gun, type GunKisa } from './tarih';
 
+/** Kartın saatine göre hazır hatırlatmalar (kartın saati olmalı). */
 export type HatirlatmaSecimi = 'saatinde' | '15dk' | '1sa';
+
+/**
+ * İstenen gün ve saat (pilot 17 Ekim): kartın gününden `gunOnce` gün önce, `saat`te.
+ * Kartın saati gerekmez; tekrarlı kartta her gün için aynı uzaklıkta çalar.
+ */
+export interface OzelHatirlatma {
+  gunOnce: number;
+  saat: string;
+}
+
+export type Hatirlatma = HatirlatmaSecimi | OzelHatirlatma;
+
+/** "Başka zaman" en çok bu kadar gün önce olabilir. */
+export const EN_COK_GUN_ONCE = 30;
+
+export function ozelHatirlatmaMi(h: Hatirlatma | null | undefined): h is OzelHatirlatma {
+  return !!h && typeof h === 'object';
+}
+
+/** Kayıttaki metin: "saatinde" · "15dk" · "1sa" · "ozel|2|18:00". */
+export function hatirlatmaCoz(ham: string | null | undefined): Hatirlatma | null {
+  if (ham === 'saatinde' || ham === '15dk' || ham === '1sa') return ham;
+  const m = /^ozel\|(\d{1,2})\|(\d{2}:\d{2})$/.exec(ham ?? '');
+  if (!m) return null;
+  return { gunOnce: Math.min(EN_COK_GUN_ONCE, Number(m[1])), saat: m[2]! };
+}
+
+export function hatirlatmaYaz(h: Hatirlatma | null): string | null {
+  if (!h) return null;
+  return ozelHatirlatmaMi(h) ? `ozel|${h.gunOnce}|${h.saat}` : h;
+}
+
+/** Kartın saati yoksa hazır (saate bağlı) hatırlatma geçersizdir; özel hatırlatma kalır. */
+export function gecerliHatirlatma(h: Hatirlatma | null, saat: string | null): Hatirlatma | null {
+  if (!h) return null;
+  return ozelHatirlatmaMi(h) || saat ? h : null;
+}
+
+const ONCE_DK: Record<HatirlatmaSecimi, number> = { saatinde: 0, '15dk': 15, '1sa': 60 };
+
+function saatMetniDk(dk: number): string {
+  const d = ((dk % 1440) + 1440) % 1440;
+  return `${String(Math.floor(d / 60)).padStart(2, '0')}:${String(d % 60).padStart(2, '0')}`;
+}
+
+/** Kartın `gun` günkü hatırlatmasının günü ve saati; hesaplanamıyorsa null. */
+export function hatirlatmaAni(gun: Gun, saat: string | null, h: Hatirlatma | null): { gun: Gun; saat: string } | null {
+  if (!h) return null;
+  if (ozelHatirlatmaMi(h)) return { gun: gunEkle(gun, -h.gunOnce), saat: h.saat };
+  if (!saat) return null;
+  const [s, d] = saat.split(':').map(Number);
+  const dk = (s ?? 0) * 60 + (d ?? 0) - ONCE_DK[h];
+  return { gun: gunEkle(gun, Math.floor(dk / 1440)), saat: saatMetniDk(dk) };
+}
+
+/** "Saatinde" · "15 dk önce" · "Aynı gün 09:00" · "2 gün önce 18:00" */
+export function hatirlatmaMetni(h: Hatirlatma): string {
+  if (ozelHatirlatmaMi(h)) return h.gunOnce === 0 ? `Aynı gün ${h.saat}` : `${h.gunOnce} gün önce ${h.saat}`;
+  return { saatinde: 'Saatinde', '15dk': '15 dk önce', '1sa': '1 saat önce' }[h];
+}
 
 export type TekrarDeseni = 'hergun' | 'haftaici' | 'haftasonu';
 
@@ -31,7 +92,7 @@ export interface Kart {
   tarihsiz: boolean;
   /** "SS:dd" */
   saat: string | null;
-  hatirlatma: HatirlatmaSecimi | null;
+  hatirlatma: Hatirlatma | null;
   /** Hatırlatma alarm olarak çalar (iOS 26; pilot 16 Ekim). */
   alarm: boolean;
   /** null = tek seferlik. */
