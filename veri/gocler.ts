@@ -217,6 +217,11 @@ export const GOCLER: readonly Goc[] = [
       ) + 1;
     `,
   },
+  {
+    // Grup etkinliğinden gelen kart (pilot 18 Ekim, Buluşma): etkinliğe bağ.
+    surum: 13,
+    sql: `ALTER TABLE kart ADD COLUMN bag TEXT;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

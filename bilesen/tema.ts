@@ -41,6 +41,7 @@ export const kaynakRenk = {
   koc: { serit: '#C9821F', zemin: '#FBF4EA', yazi: '#8A5510' },
   gelen: { serit: '#9A4E8C', zemin: '#F6EAF3', yazi: '#7A3A6E' },
   liste: { serit: '#6E7F2A', zemin: '#EFF2E2', yazi: '#556320' },
+  grup: { serit: '#3D5A9E', zemin: '#E8EDF7', yazi: '#2E4680' },
 } as const;
 
 /** Yazı boyutları (pt). */

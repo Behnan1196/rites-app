@@ -1,13 +1,13 @@
 // Kartın kaynağı (PL-4, A-5, `05` §8): süzme, renk şeridi ve etiket.
 // Kaynak: ortak liste maddesi → liste; koç → koç; gelen → gelen; plan → plan;
-// diğerleri → kendi kartı (şeritsiz).
+// grup etkinliği → grup; diğerleri → kendi kartı (şeritsiz).
 
 import type { Kart } from './kart';
 
-/** 'kendim' · 'gelen' · 'liste' · 'plan:<id>' · 'koc:<ad>' */
+/** 'kendim' · 'gelen' · 'liste' · 'grup' · 'plan:<id>' · 'koc:<ad>' */
 export type KaynakAnahtari = string;
 
-export type KaynakTuru = 'kendim' | 'plan' | 'koc' | 'gelen' | 'liste';
+export type KaynakTuru = 'kendim' | 'plan' | 'koc' | 'gelen' | 'liste' | 'grup';
 
 export const TUMU = 'tumu';
 
@@ -18,6 +18,7 @@ export function kaynakAnahtari(k: KaynakliKart): KaynakAnahtari {
   if (k.listeAdi) return 'liste';
   if (k.kaynak === 'koc') return `koc:${k.gelenKimden ?? ''}`;
   if (k.kaynak === 'gelen') return 'gelen';
+  if (k.kaynak === 'grup') return 'grup';
   if (k.planId) return `plan:${k.planId}`;
   return 'kendim';
 }
@@ -25,7 +26,7 @@ export function kaynakAnahtari(k: KaynakliKart): KaynakAnahtari {
 export function kaynakTuru(anahtar: KaynakAnahtari): KaynakTuru {
   if (anahtar.startsWith('plan:')) return 'plan';
   if (anahtar.startsWith('koc:')) return 'koc';
-  if (anahtar === 'gelen' || anahtar === 'liste') return anahtar;
+  if (anahtar === 'gelen' || anahtar === 'liste' || anahtar === 'grup') return anahtar;
   return 'kendim';
 }
 
@@ -40,6 +41,8 @@ export function kaynakAdi(anahtar: KaynakAnahtari, planAdlari: ReadonlyMap<strin
       return 'Gelenlerden';
     case 'liste':
       return 'Ortak listeler';
+    case 'grup':
+      return 'Gruplardan';
     default:
       return 'Kendi kartlarım';
   }
@@ -57,6 +60,8 @@ export function kaynakEtiketi(k: KaynakliKart, planAdlari: ReadonlyMap<string, s
       return `Gelen: ${k.gelenKimden ?? ''}`.trim();
     case 'liste':
       return `Liste: ${k.listeAdi}`;
+    case 'grup':
+      return `Grup: ${k.gelenKimden ?? ''}`.trim();
     default:
       return null;
   }

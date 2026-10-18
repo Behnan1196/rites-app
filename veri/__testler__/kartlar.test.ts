@@ -8,7 +8,7 @@ import { GOCLER, gocleriUygula } from '../gocler';
 import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
 import {
   blokMetinleri, gunYapilanlari, isaretle, islemleriUygula, kartAyrinti, kartKayitlari, kayitDegistir, kayitVarMi, tumKartlar,
-  siralariYaz, yeniKartKaydet, type BlokTaslagi,
+  bagliKart, bagliKartlar, kartlariSil, siralariYaz, yeniKartKaydet, type BlokTaslagi,
 } from '../kartlar';
 import { yayinOlustur } from '../yayin';
 import { sqljsVeriTabani } from './sqljsVeriTabani';
@@ -198,3 +198,21 @@ describe('ajandada elle sıralama (pilot 17 Ekim)', () => {
     ]);
   });
 });
+
+describe('grup etkinliğine bağlı kartlar (pilot 18 Ekim)', () => {
+  it('bağ yazılır, okunur; bağlı kartlar silinir', async () => {
+    await yeniKartKaydet(
+      kapi,
+      yeniKart('b', { baslik: 'Akşam yemeği', tarih: '2026-10-25', kaynak: 'grup', gelenKimden: 'Aile', bag: 'bulusma:x|2026-10-25|19:30' }),
+      [blok('f')],
+      idUret,
+    );
+    await yeniKartKaydet(kapi, yeniKart('a', { baslik: 'Kendi', tarih: '2026-10-25' }), [], idUret);
+    expect(await bagliKartlar(oku)).toEqual([{ id: 'b', bag: 'bulusma:x|2026-10-25|19:30', tarih: '2026-10-25' }]);
+    expect(await bagliKart(oku, 'bulusma:x|2026-10-25|19:30')).toBe('b');
+    expect((await tumKartlar(oku)).find((k) => k.id === 'b')).toMatchObject({ kaynak: 'grup', gelenKimden: 'Aile' });
+    await kartlariSil(kapi, ['b']);
+    expect((await tumKartlar(oku)).map((k) => k.id)).toEqual(['a']);
+  });
+});
+

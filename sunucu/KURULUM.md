@@ -30,6 +30,9 @@ Supabase → **SQL Editor** → **New query** → `sunucu/sema.sql` dosyasının
 **10. görevde şema büyüdü** (gruplar, ortak listeler, maddeler). 9. görevde çalıştırdıysan
 güncel `sema.sql`'in tamamını aynı yolla bir kez daha çalıştır; var olan kayıtlar silinmez.
 
+**18 Ekim'de şema yine büyüdü** (Buluşma: `bulusma`, `bulusma_yanit` ve işlevleri). Güncel
+`sema.sql`'in tamamını aynı yolla bir kez daha çalıştır; var olan kayıtlar silinmez.
+
 Ortak listedeki değişikliklerin öteki telefona anında gitmesi için şema `madde` tablosunu
 Realtime'a ekler. Denetlemek istersen: **Database → Publications → supabase_realtime** satırında
 `madde` görünmeli. Görünmese de listeler ekran her açıldığında tazelenir.

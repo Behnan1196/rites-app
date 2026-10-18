@@ -40,6 +40,7 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 10 | `blok.durum` ("Proje adımları"nın kalıcı durumu, JSON: adım başına yapıldığı gün, bitiş günü) |
 | 11 | `animsatici.bitis` ("Süre sonra"nın çalacağı an, ISO); `animsatici.gunler` artık hafta günü listesi (JSON, 0 = Pzt); eski `hergun / haftaici / haftasonu` okurken çevrilir |
 | 12 | `kart.sira` görünen sırayla yeniden numaralanır (saat, sonra eski sıra); ajanda artık yalnız `sira`ya göre dizilir. Yeni kartın sırası `yeniKartKaydet` içinde `yeniKartSirasi` ile verilir; sürüklemede `siraDegisikligi` (komşuların ortası) → `siralariYaz` |
+| 13 | `kart.bag`: kartın bir grup etkinliğine bağı (`bulusma:<id>\|<gün>\|<saat>`); kaynağı `grup` olan kart (grubun adı `gelen_kimden`de) |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 
@@ -101,4 +102,10 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 ## Fotoğraf büyütme
 
 `bilesen/kart/BuyutulebilirFoto.tsx`: Modal içinde iOS `ScrollView` (`maximumZoomScale` 6, `centerContent`); çift dokunuş `scrollResponderZoomTo` ile. Ek yerel modül yok, EAS update ile gider. Yakınlaştırma yalnız iOS'ta (Android'de ScrollView zoom desteklemez; web'de yalnız tam ekran).
+
+## Grup etkinlikleri: Buluşma (sunucu)
+
+- Tablolar `bulusma` (grup, kuran, baslik, gun, saat?, yer) ve `bulusma_yanit` (geliyorum · belki · gelemem). Yazma yalnız işlevlerle: `bulusma_kur` (kuran geliyor sayılır), `bulusma_duzenle` (yalnız kuran; gün ya da saat değişince öteki yanıtlar silinir), `bulusma_yanitla` (null: geri al). Okuma `bulusmalarim()` (üyesi olduğum grupların son 30 günden bu yana buluşmaları). Silme: kuran ya da grubun kurucusu.
+- Telefonda: "Geliyorum" denince yerel kart eklenir (`bulusmaKarti`; saatliyse 1 saat önce bildirim), başka yanıtta silinir. `BulusmaSaglayici` her okumadan sonra eşitler: buluşma artık yoksa, gün/saat değiştiyse ya da yanıtım "Geliyorum" değilse kart kalkar (`kaldirilacakKartlar`; dünden eski kartlara dokunulmaz). Eşitleme kart eklemez; kişinin sildiği kart geri gelmez.
+- Sunucu şeması güncellenmeden yeni sürüm açılırsa Buluşmalar "Şu an bağlanamıyor" gibi davranır; listeler etkilenmez.
 

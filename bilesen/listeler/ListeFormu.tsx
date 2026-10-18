@@ -1,12 +1,14 @@
 // "+ Yeni liste" ve "Listeyi düzenle" (GR-2): ad, gruplar (çip), kişiler (yalnız
 // bağlı olanlar). Gruba açık listeyi gruba sonradan katılan da görür.
+// Yeni listede adın altında örnek adlar (pilot 18 Ekim); grup ekranından açılınca
+// o grup seçili gelir.
 
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { bagliKisiler, type Grup } from '@/mantik/gruplar';
 import { BAGLANAMIYOR, type Kisi } from '@/mantik/kisiler';
-import { GRUP_SECIM_NOTU, listeFormuHatasi, listeHatasi, type OrtakListe } from '@/mantik/listeler';
+import { GRUP_SECIM_NOTU, LISTE_ORNEKLERI, listeFormuHatasi, listeHatasi, type OrtakListe } from '@/mantik/listeler';
 import { listeDuzenle, listeOlustur } from '@/sunucu/listeler';
 
 import { AltSayfa } from '../AltSayfa';
@@ -28,6 +30,7 @@ export function ListeFormu({
   gruplar,
   kisiler,
   mevcut,
+  grup,
   onKaydedildi,
 }: {
   onKapat: () => void;
@@ -36,11 +39,15 @@ export function ListeFormu({
   kisiler: readonly Kisi[];
   /** Düzenlenen liste; yoksa yeni liste. */
   mevcut?: OrtakListe;
+  /** Grup ekranından açıldıysa o grup seçili gelir. */
+  grup?: string;
   onKaydedildi: (id: string) => void;
 }) {
   const kisaMesaj = useKisaMesaj();
   const [ad, setAd] = useState(mevcut?.ad ?? '');
-  const [secGrup, setSecGrup] = useState<ReadonlySet<string>>(new Set(mevcut?.gruplar.map((g) => g.id)));
+  const [secGrup, setSecGrup] = useState<ReadonlySet<string>>(
+    new Set(mevcut ? mevcut.gruplar.map((g) => g.id) : grup ? [grup] : []),
+  );
   const [secKisi, setSecKisi] = useState<ReadonlySet<string>>(new Set(mevcut?.kisiler));
   const [hata, setHata] = useState<string | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
@@ -58,7 +65,7 @@ export function ListeFormu({
       mevcut.gruplar.some((g) => !secGrup.has(g.id)) ||
       secKisi.size !== mevcut.kisiler.length ||
       mevcut.kisiler.some((k) => !secKisi.has(k))
-    : ad.trim() !== '' || secGrup.size > 0 || secKisi.size > 0;
+    : ad.trim() !== '' || secGrup.size > (grup ? 1 : 0) || secKisi.size > 0;
 
   const kaydet = async () => {
     const h = listeFormuHatasi(ad);
@@ -102,10 +109,26 @@ export function ListeFormu({
             setAd(t);
             setHata(null);
           }}
-          placeholder="Örneğin: Market, Bayram hazırlığı"
+          placeholder="Örneğin: Yapılacaklar, Tatil hazırlığı"
           hata={hata}
           returnKeyType="done"
         />
+        {!mevcut && (
+          <View style={stiller.cipler}>
+            {LISTE_ORNEKLERI.map((o) => (
+              <SecenekHapi
+                key={o}
+                etiket={o}
+                erisimEtiketi={`Ad: ${o}`}
+                secili={ad.trim() === o}
+                onPress={() => {
+                  setAd(o);
+                  setHata(null);
+                }}
+              />
+            ))}
+          </View>
+        )}
         <Bolum>
           <Yazi kalinlik="kalin">Gruplar</Yazi>
           <Yazi tur="ikincil">{GRUP_SECIM_NOTU}</Yazi>

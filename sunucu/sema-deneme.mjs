@@ -134,6 +134,33 @@ esit('Listeden ayrıl', (await tek(zeynep, 'select listelerim() l')).l.length, 0
 await olarak(ayse, () => q(`select liste_duzenle($1, 'Piknik', array[$2]::uuid[], array[$3]::uuid[])`, [piknik, aile, zeynep]));
 esit('kuran yeniden ekler', (await tek(zeynep, 'select listelerim() l')).l.length, 1);
 
+// Buluşma (pilot 18 Ekim)
+const bul = (await tek(ayse, `select bulusma_kur($1, 'Akşam yemeği', '2099-01-10', '19:30', 'Bizde') b`, [aile])).b;
+esit('kuran geliyor sayılır', (await tek(ayse, 'select bulusmalarim() b')).b[0].yanitlar.map(y => y.yanit), ['geliyorum']);
+esit('grup üyesi buluşmayı görür', (await tek(ali, 'select bulusmalarim() b')).b.map(x => [x.baslik, x.grupAdi, x.saat]), [['Akşam yemeği', 'Aile', '19:30']]);
+esit('grupta olmayan görmez', (await tek(zeynep, 'select bulusmalarim() b')).b.length, 0);
+await hataBekle('grupta olmayan yanıtlayamaz', () => olarak(zeynep, () => q(`select bulusma_yanitla($1, 'geliyorum')`, [bul])), 'yetki yok');
+await hataBekle('grupta olmayan kuramaz', () => olarak(zeynep, () => q(`select bulusma_kur($1, 'X', '2099-01-10', null, '')`, [aile])), 'grup yok');
+await olarak(ali, () => q(`select bulusma_yanitla($1, 'belki')`, [bul]));
+await olarak(ali, () => q(`select bulusma_yanitla($1, 'geliyorum')`, [bul]));
+esit('yanıt değişir', (await tek(ali, 'select bulusmalarim() b')).b[0].yanitlar.length, 2);
+await hataBekle('yanlış yanıt', () => olarak(ali, () => q(`select bulusma_yanitla($1, 'evet')`, [bul])), 'check');
+await hataBekle('yanıt doğrudan yazılamaz', () => olarak(ali, () => q(`insert into bulusma_yanit values ($1, $2, 'gelemem')`, [bul, ali])), 'permission denied');
+await hataBekle('başkası düzenleyemez', () => olarak(ali, () => q(`select bulusma_duzenle($1, 'X', '2099-01-10', '19:30', '')`, [bul])), 'yetki yok');
+await olarak(ayse, () => q(`select bulusma_duzenle($1, 'Akşam yemeği', '2099-01-10', '19:30', 'Dışarıda')`, [bul]));
+esit('yer değişince yanıtlar kalır', (await tek(ali, 'select bulusmalarim() b')).b[0].yanitlar.length, 2);
+await olarak(ayse, () => q(`select bulusma_duzenle($1, 'Akşam yemeği', '2099-01-11', '19:30', 'Dışarıda')`, [bul]));
+esit('gün değişince yalnız kuranın yanıtı kalır', (await tek(ali, 'select bulusmalarim() b')).b[0].yanitlar.map(y => y.kullanici), [ayse]);
+await olarak(ali, () => q(`select bulusma_yanitla($1, 'geliyorum')`, [bul]));
+await olarak(ali, () => q(`select bulusma_yanitla($1, null)`, [bul]));
+esit('yanıt geri alınır', (await tek(ali, 'select bulusmalarim() b')).b[0].yanitlar.length, 1);
+await hataBekle('saat biçimi', () => olarak(ayse, () => q(`select bulusma_kur($1, 'X', '2099-01-10', '25:00', '')`, [aile])), 'check');
+await olarak(ali, () => q('delete from bulusma where id = $1', [bul]));
+esit('üye başkasının buluşmasını silemez', (await q('select count(*)::int n from bulusma')).rows[0].n, 1);
+await olarak(ayse, () => q('delete from bulusma where id = $1', [bul]));
+esit('kuran siler, yanıtlar da gider', [(await q('select count(*)::int n from bulusma')).rows[0].n, (await q('select count(*)::int n from bulusma_yanit')).rows[0].n], [0, 0]);
+await olarak(ayse, () => q(`select bulusma_kur($1, 'Piknik', '2099-02-01', null, '')`, [aile]));
+
 // Gruptan ayrıl, çıkar, grubu sil
 await olarak(ayse, () => q('delete from grup_uye where grup = $1 and kullanici = $2', [aile, ayse]));
 esit('kuran gruptan ayrılamaz', (await q('select count(*)::int n from grup_uye where grup = $1', [aile])).rows[0].n, 2);
@@ -155,5 +182,6 @@ esit('Ayşe ve Gelenler\'i silinir', [(await q('select count(*)::int n from kull
 esit('Ayşe\'nin listeleri ve maddeleri silinir', [(await q('select count(*)::int n from liste')).rows[0].n, (await q('select count(*)::int n from madde')).rows[0].n], [0, 0]);
 await ex('set role anon'); await hataBekle('oturumsuz çağrılamaz', () => q(`select kisi_ekle('a@b.c')`), 'permission denied');
 await hataBekle('oturumsuz liste okunamaz', () => q('select listelerim()'), 'permission denied');
+await hataBekle('oturumsuz buluşma okunamaz', () => q('select bulusmalarim()'), 'permission denied');
 await ex('reset role');
 console.log(hatalar ? `${hatalar} HATA` : 'HEPSİ TAMAM');

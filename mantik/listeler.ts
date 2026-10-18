@@ -43,6 +43,16 @@ export interface BanaVerilen {
 }
 
 export const GRUP_NOTU = 'Gruba sonradan katılan herkes bu listeyi de görür.';
+/** Yeni liste formunda ad önerileri (pilot 18 Ekim: liste yalnız alışveriş gibi gelmesin). */
+export const LISTE_ORNEKLERI = [
+  'Yapılacaklar',
+  'Market',
+  'Bayram hazırlığı',
+  'Tatil hazırlığı',
+  'Taşınma',
+  'Okul',
+] as const;
+
 export const GRUP_SECIM_NOTU = 'Gruba sonradan katılanlar da listeyi görür.';
 export const MADDE_NOTU = 'İkisi de isteğe bağlı. Bir kişiye tarihle verilen madde o kişinin ajandasında görünür.';
 export const BOS_LISTE = 'Liste boş. İlk maddeyi yukarıdan ekle.';
@@ -155,6 +165,7 @@ export function maddeKarti(m: BanaVerilen): MaddeKarti {
     birakildi: false,
     // Ortak liste maddeleri günün kartlarının ardından gelir (sürüklenmez).
     sira: Number.MAX_SAFE_INTEGER,
+    bag: null,
     blokSayisi: 0,
     listeAdi: m.listeAdi,
     maddeId: m.id,

@@ -1,6 +1,7 @@
 // Gruplar: Seni eklemek isteyenler, Seni gruba çağıranlar, Kişilerim, + Kişi ekle
-// (9. görev); Gruplarım, + Grup kur (10. görev).
-// Ortak listeler Giriş'ten açılır (`04`). Ücretsiz sınır göstergesi Ayarlar → Üyelik'te.
+// (9. görev); Gruplarım, + Grup kur (10. görev); Ortak listeler (pilot 18 Ekim:
+// listelerin asıl yeri Gruplar; Giriş'teki kutu kısayol). Sıra: Gruplarım, Ortak
+// listeler, Kişilerim. Ücretsiz sınır göstergesi Ayarlar → Üyelik'te.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
@@ -15,20 +16,16 @@ import { KisiEkleSayfasi } from '@/bilesen/gruplar/KisiEkleSayfasi';
 import { useGruplar } from '@/bilesen/gruplar/useGruplar';
 import { useKisiler } from '@/bilesen/gruplar/useKisiler';
 import { Katman } from '@/bilesen/Katman';
+import { ListeFormu } from '@/bilesen/listeler/ListeFormu';
+import { OrtakListeSatiri } from '@/bilesen/listeler/OrtakListeSatiri';
+import { useListeler } from '@/bilesen/listeler/useListeler';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { OnayKutusu } from '@/bilesen/OnayKutusu';
 import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
 import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { grupSayiMetni } from '@/mantik/gruplar';
-import {
-  BAGLANAMIYOR,
-  DURUM_METNI,
-  ekledigimSayi,
-  kisiBasHarf,
-  UCRETSIZ_SINIR,
-  type Kisi,
-} from '@/mantik/kisiler';
+import { BAGLANAMIYOR, DURUM_METNI, ekledigimSayi, kisiBasHarf, UCRETSIZ_SINIR, type Kisi } from '@/mantik/kisiler';
 import { baglantiyiSil, davetiSil, istegiKabulEt } from '@/sunucu/kisiler';
 import { useOturum } from '@/sunucu/oturum';
 import { yeniKimlik } from '@/veri/kimlik';
@@ -44,6 +41,8 @@ export default function Gruplar() {
   const [ekleAcik, setEkleAcik] = useState(0);
   const [grupKurAcik, setGrupKurAcik] = useState(0);
   const [silinecek, setSilinecek] = useState<Kisi | null>(null);
+  const liste = useListeler(oturum);
+  const [yeniListe, setYeniListe] = useState(0);
   const ekledigim = ekledigimSayi(kisiler);
 
   const hata = (e: unknown) => {
@@ -54,7 +53,14 @@ export default function Gruplar() {
   const kabul = async (diger: string, ad: string, eposta: string) => {
     try {
       await istegiKabulEt(diger);
-      await kisiEkle(kapi, { id: yeniKimlik(), ad: ad || eposta, eposta, kullaniciId: diger, durum: 'bagli', benEkledim: false });
+      await kisiEkle(kapi, {
+        id: yeniKimlik(),
+        ad: ad || eposta,
+        eposta,
+        kullaniciId: diger,
+        durum: 'bagli',
+        benEkledim: false,
+      });
       kisaMesaj(`${ad || eposta} ile bağlandınız.`);
       void yenile();
     } catch (e) {
@@ -85,7 +91,11 @@ export default function Gruplar() {
         )
       ) : (
         <>
-          {(baglanamiyor || grup.baglanamiyor) && <Yazi tur="ikincil" renk={renk.hata}>{BAGLANAMIYOR}</Yazi>}
+          {(baglanamiyor || grup.baglanamiyor || liste.baglanamiyor) && (
+            <Yazi tur="ikincil" renk={renk.hata}>
+              {BAGLANAMIYOR}
+            </Yazi>
+          )}
 
           {istekler.length > 0 && (
             <>
@@ -106,7 +116,11 @@ export default function Gruplar() {
                     </View>
                   </View>
                   <View style={stiller.dugmeler}>
-                    <Dugme etiket="Kabul et" onPress={() => void kabul(r.diger, r.ad, r.eposta)} style={stiller.esnek} />
+                    <Dugme
+                      etiket="Kabul et"
+                      onPress={() => void kabul(r.diger, r.ad, r.eposta)}
+                      style={stiller.esnek}
+                    />
                     <Dugme
                       tur="ikincil"
                       etiket="Reddet"
@@ -121,13 +135,53 @@ export default function Gruplar() {
 
           <GrupDavetleri davetler={grup.davetler} ad={grup.ad} onYanit={() => void grup.yenile()} />
 
-          <View style={stiller.baslikSatiri}>
+          <Yazi tur="bolumBasligi" accessibilityRole="header">
+            Gruplarım
+          </Yazi>
+          {grup.gruplar.length === 0 && !grup.yukleniyor && <Yazi tur="ikincil">Henüz bir grubun yok.</Yazi>}
+          {grup.gruplar.map((g) => (
+            <Pressable
+              key={g.id}
+              onPress={() => router.push({ pathname: '/gruplar/grup/[id]', params: { id: g.id } })}
+              accessibilityRole="button"
+              accessibilityLabel={`${g.ad}, ${grupSayiMetni(g, ben)}`}
+              style={({ pressed }) => [stiller.grup, pressed && { opacity: 0.75 }]}
+            >
+              <View style={stiller.grupSimge}>
+                <Ionicons name="people-outline" size={22} color={renk.ana} />
+              </View>
+              <View style={stiller.esnek}>
+                <Yazi tur="kartBasligi">{g.ad}</Yazi>
+                <Yazi tur="ikincil">{grupSayiMetni(g, ben)}</Yazi>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
+            </Pressable>
+          ))}
+          <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Grup kur" onPress={() => setGrupKurAcik((n) => n + 1)} />
+
+          <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
+            Ortak listeler
+          </Yazi>
+          {liste.listeler.length === 0 && !liste.yukleniyor && (
+            <Yazi tur="ikincil">Henüz ortak listen yok. Bir gruba ya da kişilerine açık liste kurabilirsin.</Yazi>
+          )}
+          {liste.listeler.map((l) => (
+            <OrtakListeSatiri
+              key={l.id}
+              liste={l}
+              ben={ben}
+              ad={liste.ad}
+              onPress={() => router.push({ pathname: '/gruplar/liste/[id]', params: { id: l.id } })}
+            />
+          ))}
+          <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Yeni liste" onPress={() => setYeniListe((n) => n + 1)} />
+
+          <View style={[stiller.baslikSatiri, stiller.bolumArasi]}>
             <Yazi tur="bolumBasligi" accessibilityRole="header">
               Kişilerim
             </Yazi>
             <Yazi tur="ikincil">{`${kisiler.length} kişi`}</Yazi>
           </View>
-
 
           {kisiler.length > 0 && (
             <View style={stiller.liste}>
@@ -153,32 +207,12 @@ export default function Gruplar() {
 
           <Dugme
             etiket="+ Kişi ekle"
-            onPress={() => (ekledigim >= UCRETSIZ_SINIR ? kisaMesaj(`Ücretsiz üyelikte en çok ${UCRETSIZ_SINIR} kişi ekleyebilirsin.`) : setEkleAcik((n) => n + 1))}
+            onPress={() =>
+              ekledigim >= UCRETSIZ_SINIR
+                ? kisaMesaj(`Ücretsiz üyelikte en çok ${UCRETSIZ_SINIR} kişi ekleyebilirsin.`)
+                : setEkleAcik((n) => n + 1)
+            }
           />
-
-          <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
-            Gruplarım
-          </Yazi>
-          {grup.gruplar.length === 0 && !grup.yukleniyor && <Yazi tur="ikincil">Henüz bir grubun yok.</Yazi>}
-          {grup.gruplar.map((g) => (
-            <Pressable
-              key={g.id}
-              onPress={() => router.push({ pathname: '/gruplar/grup/[id]', params: { id: g.id } })}
-              accessibilityRole="button"
-              accessibilityLabel={`${g.ad}, ${grupSayiMetni(g, ben)}`}
-              style={({ pressed }) => [stiller.grup, pressed && { opacity: 0.75 }]}
-            >
-              <View style={stiller.grupSimge}>
-                <Ionicons name="people-outline" size={22} color={renk.ana} />
-              </View>
-              <View style={stiller.esnek}>
-                <Yazi tur="kartBasligi">{g.ad}</Yazi>
-                <Yazi tur="ikincil">{grupSayiMetni(g, ben)}</Yazi>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
-            </Pressable>
-          ))}
-          <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Grup kur" onPress={() => setGrupKurAcik((n) => n + 1)} />
         </>
       )}
 
@@ -199,6 +233,19 @@ export default function Gruplar() {
           onKapat={() => setGrupKurAcik(0)}
           kisiler={kisiler}
           onKuruldu={() => void grup.yenile()}
+        />
+      )}
+
+      {yeniListe > 0 && (
+        <ListeFormu
+          key={yeniListe}
+          onKapat={() => setYeniListe(0)}
+          gruplar={grup.gruplar}
+          kisiler={kisiler}
+          onKaydedildi={(id) => {
+            void liste.yenile();
+            router.push({ pathname: '/gruplar/liste/[id]', params: { id } });
+          }}
         />
       )}
 
@@ -262,5 +309,12 @@ const stiller = StyleSheet.create({
     paddingVertical: 12,
     minHeight: 72,
   },
-  grupSimge: { width: 44, height: 44, borderRadius: 22, backgroundColor: renk.anaAcik, alignItems: 'center', justifyContent: 'center' },
+  grupSimge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: renk.anaAcik,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

@@ -1,17 +1,23 @@
-// Grup ekranı (GR-1): üyeler (kuran çıkarır), "Kişilerinden ekle" (kuran),
-// bu gruba açık listeler; kuran için "Grubu sil", üye için "Gruptan ayrıl".
+// Grup ekranı (GR-1): önce grubun içeriği (pilot 18 Ekim): yaklaşan buluşmalar,
+// gruba açık listeler ve "+ Ekle" (Buluşma, Liste); sonra üyeler (kuran çıkarır),
+// "Kişilerinden ekle" (kuran); kuran için "Grubu sil", üye için "Gruptan ayrıl".
 // Grup ekranı bundan derin değildir (`08` karar 38).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { KisiAvatari, ListeKutusu, parcaStilleri } from '@/bilesen/gruplar/parcalar';
 import { useGruplar } from '@/bilesen/gruplar/useGruplar';
+import { BulusmaFormu } from '@/bilesen/gruplar/BulusmaFormu';
+import { BulusmaKarti } from '@/bilesen/gruplar/BulusmaKarti';
+import { useBulusmalar } from '@/bilesen/gruplar/Bulusmalar';
+import { GrubaEkleSayfasi } from '@/bilesen/gruplar/GrubaEkleSayfasi';
 import { Katman } from '@/bilesen/Katman';
+import { ListeFormu } from '@/bilesen/listeler/ListeFormu';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { OnayKutusu } from '@/bilesen/OnayKutusu';
 import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
@@ -19,9 +25,11 @@ import { SecenekHapi } from '@/bilesen/Secim';
 import { kaynakRenk, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { cagrilabilecekler, GRUP_LISTELERI_NOTU, grupAdi, grupHatasi, type GrupUyesi } from '@/mantik/gruplar';
+import { yaklasanlar, type Bulusma } from '@/mantik/bulusma';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { grubaCagir, grubuSil, gruptanCikar } from '@/sunucu/gruplar';
 import { useOturum } from '@/sunucu/oturum';
+import { useBugun } from '@/veri/useBugun';
 
 type Soru = { tur: 'cikar'; uye: GrupUyesi } | { tur: 'sil' } | { tur: 'ayril' };
 
@@ -31,8 +39,20 @@ export default function GrupEkrani() {
   const kisaMesaj = useKisaMesaj();
   const { ben, gruplar, kisiler, ad, yukleniyor, baglanamiyor, yenile } = useGruplar(oturum);
   const [soru, setSoru] = useState<Soru | null>(null);
+  const [listeFormu, setListeFormu] = useState(0);
+  const [ekleAcik, setEkleAcik] = useState(false);
+  const [bulusmaFormu, setBulusmaFormu] = useState<{ n: number; mevcut?: Bulusma } | null>(null);
+  const bugunGun = useBugun();
+  const bulusma = useBulusmalar();
+  const bulusmaYenile = bulusma.yenile;
+  useFocusEffect(
+    useCallback(() => {
+      void bulusmaYenile();
+    }, [bulusmaYenile]),
+  );
   const grup = gruplar.find((g) => g.id === id);
   const kuranBenim = !!grup && grup.kurucu === ben;
+  const grubunBulusmalari = grup ? yaklasanlar(bulusma.bulusmalar, grup.id, bugunGun) : [];
 
   const dene = async (is: () => Promise<void>, mesaj: string, sonra?: () => void) => {
     setSoru(null);
@@ -63,14 +83,24 @@ export default function GrupEkrani() {
         baslik: `${grupAdi(grup.ad)} silinsin mi?`,
         aciklama: 'Grup herkes için silinir. Bu gruba açık listeler grubun üyelerine kapanır.',
         etiket: 'Grubu sil',
-        is: () => void dene(() => grubuSil(grup.id), `${grupAdi(grup.ad)} silindi.`, () => router.back()),
+        is: () =>
+          void dene(
+            () => grubuSil(grup.id),
+            `${grupAdi(grup.ad)} silindi.`,
+            () => router.back(),
+          ),
       };
     }
     return {
       baslik: `${grupAdi(grup.ad)}ndan ayrılmak istiyor musun?`,
       aciklama: 'Grubun listelerini artık görmezsin. Yeniden katılmak için kuranın seni çağırması gerekir.',
       etiket: 'Gruptan ayrıl',
-      is: () => void dene(() => gruptanCikar(grup.id, ben), `${grupAdi(grup.ad)}ndan ayrıldın.`, () => router.back()),
+      is: () =>
+        void dene(
+          () => gruptanCikar(grup.id, ben),
+          `${grupAdi(grup.ad)}ndan ayrıldın.`,
+          () => router.back(),
+        ),
     };
   };
   const onay = onaySorusu();
@@ -89,8 +119,65 @@ export default function GrupEkrani() {
         )
       ) : (
         <>
-          {baglanamiyor && <Yazi tur="ikincil" renk={renk.hata}>{BAGLANAMIYOR}</Yazi>}
+          {baglanamiyor && (
+            <Yazi tur="ikincil" renk={renk.hata}>
+              {BAGLANAMIYOR}
+            </Yazi>
+          )}
           <Yazi tur="bolumBasligi" accessibilityRole="header">
+            Buluşmalar
+          </Yazi>
+          {grubunBulusmalari.length === 0 ? (
+            <Yazi tur="ikincil">Yaklaşan buluşma yok. Bir gün önerince herkes geliyorum / belki / gelemem der.</Yazi>
+          ) : (
+            grubunBulusmalari.map((b) => (
+              <BulusmaKarti
+                key={b.id}
+                bulusma={b}
+                ben={ben}
+                ad={(k) => ad(k)}
+                onDuzenle={() => setBulusmaFormu((f) => ({ n: (f?.n ?? 0) + 1, mevcut: b }))}
+              />
+            ))
+          )}
+          <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
+            Listeler
+          </Yazi>
+          {grup.listeler.length === 0 ? (
+            <Yazi tur="ikincil">
+              Bu grupta henüz liste yok. Yapılacaklar, hazırlık ya da market listesi açabilirsin.
+            </Yazi>
+          ) : (
+            <>
+              <ListeKutusu>
+                {grup.listeler.map((l, i) => (
+                  <Pressable
+                    key={l.id}
+                    onPress={() =>
+                      router.push({ pathname: '/gruplar/liste/[id]', params: { id: l.id, geri: grup.ad } })
+                    }
+                    accessibilityRole="button"
+                    accessibilityLabel={`${l.ad} listesini aç`}
+                    style={({ pressed }) => [
+                      parcaStilleri.satir,
+                      i > 0 && parcaStilleri.cizgili,
+                      pressed && { opacity: 0.7 },
+                    ]}
+                  >
+                    <Ionicons name="list-outline" size={22} color={kaynakRenk.liste.serit} />
+                    <Yazi kalinlik="kalin" style={parcaStilleri.esnek}>
+                      {l.ad}
+                    </Yazi>
+                    <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
+                  </Pressable>
+                ))}
+              </ListeKutusu>
+              <Yazi tur="ikincil">{GRUP_LISTELERI_NOTU}</Yazi>
+            </>
+          )}
+          <Dugme tur="vurgu" etiket="+ Ekle" onPress={() => setEkleAcik(true)} />
+
+          <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
             Üyeler
           </Yazi>
           <ListeKutusu>
@@ -138,34 +225,6 @@ export default function GrupEkrani() {
             </>
           )}
 
-          <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
-            Bu grubun listeleri
-          </Yazi>
-          {grup.listeler.length === 0 ? (
-            <Yazi tur="ikincil">{"Bu gruba açık liste yok. Ortak listeler Giriş'ten açılır."}</Yazi>
-          ) : (
-            <>
-              <ListeKutusu>
-                {grup.listeler.map((l, i) => (
-                  <Pressable
-                    key={l.id}
-                    onPress={() => router.push({ pathname: '/gruplar/liste/[id]', params: { id: l.id, geri: grup.ad } })}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${l.ad} listesini aç`}
-                    style={({ pressed }) => [parcaStilleri.satir, i > 0 && parcaStilleri.cizgili, pressed && { opacity: 0.7 }]}
-                  >
-                    <Ionicons name="list-outline" size={22} color={kaynakRenk.liste.serit} />
-                    <Yazi kalinlik="kalin" style={parcaStilleri.esnek}>
-                      {l.ad}
-                    </Yazi>
-                    <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
-                  </Pressable>
-                ))}
-              </ListeKutusu>
-              <Yazi tur="ikincil">{GRUP_LISTELERI_NOTU}</Yazi>
-            </>
-          )}
-
           <Dugme
             tur="tehlike"
             etiket={kuranBenim ? 'Grubu sil' : 'Gruptan ayrıl'}
@@ -173,6 +232,39 @@ export default function GrupEkrani() {
             style={stiller.bolumArasi}
           />
         </>
+      )}
+
+      {ekleAcik && grup && (
+        <GrubaEkleSayfasi
+          grupAdi={grup.ad}
+          onKapat={() => setEkleAcik(false)}
+          onSec={(tur) => {
+            setEkleAcik(false);
+            if (tur === 'liste') setListeFormu((n) => n + 1);
+            else setBulusmaFormu((f) => ({ n: (f?.n ?? 0) + 1 }));
+          }}
+        />
+      )}
+      {bulusmaFormu && grup && (
+        <BulusmaFormu
+          key={bulusmaFormu.n}
+          grup={{ id: grup.id, ad: grup.ad }}
+          mevcut={bulusmaFormu.mevcut}
+          onKapat={() => setBulusmaFormu(null)}
+        />
+      )}
+      {listeFormu > 0 && grup && (
+        <ListeFormu
+          key={listeFormu}
+          onKapat={() => setListeFormu(0)}
+          gruplar={gruplar}
+          kisiler={kisiler}
+          grup={grup.id}
+          onKaydedildi={(lid) => {
+            void yenile();
+            router.push({ pathname: '/gruplar/liste/[id]', params: { id: lid, geri: grup.ad } });
+          }}
+        />
       )}
 
       {onay && (

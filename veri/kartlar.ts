@@ -42,6 +42,7 @@ interface KartSatiri {
   yapildi: number;
   birakildi: number;
   sira: number;
+  bag?: string | null;
   blok_sayisi?: number;
   adim_maddeler?: string | null;
   adim_durum?: string | null;
@@ -103,6 +104,7 @@ export function kartSatirdan(s: KartSatiri): KartOzeti {
     yapildi: s.yapildi === 1,
     birakildi: s.birakildi === 1,
     sira: s.sira,
+    bag: s.bag ?? null,
     blokSayisi: s.blok_sayisi ?? 0,
     adimlar: s.adim_maddeler
       ? ilerleme(adimDurumu(json<unknown>(s.adim_durum ?? null, null), json<string[]>(s.adim_maddeler, []).length))
@@ -140,7 +142,7 @@ function kayitSatirdan(s: KayitSatiri): Kayit {
 }
 
 const KART_ALANLARI =
-  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira';
+  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag';
 
 function kartDegerleri(k: Kart): SqlDeger[] {
   return [
@@ -161,6 +163,7 @@ function kartDegerleri(k: Kart): SqlDeger[] {
     k.yapildi ? 1 : 0,
     k.birakildi ? 1 : 0,
     k.sira,
+    k.bag,
   ];
 }
 
@@ -507,4 +510,28 @@ export function kartlariBuguneAl(
 /** Geçmişten kalanı bırak: geçmişte yapılmamış olarak kalır. */
 export function kartiBirak(kapi: Kapi, kartId: string): Promise<void> {
   return kapi.yaz(['kart'], (y) => y.calistir('UPDATE kart SET birakildi = 1 WHERE id = ?', [kartId]));
+}
+
+// ---- Grup etkinliklerine bağlı kartlar (pilot 18 Ekim) ------------------------------
+
+/** Bağı olan kartlar (grup etkinliğinden gelenler): eşitleme için. */
+export function bagliKartlar(oku: Okuyucu): Promise<{ id: string; bag: string | null; tarih: string | null }[]> {
+  return oku.hepsi('SELECT id, bag, tarih FROM kart WHERE bag IS NOT NULL');
+}
+
+/** Bağı verilen kartı (varsa) bulur. */
+export async function bagliKart(oku: Okuyucu, bag: string): Promise<string | null> {
+  return (await oku.ilk<{ id: string }>('SELECT id FROM kart WHERE bag = ?', [bag]))?.id ?? null;
+}
+
+/** Kartları kayıtları ve bloklarıyla siler. */
+export function kartlariSil(kapi: Kapi, kimlikler: readonly string[]): Promise<void> {
+  if (kimlikler.length === 0) return Promise.resolve();
+  return kapi.yaz(['kart'], async (y) => {
+    for (const id of kimlikler) {
+      await y.calistir('DELETE FROM kayit WHERE kart_id = ?', [id]);
+      await y.calistir('DELETE FROM blok WHERE kart_id = ?', [id]);
+      await y.calistir('DELETE FROM kart WHERE id = ?', [id]);
+    }
+  });
 }

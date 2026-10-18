@@ -570,3 +570,135 @@ create trigger kullanici_katildi
   after insert or update of email_confirmed_at on auth.users
   for each row when (new.email_confirmed_at is not null)
   execute function public.kullanici_katildi();
+
+-- ---- Buluşma (pilot 18 Ekim) -----------------------------------------------------
+-- Grubun üyesi bir gün (ve isteğe bağlı saat, yer) önerir; herkes Geliyorum /
+-- Belki / Gelemem der. Kuran günü ya da saati değiştirirse öteki yanıtlar silinir
+-- (herkes yeniden yanıtlar). "Geliyorum" diyenin ajandasındaki kart telefonda durur;
+-- sunucu yalnız buluşmayı ve yanıtları bilir.
+
+create table if not exists public.bulusma (
+  id        uuid primary key default gen_random_uuid(),
+  grup      uuid not null references public.grup (id) on delete cascade,
+  kuran     uuid not null references public.kullanici (id) on delete cascade,
+  baslik    text not null check (length(trim(baslik)) > 0),
+  gun       date not null,
+  saat      text check (saat is null or saat ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$'),
+  yer       text not null default '',
+  olusturma timestamptz not null default now()
+);
+create index if not exists bulusma_grup on public.bulusma (grup);
+
+create table if not exists public.bulusma_yanit (
+  bulusma   uuid not null references public.bulusma (id) on delete cascade,
+  kullanici uuid not null references public.kullanici (id) on delete cascade,
+  yanit     text not null check (yanit in ('geliyorum', 'belki', 'gelemem')),
+  zaman     timestamptz not null default now(),
+  primary key (bulusma, kullanici)
+);
+
+alter table public.bulusma       enable row level security;
+alter table public.bulusma_yanit enable row level security;
+
+create or replace function public.bulusmaya_erisir_mi(b uuid, u uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.bulusma x
+    join public.grup_uye gu on gu.grup = x.grup and gu.kullanici = u and gu.durum = 'uye'
+    where x.id = b
+  );
+$$;
+
+drop policy if exists bulusma_oku on public.bulusma;
+create policy bulusma_oku on public.bulusma for select to authenticated
+  using (public.grup_uyesi_mi(grup, auth.uid()));
+
+-- Buluşmayı kuran ya da grubun kurucusu siler.
+drop policy if exists bulusma_sil on public.bulusma;
+create policy bulusma_sil on public.bulusma for delete to authenticated
+  using (kuran = auth.uid() or public.grup_kurucusu_mu(grup, auth.uid()));
+
+drop policy if exists bulusma_yanit_oku on public.bulusma_yanit;
+create policy bulusma_yanit_oku on public.bulusma_yanit for select to authenticated
+  using (public.bulusmaya_erisir_mi(bulusma, auth.uid()));
+
+revoke insert, update, delete on public.bulusma_yanit from anon, authenticated;
+revoke insert, update on public.bulusma from anon, authenticated;
+revoke all on public.bulusma, public.bulusma_yanit from anon;
+
+create or replace function public.bulusma_kur(p_grup uuid, p_baslik text, p_gun date, p_saat text, p_yer text)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare
+  ben uuid := auth.uid();
+  b uuid;
+begin
+  if not public.grup_uyesi_mi(p_grup, ben) then raise exception 'grup yok'; end if;
+  if length(trim(coalesce(p_baslik, ''))) = 0 then raise exception 'ad yok'; end if;
+  insert into public.bulusma (grup, kuran, baslik, gun, saat, yer)
+    values (p_grup, ben, trim(p_baslik), p_gun, nullif(p_saat, ''), trim(coalesce(p_yer, '')))
+    returning id into b;
+  -- Kuran geliyor sayılır (ajandasına da düşer).
+  insert into public.bulusma_yanit (bulusma, kullanici, yanit) values (b, ben, 'geliyorum');
+  return b;
+end;
+$$;
+
+create or replace function public.bulusma_duzenle(p_bulusma uuid, p_baslik text, p_gun date, p_saat text, p_yer text)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  ben uuid := auth.uid();
+  eski public.bulusma;
+begin
+  select * into eski from public.bulusma where id = p_bulusma;
+  if not found or eski.kuran <> ben then raise exception 'yetki yok'; end if;
+  if length(trim(coalesce(p_baslik, ''))) = 0 then raise exception 'ad yok'; end if;
+  update public.bulusma
+    set baslik = trim(p_baslik), gun = p_gun, saat = nullif(p_saat, ''), yer = trim(coalesce(p_yer, ''))
+    where id = p_bulusma;
+  -- Gün ya da saat değiştiyse öteki yanıtlar silinir; herkes yeniden yanıtlar.
+  if eski.gun <> p_gun or coalesce(eski.saat, '') <> coalesce(nullif(p_saat, ''), '') then
+    delete from public.bulusma_yanit where bulusma = p_bulusma and kullanici <> ben;
+  end if;
+end;
+$$;
+
+-- p_yanit null: yanıtı geri al.
+create or replace function public.bulusma_yanitla(p_bulusma uuid, p_yanit text)
+returns void language plpgsql security definer set search_path = public as $$
+declare ben uuid := auth.uid();
+begin
+  if not public.bulusmaya_erisir_mi(p_bulusma, ben) then raise exception 'yetki yok'; end if;
+  if p_yanit is null then
+    delete from public.bulusma_yanit where bulusma = p_bulusma and kullanici = ben;
+  else
+    insert into public.bulusma_yanit (bulusma, kullanici, yanit) values (p_bulusma, ben, p_yanit)
+    on conflict (bulusma, kullanici) do update set yanit = excluded.yanit, zaman = now();
+  end if;
+end;
+$$;
+
+-- Üyesi olduğum grupların son 30 günden bu yana buluşmaları, yanıtlarıyla.
+create or replace function public.bulusmalarim() returns jsonb
+language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', b.id, 'grup', b.grup, 'grupAdi', g.ad, 'kuran', b.kuran, 'baslik', b.baslik,
+    'gun', b.gun, 'saat', b.saat, 'yer', b.yer,
+    'yanitlar', (
+      select coalesce(jsonb_agg(jsonb_build_object('kullanici', y.kullanici, 'yanit', y.yanit) order by y.zaman), '[]'::jsonb)
+      from public.bulusma_yanit y where y.bulusma = b.id
+    )
+  ) order by b.gun, b.saat nulls first, b.olusturma), '[]'::jsonb)
+  from public.bulusma b
+  join public.grup g on g.id = b.grup
+  join public.grup_uye me on me.grup = b.grup and me.kullanici = auth.uid() and me.durum = 'uye'
+  where b.gun >= current_date - 30;
+$$;
+
+revoke execute on function
+  public.bulusma_kur(uuid, text, date, text, text), public.bulusma_duzenle(uuid, text, date, text, text),
+  public.bulusma_yanitla(uuid, text), public.bulusmalarim(), public.bulusmaya_erisir_mi(uuid, uuid)
+  from anon, public;
+grant execute on function
+  public.bulusma_kur(uuid, text, date, text, text), public.bulusma_duzenle(uuid, text, date, text, text),
+  public.bulusma_yanitla(uuid, text), public.bulusmalarim(), public.bulusmaya_erisir_mi(uuid, uuid)
+  to authenticated;

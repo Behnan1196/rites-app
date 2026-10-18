@@ -79,7 +79,8 @@ export interface Tekrar {
   desen: TekrarDeseni | null;
 }
 
-export type KartKaynagi = 'kendim' | 'gelen' | 'koc';
+/** 'grup': bir grup etkinliğinden (ör. Buluşma'da "Geliyorum"); grubun adı `gelenKimden`de. */
+export type KartKaynagi = 'kendim' | 'gelen' | 'koc' | 'grup';
 
 export interface Kart {
   id: string;
@@ -111,8 +112,10 @@ export interface Kart {
   yapildi: boolean;
   /** Geçmişten kalanlarda "Bırak" denmiş. */
   birakildi: boolean;
-  /** Aynı gün içinde elle sıra (ileride). */
+  /** Ajandada elle sıra (pilot 17 Ekim). */
   sira: number;
+  /** Bir grup etkinliğine bağ (ör. `bulusma:<id>|<gün>|<saat>`); yoksa null. */
+  bag: string | null;
 }
 
 export const ICERIK_BLOKLARI = ['talimat', 'video', 'liste', 'adimlar', 'foto', 'dosya'] as const;
@@ -177,6 +180,7 @@ export function yeniKart(id: string, alanlar: Partial<Omit<Kart, 'id'>> & { basl
     yapildi: false,
     birakildi: false,
     sira: 0,
+    bag: null,
     ...alanlar,
   };
 }

@@ -161,3 +161,19 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Kart görünümünde fotoğrafa dokununca tam ekranda açılır;** iki parmakla 6 kata kadar büyütülür, büyütülmüşken kaydırılır, sağ üstteki × kapatır. — Ürün sahibi (P-14)
 - Çift dokunuş dokunulan yere 2,5 kat yakınlaştırır, yeniden çift dokunuş geri alır. Fotoğrafın sağ alt köşesinde küçük büyütme simgesi var (dokunulabildiği anlaşılsın diye). Gelişim fotoğrafında ve Kütüphane'deki kart ayrıntısında da aynı. Düzenleme formundaki önizleme büyümez. — Öneri
 
+## Gruplar: ortak etkinlikler çeşitlenir; listelerin yeri Gruplar (18 Ekim)
+
+- **Grup etkinlikleri sırayla eklenecek:** 1) liste örnekleri, 2) Buluşma, 3) Birlikte rutin, 4) Nöbet / sıra, 5) İş (Ortak iş + Birinden iste tek türde; Kime? "Herkes" ya da bir kişi) ve Karar / oylama. Web denemesindeki başlıklar (Ortak iş, Birinden iste, Liste, Buluşma, Birlikte rutin) temel alındı. — Ürün sahibi (P-15; birleştirme ve sıra: onaylı öneri)
+- **Ortak listelerin asıl yeri Gruplar sekmesi.** Sekmenin sırası: Gruplarım · Ortak listeler (+ Yeni liste) · Kişilerim. Giriş'teki Ortak listeler kutusu kısayol olarak kalır. — Ürün sahibi (sıra ve kutunun kalması: Öneri)
+- **Grup ekranında "Listeler" ve "+ Liste ekle";** form o grup seçili açılır. Yeni gelecek türler aynı yere "+ Ekle" ile eklenecek. — Öneri
+- **Yeni liste formunda örnek adlar:** Yapılacaklar · Market · Bayram hazırlığı · Tatil hazırlığı · Taşınma · Okul; dokununca ad olur. Neden: liste yalnız alışveriş listesi gibi geliyordu. — Ürün sahibi (örnekler: Öneri)
+
+## Buluşma (18 Ekim)
+
+- **Tek gün ve saat önerilir** (saat ve yer isteğe bağlı); herkes Geliyorum / Belki / Gelemem der. Seçenekli oylama Karar türüyle gelecek. — Ürün sahibi
+- **"Geliyorum" diyenin ajandasına kart düşer;** Belki ya da Gelemem'e geçince kalkar. Kartın kaynağı "Grup: <grup adı>" (yeni mavi şerit), süzgeçte "Gruplardan". Saatliyse 1 saat önce bildirim kurulu gelir; kişi kartı kendi ajandasında değiştirebilir. — Ürün sahibi (kaynak, renk ve bildirim: Öneri)
+- **Kuran günü ya da saati değiştirirse öteki yanıtlar sıfırlanır;** ajandalardaki kartlar kalkar, herkes yeniden yanıtlar. Yalnız ad ya da yer değişirse yanıtlar kalır. — Ürün sahibi (ad/yer ayrımı: Öneri)
+- Kuran geliyor sayılır (kartı ajandasına girer). Buluşmayı kuran değiştirir; kuran ya da grubun kurucusu siler (silinince ajandalardaki kart kalkar). Grup ekranında yalnız bugün ve sonrası görünür. — Öneri
+- **Grup ekranının sırası:** Buluşmalar · Listeler · **+ Ekle** (Buluşma, Liste; yeni türler buraya) · Üyeler. — Öneri
+- Kart, buluşmanın gününde ve saatinde kalır; kişi kartı ajandasından silerse eşitleme onu geri getirmez (yanıtı yine Geliyorum görünür). — Öneri
+
