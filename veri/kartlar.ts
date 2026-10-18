@@ -535,3 +535,11 @@ export function kartlariSil(kapi: Kapi, kimlikler: readonly string[]): Promise<v
     }
   });
 }
+
+/** Tekrarlı kartın dizisini dün bitirir ve bağını koparır (geçmiş kayıtları kalır). */
+export function bagiBitir(kapi: Kapi, kimlikler: readonly string[], dun: Gun): Promise<void> {
+  if (kimlikler.length === 0) return Promise.resolve();
+  return kapi.yaz(['kart'], async (y) => {
+    for (const id of kimlikler) await y.calistir('UPDATE kart SET bitis = ?, bag = NULL WHERE id = ?', [dun, id]);
+  });
+}

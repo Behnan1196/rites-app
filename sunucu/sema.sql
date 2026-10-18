@@ -702,3 +702,151 @@ grant execute on function
   public.bulusma_kur(uuid, text, date, text, text), public.bulusma_duzenle(uuid, text, date, text, text),
   public.bulusma_yanitla(uuid, text), public.bulusmalarim(), public.bulusmaya_erisir_mi(uuid, uuid)
   to authenticated;
+
+-- ---- Birlikte rutin (pilot 18 Ekim) ------------------------------------------------
+-- "Haftada 3 yürüyüş" gibi ortak hedef. Katılan, kendi günlerini telefonda seçer
+-- (ajandasında tekrarlı kart); "Yaptım" dediği günler buraya yazılır. Sunucu yalnız
+-- kimin hangi gün yaptığını bilir; kartın içi (not, ölçüm) telefonda kalır.
+
+create table if not exists public.rutin (
+  id        uuid primary key default gen_random_uuid(),
+  grup      uuid not null references public.grup (id) on delete cascade,
+  kuran     uuid not null references public.kullanici (id) on delete cascade,
+  ad        text not null check (length(trim(ad)) > 0),
+  hedef     int  not null check (hedef between 1 and 7),
+  olusturma timestamptz not null default now()
+);
+create index if not exists rutin_grup on public.rutin (grup);
+
+create table if not exists public.rutin_katilim (
+  rutin     uuid not null references public.rutin (id) on delete cascade,
+  kullanici uuid not null references public.kullanici (id) on delete cascade,
+  katilma   timestamptz not null default now(),
+  primary key (rutin, kullanici)
+);
+
+create table if not exists public.rutin_kayit (
+  rutin     uuid not null references public.rutin (id) on delete cascade,
+  kullanici uuid not null references public.kullanici (id) on delete cascade,
+  gun       date not null,
+  primary key (rutin, kullanici, gun)
+);
+
+alter table public.rutin         enable row level security;
+alter table public.rutin_katilim enable row level security;
+alter table public.rutin_kayit   enable row level security;
+
+create or replace function public.rutine_erisir_mi(r uuid, u uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.rutin x
+    join public.grup_uye gu on gu.grup = x.grup and gu.kullanici = u and gu.durum = 'uye'
+    where x.id = r
+  );
+$$;
+
+drop policy if exists rutin_oku on public.rutin;
+create policy rutin_oku on public.rutin for select to authenticated
+  using (public.grup_uyesi_mi(grup, auth.uid()));
+
+drop policy if exists rutin_sil on public.rutin;
+create policy rutin_sil on public.rutin for delete to authenticated
+  using (kuran = auth.uid() or public.grup_kurucusu_mu(grup, auth.uid()));
+
+drop policy if exists rutin_katilim_oku on public.rutin_katilim;
+create policy rutin_katilim_oku on public.rutin_katilim for select to authenticated
+  using (public.rutine_erisir_mi(rutin, auth.uid()));
+
+drop policy if exists rutin_kayit_oku on public.rutin_kayit;
+create policy rutin_kayit_oku on public.rutin_kayit for select to authenticated
+  using (public.rutine_erisir_mi(rutin, auth.uid()));
+
+revoke insert, update on public.rutin from anon, authenticated;
+revoke insert, update, delete on public.rutin_katilim, public.rutin_kayit from anon, authenticated;
+revoke all on public.rutin, public.rutin_katilim, public.rutin_kayit from anon;
+
+-- Kuran katılmış sayılır.
+create or replace function public.rutin_kur(p_grup uuid, p_ad text, p_hedef int) returns uuid
+language plpgsql security definer set search_path = public as $$
+declare
+  ben uuid := auth.uid();
+  r uuid;
+begin
+  if not public.grup_uyesi_mi(p_grup, ben) then raise exception 'grup yok'; end if;
+  if length(trim(coalesce(p_ad, ''))) = 0 then raise exception 'ad yok'; end if;
+  insert into public.rutin (grup, kuran, ad, hedef) values (p_grup, ben, trim(p_ad), p_hedef) returning id into r;
+  insert into public.rutin_katilim (rutin, kullanici) values (r, ben);
+  return r;
+end;
+$$;
+
+create or replace function public.rutin_duzenle(p_rutin uuid, p_ad text, p_hedef int) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (select 1 from public.rutin where id = p_rutin and kuran = auth.uid()) then raise exception 'yetki yok'; end if;
+  if length(trim(coalesce(p_ad, ''))) = 0 then raise exception 'ad yok'; end if;
+  update public.rutin set ad = trim(p_ad), hedef = p_hedef where id = p_rutin;
+end;
+$$;
+
+-- Katıl (p_katil) ya da ayrıl; ayrılınca o kişinin kayıtları da silinir.
+create or replace function public.rutine_katil(p_rutin uuid, p_katil boolean) returns void
+language plpgsql security definer set search_path = public as $$
+declare ben uuid := auth.uid();
+begin
+  if not public.rutine_erisir_mi(p_rutin, ben) then raise exception 'yetki yok'; end if;
+  if p_katil then
+    insert into public.rutin_katilim (rutin, kullanici) values (p_rutin, ben) on conflict do nothing;
+  else
+    delete from public.rutin_kayit where rutin = p_rutin and kullanici = ben;
+    delete from public.rutin_katilim where rutin = p_rutin and kullanici = ben;
+  end if;
+end;
+$$;
+
+-- "Yaptım" ya da geri al; yalnız katılan, kendi adına.
+create or replace function public.rutin_isaretle(p_rutin uuid, p_gun date, p_yapildi boolean) returns void
+language plpgsql security definer set search_path = public as $$
+declare ben uuid := auth.uid();
+begin
+  if not exists (select 1 from public.rutin_katilim where rutin = p_rutin and kullanici = ben)
+     or not public.rutine_erisir_mi(p_rutin, ben) then
+    raise exception 'katilmadin';
+  end if;
+  if p_yapildi then
+    insert into public.rutin_kayit (rutin, kullanici, gun) values (p_rutin, ben, p_gun) on conflict do nothing;
+  else
+    delete from public.rutin_kayit where rutin = p_rutin and kullanici = ben and gun = p_gun;
+  end if;
+end;
+$$;
+
+-- Üyesi olduğum grupların rutinleri: katılanlar ve p_ilk'ten bu yana yaptıkları günler.
+create or replace function public.rutinlerim(p_ilk date) returns jsonb
+language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', r.id, 'grup', r.grup, 'grupAdi', g.ad, 'kuran', r.kuran, 'ad', r.ad, 'hedef', r.hedef,
+    'katilanlar', (
+      select coalesce(jsonb_agg(jsonb_build_object(
+        'kullanici', k.kullanici,
+        'gunler', (
+          select coalesce(jsonb_agg(x.gun order by x.gun), '[]'::jsonb)
+          from public.rutin_kayit x where x.rutin = r.id and x.kullanici = k.kullanici and x.gun >= p_ilk
+        )
+      ) order by k.katilma), '[]'::jsonb)
+      from public.rutin_katilim k where k.rutin = r.id
+    )
+  ) order by r.olusturma), '[]'::jsonb)
+  from public.rutin r
+  join public.grup g on g.id = r.grup
+  join public.grup_uye me on me.grup = r.grup and me.kullanici = auth.uid() and me.durum = 'uye';
+$$;
+
+revoke execute on function
+  public.rutin_kur(uuid, text, int), public.rutin_duzenle(uuid, text, int), public.rutine_katil(uuid, boolean),
+  public.rutin_isaretle(uuid, date, boolean), public.rutinlerim(date), public.rutine_erisir_mi(uuid, uuid)
+  from anon, public;
+grant execute on function
+  public.rutin_kur(uuid, text, int), public.rutin_duzenle(uuid, text, int), public.rutine_katil(uuid, boolean),
+  public.rutin_isaretle(uuid, date, boolean), public.rutinlerim(date), public.rutine_erisir_mi(uuid, uuid)
+  to authenticated;

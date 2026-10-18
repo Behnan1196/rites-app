@@ -177,3 +177,12 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Grup ekranının sırası:** Buluşmalar · Listeler · **+ Ekle** (Buluşma, Liste; yeni türler buraya) · Üyeler. — Öneri
 - Kart, buluşmanın gününde ve saatinde kalır; kişi kartı ajandasından silerse eşitleme onu geri getirmez (yanıtı yine Geliyorum görünür). — Öneri
 
+## Birlikte rutin (18 Ekim)
+
+- **Hedef "haftada N kez"** (1–7; 7 = Her gün); hangi gün yapılacağı kişiye kalır. Hafta Pazartesi başlar. — Ürün sahibi
+- **Katılırken kişi kendi günlerini seçer;** hedef kadar gün önerilir (3 → Pzt Çar Cum), değiştirilebilir. Ajandasında o günlerde tekrarlı kart ("Grup: <grup adı>"); kartta "Yaptım" dediği günler grupta sayılır. — Ürün sahibi (öneri günleri: Öneri)
+- **Grupta kişi kişi bu haftaki sayı görünür** ("Sen 1/3 · Gül Aksoy 3/3 ✓"; hedefe ulaşan dolu renkte). Sunucuya yalnız gün gider; kartın içi (not, ölçüm) telefonda kalır. — Ürün sahibi
+- Kuran katılmış sayılır. Ad ve hedefi kuran değiştirir; kuran ya da grubun kurucusu siler. Ayrılınca ya da rutin silinince ajandadaki dizi dün biter, geçmiş kayıtlar kalır; sunucudaki o kişinin günleri silinir. — Öneri
+- Ad örnekleri: Yürüyüş · Su içmek · 10 dk okuma · Esneme · Ekransız akşam · Erken yatmak. Grup ekranında Buluşmalar'ın altında, yalnız rutin varsa "Birlikte rutinler" bölümü. — Öneri
+- İşaretler telefon çevrimiçiyken birkaç saniye içinde, değilse uygulama yeniden açılınca gruba gider; geçen haftanın başından eski işaretler gönderilmez. — Öneri
+

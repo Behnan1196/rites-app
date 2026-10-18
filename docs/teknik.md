@@ -109,3 +109,8 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Telefonda: "Geliyorum" denince yerel kart eklenir (`bulusmaKarti`; saatliyse 1 saat önce bildirim), başka yanıtta silinir. `BulusmaSaglayici` her okumadan sonra eşitler: buluşma artık yoksa, gün/saat değiştiyse ya da yanıtım "Geliyorum" değilse kart kalkar (`kaldirilacakKartlar`; dünden eski kartlara dokunulmaz). Eşitleme kart eklemez; kişinin sildiği kart geri gelmez.
 - Sunucu şeması güncellenmeden yeni sürüm açılırsa Buluşmalar "Şu an bağlanamıyor" gibi davranır; listeler etkilenmez.
 
+## Grup etkinlikleri: Birlikte rutin (sunucu)
+
+- Tablolar `rutin` (grup, kuran, ad, hedef 1–7: haftada kaç kez), `rutin_katilim`, `rutin_kayit` (rutin, kullanıcı, gün). Yazma yalnız işlevlerle: `rutin_kur` (kuran katılmış sayılır), `rutin_duzenle` (kuran), `rutine_katil(p_katil)` (ayrılınca kayıtları da silinir), `rutin_isaretle` (yalnız katılan, kendi adına). Okuma `rutinlerim(p_ilk)`: katılanlar ve p_ilk'ten bu yana yaptıkları günler. Silme: kuran ya da grubun kurucusu.
+- Telefonda: katılınca (ya da kurunca) seçilen günlerde tekrarlı yerel kart (`rutinKarti`, `bag` = `rutin:<id>`). `RutinSaglayici` kartlarda değişiklik olunca (1,5 sn sonra), uygulama öne dönünce ve grup ekranı öne gelince eşitler: telefondaki "Yaptım"lar doğrudur, geçen haftanın Pazartesi'sinden bugüne fark sunucuya yazılır (`isaretFarki`); rutin silindiyse ya da artık katılmıyorsam kartın dizisi dün biter, bağı kopar, geçmiş kayıtları kalır (`bagiBitir`). Hafta Pazartesi başlar.
+

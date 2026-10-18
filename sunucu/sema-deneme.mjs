@@ -161,6 +161,33 @@ await olarak(ayse, () => q('delete from bulusma where id = $1', [bul]));
 esit('kuran siler, yanıtlar da gider', [(await q('select count(*)::int n from bulusma')).rows[0].n, (await q('select count(*)::int n from bulusma_yanit')).rows[0].n], [0, 0]);
 await olarak(ayse, () => q(`select bulusma_kur($1, 'Piknik', '2099-02-01', null, '')`, [aile]));
 
+// Birlikte rutin (pilot 18 Ekim)
+const yur = (await tek(ayse, `select rutin_kur($1, 'Yürüyüş', 3) r`, [aile])).r;
+esit('kuran katılmış sayılır', (await tek(ali, `select rutinlerim('2099-01-01') r`)).r.map(x => [x.ad, x.hedef, x.katilanlar.length, x.grupAdi]), [['Yürüyüş', 3, 1, 'Aile']]);
+await hataBekle('katılmadan işaretlenemez', () => olarak(ali, () => q(`select rutin_isaretle($1, '2099-01-05', true)`, [yur])), 'katilmadin');
+await olarak(ali, () => q('select rutine_katil($1, true)', [yur]));
+await olarak(ali, () => q(`select rutin_isaretle($1, '2099-01-05', true)`, [yur]));
+await olarak(ali, () => q(`select rutin_isaretle($1, '2099-01-05', true)`, [yur]));
+await olarak(ali, () => q(`select rutin_isaretle($1, '2099-01-06', true)`, [yur]));
+await olarak(ali, () => q(`select rutin_isaretle($1, '2098-12-01', true)`, [yur]));
+const aliGunleri = async () => (await tek(ayse, `select rutinlerim('2099-01-01') r`)).r[0].katilanlar.find(k => k.kullanici === ali).gunler;
+esit('günler (p_ilk sonrası, tekrarsız)', await aliGunleri(), ['2099-01-05', '2099-01-06']);
+await olarak(ali, () => q(`select rutin_isaretle($1, '2099-01-06', false)`, [yur]));
+esit('geri alınır', await aliGunleri(), ['2099-01-05']);
+await hataBekle('kayıt doğrudan yazılamaz', () => olarak(ali, () => q(`insert into rutin_kayit values ($1, $2, '2099-01-07')`, [yur, ali])), 'permission denied');
+await hataBekle('grupta olmayan katılamaz', () => olarak(zeynep, () => q('select rutine_katil($1, true)', [yur])), 'yetki yok');
+esit('grupta olmayan görmez', (await tek(zeynep, `select rutinlerim('2099-01-01') r`)).r.length, 0);
+await hataBekle('hedef 1–7', () => olarak(ayse, () => q(`select rutin_kur($1, 'X', 8)`, [aile])), 'check');
+await hataBekle('başkası düzenleyemez', () => olarak(ali, () => q(`select rutin_duzenle($1, 'X', 2)`, [yur])), 'yetki yok');
+await olarak(ayse, () => q(`select rutin_duzenle($1, 'Akşam yürüyüşü', 4)`, [yur]));
+await olarak(ali, () => q('select rutine_katil($1, false)', [yur]));
+esit('ayrılınca kayıtları da silinir', [(await q('select count(*)::int n from rutin_kayit')).rows[0].n, (await tek(ayse, `select rutinlerim('2099-01-01') r`)).r[0].katilanlar.length], [0, 1]);
+await olarak(ali, () => q('delete from rutin where id = $1', [yur]));
+esit('üye başkasının rutinini silemez', (await q('select count(*)::int n from rutin')).rows[0].n, 1);
+await olarak(ayse, () => q('delete from rutin where id = $1', [yur]));
+esit('kuran siler', (await q('select count(*)::int n from rutin_katilim')).rows[0].n, 0);
+await olarak(ayse, () => q(`select rutin_kur($1, 'Okuma', 7)`, [aile]));
+
 // Gruptan ayrıl, çıkar, grubu sil
 await olarak(ayse, () => q('delete from grup_uye where grup = $1 and kullanici = $2', [aile, ayse]));
 esit('kuran gruptan ayrılamaz', (await q('select count(*)::int n from grup_uye where grup = $1', [aile])).rows[0].n, 2);
@@ -183,5 +210,6 @@ esit('Ayşe\'nin listeleri ve maddeleri silinir', [(await q('select count(*)::in
 await ex('set role anon'); await hataBekle('oturumsuz çağrılamaz', () => q(`select kisi_ekle('a@b.c')`), 'permission denied');
 await hataBekle('oturumsuz liste okunamaz', () => q('select listelerim()'), 'permission denied');
 await hataBekle('oturumsuz buluşma okunamaz', () => q('select bulusmalarim()'), 'permission denied');
+await hataBekle('oturumsuz rutin okunamaz', () => q(`select rutinlerim('2099-01-01')`), 'permission denied');
 await ex('reset role');
 console.log(hatalar ? `${hatalar} HATA` : 'HEPSİ TAMAM');

@@ -20,6 +20,7 @@ import { GirisAyariSaglayici } from "@/bilesen/giris/GirisAyari";
 import { OturumSaglayici } from "@/bilesen/oturum/OturumSayfasi";
 import { KatmanSaglayici } from "@/bilesen/Katman";
 import { BulusmaSaglayici } from "@/bilesen/gruplar/Bulusmalar";
+import { RutinSaglayici } from "@/bilesen/gruplar/Rutinler";
 import { BanaVerilenlerSaglayici } from "@/bilesen/listeler/BanaVerilenler";
 import { KisaMesajSaglayici } from "@/bilesen/KisaMesaj";
 import { ProfilSaglayici } from "@/bilesen/Profil";
@@ -53,6 +54,7 @@ export default function KokDuzen() {
               <OturumSaglayici>
                 <BanaVerilenlerSaglayici>
                 <BulusmaSaglayici>
+                <RutinSaglayici>
                   <GirisAyariSaglayici>
                     <ProfilSaglayici>
                       <Stack
@@ -66,6 +68,7 @@ export default function KokDuzen() {
                       <YedekSorusu />
                     </ProfilSaglayici>
                   </GirisAyariSaglayici>
+                </RutinSaglayici>
                 </BulusmaSaglayici>
                 </BanaVerilenlerSaglayici>
               </OturumSaglayici>

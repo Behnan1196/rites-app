@@ -16,6 +16,9 @@ import { BulusmaFormu } from '@/bilesen/gruplar/BulusmaFormu';
 import { BulusmaKarti } from '@/bilesen/gruplar/BulusmaKarti';
 import { useBulusmalar } from '@/bilesen/gruplar/Bulusmalar';
 import { GrubaEkleSayfasi } from '@/bilesen/gruplar/GrubaEkleSayfasi';
+import { RutinFormu, type RutinFormuKipi } from '@/bilesen/gruplar/RutinFormu';
+import { RutinKarti } from '@/bilesen/gruplar/RutinKarti';
+import { useRutinler } from '@/bilesen/gruplar/Rutinler';
 import { Katman } from '@/bilesen/Katman';
 import { ListeFormu } from '@/bilesen/listeler/ListeFormu';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
@@ -27,11 +30,12 @@ import { Yazi } from '@/bilesen/Yazi';
 import { cagrilabilecekler, GRUP_LISTELERI_NOTU, grupAdi, grupHatasi, type GrupUyesi } from '@/mantik/gruplar';
 import { yaklasanlar, type Bulusma } from '@/mantik/bulusma';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
+import type { Rutin } from '@/mantik/rutin';
 import { grubaCagir, grubuSil, gruptanCikar } from '@/sunucu/gruplar';
 import { useOturum } from '@/sunucu/oturum';
 import { useBugun } from '@/veri/useBugun';
 
-type Soru = { tur: 'cikar'; uye: GrupUyesi } | { tur: 'sil' } | { tur: 'ayril' };
+type Soru = { tur: 'cikar'; uye: GrupUyesi } | { tur: 'sil' } | { tur: 'ayril' } | { tur: 'rutinAyril'; rutin: Rutin };
 
 export default function GrupEkrani() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -45,14 +49,21 @@ export default function GrupEkrani() {
   const bugunGun = useBugun();
   const bulusma = useBulusmalar();
   const bulusmaYenile = bulusma.yenile;
+  const rutin = useRutinler();
+  const rutinYenile = rutin.yenile;
+  const [rutinFormu, setRutinFormu] = useState<{ n: number; kip: RutinFormuKipi } | null>(null);
+  const rutinFormuAc = (kip: RutinFormuKipi) => setRutinFormu((f) => ({ n: (f?.n ?? 0) + 1, kip }));
   useFocusEffect(
     useCallback(() => {
       void bulusmaYenile();
-    }, [bulusmaYenile]),
+      void rutinYenile();
+    }, [bulusmaYenile, rutinYenile]),
   );
   const grup = gruplar.find((g) => g.id === id);
   const kuranBenim = !!grup && grup.kurucu === ben;
+
   const grubunBulusmalari = grup ? yaklasanlar(bulusma.bulusmalar, grup.id, bugunGun) : [];
+  const grubunRutinleri = grup ? rutin.rutinler.filter((r) => r.grup === grup.id) : [];
 
   const dene = async (is: () => Promise<void>, mesaj: string, sonra?: () => void) => {
     setSoru(null);
@@ -76,6 +87,15 @@ export default function GrupEkrani() {
         aciklama: 'Grubun listelerini artık görmez.',
         etiket: 'Çıkar',
         is: () => void dene(() => gruptanCikar(grup.id, soru.uye.id), `${kim} gruptan çıkarıldı.`),
+      };
+    }
+    if (soru.tur === 'rutinAyril') {
+      const r = soru.rutin;
+      return {
+        baslik: `${r.ad} rutininden ayrılmak istiyor musun?`,
+        aciklama: 'Ajandandaki dizisi biter (geçmiş kayıtların kalır); grupta artık sayın görünmez.',
+        etiket: 'Ayrıl',
+        is: () => void dene(() => rutin.ayril(r), `${r.ad} rutininden ayrıldın.`),
       };
     }
     if (soru.tur === 'sil') {
@@ -140,6 +160,26 @@ export default function GrupEkrani() {
               />
             ))
           )}
+          {grubunRutinleri.length > 0 && (
+            <>
+              <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
+                Birlikte rutinler
+              </Yazi>
+              {grubunRutinleri.map((r) => (
+                <RutinKarti
+                  key={r.id}
+                  rutin={r}
+                  ben={ben}
+                  bugunGun={bugunGun}
+                  ad={(k) => ad(k)}
+                  onKatil={() => rutinFormuAc({ tur: 'katil', rutin: r })}
+                  onAyril={() => setSoru({ tur: 'rutinAyril', rutin: r })}
+                  onDuzenle={() => rutinFormuAc({ tur: 'duzenle', rutin: r })}
+                />
+              ))}
+            </>
+          )}
+
           <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
             Listeler
           </Yazi>
@@ -241,6 +281,7 @@ export default function GrupEkrani() {
           onSec={(tur) => {
             setEkleAcik(false);
             if (tur === 'liste') setListeFormu((n) => n + 1);
+            else if (tur === 'rutin') rutinFormuAc({ tur: 'kur' });
             else setBulusmaFormu((f) => ({ n: (f?.n ?? 0) + 1 }));
           }}
         />
@@ -251,6 +292,14 @@ export default function GrupEkrani() {
           grup={{ id: grup.id, ad: grup.ad }}
           mevcut={bulusmaFormu.mevcut}
           onKapat={() => setBulusmaFormu(null)}
+        />
+      )}
+      {rutinFormu && grup && (
+        <RutinFormu
+          key={rutinFormu.n}
+          grup={{ id: grup.id, ad: grup.ad }}
+          kip={rutinFormu.kip}
+          onKapat={() => setRutinFormu(null)}
         />
       )}
       {listeFormu > 0 && grup && (
