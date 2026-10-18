@@ -9,7 +9,7 @@ Rites, kişinin gününü ve kendine iyi bakma alışkanlıklarını tek yerde t
 - **Giriş:** her şeyin özeti; kişinin açıp kapatabildiği ve sıraladığı kutular (Hızlı Not, Gelenler, Bugün sırada, Anımsatıcılar, Devam edenler, Günün sorusu, Ortak Listeler).
 - **Ajandam:** günün işleri. Tek tip kart; içine istenen kadar blok (talimat, video, liste, proje adımları, fotoğraf, dosya, zamanlayıcı, ölçüm, günün notu, gelişim fotoğrafı). Tekrar, seri, günlük kayıt.
 - **Yaşam Tarzım:** dokuz alan (Hareket, Beslenme, Uyku, Zihin, Anlam, Sosyal bağlar, Öğrenme, İş, Uğraşlar), alan puanı ve her alanda **planlar** (düzenli kartlar ve/veya adımlar). Kütüphanem.
-- **Gruplar:** gruplar ve grupta birlikte yapılanlar: buluşma (Geliyorum / Belki / Gelemem; gelenin ajandasına düşer), ortak listeler (maddeye Kime? / Ne zaman?); birlikte rutin (haftada N kez; kişi kişi bu haftaki sayı); nöbet / sıra (sırası gelenin ajandasına düşer); iş (herkese aç ya da birinden iste; alanın ajandasına düşer); sırada karar / oylama. Kişilerim (bağlantı isteği, davet).
+- **Gruplar:** gruplar ve grupta birlikte yapılanlar: buluşma (Geliyorum / Belki / Gelemem; gelenin ajandasına düşer), ortak listeler (maddeye Kime? / Ne zaman?); birlikte rutin (haftada N kez; kişi kişi bu haftaki sayı); nöbet / sıra (sırası gelenin ajandasına düşer); iş (herkese aç ya da birinden iste; alanın ajandasına düşer); karar / oylama (gün oylamasından buluşma). Kişilerim (bağlantı isteği, davet).
 
 ## Kimin için?
 

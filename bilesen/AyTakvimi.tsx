@@ -41,9 +41,11 @@ interface Ozellikler {
   onSec: (gun: Gun) => void;
   /** Her günün altında gösterilecek sayı (0 ise boş). Verilmezse sayı satırı yok. */
   sayi?: (gun: Gun) => number;
+  /** Birden çok gün seçilebiliyorsa (ör. oylama): seçili günler; verilince `secili` yalnız açılış ayı içindir. */
+  secililer?: ReadonlySet<Gun>;
 }
 
-export function AyTakvimi({ secili, bugunGun, onSec, sayi: sayiBul }: Ozellikler) {
+export function AyTakvimi({ secili, bugunGun, onSec, sayi: sayiBul, secililer }: Ozellikler) {
   const [ilkGun, setIlkGun] = useState(() => ayinIlkGunu(secili ?? bugunGun));
   const ay = ilkGun.slice(0, 7);
   const ayAdi = `${AY_ADLARI[Number(ilkGun.slice(5, 7)) - 1]} ${ilkGun.slice(0, 4)}`;
@@ -84,7 +86,7 @@ export function AyTakvimi({ secili, bugunGun, onSec, sayi: sayiBul }: Ozellikler
         <View key={hafta[0]} style={stiller.satir}>
           {hafta.map((gun) => {
             const ayDisi = gun.slice(0, 7) !== ay;
-            const seciliMi = gun === secili;
+            const seciliMi = secililer ? secililer.has(gun) : gun === secili;
             const bugunMu = gun === bugunGun;
             const sayi = sayiBul?.(gun) ?? 0;
             return (
@@ -113,7 +115,13 @@ export function AyTakvimi({ secili, bugunGun, onSec, sayi: sayiBul }: Ozellikler
                   </Yazi>
                 </View>
                 {sayiBul && (
-                  <Yazi tur="etiket" kalinlik="kalin" renk={renk.vurguYazi} style={stiller.kartSayisi} maxFontSizeMultiplier={1.2}>
+                  <Yazi
+                    tur="etiket"
+                    kalinlik="kalin"
+                    renk={renk.vurguYazi}
+                    style={stiller.kartSayisi}
+                    maxFontSizeMultiplier={1.2}
+                  >
                     {sayi > 0 ? String(sayi) : ' '}
                   </Yazi>
                 )}

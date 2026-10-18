@@ -205,3 +205,12 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - Alan, işi grup ekranından ya da ajandadaki kartından "Yaptım" ile bitirir; "Bırak" derse iş herkese açıksa yeniden açılır, birinden istenmişse isteyene döner. Yapılan işi yalnız yapan geri alır. İsteyen düzenler; isteyen ya da grubun kurucusu siler. — Öneri
 - Grup ekranında **İşler en üstte** (yalnız iş varsa): önce bende olanlar ve benden istenenler, sonra açıklar, sonra öbürleri, yapılanlar en sonda. Ad örnekleri: Eczaneye uğra · Faturayı öde · Okuldan al · Ekmek al · Kargoyu teslim al. — Öneri
 
+## Karar / oylama (18 Ekim)
+
+- **Kaç seçenek işaretleneceğini kuran seçer:** "Tek seçim" ya da "Birden çok" (gün oylamasında varsayılan Birden çok). — Ürün sahibi
+- **Kuran "Karar ver" der** (seçeneklerden birine dokunur, onaylar); isteğe bağlı son gün (Yok · Yarın · 3 gün sonra · 1 hafta sonra), son günden sonra oy verilmez, kararı yine kuran verir. — Ürün sahibi (son gün seçenekleri: Öneri)
+- **Kim neye oy verdi adlarıyla görünür;** en çok oy alan kalın. — Ürün sahibi
+- **"Gün seçimi" oylaması:** "Ne için?" (Piknik…), takvimden günler, isteğe bağlı ortak saat ve yer; karar verilince o güne Buluşma kurulur (kuran geliyor sayılır, ajandasına girer; ötekiler Geliyorum / Belki / Gelemem der). Oy verenlere kendiliğinden "Geliyorum" yazılmaz. — Ürün sahibi (kendiliğinden yanıt yok: Öneri)
+- Oya yeniden dokununca geri alınır. Verilmiş karar 7 gün görünür ("Karar: …"), sonra kalkar. Soru örnekleri: Ne yiyelim? · Nereye gidelim? · Hangi film? · Hediye ne alalım?; gün için: Piknik · Akşam yemeği · Aile toplantısı · Doğum günü. — Öneri
+- **"+ Ekle" sayfasının sırası:** İş · Buluşma · Karar / oylama · Birlikte rutin · Nöbet / sıra · Liste. Böylece grup etkinliklerinin altısı da hazır (P-15 tamam). — Öneri
+

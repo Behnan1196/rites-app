@@ -1102,3 +1102,172 @@ grant execute on function
   public.is_ekle(uuid, text, date, uuid), public.is_duzenle(uuid, text, date, uuid), public.is_yanitla(uuid, text),
   public.islerim()
   to authenticated;
+
+-- ---- Karar / oylama (pilot 18 Ekim) -------------------------------------------------
+-- Grubun üyesi bir soru ve seçenekler (metin ya da gün) önerir; herkes oy verir
+-- (kuran tek ya da birden çok seçimi belirler). Kuran "Karar ver" der; gün
+-- oylamasında seçilen güne Buluşma kurulur. İsteğe bağlı son günden sonra oy verilmez.
+
+create table if not exists public.karar (
+  id        uuid primary key default gen_random_uuid(),
+  grup      uuid not null references public.grup (id) on delete cascade,
+  kuran     uuid not null references public.kullanici (id) on delete cascade,
+  soru      text not null check (length(trim(soru)) > 0),
+  tur       text not null check (tur in ('metin', 'gun')),
+  coklu     boolean not null default false,
+  son_gun   date,
+  yer       text not null default '',
+  sonuc     uuid,
+  bulusma   uuid references public.bulusma (id) on delete set null,
+  olusturma timestamptz not null default now(),
+  karar_zamani timestamptz
+);
+create index if not exists karar_grup on public.karar (grup);
+
+create table if not exists public.karar_secenek (
+  id    uuid primary key default gen_random_uuid(),
+  karar uuid not null references public.karar (id) on delete cascade,
+  metin text not null default '',
+  gun   date,
+  saat  text check (saat is null or saat ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$'),
+  sira  int not null
+);
+create index if not exists karar_secenek_karar on public.karar_secenek (karar);
+
+create table if not exists public.karar_oy (
+  karar     uuid not null references public.karar (id) on delete cascade,
+  secenek   uuid not null references public.karar_secenek (id) on delete cascade,
+  kullanici uuid not null references public.kullanici (id) on delete cascade,
+  primary key (secenek, kullanici)
+);
+
+alter table public.karar         enable row level security;
+alter table public.karar_secenek enable row level security;
+alter table public.karar_oy      enable row level security;
+
+create or replace function public.karara_erisir_mi(k uuid, u uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.karar x
+    join public.grup_uye gu on gu.grup = x.grup and gu.kullanici = u and gu.durum = 'uye'
+    where x.id = k
+  );
+$$;
+
+drop policy if exists karar_oku on public.karar;
+create policy karar_oku on public.karar for select to authenticated
+  using (public.grup_uyesi_mi(grup, auth.uid()));
+drop policy if exists karar_sil on public.karar;
+create policy karar_sil on public.karar for delete to authenticated
+  using (kuran = auth.uid() or public.grup_kurucusu_mu(grup, auth.uid()));
+drop policy if exists karar_secenek_oku on public.karar_secenek;
+create policy karar_secenek_oku on public.karar_secenek for select to authenticated
+  using (public.karara_erisir_mi(karar, auth.uid()));
+drop policy if exists karar_oy_oku on public.karar_oy;
+create policy karar_oy_oku on public.karar_oy for select to authenticated
+  using (public.karara_erisir_mi(karar, auth.uid()));
+
+revoke insert, update on public.karar from anon, authenticated;
+revoke insert, update, delete on public.karar_secenek, public.karar_oy from anon, authenticated;
+revoke all on public.karar, public.karar_secenek, public.karar_oy from anon;
+
+-- p_secenekler: [{"metin": "...", "gun": "2099-01-10" | null, "saat": "19:00" | null}], 2–10 tane.
+create or replace function public.karar_kur(
+  p_grup uuid, p_soru text, p_tur text, p_coklu boolean, p_son_gun date, p_yer text, p_secenekler jsonb
+) returns uuid language plpgsql security definer set search_path = public as $$
+declare
+  k uuid;
+  s jsonb;
+  i int := 0;
+begin
+  if not public.grup_uyesi_mi(p_grup, auth.uid()) then raise exception 'grup yok'; end if;
+  if length(trim(coalesce(p_soru, ''))) = 0 then raise exception 'ad yok'; end if;
+  if jsonb_array_length(coalesce(p_secenekler, '[]')) not between 2 and 10 then raise exception 'secenek sayisi'; end if;
+  insert into public.karar (grup, kuran, soru, tur, coklu, son_gun, yer)
+    values (p_grup, auth.uid(), trim(p_soru), p_tur, coalesce(p_coklu, false), p_son_gun, trim(coalesce(p_yer, '')))
+    returning id into k;
+  for s in select * from jsonb_array_elements(p_secenekler) loop
+    if p_tur = 'gun' and nullif(s->>'gun', '') is null then raise exception 'gun yok'; end if;
+    if p_tur = 'metin' and length(trim(coalesce(s->>'metin', ''))) = 0 then raise exception 'secenek bos'; end if;
+    insert into public.karar_secenek (karar, metin, gun, saat, sira)
+      values (k, trim(coalesce(s->>'metin', '')), nullif(s->>'gun', '')::date, nullif(s->>'saat', ''), i);
+    i := i + 1;
+  end loop;
+  return k;
+end;
+$$;
+
+-- Oylarımı yazar (öncekilerin yerine). Boş dizi: oyumu geri al.
+create or replace function public.karar_oyla(p_karar uuid, p_secenekler uuid[]) returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  ben uuid := auth.uid();
+  x public.karar;
+begin
+  select * into x from public.karar where id = p_karar;
+  if not found or not public.karara_erisir_mi(p_karar, ben) then raise exception 'yetki yok'; end if;
+  if x.sonuc is not null or (x.son_gun is not null and x.son_gun < current_date) then raise exception 'kapali'; end if;
+  if not x.coklu and cardinality(coalesce(p_secenekler, '{}')) > 1 then raise exception 'tek secim'; end if;
+  if exists (select 1 from unnest(coalesce(p_secenekler, '{}')) s
+             where not exists (select 1 from public.karar_secenek ks where ks.id = s and ks.karar = p_karar)) then
+    raise exception 'secenek yok';
+  end if;
+  delete from public.karar_oy where karar = p_karar and kullanici = ben;
+  insert into public.karar_oy (karar, secenek, kullanici)
+    select p_karar, s, ben from unnest(coalesce(p_secenekler, '{}')) s on conflict do nothing;
+end;
+$$;
+
+-- Kuran karar verir; gün oylamasında seçilen güne buluşma kurulur (kuran geliyor sayılır). Döner: buluşma kimliği ya da null.
+create or replace function public.karar_ver(p_karar uuid, p_secenek uuid) returns uuid
+language plpgsql security definer set search_path = public as $$
+declare
+  ben uuid := auth.uid();
+  x public.karar;
+  s public.karar_secenek;
+  b uuid;
+begin
+  select * into x from public.karar where id = p_karar;
+  if not found or x.kuran <> ben then raise exception 'yetki yok'; end if;
+  if x.sonuc is not null then raise exception 'kapali'; end if;
+  select * into s from public.karar_secenek where id = p_secenek and karar = p_karar;
+  if not found then raise exception 'secenek yok'; end if;
+  if x.tur = 'gun' then
+    insert into public.bulusma (grup, kuran, baslik, gun, saat, yer)
+      values (x.grup, ben, x.soru, s.gun, s.saat, x.yer) returning id into b;
+    insert into public.bulusma_yanit (bulusma, kullanici, yanit) values (b, ben, 'geliyorum');
+  end if;
+  update public.karar set sonuc = p_secenek, bulusma = b, karar_zamani = now() where id = p_karar;
+  return b;
+end;
+$$;
+
+-- Üyesi olduğum grupların kararları: açıklar ve son 7 günde verilenler.
+create or replace function public.kararlarim() returns jsonb
+language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', k.id, 'grup', k.grup, 'grupAdi', g.ad, 'kuran', k.kuran, 'soru', k.soru, 'tur', k.tur,
+    'coklu', k.coklu, 'sonGun', k.son_gun, 'yer', k.yer, 'sonuc', k.sonuc, 'bulusma', k.bulusma,
+    'secenekler', (
+      select coalesce(jsonb_agg(jsonb_build_object('id', s.id, 'metin', s.metin, 'gun', s.gun, 'saat', s.saat) order by s.sira), '[]'::jsonb)
+      from public.karar_secenek s where s.karar = k.id
+    ),
+    'oylar', (
+      select coalesce(jsonb_agg(jsonb_build_object('secenek', o.secenek, 'kullanici', o.kullanici)), '[]'::jsonb)
+      from public.karar_oy o where o.karar = k.id
+    )
+  ) order by k.olusturma), '[]'::jsonb)
+  from public.karar k
+  join public.grup g on g.id = k.grup
+  join public.grup_uye me on me.grup = k.grup and me.kullanici = auth.uid() and me.durum = 'uye'
+  where k.sonuc is null or k.karar_zamani > now() - interval '7 days';
+$$;
+
+revoke execute on function
+  public.karar_kur(uuid, text, text, boolean, date, text, jsonb), public.karar_oyla(uuid, uuid[]),
+  public.karar_ver(uuid, uuid), public.kararlarim(), public.karara_erisir_mi(uuid, uuid)
+  from anon, public;
+grant execute on function
+  public.karar_kur(uuid, text, text, boolean, date, text, jsonb), public.karar_oyla(uuid, uuid[]),
+  public.karar_ver(uuid, uuid), public.kararlarim(), public.karara_erisir_mi(uuid, uuid)
+  to authenticated;

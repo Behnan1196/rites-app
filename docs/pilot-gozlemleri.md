@@ -88,5 +88,5 @@ Sonuç: → kararlar.md (Kartta fotoğraf büyütülür)
 ### P-15 · 18 Ekim 2026 · Behnan · iPhone
 Ne dedi: "Bir ortak liste ekliyoruz; aslında ortak yapılacak etkinlikler çeşitlendirilebilir mi, çünkü liste sanki hep alışveriş listesi hazırlanacakmış gibi geliyor. Rites web sürümü denememde Ortak iş, Birinden iste, Liste, Buluşma, Birlikte rutin başlıklarını düşünmüştük." Sonra: "Hepsini sırayla uygulayalım. Ortak listeler Giriş ekranında diye düşünüldü ama belki öncelikle yaşaması gereken yer Gruplar."
 Nerede: Gruplar, Giriş → Ortak listeler
-Sonuç: → kararlar.md (Gruplar: ortak etkinlikler çeşitlenir; listelerin yeri Gruplar)
+Sonuç: → kararlar.md (Gruplar: ortak etkinlikler çeşitlenir; listelerin yeri Gruplar); Buluşma, Birlikte rutin, Nöbet / sıra, İş, Karar / oylama (18 Ekim, hepsi yapıldı)
 

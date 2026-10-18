@@ -248,6 +248,39 @@ esit('üye başkasının işini silemez', (await q('select count(*)::int n from 
 await olarak(ayse, () => q('delete from grup_is where id = $1', [ist]));
 esit('isteyen siler', (await q('select count(*)::int n from grup_is')).rows[0].n, 1);
 
+// Karar / oylama (pilot 18 Ekim)
+const kararOku = async (id, kim = ayse) => (await tek(kim, 'select kararlarim() k')).k.find(x => x.id === id);
+await hataBekle('en az iki seçenek', () => olarak(ayse, () => q(`select karar_kur($1, 'Ne yiyelim?', 'metin', false, null, '', '[{"metin":"Pizza"}]')`, [aile])), 'secenek sayisi');
+const yemek = (await tek(ayse, `select karar_kur($1, 'Ne yiyelim?', 'metin', false, null, '', '[{"metin":"Pizza"},{"metin":"Köfte"},{"metin":"Balık"}]') k`, [aile])).k;
+const ys = (await kararOku(yemek)).secenekler.map(x => x.id);
+esit('seçenekler sırayla', (await kararOku(yemek)).secenekler.map(x => x.metin), ['Pizza', 'Köfte', 'Balık']);
+await hataBekle('tek seçimde iki oy', () => olarak(ali, () => q('select karar_oyla($1, $2::uuid[])', [yemek, [ys[0], ys[1]]])), 'tek secim');
+await olarak(ali, () => q('select karar_oyla($1, $2::uuid[])', [yemek, [ys[0]]]));
+await olarak(ali, () => q('select karar_oyla($1, $2::uuid[])', [yemek, [ys[1]]]));
+await olarak(ayse, () => q('select karar_oyla($1, $2::uuid[])', [yemek, [ys[1]]]));
+esit('oy değişir', (await kararOku(yemek)).oylar.filter(o => o.secenek === ys[1]).length, 2);
+esit('Pizza oy almadı', (await kararOku(yemek)).oylar.filter(o => o.secenek === ys[0]).length, 0);
+await hataBekle('grupta olmayan oy veremez', () => olarak(zeynep, () => q('select karar_oyla($1, $2::uuid[])', [yemek, [ys[0]]])), 'yetki yok');
+await hataBekle('oy doğrudan yazılamaz', () => olarak(ali, () => q('insert into karar_oy values ($1, $2, $3)', [yemek, ys[2], ali])), 'permission denied');
+await hataBekle('başkası karar veremez', () => olarak(ali, () => q('select karar_ver($1, $2)', [yemek, ys[1]])), 'yetki yok');
+esit('metin kararında buluşma kurulmaz', (await tek(ayse, 'select karar_ver($1, $2) b', [yemek, ys[1]])).b, null);
+esit('sonuç yazıldı', (await kararOku(yemek)).sonuc, ys[1]);
+await hataBekle('karar verilince oy kapanır', () => olarak(ali, () => q('select karar_oyla($1, $2::uuid[])', [yemek, [ys[0]]])), 'kapali');
+const gun = (await tek(ayse, `select karar_kur($1, 'Piknik', 'gun', true, null, 'Belgrad Ormanı', '[{"gun":"2099-02-01","saat":"10:00"},{"gun":"2099-02-02","saat":"10:00"}]') k`, [aile])).k;
+const gs = (await kararOku(gun)).secenekler.map(x => x.id);
+await olarak(ali, () => q('select karar_oyla($1, $2::uuid[])', [gun, gs]));
+esit('çoklu seçimde iki oy', (await kararOku(gun)).oylar.length, 2);
+const bulId = (await tek(ayse, 'select karar_ver($1, $2) b', [gun, gs[1]])).b;
+esit('gün kararında buluşma kurulur', (await tek(ali, 'select bulusmalarim() b')).b.filter(x => x.id === bulId).map(x => [x.baslik, x.gun, x.saat, x.yer, x.yanitlar.length]), [['Piknik', '2099-02-02', '10:00', 'Belgrad Ormanı', 1]]);
+const eski = (await tek(ayse, `select karar_kur($1, 'X', 'metin', false, '2000-01-01', '', '[{"metin":"a"},{"metin":"b"}]') k`, [aile])).k;
+const eskiSecenek = (await kararOku(eski)).secenekler[0].id;
+await hataBekle('son gün geçince oy verilmez', () => olarak(ali, () => q('select karar_oyla($1, $2::uuid[])', [eski, [eskiSecenek]])), 'kapali');
+esit('grupta olmayan görmez', (await tek(zeynep, 'select kararlarim() k')).k.length, 0);
+await olarak(ali, () => q('delete from karar where id = $1', [eski]));
+esit('üye başkasının kararını silemez', (await q('select count(*)::int n from karar')).rows[0].n, 3);
+await olarak(ayse, () => q('delete from karar where id = $1', [eski]));
+esit('kuran siler', (await q('select count(*)::int n from karar')).rows[0].n, 2);
+
 // Gruptan ayrıl, çıkar, grubu sil
 await olarak(ayse, () => q('delete from grup_uye where grup = $1 and kullanici = $2', [aile, ayse]));
 esit('kuran gruptan ayrılamaz', (await q('select count(*)::int n from grup_uye where grup = $1', [aile])).rows[0].n, 2);
@@ -270,6 +303,7 @@ esit('Ayşe\'nin listeleri ve maddeleri silinir', [(await q('select count(*)::in
 await ex('set role anon'); await hataBekle('oturumsuz çağrılamaz', () => q(`select kisi_ekle('a@b.c')`), 'permission denied');
 await hataBekle('oturumsuz liste okunamaz', () => q('select listelerim()'), 'permission denied');
 await hataBekle('oturumsuz buluşma okunamaz', () => q('select bulusmalarim()'), 'permission denied');
+await hataBekle('oturumsuz karar okunamaz', () => q('select kararlarim()'), 'permission denied');
 await hataBekle('oturumsuz iş okunamaz', () => q('select islerim()'), 'permission denied');
 await hataBekle('oturumsuz nöbet okunamaz', () => q(`select nobetlerim('2099-01-01')`), 'permission denied');
 await hataBekle('oturumsuz rutin okunamaz', () => q(`select rutinlerim('2099-01-01')`), 'permission denied');

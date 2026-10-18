@@ -17,6 +17,9 @@ import { BulusmaKarti } from '@/bilesen/gruplar/BulusmaKarti';
 import { useBulusmalar } from '@/bilesen/gruplar/Bulusmalar';
 import { GrubaEkleSayfasi } from '@/bilesen/gruplar/GrubaEkleSayfasi';
 import { IsFormu } from '@/bilesen/gruplar/IsFormu';
+import { KararFormu } from '@/bilesen/gruplar/KararFormu';
+import { KararKarti } from '@/bilesen/gruplar/KararKarti';
+import { useKararlar } from '@/bilesen/gruplar/Kararlar';
 import { IsKarti } from '@/bilesen/gruplar/IsKarti';
 import { useIsler } from '@/bilesen/gruplar/Isler';
 import { NobetFormu } from '@/bilesen/gruplar/NobetFormu';
@@ -37,6 +40,7 @@ import { cagrilabilecekler, GRUP_LISTELERI_NOTU, grupAdi, grupHatasi, type GrupU
 import { yaklasanlar, type Bulusma } from '@/mantik/bulusma';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { grubunIsleri, type GrupIsi } from '@/mantik/isler';
+import { grubunKararlari } from '@/mantik/karar';
 import type { Nobet } from '@/mantik/nobet';
 import type { Rutin } from '@/mantik/rutin';
 import { grubaCagir, grubuSil, gruptanCikar } from '@/sunucu/gruplar';
@@ -63,6 +67,9 @@ export default function GrupEkrani() {
   const nobetYenile = nobet.yenile;
   const isler = useIsler();
   const isYenile = isler.yenile;
+  const karar = useKararlar();
+  const kararYenile = karar.yenile;
+  const [kararFormu, setKararFormu] = useState(0);
   const [isFormu, setIsFormu] = useState<{ n: number; mevcut?: GrupIsi } | null>(null);
   const isFormuAc = (mevcut?: GrupIsi) => setIsFormu((f) => ({ n: (f?.n ?? 0) + 1, mevcut }));
   const [nobetFormu, setNobetFormu] = useState<{ n: number; mevcut?: Nobet } | null>(null);
@@ -75,7 +82,8 @@ export default function GrupEkrani() {
       void rutinYenile();
       void nobetYenile();
       void isYenile();
-    }, [bulusmaYenile, rutinYenile, nobetYenile, isYenile]),
+      void kararYenile();
+    }, [bulusmaYenile, rutinYenile, nobetYenile, isYenile, kararYenile]),
   );
   const grup = gruplar.find((g) => g.id === id);
   const kuranBenim = !!grup && grup.kurucu === ben;
@@ -83,6 +91,7 @@ export default function GrupEkrani() {
   const grubunBulusmalari = grup ? yaklasanlar(bulusma.bulusmalar, grup.id, bugunGun) : [];
   const grubunRutinleri = grup ? rutin.rutinler.filter((r) => r.grup === grup.id) : [];
   const grubunNobetleri = grup ? nobet.nobetler.filter((n) => n.grup === grup.id) : [];
+  const grubunKararListesi = grup ? grubunKararlari(karar.kararlar, grup.id) : [];
   const grubunIsleriListesi = grup && ben ? grubunIsleri(isler.isler, grup.id, ben) : [];
 
   const dene = async (is: () => Promise<void>, mesaj: string, sonra?: () => void) => {
@@ -182,10 +191,25 @@ export default function GrupEkrani() {
             </>
           )}
 
+          {grubunKararListesi.length > 0 && (
+            <>
+              <Yazi
+                tur="bolumBasligi"
+                accessibilityRole="header"
+                style={grubunIsleriListesi.length > 0 && stiller.bolumArasi}
+              >
+                Kararlar
+              </Yazi>
+              {grubunKararListesi.map((k) => (
+                <KararKarti key={k.id} karar={k} ben={ben} bugunGun={bugunGun} ad={(x) => ad(x)} />
+              ))}
+            </>
+          )}
+
           <Yazi
             tur="bolumBasligi"
             accessibilityRole="header"
-            style={grubunIsleriListesi.length > 0 && stiller.bolumArasi}
+            style={(grubunIsleriListesi.length > 0 || grubunKararListesi.length > 0) && stiller.bolumArasi}
           >
             Buluşmalar
           </Yazi>
@@ -344,6 +368,7 @@ export default function GrupEkrani() {
             else if (tur === 'rutin') rutinFormuAc({ tur: 'kur' });
             else if (tur === 'nobet') nobetFormuAc();
             else if (tur === 'is') isFormuAc();
+            else if (tur === 'karar') setKararFormu((n) => n + 1);
             else setBulusmaFormu((f) => ({ n: (f?.n ?? 0) + 1 }));
           }}
         />
@@ -355,6 +380,9 @@ export default function GrupEkrani() {
           mevcut={bulusmaFormu.mevcut}
           onKapat={() => setBulusmaFormu(null)}
         />
+      )}
+      {kararFormu > 0 && grup && (
+        <KararFormu key={kararFormu} grup={{ id: grup.id, ad: grup.ad }} onKapat={() => setKararFormu(0)} />
       )}
       {isFormu && grup && (
         <IsFormu

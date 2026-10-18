@@ -8,7 +8,7 @@ import { AltSayfa } from '../AltSayfa';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 
-export type GrupEklemeTuru = 'liste' | 'bulusma' | 'rutin' | 'nobet' | 'is';
+export type GrupEklemeTuru = 'liste' | 'bulusma' | 'rutin' | 'nobet' | 'is' | 'karar';
 
 const TURLER: { tur: GrupEklemeTuru; ad: string; aciklama: string; ikon: keyof typeof Ionicons.glyphMap }[] = [
   {
@@ -22,6 +22,12 @@ const TURLER: { tur: GrupEklemeTuru; ad: string; aciklama: string; ikon: keyof t
     ad: 'Buluşma',
     aciklama: 'Gün, saat, yer öner; herkes geliyorum / belki / gelemem der.',
     ikon: 'calendar-outline',
+  },
+  {
+    tur: 'karar',
+    ad: 'Karar / oylama',
+    aciklama: '"Ne yiyelim?" ya da "Piknik hangi gün?"; herkes oy verir, sonucu sen seçersin.',
+    ikon: 'stats-chart-outline',
   },
   {
     tur: 'rutin',

@@ -125,3 +125,9 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Tablo `grup_is` (`is` SQL'de ayrılmış kelime): grup, isteyen, baslik, tarih?, kime? (null = herkes), durum (acik · istendi · alindi · reddedildi · yapildi), alan, yapilma. Yazma yalnız işlevlerle: `is_ekle`, `is_duzenle` (isteyen; kime değişince ya da ret sonrası iş yeniden açılır/istenir), `is_yanitla(p_eylem)`: al · reddet · birak · yaptim · geri, her biri durum ve kişi denetimiyle. Okuma `islerim()` (yapılanlar 7 gün). Silme: isteyen ya da grubun kurucusu.
 - `IsSaglayici` eşitler (`isEslemesi`): bende (alındı/yaptığım) olan işin kartı yoksa eklenir (tarih yoksa bugün); kartta "Yaptım" sunucuda `yaptim`, işaret kalkınca `geri`; artık bende olmayan işin yapılmamış kartı silinir, yapılmışsa kalır. Grup ekranındaki düğmeler sunucuyu ve kartı birlikte değiştirir.
 
+## Grup etkinlikleri: Karar / oylama (sunucu)
+
+- Tablolar `karar` (grup, kuran, soru, tur metin|gun, coklu, son_gun?, yer, sonuc?, bulusma?), `karar_secenek` (metin ya da gün + saat?, sıra), `karar_oy` (seçenek, kullanıcı). Yazma yalnız işlevlerle: `karar_kur` (2–10 seçenek, jsonb), `karar_oyla(p_secenekler uuid[])` (oylarımın yerine; tek seçimde en çok bir; karar verildiyse ya da son gün geçtiyse kapalı), `karar_ver` (yalnız kuran; gün kararında `bulusma` + kuranın "geliyorum" yanıtını kurar, buluşma kimliğini döner). Okuma `kararlarim()` (açıklar ve son 7 günde verilenler). Silme: kuran ya da grubun kurucusu.
+- Telefonda kart yok (`KararSaglayici` yalnız okur ve yazar); gün kararında kurulan buluşmanın kartı kuranın ajandasına eklenir, ötekiler Buluşma'dan yanıtlar.
+- Grup ekranındaki sıra: İşler · Kararlar · Buluşmalar · Birlikte rutinler · Nöbetler · Listeler · + Ekle · Üyeler (boş bölümler görünmez; Buluşmalar ve Listeler boşken de görünür).
+
