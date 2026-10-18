@@ -543,3 +543,11 @@ export function bagiBitir(kapi: Kapi, kimlikler: readonly string[], dun: Gun): P
     for (const id of kimlikler) await y.calistir('UPDATE kart SET bitis = ?, bag = NULL WHERE id = ?', [dun, id]);
   });
 }
+
+/** Grup işlerine bağlı kartlar ve yapıldı mı (tek seferlik kartın kısa yolu). */
+export async function isKartlari(oku: Okuyucu): Promise<{ id: string; bag: string | null; yapildi: boolean }[]> {
+  const satirlar = await oku.hepsi<{ id: string; bag: string | null; yapildi: number }>(
+    "SELECT id, bag, yapildi FROM kart WHERE bag LIKE 'is:%'",
+  );
+  return satirlar.map((s) => ({ ...s, yapildi: s.yapildi === 1 }));
+}

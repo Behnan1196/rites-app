@@ -8,9 +8,15 @@ import { AltSayfa } from '../AltSayfa';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 
-export type GrupEklemeTuru = 'liste' | 'bulusma' | 'rutin' | 'nobet';
+export type GrupEklemeTuru = 'liste' | 'bulusma' | 'rutin' | 'nobet' | 'is';
 
 const TURLER: { tur: GrupEklemeTuru; ad: string; aciklama: string; ikon: keyof typeof Ionicons.glyphMap }[] = [
+  {
+    tur: 'is',
+    ad: 'İş',
+    aciklama: 'Herkese aç ("Ben alırım") ya da birinden iste; alanın ajandasına düşer.',
+    ikon: 'hand-left-outline',
+  },
   {
     tur: 'bulusma',
     ad: 'Buluşma',

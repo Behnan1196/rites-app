@@ -120,3 +120,8 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Kimin günü olduğu telefonda hesaplanır (`siradaki`: `baslangic`tan o güne kadarki nöbet günü sayısı mod sıra uzunluğu); sunucu hesaplamaz. Günler ya da sıra değişince `baslangic` bugün olur.
 - `NobetSaglayici` eşitler: önümüzdeki 14 günde sırası bende olan her gün için tek seferlik yerel kart (`bag` = `nobet:<id>|<gün>`), fazlası silinir (geçmiş kartlara dokunulmaz); son 14 günün "Yaptım"ları sunucuya yazılır (`nobetIsaretFarki`: başkası o günü işaretlediyse yeniden yazılmaz).
 
+## Grup etkinlikleri: İş (sunucu)
+
+- Tablo `grup_is` (`is` SQL'de ayrılmış kelime): grup, isteyen, baslik, tarih?, kime? (null = herkes), durum (acik · istendi · alindi · reddedildi · yapildi), alan, yapilma. Yazma yalnız işlevlerle: `is_ekle`, `is_duzenle` (isteyen; kime değişince ya da ret sonrası iş yeniden açılır/istenir), `is_yanitla(p_eylem)`: al · reddet · birak · yaptim · geri, her biri durum ve kişi denetimiyle. Okuma `islerim()` (yapılanlar 7 gün). Silme: isteyen ya da grubun kurucusu.
+- `IsSaglayici` eşitler (`isEslemesi`): bende (alındı/yaptığım) olan işin kartı yoksa eklenir (tarih yoksa bugün); kartta "Yaptım" sunucuda `yaptim`, işaret kalkınca `geri`; artık bende olmayan işin yapılmamış kartı silinir, yapılmışsa kalır. Grup ekranındaki düğmeler sunucuyu ve kartı birlikte değiştirir.
+

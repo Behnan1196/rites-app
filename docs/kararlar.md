@@ -196,3 +196,12 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - Kuran günleri ya da sırayı değiştirirse sıra bugünden, listenin başından yeniden başlar; yalnız ad değişirse sıra sürer. Kuran ya da grubun kurucusu siler; ajandalardaki gelecek günler kalkar. — Öneri
 - Ad örnekleri: Bulaşık · Çöp · Sofra · Çiçekleri sulamak · Market · Akşam yemeği. Varsayılan: her gün. — Öneri
 
+## İş: herkese aç ya da birinden iste (18 Ekim)
+
+- **Ortak iş ile Birinden iste tek tür: "İş".** Kime? "Herkes" ise isteyen "Ben alırım" der; bir kişiyse o kişi "Kabul et" ya da "Alamam" der. — Ürün sahibi (onaylı öneri)
+- **"Ne zaman?" isteğe bağlı** (Tarih yok · Bugün · Yarın · Başka gün). Tarih verilirse alanın ajandasına o güne, verilmezse aldığı güne düşer; yapılmazsa "Geçmişten kalan"da durur. — Ürün sahibi
+- **Ret isteyene döner** ("Elif alamadı"); isteyen "Başkasına ver" ile başka birine verir, herkese açar ya da siler. — Ürün sahibi
+- **Yapılan iş 7 gün "Yapıldı · <kişi> ✓"** olarak görünür, sonra kalkar. — Ürün sahibi
+- Alan, işi grup ekranından ya da ajandadaki kartından "Yaptım" ile bitirir; "Bırak" derse iş herkese açıksa yeniden açılır, birinden istenmişse isteyene döner. Yapılan işi yalnız yapan geri alır. İsteyen düzenler; isteyen ya da grubun kurucusu siler. — Öneri
+- Grup ekranında **İşler en üstte** (yalnız iş varsa): önce bende olanlar ve benden istenenler, sonra açıklar, sonra öbürleri, yapılanlar en sonda. Ad örnekleri: Eczaneye uğra · Faturayı öde · Okuldan al · Ekmek al · Kargoyu teslim al. — Öneri
+

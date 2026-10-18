@@ -979,3 +979,126 @@ grant execute on function
   public.nobet_isaretle(uuid, date, boolean), public.nobetlerim(date), public.nobete_erisir_mi(uuid, uuid),
   public.nobet_sirasi_gecerli(uuid, uuid[])
   to authenticated;
+
+-- ---- İş (pilot 18 Ekim): Ortak iş + Birinden iste ------------------------------------
+-- kime null: herkese açık (acik → "Ben alırım" → alindi). kime dolu: o kişiden
+-- istendi (istendi → Kabul → alindi; Reddet → reddedildi, isteyene döner).
+-- Alan "Yaptım" deyince yapildi; yapılanlar 7 gün görünür. Alan bırakırsa iş
+-- herkese açıksa yeniden açılır, birinden istenmişse isteyene döner.
+
+create table if not exists public.grup_is (
+  id        uuid primary key default gen_random_uuid(),
+  grup      uuid not null references public.grup (id) on delete cascade,
+  isteyen   uuid not null references public.kullanici (id) on delete cascade,
+  baslik    text not null check (length(trim(baslik)) > 0),
+  tarih     date,
+  kime      uuid references public.kullanici (id) on delete set null,
+  durum     text not null check (durum in ('acik', 'istendi', 'alindi', 'reddedildi', 'yapildi')),
+  alan      uuid references public.kullanici (id) on delete set null,
+  yapilma   timestamptz,
+  olusturma timestamptz not null default now()
+);
+create index if not exists grup_is_grup on public.grup_is (grup);
+
+alter table public.grup_is enable row level security;
+
+drop policy if exists grup_is_oku on public.grup_is;
+create policy grup_is_oku on public.grup_is for select to authenticated
+  using (public.grup_uyesi_mi(grup, auth.uid()));
+
+drop policy if exists grup_is_sil on public.grup_is;
+create policy grup_is_sil on public.grup_is for delete to authenticated
+  using (isteyen = auth.uid() or public.grup_kurucusu_mu(grup, auth.uid()));
+
+revoke insert, update on public.grup_is from anon, authenticated;
+revoke all on public.grup_is from anon;
+
+create or replace function public.is_ekle(p_grup uuid, p_baslik text, p_tarih date, p_kime uuid) returns uuid
+language plpgsql security definer set search_path = public as $$
+declare
+  ben uuid := auth.uid();
+  i uuid;
+begin
+  if not public.grup_uyesi_mi(p_grup, ben) then raise exception 'grup yok'; end if;
+  if length(trim(coalesce(p_baslik, ''))) = 0 then raise exception 'ad yok'; end if;
+  if p_kime is not null and (p_kime = ben or not public.grup_uyesi_mi(p_grup, p_kime)) then raise exception 'kime gecersiz'; end if;
+  insert into public.grup_is (grup, isteyen, baslik, tarih, kime, durum)
+    values (p_grup, ben, trim(p_baslik), p_tarih, p_kime, case when p_kime is null then 'acik' else 'istendi' end)
+    returning id into i;
+  return i;
+end;
+$$;
+
+-- İsteyen değiştirir (yapılmamışsa); kime değişirse iş yeniden açılır / istenir.
+create or replace function public.is_duzenle(p_is uuid, p_baslik text, p_tarih date, p_kime uuid) returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  ben uuid := auth.uid();
+  x public.grup_is;
+begin
+  select * into x from public.grup_is where id = p_is;
+  if not found or x.isteyen <> ben then raise exception 'yetki yok'; end if;
+  if x.durum = 'yapildi' then raise exception 'yapildi'; end if;
+  if length(trim(coalesce(p_baslik, ''))) = 0 then raise exception 'ad yok'; end if;
+  if p_kime is not null and (p_kime = ben or not public.grup_uyesi_mi(x.grup, p_kime)) then raise exception 'kime gecersiz'; end if;
+  if x.kime is distinct from p_kime or x.durum = 'reddedildi' then
+    update public.grup_is set baslik = trim(p_baslik), tarih = p_tarih, kime = p_kime, alan = null,
+      durum = case when p_kime is null then 'acik' else 'istendi' end
+    where id = p_is;
+  else
+    update public.grup_is set baslik = trim(p_baslik), tarih = p_tarih where id = p_is;
+  end if;
+end;
+$$;
+
+-- p_eylem: al (Ben alırım / Kabul et) · reddet · birak · yaptim · geri (yapıldıyı geri al)
+create or replace function public.is_yanitla(p_is uuid, p_eylem text) returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  ben uuid := auth.uid();
+  x public.grup_is;
+begin
+  select * into x from public.grup_is where id = p_is;
+  if not found or not public.grup_uyesi_mi(x.grup, ben) then raise exception 'yetki yok'; end if;
+  if p_eylem = 'al' then
+    if not (x.durum = 'acik' or (x.durum = 'istendi' and x.kime = ben)) then raise exception 'durum'; end if;
+    update public.grup_is set durum = 'alindi', alan = ben where id = p_is;
+  elsif p_eylem = 'reddet' then
+    if not (x.durum = 'istendi' and x.kime = ben) then raise exception 'durum'; end if;
+    update public.grup_is set durum = 'reddedildi' where id = p_is;
+  elsif p_eylem = 'birak' then
+    if not (x.durum = 'alindi' and x.alan = ben) then raise exception 'durum'; end if;
+    update public.grup_is set alan = null, durum = case when x.kime is null then 'acik' else 'reddedildi' end where id = p_is;
+  elsif p_eylem = 'yaptim' then
+    if not (x.durum = 'alindi' and x.alan = ben) then raise exception 'durum'; end if;
+    update public.grup_is set durum = 'yapildi', yapilma = now() where id = p_is;
+  elsif p_eylem = 'geri' then
+    if not (x.durum = 'yapildi' and x.alan = ben) then raise exception 'durum'; end if;
+    update public.grup_is set durum = 'alindi', yapilma = null where id = p_is;
+  else
+    raise exception 'eylem';
+  end if;
+end;
+$$;
+
+-- Üyesi olduğum grupların işleri; yapılanlar 7 gün.
+create or replace function public.islerim() returns jsonb
+language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', i.id, 'grup', i.grup, 'grupAdi', g.ad, 'isteyen', i.isteyen, 'baslik', i.baslik, 'tarih', i.tarih,
+    'kime', i.kime, 'durum', i.durum, 'alan', i.alan, 'yapilma', i.yapilma
+  ) order by i.tarih nulls last, i.olusturma), '[]'::jsonb)
+  from public.grup_is i
+  join public.grup g on g.id = i.grup
+  join public.grup_uye me on me.grup = i.grup and me.kullanici = auth.uid() and me.durum = 'uye'
+  where i.durum <> 'yapildi' or i.yapilma > now() - interval '7 days';
+$$;
+
+revoke execute on function
+  public.is_ekle(uuid, text, date, uuid), public.is_duzenle(uuid, text, date, uuid), public.is_yanitla(uuid, text),
+  public.islerim()
+  from anon, public;
+grant execute on function
+  public.is_ekle(uuid, text, date, uuid), public.is_duzenle(uuid, text, date, uuid), public.is_yanitla(uuid, text),
+  public.islerim()
+  to authenticated;

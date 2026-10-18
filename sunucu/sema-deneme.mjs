@@ -212,6 +212,42 @@ await olarak(ayse, () => q('delete from nobet where id = $1', [cop]));
 esit('kuran siler', (await q('select count(*)::int n from nobet')).rows[0].n, 0);
 await olarak(ayse, () => q(`select nobet_kur($1, 'Bulaşık', '{0}', array[$2]::uuid[], '2099-01-05')`, [aile, ayse]));
 
+// İş (pilot 18 Ekim)
+const isDurum = async (id, kim = ayse) => (await tek(kim, 'select islerim() i')).i.find(x => x.id === id);
+const acik = (await tek(ayse, `select is_ekle($1, 'Eczaneye uğra', null, null) i`, [aile])).i;
+esit('herkese açık', (await isDurum(acik)).durum, 'acik');
+await olarak(ali, () => q(`select is_yanitla($1, 'al')`, [acik]));
+esit('Ben alırım', [(await isDurum(acik)).durum, (await isDurum(acik)).alan], ['alindi', ali]);
+await hataBekle('alınmış iş yeniden alınamaz', () => olarak(ayse, () => q(`select is_yanitla($1, 'al')`, [acik])), 'durum');
+await hataBekle('başkası yaptım diyemez', () => olarak(ayse, () => q(`select is_yanitla($1, 'yaptim')`, [acik])), 'durum');
+await olarak(ali, () => q(`select is_yanitla($1, 'birak')`, [acik]));
+esit('bırakınca yeniden açılır', [(await isDurum(acik)).durum, (await isDurum(acik)).alan], ['acik', null]);
+await olarak(ali, () => q(`select is_yanitla($1, 'al')`, [acik]));
+await olarak(ali, () => q(`select is_yanitla($1, 'yaptim')`, [acik]));
+esit('yapıldı', (await isDurum(acik)).durum, 'yapildi');
+await olarak(ali, () => q(`select is_yanitla($1, 'geri')`, [acik]));
+esit('geri alınır', (await isDurum(acik)).durum, 'alindi');
+const ist = (await tek(ayse, `select is_ekle($1, 'Faturayı öde', '2099-01-10', $2) i`, [aile, ali])).i;
+esit('birinden istendi', (await isDurum(ist)).durum, 'istendi');
+await hataBekle('istenmeyen kabul edemez', () => olarak(ayse, () => q(`select is_yanitla($1, 'al')`, [ist])), 'durum');
+await olarak(ali, () => q(`select is_yanitla($1, 'reddet')`, [ist]));
+esit('ret isteyene döner', (await isDurum(ist)).durum, 'reddedildi');
+await hataBekle('kendinden istenemez', () => olarak(ayse, () => q(`select is_duzenle($1, 'Faturayı öde', null, $2)`, [ist, ayse])), 'kime gecersiz');
+await hataBekle('gruptan olmayana istenemez', () => olarak(ayse, () => q(`select is_ekle($1, 'X', null, $2)`, [aile, veli])), 'kime gecersiz');
+await hataBekle('başkası düzenleyemez', () => olarak(ali, () => q(`select is_duzenle($1, 'X', null, null)`, [ist])), 'yetki yok');
+await olarak(ayse, () => q(`select is_duzenle($1, 'Faturayı öde', null, null)`, [ist]));
+esit('herkese açılır', (await isDurum(ist)).durum, 'acik');
+await olarak(ayse, () => q(`select is_duzenle($1, 'Faturayı öde', null, $2)`, [ist, ali]));
+await olarak(ali, () => q(`select is_yanitla($1, 'al')`, [ist]));
+await olarak(ali, () => q(`select is_yanitla($1, 'birak')`, [ist]));
+esit('istenen iş bırakılınca isteyene döner', (await isDurum(ist)).durum, 'reddedildi');
+esit('grupta olmayan görmez', (await tek(zeynep, 'select islerim() i')).i.length, 0);
+await hataBekle('doğrudan yazılamaz', () => olarak(ali, () => q(`update grup_is set durum = 'yapildi' where id = $1`, [ist])), 'permission denied');
+await olarak(ali, () => q('delete from grup_is where id = $1', [ist]));
+esit('üye başkasının işini silemez', (await q('select count(*)::int n from grup_is')).rows[0].n, 2);
+await olarak(ayse, () => q('delete from grup_is where id = $1', [ist]));
+esit('isteyen siler', (await q('select count(*)::int n from grup_is')).rows[0].n, 1);
+
 // Gruptan ayrıl, çıkar, grubu sil
 await olarak(ayse, () => q('delete from grup_uye where grup = $1 and kullanici = $2', [aile, ayse]));
 esit('kuran gruptan ayrılamaz', (await q('select count(*)::int n from grup_uye where grup = $1', [aile])).rows[0].n, 2);
@@ -234,6 +270,7 @@ esit('Ayşe\'nin listeleri ve maddeleri silinir', [(await q('select count(*)::in
 await ex('set role anon'); await hataBekle('oturumsuz çağrılamaz', () => q(`select kisi_ekle('a@b.c')`), 'permission denied');
 await hataBekle('oturumsuz liste okunamaz', () => q('select listelerim()'), 'permission denied');
 await hataBekle('oturumsuz buluşma okunamaz', () => q('select bulusmalarim()'), 'permission denied');
+await hataBekle('oturumsuz iş okunamaz', () => q('select islerim()'), 'permission denied');
 await hataBekle('oturumsuz nöbet okunamaz', () => q(`select nobetlerim('2099-01-01')`), 'permission denied');
 await hataBekle('oturumsuz rutin okunamaz', () => q(`select rutinlerim('2099-01-01')`), 'permission denied');
 await ex('reset role');

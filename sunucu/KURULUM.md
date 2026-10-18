@@ -30,7 +30,7 @@ Supabase → **SQL Editor** → **New query** → `sunucu/sema.sql` dosyasının
 **10. görevde şema büyüdü** (gruplar, ortak listeler, maddeler). 9. görevde çalıştırdıysan
 güncel `sema.sql`'in tamamını aynı yolla bir kez daha çalıştır; var olan kayıtlar silinmez.
 
-**18 Ekim'de şema yine büyüdü** (Buluşma: `bulusma`, `bulusma_yanit`; Birlikte rutin: `rutin`, `rutin_katilim`, `rutin_kayit`; Nöbet: `nobet`, `nobet_kayit` ve işlevleri). Güncel
+**18 Ekim'de şema yine büyüdü** (Buluşma: `bulusma`, `bulusma_yanit`; Birlikte rutin: `rutin`, `rutin_katilim`, `rutin_kayit`; Nöbet: `nobet`, `nobet_kayit`; İş: `grup_is` ve işlevleri). Güncel
 `sema.sql`'in tamamını aynı yolla bir kez daha çalıştır; var olan kayıtlar silinmez.
 
 Ortak listedeki değişikliklerin öteki telefona anında gitmesi için şema `madde` tablosunu
