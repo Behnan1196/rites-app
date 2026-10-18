@@ -188,6 +188,30 @@ await olarak(ayse, () => q('delete from rutin where id = $1', [yur]));
 esit('kuran siler', (await q('select count(*)::int n from rutin_katilim')).rows[0].n, 0);
 await olarak(ayse, () => q(`select rutin_kur($1, 'Okuma', 7)`, [aile]));
 
+// Nöbet (pilot 18 Ekim)
+await hataBekle('sırada gruptan olmayan', () => olarak(ayse, () => q(`select nobet_kur($1, 'Çöp', '{0,3}', array[$2,$3]::uuid[], '2099-01-05')`, [aile, ayse, veli])), 'sira gecersiz');
+await hataBekle('gün 0–6', () => olarak(ayse, () => q(`select nobet_kur($1, 'Çöp', '{7}', array[$2]::uuid[], '2099-01-05')`, [aile, ayse])), 'check');
+const cop = (await tek(ayse, `select nobet_kur($1, ' Çöp ', '{0,3}', array[$2,$3]::uuid[], '2099-01-05') n`, [aile, ali, ayse])).n;
+esit('üye görür', (await tek(ali, `select nobetlerim('2099-01-01') n`)).n.map(x => [x.ad, x.gunler, x.sira.length, x.grupAdi]), [['Çöp', [0, 3], 2, 'Aile']]);
+esit('grupta olmayan görmez', (await tek(zeynep, `select nobetlerim('2099-01-01') n`)).n.length, 0);
+await olarak(ali, () => q(`select nobet_isaretle($1, '2099-01-05', true)`, [cop]));
+await olarak(ayse, () => q(`select nobet_isaretle($1, '2099-01-05', true)`, [cop]));
+esit('günü ilk yapan kalır', (await tek(ayse, `select nobetlerim('2099-01-01') n`)).n[0].kayitlar, [{ gun: '2099-01-05', yapan: ali }]);
+await olarak(ayse, () => q(`select nobet_isaretle($1, '2099-01-05', false)`, [cop]));
+esit('başkasının işaretini geri alamaz', (await tek(ayse, `select nobetlerim('2099-01-01') n`)).n[0].kayitlar.length, 1);
+await olarak(ali, () => q(`select nobet_isaretle($1, '2099-01-05', false)`, [cop]));
+esit('kendi işaretini geri alır', (await tek(ayse, `select nobetlerim('2099-01-01') n`)).n[0].kayitlar.length, 0);
+await hataBekle('grupta olmayan işaretleyemez', () => olarak(zeynep, () => q(`select nobet_isaretle($1, '2099-01-05', true)`, [cop])), 'yetki yok');
+await hataBekle('kayıt doğrudan yazılamaz', () => olarak(ali, () => q(`insert into nobet_kayit values ($1, '2099-01-06', $2)`, [cop, ali])), 'permission denied');
+await hataBekle('başkası düzenleyemez', () => olarak(ali, () => q(`select nobet_duzenle($1, 'X', '{1}', array[$2]::uuid[], '2099-01-06')`, [cop, ali])), 'yetki yok');
+await olarak(ayse, () => q(`select nobet_duzenle($1, 'Çöp', '{0,1,2,3,4,5,6}', array[$2]::uuid[], '2099-01-07')`, [cop, ayse]));
+esit('düzenlenir', (await tek(ali, `select nobetlerim('2099-01-01') n`)).n.map(x => [x.gunler.length, x.sira, x.baslangic]), [[7, [ayse], '2099-01-07']]);
+await olarak(ali, () => q('delete from nobet where id = $1', [cop]));
+esit('üye başkasının nöbetini silemez', (await q('select count(*)::int n from nobet')).rows[0].n, 1);
+await olarak(ayse, () => q('delete from nobet where id = $1', [cop]));
+esit('kuran siler', (await q('select count(*)::int n from nobet')).rows[0].n, 0);
+await olarak(ayse, () => q(`select nobet_kur($1, 'Bulaşık', '{0}', array[$2]::uuid[], '2099-01-05')`, [aile, ayse]));
+
 // Gruptan ayrıl, çıkar, grubu sil
 await olarak(ayse, () => q('delete from grup_uye where grup = $1 and kullanici = $2', [aile, ayse]));
 esit('kuran gruptan ayrılamaz', (await q('select count(*)::int n from grup_uye where grup = $1', [aile])).rows[0].n, 2);
@@ -210,6 +234,7 @@ esit('Ayşe\'nin listeleri ve maddeleri silinir', [(await q('select count(*)::in
 await ex('set role anon'); await hataBekle('oturumsuz çağrılamaz', () => q(`select kisi_ekle('a@b.c')`), 'permission denied');
 await hataBekle('oturumsuz liste okunamaz', () => q('select listelerim()'), 'permission denied');
 await hataBekle('oturumsuz buluşma okunamaz', () => q('select bulusmalarim()'), 'permission denied');
+await hataBekle('oturumsuz nöbet okunamaz', () => q(`select nobetlerim('2099-01-01')`), 'permission denied');
 await hataBekle('oturumsuz rutin okunamaz', () => q(`select rutinlerim('2099-01-01')`), 'permission denied');
 await ex('reset role');
 console.log(hatalar ? `${hatalar} HATA` : 'HEPSİ TAMAM');

@@ -850,3 +850,132 @@ grant execute on function
   public.rutin_kur(uuid, text, int), public.rutin_duzenle(uuid, text, int), public.rutine_katil(uuid, boolean),
   public.rutin_isaretle(uuid, date, boolean), public.rutinlerim(date), public.rutine_erisir_mi(uuid, uuid)
   to authenticated;
+
+-- ---- Nöbet / sıra (pilot 18 Ekim) --------------------------------------------------
+-- Bulaşık, çöp gibi dönüşümlü iş. Kuran günleri (0 = Pzt … 6 = Paz) ve sırayı
+-- (gruptan kişiler) seçer; her seçilen günde sıradaki kişi. Sıra takvime göre
+-- döner (yapılmasa da geçer); kimin günü olduğunu telefon hesaplar (`baslangic`tan
+-- bu yana kaçıncı gün). "Yaptım" grupta görünür.
+
+create table if not exists public.nobet (
+  id        uuid primary key default gen_random_uuid(),
+  grup      uuid not null references public.grup (id) on delete cascade,
+  kuran     uuid not null references public.kullanici (id) on delete cascade,
+  ad        text not null check (length(trim(ad)) > 0),
+  gunler    int[] not null check (cardinality(gunler) between 1 and 7 and gunler <@ array[0,1,2,3,4,5,6]),
+  sira      uuid[] not null check (cardinality(sira) between 1 and 20),
+  baslangic date not null,
+  olusturma timestamptz not null default now()
+);
+create index if not exists nobet_grup on public.nobet (grup);
+
+create table if not exists public.nobet_kayit (
+  nobet uuid not null references public.nobet (id) on delete cascade,
+  gun   date not null,
+  yapan uuid not null references public.kullanici (id) on delete cascade,
+  zaman timestamptz not null default now(),
+  primary key (nobet, gun)
+);
+
+alter table public.nobet       enable row level security;
+alter table public.nobet_kayit enable row level security;
+
+create or replace function public.nobete_erisir_mi(n uuid, u uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.nobet x
+    join public.grup_uye gu on gu.grup = x.grup and gu.kullanici = u and gu.durum = 'uye'
+    where x.id = n
+  );
+$$;
+
+drop policy if exists nobet_oku on public.nobet;
+create policy nobet_oku on public.nobet for select to authenticated
+  using (public.grup_uyesi_mi(grup, auth.uid()));
+
+drop policy if exists nobet_sil on public.nobet;
+create policy nobet_sil on public.nobet for delete to authenticated
+  using (kuran = auth.uid() or public.grup_kurucusu_mu(grup, auth.uid()));
+
+drop policy if exists nobet_kayit_oku on public.nobet_kayit;
+create policy nobet_kayit_oku on public.nobet_kayit for select to authenticated
+  using (public.nobete_erisir_mi(nobet, auth.uid()));
+
+revoke insert, update on public.nobet from anon, authenticated;
+revoke insert, update, delete on public.nobet_kayit from anon, authenticated;
+revoke all on public.nobet, public.nobet_kayit from anon;
+
+-- Sıradaki herkes grubun üyesi olmalı.
+create or replace function public.nobet_sirasi_gecerli(p_grup uuid, p_sira uuid[]) returns boolean
+language sql stable security definer set search_path = public as $$
+  select cardinality(p_sira) > 0 and not exists (
+    select 1 from unnest(p_sira) u where not public.grup_uyesi_mi(p_grup, u)
+  );
+$$;
+
+create or replace function public.nobet_kur(p_grup uuid, p_ad text, p_gunler int[], p_sira uuid[], p_baslangic date)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare n uuid;
+begin
+  if not public.grup_uyesi_mi(p_grup, auth.uid()) then raise exception 'grup yok'; end if;
+  if length(trim(coalesce(p_ad, ''))) = 0 then raise exception 'ad yok'; end if;
+  if not public.nobet_sirasi_gecerli(p_grup, p_sira) then raise exception 'sira gecersiz'; end if;
+  insert into public.nobet (grup, kuran, ad, gunler, sira, baslangic)
+    values (p_grup, auth.uid(), trim(p_ad), p_gunler, p_sira, p_baslangic) returning id into n;
+  return n;
+end;
+$$;
+
+-- Günler ya da sıra değişince sıra p_baslangic'tan (bugün) yeniden başlar.
+create or replace function public.nobet_duzenle(p_nobet uuid, p_ad text, p_gunler int[], p_sira uuid[], p_baslangic date)
+returns void language plpgsql security definer set search_path = public as $$
+declare g uuid;
+begin
+  select grup into g from public.nobet where id = p_nobet and kuran = auth.uid();
+  if g is null then raise exception 'yetki yok'; end if;
+  if length(trim(coalesce(p_ad, ''))) = 0 then raise exception 'ad yok'; end if;
+  if not public.nobet_sirasi_gecerli(g, p_sira) then raise exception 'sira gecersiz'; end if;
+  update public.nobet set ad = trim(p_ad), gunler = p_gunler, sira = p_sira, baslangic = p_baslangic where id = p_nobet;
+end;
+$$;
+
+-- "Yaptım" (grubun herhangi bir üyesi; o günün işini kim yaptıysa) ya da geri al (yalnız kendi işaretini).
+create or replace function public.nobet_isaretle(p_nobet uuid, p_gun date, p_yapildi boolean)
+returns void language plpgsql security definer set search_path = public as $$
+declare ben uuid := auth.uid();
+begin
+  if not public.nobete_erisir_mi(p_nobet, ben) then raise exception 'yetki yok'; end if;
+  if p_yapildi then
+    insert into public.nobet_kayit (nobet, gun, yapan) values (p_nobet, p_gun, ben)
+    on conflict (nobet, gun) do nothing;
+  else
+    delete from public.nobet_kayit where nobet = p_nobet and gun = p_gun and yapan = ben;
+  end if;
+end;
+$$;
+
+create or replace function public.nobetlerim(p_ilk date) returns jsonb
+language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', n.id, 'grup', n.grup, 'grupAdi', g.ad, 'kuran', n.kuran, 'ad', n.ad,
+    'gunler', to_jsonb(n.gunler), 'sira', to_jsonb(n.sira), 'baslangic', n.baslangic,
+    'kayitlar', (
+      select coalesce(jsonb_agg(jsonb_build_object('gun', k.gun, 'yapan', k.yapan) order by k.gun), '[]'::jsonb)
+      from public.nobet_kayit k where k.nobet = n.id and k.gun >= p_ilk
+    )
+  ) order by n.olusturma), '[]'::jsonb)
+  from public.nobet n
+  join public.grup g on g.id = n.grup
+  join public.grup_uye me on me.grup = n.grup and me.kullanici = auth.uid() and me.durum = 'uye';
+$$;
+
+revoke execute on function
+  public.nobet_kur(uuid, text, int[], uuid[], date), public.nobet_duzenle(uuid, text, int[], uuid[], date),
+  public.nobet_isaretle(uuid, date, boolean), public.nobetlerim(date), public.nobete_erisir_mi(uuid, uuid),
+  public.nobet_sirasi_gecerli(uuid, uuid[])
+  from anon, public;
+grant execute on function
+  public.nobet_kur(uuid, text, int[], uuid[], date), public.nobet_duzenle(uuid, text, int[], uuid[], date),
+  public.nobet_isaretle(uuid, date, boolean), public.nobetlerim(date), public.nobete_erisir_mi(uuid, uuid),
+  public.nobet_sirasi_gecerli(uuid, uuid[])
+  to authenticated;

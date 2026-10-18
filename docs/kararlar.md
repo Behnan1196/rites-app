@@ -186,3 +186,13 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - Ad örnekleri: Yürüyüş · Su içmek · 10 dk okuma · Esneme · Ekransız akşam · Erken yatmak. Grup ekranında Buluşmalar'ın altında, yalnız rutin varsa "Birlikte rutinler" bölümü. — Öneri
 - İşaretler telefon çevrimiçiyken birkaç saniye içinde, değilse uygulama yeniden açılınca gruba gider; geçen haftanın başından eski işaretler gönderilmez. — Öneri
 
+## Nöbet / sıra (18 Ekim)
+
+- **Sıra takvime göre döner:** her seçilen günde sıradaki kişi; yapılmasa da geçer, önceden bilinir. — Ürün sahibi
+- **Seçilen günlerde** (her gün ya da ör. Pzt ve Per); her seçilen gün bir sıra. — Ürün sahibi
+- **Sıradakileri ve sıralarını kuran seçer** (gruptan; dokunma sırası sıradır, yeniden dokununca çıkar). — Ürün sahibi
+- Sırası gelenin ajandasına o gün tek seferlik kart düşer ("Grup: <grup adı>"); önümüzdeki 14 gün için hazırlanır. Kişi kartı silse de bir sonraki eşitlemede geri gelir (iş onun). — Öneri
+- Grup ekranında sıradaki 5 gün ve kimde olduğu; yapıldıysa ✓ (başkası yaptıysa adıyla). "Yaptım" günün sahibi dışında biri işaretlerse de sayılır; geri alma yalnız kendi işaretinde. — Öneri
+- Kuran günleri ya da sırayı değiştirirse sıra bugünden, listenin başından yeniden başlar; yalnız ad değişirse sıra sürer. Kuran ya da grubun kurucusu siler; ajandalardaki gelecek günler kalkar. — Öneri
+- Ad örnekleri: Bulaşık · Çöp · Sofra · Çiçekleri sulamak · Market · Akşam yemeği. Varsayılan: her gün. — Öneri
+

@@ -114,3 +114,9 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Tablolar `rutin` (grup, kuran, ad, hedef 1–7: haftada kaç kez), `rutin_katilim`, `rutin_kayit` (rutin, kullanıcı, gün). Yazma yalnız işlevlerle: `rutin_kur` (kuran katılmış sayılır), `rutin_duzenle` (kuran), `rutine_katil(p_katil)` (ayrılınca kayıtları da silinir), `rutin_isaretle` (yalnız katılan, kendi adına). Okuma `rutinlerim(p_ilk)`: katılanlar ve p_ilk'ten bu yana yaptıkları günler. Silme: kuran ya da grubun kurucusu.
 - Telefonda: katılınca (ya da kurunca) seçilen günlerde tekrarlı yerel kart (`rutinKarti`, `bag` = `rutin:<id>`). `RutinSaglayici` kartlarda değişiklik olunca (1,5 sn sonra), uygulama öne dönünce ve grup ekranı öne gelince eşitler: telefondaki "Yaptım"lar doğrudur, geçen haftanın Pazartesi'sinden bugüne fark sunucuya yazılır (`isaretFarki`); rutin silindiyse ya da artık katılmıyorsam kartın dizisi dün biter, bağı kopar, geçmiş kayıtları kalır (`bagiBitir`). Hafta Pazartesi başlar.
 
+## Grup etkinlikleri: Nöbet / sıra (sunucu)
+
+- Tablolar `nobet` (grup, kuran, ad, gunler int[] 0 = Pzt, sira uuid[], baslangic) ve `nobet_kayit` (nöbet, gün, yapan; günde bir kayıt). Yazma yalnız işlevlerle: `nobet_kur`, `nobet_duzenle` (kuran; sıradaki herkes grubun üyesi olmalı), `nobet_isaretle` (grubun herhangi bir üyesi; geri alma yalnız kendi işareti). Okuma `nobetlerim(p_ilk)`.
+- Kimin günü olduğu telefonda hesaplanır (`siradaki`: `baslangic`tan o güne kadarki nöbet günü sayısı mod sıra uzunluğu); sunucu hesaplamaz. Günler ya da sıra değişince `baslangic` bugün olur.
+- `NobetSaglayici` eşitler: önümüzdeki 14 günde sırası bende olan her gün için tek seferlik yerel kart (`bag` = `nobet:<id>|<gün>`), fazlası silinir (geçmiş kartlara dokunulmaz); son 14 günün "Yaptım"ları sunucuya yazılır (`nobetIsaretFarki`: başkası o günü işaretlediyse yeniden yazılmaz).
+

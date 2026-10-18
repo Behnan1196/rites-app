@@ -16,6 +16,9 @@ import { BulusmaFormu } from '@/bilesen/gruplar/BulusmaFormu';
 import { BulusmaKarti } from '@/bilesen/gruplar/BulusmaKarti';
 import { useBulusmalar } from '@/bilesen/gruplar/Bulusmalar';
 import { GrubaEkleSayfasi } from '@/bilesen/gruplar/GrubaEkleSayfasi';
+import { NobetFormu } from '@/bilesen/gruplar/NobetFormu';
+import { NobetKarti } from '@/bilesen/gruplar/NobetKarti';
+import { useNobetler } from '@/bilesen/gruplar/Nobetler';
 import { RutinFormu, type RutinFormuKipi } from '@/bilesen/gruplar/RutinFormu';
 import { RutinKarti } from '@/bilesen/gruplar/RutinKarti';
 import { useRutinler } from '@/bilesen/gruplar/Rutinler';
@@ -30,6 +33,7 @@ import { Yazi } from '@/bilesen/Yazi';
 import { cagrilabilecekler, GRUP_LISTELERI_NOTU, grupAdi, grupHatasi, type GrupUyesi } from '@/mantik/gruplar';
 import { yaklasanlar, type Bulusma } from '@/mantik/bulusma';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
+import type { Nobet } from '@/mantik/nobet';
 import type { Rutin } from '@/mantik/rutin';
 import { grubaCagir, grubuSil, gruptanCikar } from '@/sunucu/gruplar';
 import { useOturum } from '@/sunucu/oturum';
@@ -51,19 +55,25 @@ export default function GrupEkrani() {
   const bulusmaYenile = bulusma.yenile;
   const rutin = useRutinler();
   const rutinYenile = rutin.yenile;
+  const nobet = useNobetler();
+  const nobetYenile = nobet.yenile;
+  const [nobetFormu, setNobetFormu] = useState<{ n: number; mevcut?: Nobet } | null>(null);
+  const nobetFormuAc = (mevcut?: Nobet) => setNobetFormu((f) => ({ n: (f?.n ?? 0) + 1, mevcut }));
   const [rutinFormu, setRutinFormu] = useState<{ n: number; kip: RutinFormuKipi } | null>(null);
   const rutinFormuAc = (kip: RutinFormuKipi) => setRutinFormu((f) => ({ n: (f?.n ?? 0) + 1, kip }));
   useFocusEffect(
     useCallback(() => {
       void bulusmaYenile();
       void rutinYenile();
-    }, [bulusmaYenile, rutinYenile]),
+      void nobetYenile();
+    }, [bulusmaYenile, rutinYenile, nobetYenile]),
   );
   const grup = gruplar.find((g) => g.id === id);
   const kuranBenim = !!grup && grup.kurucu === ben;
 
   const grubunBulusmalari = grup ? yaklasanlar(bulusma.bulusmalar, grup.id, bugunGun) : [];
   const grubunRutinleri = grup ? rutin.rutinler.filter((r) => r.grup === grup.id) : [];
+  const grubunNobetleri = grup ? nobet.nobetler.filter((n) => n.grup === grup.id) : [];
 
   const dene = async (is: () => Promise<void>, mesaj: string, sonra?: () => void) => {
     setSoru(null);
@@ -180,6 +190,24 @@ export default function GrupEkrani() {
             </>
           )}
 
+          {grubunNobetleri.length > 0 && (
+            <>
+              <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
+                Nöbetler
+              </Yazi>
+              {grubunNobetleri.map((n) => (
+                <NobetKarti
+                  key={n.id}
+                  nobet={n}
+                  ben={ben}
+                  bugunGun={bugunGun}
+                  ad={(k) => ad(k)}
+                  onDuzenle={() => nobetFormuAc(n)}
+                />
+              ))}
+            </>
+          )}
+
           <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
             Listeler
           </Yazi>
@@ -282,6 +310,7 @@ export default function GrupEkrani() {
             setEkleAcik(false);
             if (tur === 'liste') setListeFormu((n) => n + 1);
             else if (tur === 'rutin') rutinFormuAc({ tur: 'kur' });
+            else if (tur === 'nobet') nobetFormuAc();
             else setBulusmaFormu((f) => ({ n: (f?.n ?? 0) + 1 }));
           }}
         />
@@ -292,6 +321,15 @@ export default function GrupEkrani() {
           grup={{ id: grup.id, ad: grup.ad }}
           mevcut={bulusmaFormu.mevcut}
           onKapat={() => setBulusmaFormu(null)}
+        />
+      )}
+      {nobetFormu && grup && (
+        <NobetFormu
+          key={nobetFormu.n}
+          grup={{ id: grup.id, ad: grup.ad }}
+          uyeler={grup.uyeler.filter((u) => u.durum === 'uye').map((u) => ({ id: u.id, ad: ad(u) }))}
+          mevcut={nobetFormu.mevcut}
+          onKapat={() => setNobetFormu(null)}
         />
       )}
       {rutinFormu && grup && (

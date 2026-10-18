@@ -8,7 +8,7 @@ import { AltSayfa } from '../AltSayfa';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 
-export type GrupEklemeTuru = 'liste' | 'bulusma' | 'rutin';
+export type GrupEklemeTuru = 'liste' | 'bulusma' | 'rutin' | 'nobet';
 
 const TURLER: { tur: GrupEklemeTuru; ad: string; aciklama: string; ikon: keyof typeof Ionicons.glyphMap }[] = [
   {
@@ -22,6 +22,12 @@ const TURLER: { tur: GrupEklemeTuru; ad: string; aciklama: string; ikon: keyof t
     ad: 'Birlikte rutin',
     aciklama: '"Haftada 3 yürüyüş" gibi ortak hedef; isteyen katılır, kim kaç kez yaptı görünür.',
     ikon: 'repeat-outline',
+  },
+  {
+    tur: 'nobet',
+    ad: 'Nöbet / sıra',
+    aciklama: 'Bulaşık, çöp gibi dönüşümlü iş; sırası gelenin ajandasına düşer.',
+    ikon: 'swap-horizontal-outline',
   },
   {
     tur: 'liste',
