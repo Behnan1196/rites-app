@@ -1,7 +1,6 @@
-// Ajandam Gün görünümündeki kart listesi: karta uzun basıp sürükleyerek sıra
-// değişir (pilot 17 Ekim; tutamaç yer kaplamasın diye). Notlar'daki
-// `SiraliNotlar` ile aynı hesap; sürükleme tutamaçtan değil uzun basmadan başlar.
-// Ekran okuyucuda kartın "Yukarı taşı / Aşağı taşı" eylemleri var.
+// Uzun basıp sürükleyerek sıralanan liste (pilot 17 Ekim; tutamaç yer kaplamasın
+// diye). Ajandam Gün görünümü ve (19 Ekim'den beri) Notlar kullanır. Ekran
+// okuyucuda satırın "Yukarı taşı / Aşağı taşı" eylemleri var.
 
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Animated, PanResponder, StyleSheet, type AccessibilityActionEvent } from 'react-native';
@@ -21,8 +20,12 @@ export interface SurukleIslemleri {
 interface Ozellikler<T extends { id: string; sira: number }> {
   kartlar: readonly T[];
   satir: (kart: T, surukle: SurukleIslemleri) => ReactNode;
-  /** Değişen kartların yeni sıra değerleri. */
-  onSiralar: (siralar: Map<string, number>) => void;
+  /** Değişen kartların yeni sıra değerleri (ajanda). */
+  onSiralar?: (siralar: Map<string, number>) => void;
+  /** Listenin yeni sırası, kimliklerle (notlar). */
+  onSira?: (kimlikler: string[]) => void;
+  /** Satırlar arası boşluk. */
+  aralik?: number;
   /** Sürükleme başlayınca true, bitince false (ekran kaydırması durdurulsun diye). */
   onSurukleme: (aktif: boolean) => void;
 }
@@ -40,7 +43,9 @@ export function SiraliKartlar<T extends { id: string; sira: number }>({
   kartlar,
   satir,
   onSiralar,
+  onSira,
   onSurukleme,
+  aralik = ARALIK,
 }: Ozellikler<T>) {
   const veritabaniSirasi = kartlar.map((k) => k.id);
   const [yerelSira, setYerelSira] = useState<string[] | null>(null);
@@ -59,6 +64,8 @@ export function SiraliKartlar<T extends { id: string; sira: number }>({
   const iz = useRef({ sira: [] as string[], kayma: 0, aktif: null as string | null, pan: false });
 
   const yaz = (yeniSira: readonly string[], id: string) => {
+    if (onSira && yeniSira.join() !== veritabaniSirasi.join()) onSira([...yeniSira]);
+    if (!onSiralar) return;
     const dizi = yeniSira.map((k) => kartMap.get(k)).filter((k): k is T => !!k);
     const degisen = siraDegisikligi(dizi, id);
     if (degisen.size) onSiralar(degisen);
@@ -87,7 +94,7 @@ export function SiraliKartlar<T extends { id: string; sira: number }>({
       const ofset = dy - t.kayma;
       const sonraki = t.sira[i + 1];
       const onceki = t.sira[i - 1];
-      const h = (k: string) => (yukseklikler.current.get(k) ?? 72) + ARALIK;
+      const h = (k: string) => (yukseklikler.current.get(k) ?? 72) + aralik;
       if (sonraki && ofset > h(sonraki) / 2) {
         t.sira = yerDegistir(t.sira, i, i + 1);
         t.kayma += h(sonraki);
@@ -123,7 +130,7 @@ export function SiraliKartlar<T extends { id: string; sira: number }>({
   });
 
   return (
-    <Animated.View style={stiller.liste}>
+    <Animated.View style={[stiller.liste, { gap: aralik }]}>
       {/* İşleyiciler ref'leri yalnız dokunma olaylarında okur, çizim sırasında değil. */}
       {/* eslint-disable-next-line react-hooks/refs */}
       {sira.map((id, i) => {

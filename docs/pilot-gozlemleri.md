@@ -90,3 +90,8 @@ Ne dedi: "Bir ortak liste ekliyoruz; aslında ortak yapılacak etkinlikler çeş
 Nerede: Gruplar, Giriş → Ortak listeler
 Sonuç: → kararlar.md (Gruplar: ortak etkinlikler çeşitlenir; listelerin yeri Gruplar); Buluşma, Birlikte rutin, Nöbet / sıra, İş, Karar / oylama (18 Ekim, hepsi yapıldı)
 
+### P-16 · 19 Ekim 2026 · Behnan · iPhone
+Ne dedi: "Notlar'da sürükleme ajandadaki gibi olsun. Bir de notlar kapalı iken, ulaşmak için ajandada bir link çıkmasına gerek yok bence."
+Nerede: Giriş → Notlar; Ajandam üstü
+Sonuç: → kararlar.md (Notlar: ajandadaki gibi sürükleme; ajandadaki "Notlarım" bağlantısı kalktı)
+

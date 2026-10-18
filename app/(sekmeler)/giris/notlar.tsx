@@ -20,7 +20,7 @@ export default function Notlar() {
     <EkranKabi
       geri="Giriş"
       baslik="Notlar"
-      altBaslik="Aklına gelenler. Bir nota dokun: düzenle, sil ya da ajandana al. Sırasını değiştirmek için tutup sürükle."
+      altBaslik="Aklına gelenler. Bir nota dokun: düzenle, sil ya da ajandana al. Sırasını değiştirmek için uzun basıp sürükle."
       kaydirilabilir={!surukleniyor}
     >
       {notlar.veri && notlar.veri.length === 0 && <Yazi tur="ikincil">Henüz not yok.</Yazi>}

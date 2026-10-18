@@ -6,15 +6,33 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { Not } from '@/veri/notlar';
 
+import type { SurukleIslemleri } from '../ajanda/SiraliKartlar';
+
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 
-export function YapiskanNot({ not, onPress, sol }: { not: Not; onPress: () => void; sol?: ReactNode }) {
+export function YapiskanNot({
+  not,
+  onPress,
+  sol,
+  surukle,
+}: {
+  not: Not;
+  onPress: () => void;
+  sol?: ReactNode;
+  /** Notlar ekranında uzun basıp sürükleyerek sıralama (pilot 19 Ekim). */
+  surukle?: SurukleIslemleri;
+}) {
   return (
     <View style={stiller.not}>
       {sol}
       <Pressable
         onPress={onPress}
+        onLongPress={surukle?.onUzunBas}
+        delayLongPress={300}
+        onPressOut={surukle?.onBirak}
+        accessibilityActions={surukle?.eylemler}
+        onAccessibilityAction={surukle?.onEylem}
         accessibilityRole="button"
         accessibilityLabel={`${not.sesli ? 'Sesli not' : 'Not'}: ${not.metin}`}
         accessibilityHint="Düzenle, sil ya da ajandana al"

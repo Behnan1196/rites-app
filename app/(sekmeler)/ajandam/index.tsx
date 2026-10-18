@@ -12,7 +12,6 @@ import { Kalanlar } from '@/bilesen/ajanda/Kalanlar';
 import { KartSatiri } from '@/bilesen/ajanda/KartSatiri';
 import { SiraliKartlar, type SurukleIslemleri } from '@/bilesen/ajanda/SiraliKartlar';
 import { KaynakSuzgeci } from '@/bilesen/ajanda/KaynakSuzgeci';
-import { NotlarimBaglantisi } from '@/bilesen/ajanda/NotlarimBaglantisi';
 import { TakvimSayfasi } from '@/bilesen/ajanda/TakvimSayfasi';
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
@@ -201,7 +200,6 @@ export default function Ajandam() {
         </>
       }
     >
-      <NotlarimBaglantisi />
       {aramaAcik ? (
         <>
           <AramaKutusu deger={sorgu} onDegis={setSorgu} onVazgec={() => setSorgu(null)} />
