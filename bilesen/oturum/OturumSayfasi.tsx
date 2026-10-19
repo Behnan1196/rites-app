@@ -53,6 +53,11 @@ export function OturumSaglayici({ children }: { children: ReactNode }) {
   );
 }
 
+/** Sağlayıcı yoksa null (ör. üst katmanda çizilen içerik; bkz. Katman.tsx). */
+export function useOturumAcBelki(): (() => void) | null {
+  return useContext(Baglam)?.oturumAc ?? null;
+}
+
 export function useOturumAc() {
   const d = useContext(Baglam);
   if (!d) throw new Error('useOturumAc, OturumSaglayici içinde kullanılmalı.');

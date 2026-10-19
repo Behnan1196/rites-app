@@ -14,6 +14,7 @@ import { kisileriOku } from '@/veri/kisiler';
 import { AltSayfa } from '../AltSayfa';
 import { useKisaMesaj } from '../KisaMesaj';
 import { OturumGerekli } from '../oturum/OturumGerekli';
+import { useOturumAc } from '../oturum/OturumSayfasi';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 
@@ -26,6 +27,8 @@ const paketi = (h: Paylasilan): KartPaketi => ('paket' in h ? h.paket : kartPake
 
 function PaylasSayfasi({ hedef, gorunur, onKapat }: { hedef: Paylasilan; gorunur: boolean; onKapat: () => void }) {
   const oturum = useOturum();
+  // Sayfa üst katmanda çizilir; oturum açma işlevi buradan (ekranın bağlamından) verilir.
+  const oturumAc = useOturumAc();
   const kisaMesaj = useKisaMesaj();
   const kisiler = useSorgu(['kisi'], (o) => kisileriOku(o), []);
   const baglilar = (kisiler.veri ?? []).filter((k) => k.durum === 'bagli' && k.kullaniciId);
@@ -49,7 +52,14 @@ function PaylasSayfasi({ hedef, gorunur, onKapat }: { hedef: Paylasilan; gorunur
   return (
     <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Paylaş" sagKapat="Kapat">
       {oturum.durum !== 'var' ? (
-        <OturumGerekli oturum={oturum} aciklama="Kartı göndermek için önce e-postanla devam et." />
+        <OturumGerekli
+          oturum={oturum}
+          aciklama="Kartı göndermek için önce e-postanla devam et."
+          oturumAc={() => {
+            onKapat();
+            oturumAc();
+          }}
+        />
       ) : (
         <>
           <Yazi tur="ikincil">
@@ -115,6 +125,13 @@ const stiller = StyleSheet.create({
   },
   satir: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64, paddingVertical: 8 },
   cizgili: { borderTopWidth: 1, borderTopColor: renk.satirCizgi },
-  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: renk.anaAcik, alignItems: 'center', justifyContent: 'center' },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: renk.anaAcik,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   esnek: { flex: 1 },
 });

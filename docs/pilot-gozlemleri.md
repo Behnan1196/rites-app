@@ -105,3 +105,8 @@ Ne dedi: "Birine görev verirken, karşı taraf görevi aldıysa 'xxx aldı' dem
 Nerede: Grup ekranı / Gelenler (iş), bütün grup ekranları
 Sonuç: → kararlar.md (İş metinleri ve anında güncelleme)
 
+### P-19 · 19 Ekim 2026 · Behnan · iPhone (Rites ve Rites Dev)
+Ne dedi: "Ajandadaki bir kartı Paylaş dediğimde Rites çöküyor." Rites Dev günlüğü: `useOturumAc, OturumSaglayici içinde kullanılmalı` (PaylasSayfasi → OturumGerekli).
+Nerede: Kart görünümü → ⋯ → Paylaş (oturum kapalıyken)
+Sonuç: Hata düzeltildi: Paylaş sayfası üst katmanda çizildiği için oturum sağlayıcısına ulaşamıyordu; oturum açma işlevi sayfaya özellik olarak verildi. "E-postanla devam et" Paylaş'ı kapatıp giriş sayfasını açar.
+

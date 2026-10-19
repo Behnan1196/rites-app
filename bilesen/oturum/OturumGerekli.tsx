@@ -1,4 +1,6 @@
 // Oturum yokken çevrimiçi bölümlerin yerinde: kısa açıklama ve "E-postanla devam et".
+// Alttan açılan sayfada (üst katman, oturum sağlayıcısının dışında) `oturumAc`
+// özellik olarak verilir (pilot 19 Ekim: Paylaş'ta çöküyordu).
 
 import { StyleSheet, View } from 'react-native';
 
@@ -7,10 +9,19 @@ import type { Oturum } from '@/sunucu/oturum';
 import { Dugme } from '../Dugme';
 import { Bolum } from '../Secim';
 import { Yazi } from '../Yazi';
-import { useOturumAc } from './OturumSayfasi';
+import { useOturumAcBelki } from './OturumSayfasi';
 
-export function OturumGerekli({ oturum, aciklama }: { oturum: Oturum; aciklama: string }) {
-  const oturumAc = useOturumAc();
+export function OturumGerekli({
+  oturum,
+  aciklama,
+  oturumAc: verilen,
+}: {
+  oturum: Oturum;
+  aciklama: string;
+  oturumAc?: () => void;
+}) {
+  const baglamdan = useOturumAcBelki();
+  const oturumAc = verilen ?? baglamdan;
   if (oturum.durum === 'ayarsiz') {
     return (
       <Bolum>
@@ -22,7 +33,11 @@ export function OturumGerekli({ oturum, aciklama }: { oturum: Oturum; aciklama: 
     <Bolum>
       <View style={stiller.kap}>
         <Yazi tur="ikincil">{aciklama}</Yazi>
-        <Dugme etiket="E-postanla devam et" onPress={oturumAc} />
+        {oturumAc ? (
+          <Dugme etiket="E-postanla devam et" onPress={oturumAc} />
+        ) : (
+          <Yazi tur="ikincil">Gruplar sekmesinden e-postanla devam edebilirsin.</Yazi>
+        )}
       </View>
     </Bolum>
   );
