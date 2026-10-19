@@ -233,3 +233,7 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Birinden istenen iş kabul edilince "Elif kabul etti · ajandasında"**, herkese açık işte "Elif üstlendi · ajandasında"; bitince **"Elif tamamladı ✓"** (kendin için "Kabul ettin / Üstlendin · ajandanda", "Tamamladın ✓"). Reddedilen iş "Elif kabul etmedi". Düğme "Yaptım" yerine "Tamamladım". — Ürün sahibi (P-18; herkese açık işteki "üstlendi" ve kendi metinlerin: Öneri)
 - **Gruplardaki değişiklik öteki telefonlara anında gelir** (sekmeyi yenilemeye gerek yok): iş, buluşma ve yanıtlar, oylama ve oylar, birlikte rutin ve işaretleri, nöbet, grup üyeleri, Gelenler, kişi istekleri. Telefon yalnız "değişti" haberini alır, kendi yetkisiyle yeniden okur. — Ürün sahibi (P-18)
 
+## Kişi ekleme istekleri Gelenler'de (19 Ekim)
+
+- **"Seni eklemek isteyenler" Gelenler'de de görünür** (Kabul et · Reddet), Gruplar sekmesindeki gibi; Giriş'teki Gelenler kutusu sayar ("1 kişi ekleme isteği"). Davet edilen kişi Rites'a katılınca isteği de böyle Gelenler'den kabul eder. — Ürün sahibi (P-20)
+

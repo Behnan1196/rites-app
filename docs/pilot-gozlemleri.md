@@ -111,3 +111,8 @@ Nerede: Kart görünümü → ⋯ → Paylaş (oturum kapalıyken)
 Sonuç: Hata düzeltildi: Paylaş sayfası üst katmanda çizildiği için oturum sağlayıcısına ulaşamıyordu; oturum açma işlevi sayfaya özellik olarak verildi. "E-postanla devam et" Paylaş'ı kapatıp giriş sayfasını açar.
 Ek (aynı gün): Oturum açıktı; çökme, oturum "yükleniyor"dayken giriş kutusu çizildiği için oluyordu (aynı düzeltmeyle çözüldü). Sonra Gönder: `new row violates row-level security policy for table "gelen"` — sunucu bu kişiyle bağlantı görmüyor. Paylaş artık açılınca Kişilerim'i sunucuyla eşleştirir, yalnız sunucuda bağlı olanları listeler; ret gelirse "… ile bağlantın sunucuda görünmüyor" der ve listeyi yeniler. Bağlantının neden eksik olduğu bekliyor (Supabase'de `baglanti` tablosuna bakılacak).
 
+### P-20 · 19 Ekim 2026 · Behnan · iPhone
+Ne dedi: "Kişilerime eklemek için bir kişiyi davet ettiğimde de Gelenler'den kabul etsin."
+Nerede: Gruplar → + Kişi ekle; karşı tarafın Gelenler'i
+Sonuç: → kararlar.md (Kişi ekleme istekleri Gelenler'de)
+

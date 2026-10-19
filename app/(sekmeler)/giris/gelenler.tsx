@@ -14,6 +14,8 @@ import { PaylasilanKarti } from '@/bilesen/giris/PaylasilanKarti';
 import { useGelenler } from '@/bilesen/giris/useGelenler';
 import { GrupBekleyenleri } from '@/bilesen/gruplar/GrupBekleyenleri';
 import { GrupDavetleri } from '@/bilesen/gruplar/GrupDavetleri';
+import { KisiIstekleri } from '@/bilesen/gruplar/KisiIstekleri';
+import { useKisiler } from '@/bilesen/gruplar/useKisiler';
 import { useGrupBekleyenleri } from '@/bilesen/gruplar/useGrupBekleyenleri';
 import { useGruplar } from '@/bilesen/gruplar/useGruplar';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
@@ -49,6 +51,7 @@ export default function Gelenler() {
   const { ben, gelenler, yukleniyor, baglanamiyor, yenile } = useGelenler(oturum);
   const grup = useGruplar(oturum);
   const bekleyen = useGrupBekleyenleri();
+  const kisi = useKisiler(oturum);
   const bekleyenYenile = bekleyen.yenile;
   useFocusEffect(
     useCallback(() => {
@@ -124,6 +127,7 @@ export default function Gelenler() {
               {BAGLANAMIYOR}
             </Yazi>
           )}
+          <KisiIstekleri ben={ben} istekler={kisi.istekler} onYanit={() => void kisi.yenile()} />
           <GrupDavetleri
             davetler={grup.davetler}
             ad={grup.ad}
@@ -137,6 +141,7 @@ export default function Gelenler() {
             gelenler.length === 0 &&
             grup.davetler.length === 0 &&
             bekleyen.bekleyenler.length === 0 &&
+            kisi.istekler.length === 0 &&
             !baglanamiyor &&
             (paylasilanlar.veri ?? []).length === 0 && <Yazi tur="ikincil">Şu an yeni bir şey yok.</Yazi>}
           {gelenler.map((g) => (

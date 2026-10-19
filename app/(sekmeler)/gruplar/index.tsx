@@ -11,6 +11,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { GrupDavetleri } from '@/bilesen/gruplar/GrupDavetleri';
+import { KisiIstekleri } from '@/bilesen/gruplar/KisiIstekleri';
 import { GrupKurSayfasi } from '@/bilesen/gruplar/GrupKurSayfasi';
 import { KisiEkleSayfasi } from '@/bilesen/gruplar/KisiEkleSayfasi';
 import { useGrupBekleyenleri } from '@/bilesen/gruplar/useGrupBekleyenleri';
@@ -27,10 +28,9 @@ import { Yazi } from '@/bilesen/Yazi';
 import { grupBasinaBekleyen } from '@/mantik/grupBekleyenler';
 import { grupSayiMetni } from '@/mantik/gruplar';
 import { BAGLANAMIYOR, DURUM_METNI, ekledigimSayi, kisiBasHarf, UCRETSIZ_SINIR, type Kisi } from '@/mantik/kisiler';
-import { baglantiyiSil, davetiSil, istegiKabulEt } from '@/sunucu/kisiler';
+import { baglantiyiSil, davetiSil } from '@/sunucu/kisiler';
 import { useOturum } from '@/sunucu/oturum';
-import { yeniKimlik } from '@/veri/kimlik';
-import { kisiEkle, kisiSil } from '@/veri/kisiler';
+import { kisiSil } from '@/veri/kisiler';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 export default function Gruplar() {
@@ -58,24 +58,6 @@ export default function Gruplar() {
   const hata = (e: unknown) => {
     console.warn(e);
     kisaMesaj(BAGLANAMIYOR);
-  };
-
-  const kabul = async (diger: string, ad: string, eposta: string) => {
-    try {
-      await istegiKabulEt(diger);
-      await kisiEkle(kapi, {
-        id: yeniKimlik(),
-        ad: ad || eposta,
-        eposta,
-        kullaniciId: diger,
-        durum: 'bagli',
-        benEkledim: false,
-      });
-      kisaMesaj(`${ad || eposta} ile bağlandınız.`);
-      void yenile();
-    } catch (e) {
-      hata(e);
-    }
   };
 
   const sil = async (k: Kisi) => {
@@ -107,41 +89,7 @@ export default function Gruplar() {
             </Yazi>
           )}
 
-          {istekler.length > 0 && (
-            <>
-              <Yazi tur="bolumBasligi" accessibilityRole="header">
-                Seni eklemek isteyenler
-              </Yazi>
-              {istekler.map((r) => (
-                <View key={r.diger} style={stiller.istek}>
-                  <View style={stiller.satir}>
-                    <View style={[stiller.avatar, { backgroundColor: renk.vurguAcik }]}>
-                      <Yazi kalinlik="kalin" renk={renk.vurguYazi}>
-                        {kisiBasHarf(r.ad || r.eposta)}
-                      </Yazi>
-                    </View>
-                    <View style={stiller.esnek}>
-                      <Yazi tur="kartBasligi">{r.ad || r.eposta}</Yazi>
-                      <Yazi tur="ikincil">{r.eposta}</Yazi>
-                    </View>
-                  </View>
-                  <View style={stiller.dugmeler}>
-                    <Dugme
-                      etiket="Kabul et"
-                      onPress={() => void kabul(r.diger, r.ad, r.eposta)}
-                      style={stiller.esnek}
-                    />
-                    <Dugme
-                      tur="ikincil"
-                      etiket="Reddet"
-                      onPress={() => void baglantiyiSil(ben, r.diger).then(yenile, hata)}
-                      style={stiller.esnek}
-                    />
-                  </View>
-                </View>
-              ))}
-            </>
-          )}
+          <KisiIstekleri ben={ben} istekler={istekler} onYanit={() => void yenile()} />
 
           <GrupDavetleri
             davetler={grup.davetler}
