@@ -20,6 +20,10 @@ export interface Ayarlar {
   bagli_eposta: string;
   /** Gelenler'de "Gizle" denen grup istekleri (`mantik/grupBekleyenler`; pilot 19 Ekim). */
   gelen_gizli: string[];
+  /** Ajanda (kart) hatırlatmalarının sesi (`mantik/sesler`); yoksa telefonun sesi. */
+  hatirlatma_sesi: string | null;
+  /** Gelenler'e bir şey düşünce telefona bildirim gelsin mi (sunucudan; pilot 19 Ekim). */
+  gelen_bildirimi: boolean;
 }
 
 export type AyarAnahtari = keyof Ayarlar;

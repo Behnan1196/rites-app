@@ -28,6 +28,8 @@ export interface Animsatici {
   alarm: boolean;
   /** Yalnız "Süre sonra": çalacağı an (ISO). Bir kez çalar; `saatler` bunun saatidir. */
   bitis: string | null;
+  /** Bildirim sesi (`mantik/sesler`); yoksa ya da null: telefonun sesi. */
+  ses?: string | null;
 }
 
 /** Bugünkü bir saatin durumu (`animsatici_gun`). */
@@ -258,7 +260,10 @@ export function kalanMetni(kalan: number): string {
 // ---- Bildirim planı ----------------------------------------------------------
 
 export type BildirimVerisi =
-  { tur: 'animsatici'; animsaticiId: string; gun: Gun; saat: string } | { tur: 'kart'; kartId: string; gun: Gun };
+  | { tur: 'animsatici'; animsaticiId: string; gun: Gun; saat: string }
+  | { tur: 'kart'; kartId: string; gun: Gun }
+  /** Sunucudan gelen bildirim (Gelenler'e bir şey düştü; pilot 19 Ekim). */
+  | { tur: 'gelen' };
 
 export interface PlanliBildirim {
   /** Kararlı kimlik: aynı bildirim yeniden planlanınca aynı kalır. */
@@ -269,6 +274,8 @@ export interface PlanliBildirim {
   baslik: string;
   govde: string;
   sesli: boolean;
+  /** Gömülü ses adı (`mantik/sesler`); null: telefonun sesi. */
+  ses?: string | null;
   /** Durdur / Ertele düğmeleri için; kart hatırlatmasında yok. */
   erteleDk: number | null;
   veri: BildirimVerisi;
@@ -338,6 +345,8 @@ export interface PlanGirdisi {
   simdiMs?: number;
   /** Alarm olarak çalan anımsatıcılar ve kartlar (kimlik); bunlara bildirim planlanmaz. */
   alarmlaCalanlar?: ReadonlySet<string>;
+  /** Ajanda hatırlatmalarının sesi (`hatirlatma_sesi` ayarı). */
+  kartSesi?: string | null;
 }
 
 /**
@@ -358,6 +367,7 @@ export function bildirimPlani({
   sinir = BILDIRIM_SINIRI,
   simdiMs,
   alarmlaCalanlar,
+  kartSesi = null,
 }: PlanGirdisi): PlanliBildirim[] {
   const simdiAnahtar = `${bugunGun} ${simdi}`;
   const liste: PlanliBildirim[] = [];
@@ -381,6 +391,7 @@ export function bildirimPlani({
           baslik: a.ad,
           govde: saatMetni(bas),
           sesli: a.sesli,
+          ses: a.ses,
           erteleDk: null,
           veri: { tur: 'animsatici', animsaticiId: a.id, gun, saat },
           ...(tamAn !== null ? { zamanMs: tamAn } : {}),
@@ -398,6 +409,7 @@ export function bildirimPlani({
       baslik: k.baslik,
       govde: kartHatirlatmaGovdesi(k, gun),
       sesli: true,
+      ses: kartSesi,
       erteleDk: null,
       veri: { tur: 'kart', kartId: k.id, gun },
     });

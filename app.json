@@ -2,7 +2,7 @@
   "expo": {
     "name": "Rites",
     "slug": "rites-pilot",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -80,7 +80,18 @@
         }
       ],
       "expo-asset",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "sounds": [
+            "./assets/sesler/zil.wav",
+            "./assets/sesler/can.wav",
+            "./assets/sesler/yumusak.wav",
+            "./assets/sesler/kus.wav",
+            "./assets/sesler/bip.wav"
+          ]
+        }
+      ],
       [
         "react-native-alarm-scheduler",
         {

@@ -3,10 +3,12 @@
 // ancak uygulama açılınca işleniyor. Bu yüzden düğmeler uygulamayı açar ve işlem
 // orada yapılır (`10` → Expo Go kararları).
 
+import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { ERTELEME_SECENEKLERI, erteleMetni, type BildirimVerisi, type PlanliBildirim } from '@/mantik/animsatici';
+import { bildirimSesi } from '@/mantik/sesler';
 
 export const DURDUR = 'durdur';
 export const ERTELE = 'ertele';
@@ -78,7 +80,7 @@ export function planiUygula(plan: readonly PlanliBildirim[]): Promise<void> {
           content: {
             title: b.baslik,
             body: b.govde,
-            sound: b.sesli ? 'default' : false,
+            sound: b.sesli ? bildirimSesi(b.ses) : false,
             categoryIdentifier: b.erteleDk ? kategori(b.erteleDk) : undefined,
             data: b.veri,
           },
@@ -125,4 +127,20 @@ export function yanitlariDinle(isle: (y: BildirimYaniti) => void): () => void {
     void Notifications.clearLastNotificationResponseAsync();
   });
   return () => abonelik.remove();
+}
+
+/**
+ * Sunucudan bildirim almak için bu telefonun Expo bildirim adresi (jeton; pilot 19
+ * Ekim). İzin yoksa ya da alınamazsa null. Yalnız kendi derlemede çalışır.
+ */
+export async function bildirimJetonu(): Promise<string | null> {
+  if (!desteklenir) return null;
+  if (!(await bildirimIzni(true))) return null;
+  const projectId = (Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined)?.eas?.projectId;
+  try {
+    return (await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined)).data;
+  } catch (e) {
+    console.warn('Bildirim adresi alınamadı', e);
+    return null;
+  }
 }

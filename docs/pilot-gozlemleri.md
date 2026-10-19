@@ -119,5 +119,5 @@ Sonuç: → kararlar.md (Kişi ekleme istekleri Gelenler'de)
 ### P-21 · 19 Ekim 2026 · Behnan · iPhone
 Ne dedi: "Anımsatıcılarda ayarlanan bildirimin üstüne basılı tutup gelen menüde durdur veya ertele diyoruz, ancak bu kullanıcıların pek anlamayacağı bir davranış, sadece bildirim olması yeterli. Peki bildirim sesini farklı farklı yapabiliyor muyuz? Bir de Gelenler kutusunda, sadece gelenler için bildirim açıp kapatma yapabilir miyiz?"
 Nerede: Anımsatıcı bildirimi; Gelenler
-Sonuç: → kararlar.md (Anımsatıcı bildirimi sadeleşti); bildirim sesleri ve Gelenler bildirimi: sorular soruldu (ikisi de yeni derleme ve sunucu işi ister)
+Sonuç: → kararlar.md (Anımsatıcı bildirimi sadeleşti; Bildirim sesleri ve Gelenler bildirimi, sürüm 1.3.0)
 

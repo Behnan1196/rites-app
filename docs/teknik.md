@@ -141,3 +141,15 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - `sunucu/istemci.ts` `tablolariDinle(ad, tablolar, onDegisti)`: değişiklik haberi gelince (yarım saniye birleştirerek) yeniden okunur; haberin içeriği kullanılmaz, okuma her zamanki yetkiyle (RLS) yapılır. Sağlayıcılar (Buluşma, İş, Karar, Rutin, Nöbet) oturum açıkken dinler; `useSunucu(yukle, anahtar, dinle)` üçüncü parametreyle Gelenler, Kişilerim, Gruplarım ve Ortak listeler için.
 - Supabase'de Realtime açık olmalı (varsayılan). Denetim: Database → Publications → supabase_realtime'da tablolar görünür. Web denemesinde sahte sunucu Realtime vermez; gerçek iki telefonla denenir.
 
+## Bildirim sesleri
+
+- `assets/sesler/*.wav` (44,1 kHz, 16 bit, tek kanal, 0,7–2,6 sn; Python ile üretildi). `app.json` → `expo-notifications` eklentisinin `sounds` seçeneğiyle uygulamaya gömülür; bildirimde `sound: '<ad>.wav'` (`mantik/sesler.ts` `bildirimSesi`). Yeni ses = yeni derleme.
+- `animsatici.ses` (göç 14), ayar `hatirlatma_sesi` (kart hatırlatmaları). Önizleme `bilesen/SesSecici.tsx` (expo-audio).
+
+## Telefona bildirim (sunucudan)
+
+- Tablo `bildirim_adresi` (jeton = Expo bildirim adresi, kullanıcı, açık). Telefon oturum açılınca ve tercih değişince `bildirim_adresi_yaz(jeton, acik)` çağırır (`bilesen/GelenBildirimi.tsx`); aynı telefonda başka kullanıcı girerse jeton ona geçer.
+- `bildirim_tetik()` tetikleyicisi gelen, baglanti, grup_uye, grup_is, bulusma, karar, rutin, nobet tablolarında; `bildirim_gonder(alicilar, baslik, govde, veri)` açık jetonlara tek istekte (en çok 100) `net.http_post` ile `https://exp.host/--/api/v2/push/send`. `pg_net` yoksa (yerel deneme) gönderilmez; gönderim hatası asıl yazmayı bozmaz. Yerel denemede `net.http_post`'un sahtesi istekleri bir tabloya yazar.
+- Bildirimin `data.tur = 'gelen'`; dokununca `BildirimYoneticisi` Gelenler'i açar.
+- Apple'a gönderim için EAS'ta bir kez bildirim anahtarı (APNs key) kurulur; Expo'nun bildirim servisi anahtarsız ("enhanced security" kapalı) kullanılır.
+

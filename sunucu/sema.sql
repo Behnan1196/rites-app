@@ -1291,3 +1291,187 @@ begin
     end if;
   end loop;
 end $$;
+
+-- ---- Telefona bildirim (pilot 19 Ekim) -----------------------------------------------
+-- Gelenler'e bir şey düşünce (kart, kişi isteği, grup daveti, iş, buluşma, oylama,
+-- rutin, nöbet) ve kuranın işi kabul edilince / tamamlanınca alıcının telefonuna
+-- bildirim gider. Telefon Expo bildirim adresini (jeton) buraya yazar; Gelenler
+-- kutusundaki zil ile açılıp kapatılır. Gönderim `pg_net` ile Expo'nun bildirim
+-- servisine yapılır (exp.host); `pg_net` yoksa sessizce gönderilmez.
+
+do $$
+begin
+  create extension if not exists pg_net;
+exception when others then
+  raise notice 'pg_net kurulamadı (yerel deneme?): %', sqlerrm;
+end $$;
+
+create table if not exists public.bildirim_adresi (
+  jeton      text primary key,
+  kullanici  uuid not null references public.kullanici (id) on delete cascade,
+  acik       boolean not null default true,
+  guncelleme timestamptz not null default now()
+);
+create index if not exists bildirim_adresi_kullanici on public.bildirim_adresi (kullanici);
+alter table public.bildirim_adresi enable row level security;
+
+drop policy if exists bildirim_adresi_oku on public.bildirim_adresi;
+create policy bildirim_adresi_oku on public.bildirim_adresi for select to authenticated
+  using (kullanici = auth.uid());
+drop policy if exists bildirim_adresi_sil on public.bildirim_adresi;
+create policy bildirim_adresi_sil on public.bildirim_adresi for delete to authenticated
+  using (kullanici = auth.uid());
+revoke insert, update on public.bildirim_adresi from anon, authenticated;
+revoke all on public.bildirim_adresi from anon;
+
+-- Bu telefonun jetonu bu kullanıcıya yazılır (aynı telefonda başka kullanıcı girdiyse ona geçer).
+create or replace function public.bildirim_adresi_yaz(p_jeton text, p_acik boolean) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'oturum yok'; end if;
+  if length(coalesce(p_jeton, '')) < 10 then raise exception 'jeton'; end if;
+  insert into public.bildirim_adresi (jeton, kullanici, acik, guncelleme)
+    values (p_jeton, auth.uid(), coalesce(p_acik, true), now())
+  on conflict (jeton) do update set kullanici = excluded.kullanici, acik = excluded.acik, guncelleme = now();
+end;
+$$;
+
+create or replace function public.kisi_adi(u uuid) returns text
+language sql stable security definer set search_path = public as $$
+  select coalesce(nullif(trim(ad), ''), split_part(eposta, '@', 1), 'Biri') from public.kullanici where id = u;
+$$;
+
+create or replace function public.grubun_uyeleri(g uuid) returns uuid[]
+language sql stable security definer set search_path = public as $$
+  select coalesce(array_agg(kullanici), '{}') from public.grup_uye where grup = g and durum = 'uye';
+$$;
+
+create or replace function public.kisa_tarih(g date) returns text
+language sql immutable as $$
+  select extract(day from g)::int || ' ' ||
+    (array['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'])[extract(month from g)::int];
+$$;
+
+-- Alıcıların açık jetonlarına tek istekte gönderir (en çok 100 ileti).
+create or replace function public.bildirim_gonder(p_alicilar uuid[], p_baslik text, p_govde text, p_veri jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  iletiler jsonb;
+begin
+  select jsonb_agg(jsonb_build_object(
+           'to', b.jeton, 'title', p_baslik, 'body', p_govde, 'sound', 'default',
+           'data', coalesce(p_veri, '{}'::jsonb) || jsonb_build_object('tur', 'gelen')))
+    into iletiler
+  from (select jeton from public.bildirim_adresi
+        where acik and kullanici = any (coalesce(p_alicilar, '{}')) limit 100) b;
+  if iletiler is null then return; end if;
+  if to_regprocedure('net.http_post(text,jsonb,jsonb,jsonb,integer)') is null then return; end if;
+  execute 'select net.http_post(url := $1, body := $2, headers := $3)'
+    using 'https://exp.host/--/api/v2/push/send', iletiler,
+          '{"Content-Type": "application/json", "Accept": "application/json"}'::jsonb;
+exception when others then
+  -- Bildirim gönderilemese de asıl yazma (kart, iş…) bozulmasın.
+  raise warning 'bildirim gönderilemedi: %', sqlerrm;
+end;
+$$;
+
+create or replace function public.bildirim_tetik() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  g text;
+  herkes uuid[];
+begin
+  if tg_table_name = 'gelen' then
+    perform public.bildirim_gonder(array[new.kime], public.kisi_adi(new.kimden),
+      'Sana bir kart gönderdi: ' || coalesce(new.kart->>'baslik', ''), '{}');
+
+  elsif tg_table_name = 'baglanti' then
+    if tg_op = 'INSERT' and new.durum = 'istek' then
+      perform public.bildirim_gonder(array[case when new.isteyen = new.a then new.b else new.a end], 'Rites',
+        public.kisi_adi(new.isteyen) || ' seni kişilerine eklemek istiyor', '{}');
+    elsif tg_op = 'UPDATE' and old.durum = 'istek' and new.durum = 'bagli' then
+      perform public.bildirim_gonder(array[new.isteyen], 'Rites',
+        public.kisi_adi(case when new.isteyen = new.a then new.b else new.a end) || ' isteğini kabul etti', '{}');
+    end if;
+
+  elsif tg_table_name = 'grup_uye' then
+    if new.durum = 'davet' then
+      select ad into g from public.grup where id = new.grup;
+      perform public.bildirim_gonder(array[new.kullanici], 'Rites',
+        public.kisi_adi((select kurucu from public.grup where id = new.grup)) || ' seni "' || g || '" grubuna çağırdı', '{}');
+    end if;
+
+  elsif tg_table_name = 'grup_is' then
+    select ad into g from public.grup where id = new.grup;
+    if tg_op = 'INSERT' or old.durum is distinct from new.durum then
+      if new.durum = 'istendi' then
+        perform public.bildirim_gonder(array[new.kime], g, public.kisi_adi(new.isteyen) || ' senden istiyor: ' || new.baslik, '{}');
+      elsif new.durum = 'acik' and tg_op = 'INSERT' then
+        perform public.bildirim_gonder(array_remove(public.grubun_uyeleri(new.grup), new.isteyen), g, 'Yeni iş: ' || new.baslik, '{}');
+      elsif new.durum = 'alindi' and new.alan is distinct from new.isteyen and old.durum <> 'yapildi' then
+        perform public.bildirim_gonder(array[new.isteyen], g, public.kisi_adi(new.alan) ||
+          case when new.kime is not null then ' kabul etti: ' else ' üstlendi: ' end || new.baslik, '{}');
+      elsif new.durum = 'reddedildi' and old.durum = 'istendi' then
+        perform public.bildirim_gonder(array[new.isteyen], g, public.kisi_adi(new.kime) || ' kabul etmedi: ' || new.baslik, '{}');
+      elsif new.durum = 'yapildi' and new.alan is distinct from new.isteyen then
+        perform public.bildirim_gonder(array[new.isteyen], g, public.kisi_adi(new.alan) || ' tamamladı: ' || new.baslik, '{}');
+      end if;
+    end if;
+
+  elsif tg_table_name = 'bulusma' then
+    select ad into g from public.grup where id = new.grup;
+    herkes := array_remove(public.grubun_uyeleri(new.grup), new.kuran);
+    if tg_op = 'INSERT' then
+      perform public.bildirim_gonder(herkes, g, new.baslik || ' · ' || public.kisa_tarih(new.gun) ||
+        coalesce(' ' || new.saat, '') || ' — gelebilir misin?', '{}');
+    elsif old.gun is distinct from new.gun or old.saat is distinct from new.saat then
+      perform public.bildirim_gonder(herkes, g, new.baslik || ' için zaman değişti: ' || public.kisa_tarih(new.gun) ||
+        coalesce(' ' || new.saat, ''), '{}');
+    end if;
+
+  elsif tg_table_name = 'karar' then
+    select ad into g from public.grup where id = new.grup;
+    herkes := array_remove(public.grubun_uyeleri(new.grup), new.kuran);
+    if tg_op = 'INSERT' then
+      perform public.bildirim_gonder(herkes, g, case when new.tur = 'gun' then new.soru || ': hangi gün? Oy ver'
+        else 'Oylama: ' || new.soru end, '{}');
+    elsif old.sonuc is null and new.sonuc is not null and new.tur = 'metin' then
+      perform public.bildirim_gonder(herkes, g, 'Karar verildi: ' || new.soru || ' → ' ||
+        coalesce((select metin from public.karar_secenek where id = new.sonuc), ''), '{}');
+    end if;
+
+  elsif tg_table_name = 'rutin' then
+    select ad into g from public.grup where id = new.grup;
+    perform public.bildirim_gonder(array_remove(public.grubun_uyeleri(new.grup), new.kuran), g,
+      'Birlikte rutin: ' || new.ad || case when new.hedef >= 7 then ' (her gün)' else ' (haftada ' || new.hedef || ')' end, '{}');
+
+  elsif tg_table_name = 'nobet' then
+    select ad into g from public.grup where id = new.grup;
+    perform public.bildirim_gonder(array_remove(new.sira, new.kuran), g, 'Nöbet: ' || new.ad || ' — sıraya eklendin', '{}');
+  end if;
+  return null;
+end;
+$$;
+
+do $$
+declare t text;
+begin
+  foreach t in array array['gelen', 'baglanti', 'grup_uye', 'grup_is', 'bulusma', 'karar', 'rutin', 'nobet'] loop
+    execute format('drop trigger if exists bildirim on public.%I', t);
+  end loop;
+end $$;
+create trigger bildirim after insert on public.gelen for each row execute function public.bildirim_tetik();
+create trigger bildirim after insert or update on public.baglanti for each row execute function public.bildirim_tetik();
+create trigger bildirim after insert on public.grup_uye for each row execute function public.bildirim_tetik();
+create trigger bildirim after insert or update on public.grup_is for each row execute function public.bildirim_tetik();
+create trigger bildirim after insert or update on public.bulusma for each row execute function public.bildirim_tetik();
+create trigger bildirim after insert or update on public.karar for each row execute function public.bildirim_tetik();
+create trigger bildirim after insert on public.rutin for each row execute function public.bildirim_tetik();
+create trigger bildirim after insert on public.nobet for each row execute function public.bildirim_tetik();
+
+revoke execute on function
+  public.bildirim_gonder(uuid[], text, text, jsonb), public.bildirim_tetik(), public.kisi_adi(uuid),
+  public.grubun_uyeleri(uuid)
+  from anon, authenticated, public;
+revoke execute on function public.bildirim_adresi_yaz(text, boolean) from anon, public;
+grant execute on function public.bildirim_adresi_yaz(text, boolean) to authenticated;

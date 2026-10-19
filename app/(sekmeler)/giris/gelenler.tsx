@@ -9,6 +9,7 @@ import { useCallback, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Dugme } from '@/bilesen/Dugme';
+import { useGelenBildirimi } from '@/bilesen/GelenBildirimi';
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { PaylasilanKarti } from '@/bilesen/giris/PaylasilanKarti';
 import { useGelenler } from '@/bilesen/giris/useGelenler';
@@ -22,6 +23,7 @@ import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { useKutuphaneyeKaydet } from '@/bilesen/kutuphane/KaydetSayfasi';
 import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
+import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
 import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { alanAdi } from '@/mantik/alanlar';
@@ -52,6 +54,7 @@ export default function Gelenler() {
   const grup = useGruplar(oturum);
   const bekleyen = useGrupBekleyenleri();
   const kisi = useKisiler(oturum);
+  const zil = useGelenBildirimi();
   const bekleyenYenile = bekleyen.yenile;
   useFocusEffect(
     useCallback(() => {
@@ -103,6 +106,16 @@ export default function Gelenler() {
     <EkranKabi
       geri="Giriş"
       baslik="Gelenler"
+      baslikSag={
+        zil.acik !== null ? (
+          <SimgeDugmesi
+            ikon={zil.acik ? 'notifications' : 'notifications-off-outline'}
+            etiket={zil.acik ? 'Gelenler bildirimleri açık; kapat' : 'Gelenler bildirimleri kapalı; aç'}
+            secili={zil.acik}
+            onPress={() => void zil.degistir()}
+          />
+        ) : undefined
+      }
       altBaslik="Sana gönderilenler, paylaştıkların ve gruplarından yanıt bekleyenler."
     >
       {(paylasilanlar.veri ?? []).map((p) => (

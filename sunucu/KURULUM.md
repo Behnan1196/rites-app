@@ -90,3 +90,13 @@ Değiştirdikten sonra `npx expo start -c` ile yeniden başlat.
 
 `npm run sunucu-denemesi` şemayı yerelde gerçek bir Postgres (PGlite) üzerinde, Supabase'e benzer bir ortamda dener:
 yetki kuralları, davetin isteğe dönmesi, 5 kişi sınırı, Hesabımı sil.
+
+## 5. Telefona bildirim (19 Ekim, sürüm 1.3.0)
+
+1. Supabase → **Database → Extensions** → `pg_net` açık olmalı (kapalıysa **Enable**). `sema.sql` de açmayı dener.
+2. Güncel `sema.sql`'i SQL Editor'de bir kez çalıştır (`bildirim_adresi` tablosu ve bildirim tetikleyicileri).
+3. Apple bildirim anahtarı (bir kez): `npx eas-cli@latest credentials -p ios` → **production** → **Push Notifications: Manage your Apple Push Notifications Key** → **Set up a Push Notification Key** → yeni anahtar oluşturulsun. (Apple kimliğini yalnız terminale yaz.) `eas build` sırasında "Push Notifications kurulsun mu?" diye sorarsa **Evet** demek de aynı işi görür.
+4. Yeni derleme: `npx eas-cli@latest build --platform ios --profile production --auto-submit` (TestFlight). Rites Dev için de: `npx eas-cli@latest build --platform ios --profile development`.
+
+Denetim: telefonda Gelenler kutusundaki zil açıkken, Supabase → Table Editor → `bildirim_adresi`'nde telefonun satırı görünür. Başka bir hesaptan sana kart gönderilince bildirim gelmeli.
+

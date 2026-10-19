@@ -222,6 +222,11 @@ export const GOCLER: readonly Goc[] = [
     surum: 13,
     sql: `ALTER TABLE kart ADD COLUMN bag TEXT;`,
   },
+  {
+    // Anımsatıcının bildirim sesi (pilot 19 Ekim); null: telefonun sesi.
+    surum: 14,
+    sql: `ALTER TABLE animsatici ADD COLUMN ses TEXT;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

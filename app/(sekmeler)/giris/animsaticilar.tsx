@@ -11,9 +11,13 @@ import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { olcu, renk } from '@/bilesen/tema';
+import { Bolum } from '@/bilesen/Secim';
+import { SesSecici } from '@/bilesen/SesSecici';
 import { Yazi } from '@/bilesen/Yazi';
 import { ANIMSATICI_GIZLILIK, animsaticiMeta, kalanSureMetni } from '@/mantik/animsatici';
 import { animsaticiSil } from '@/veri/animsaticilar';
+import { ayarOku, ayarYaz } from '@/veri/ayar';
+import { useSorgu } from '@/veri/kancalar';
 import { useSimdiMs } from '@/veri/useSimdi';
 import { useVeri } from '@/veri/VeriSaglayici';
 
@@ -23,6 +27,7 @@ export default function Animsaticilar() {
   const { kapi } = useVeri();
   const kisaMesaj = useKisaMesaj();
   const simdiMs = useSimdiMs();
+  const kartSesi = useSorgu(['ayar'], async (o) => (await ayarOku(o, 'hatirlatma_sesi')) ?? null, []);
   const animsaticilar = hepsi.filter((a) => !a.bitis);
   const sureler = hepsi.filter((a) => a.bitis);
 
@@ -83,6 +88,18 @@ export default function Animsaticilar() {
         ))}
 
         <Dugme etiket="+ Anımsatıcı ekle" onPress={() => form.ac()} />
+        <Bolum>
+          <Yazi kalinlik="kalin">Ajanda hatırlatmalarının sesi</Yazi>
+          <Yazi tur="ikincil">
+            Kartlara kurduğun hatırlatmalar bu sesle gelir. Anımsatıcının sesi kendi sayfasında seçilir.
+          </Yazi>
+          <SesSecici
+            ses={kartSesi.veri ?? null}
+            onDegis={(ses) =>
+              void ayarYaz(kapi, 'hatirlatma_sesi', ses).catch((e: unknown) => console.error('Ses kaydedilemedi', e))
+            }
+          />
+        </Bolum>
         <Yazi tur="ikincil">{ANIMSATICI_GIZLILIK}</Yazi>
       </EkranKabi>
 

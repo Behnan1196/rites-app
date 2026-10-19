@@ -42,6 +42,7 @@ import { SaatSecici } from '../kart/Zamanlama';
 import { useKisaMesaj } from '../KisaMesaj';
 import { ArtiEksi, Bolum, SecenekHapi } from '../Secim';
 import { renk } from '../tema';
+import { SesSecici } from '../SesSecici';
 import { useAlarmDestegi } from '../useAlarmDestegi';
 import { Yazi } from '../Yazi';
 
@@ -55,6 +56,7 @@ interface Form {
   sureDk: number;
   alarm: boolean;
   erteleDk: number;
+  ses: string | null;
 }
 
 /** En son hangi tür kullanıldıysa yeni anımsatıcı onunla açılır (oturum boyunca). */
@@ -84,6 +86,7 @@ function ilkForm(duzenlenen: Animsatici | null, tur: AnimsaticiTuru | undefined)
       sureDk: VARSAYILAN_SURE,
       alarm: duzenlenen.alarm,
       erteleDk: duzenlenen.erteleDk,
+      ses: duzenlenen.ses ?? null,
     };
   const t = tur ?? sonTur;
   return {
@@ -94,6 +97,7 @@ function ilkForm(duzenlenen: Animsatici | null, tur: AnimsaticiTuru | undefined)
     sureDk: VARSAYILAN_SURE,
     alarm: false,
     erteleDk: VARSAYILAN_ERTELEME,
+    ses: null,
   };
 }
 
@@ -156,6 +160,7 @@ function AnimsaticiFormu({
         erteleDk: form.erteleDk,
         alarm,
         bitis: bitis ? bitis.toISOString() : null,
+        ses: form.ses,
       };
       if (duzenlenen) await animsaticiGuncelle(kapi, a);
       else await animsaticiEkle(kapi, a);
@@ -361,6 +366,12 @@ function AnimsaticiFormu({
           )}
         </View>
         {alarm && <Yazi tur="ikincil">{ALARM_ACIKLAMASI}</Yazi>}
+        {!alarm && (
+          <>
+            <Yazi kalinlik="kalin">Ses</Yazi>
+            <SesSecici ses={form.ses} onDegis={(ses) => guncelle({ ses })} />
+          </>
+        )}
         {/* Pilot 19 Ekim: erteleme yalnız alarmda; bildirim tek ve düğmesiz. */}
         {alarm && (
           <>

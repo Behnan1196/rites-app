@@ -16,7 +16,7 @@ import { useGirisAyari, useKutuSirasi } from '@/bilesen/giris/GirisAyari';
 import { GununSorusu } from '@/bilesen/giris/GununSorusu';
 import { HizliNot } from '@/bilesen/giris/HizliNot';
 import { OrtakListelerKutusu } from '@/bilesen/giris/OrtakListelerKutusu';
-import { kutuSatirlari, type KutuAnahtari } from '@/mantik/giris';
+import { hazirKutular, kutuSatirlari, type KutuAnahtari } from '@/mantik/giris';
 
 const KUTU_BILESENI: Partial<Record<KutuAnahtari, () => React.ReactNode>> = {
   not: () => <HizliNot />,
@@ -33,7 +33,11 @@ export default function Giris() {
   const { girisAyariniAc } = useGirisAyari();
   return (
     <EkranKabi baslik="Rites" marka>
-      {kutuSatirlari((sira ?? []).filter((a) => a.acik && KUTU_BILESENI[a.k]).map((a) => a.k)).map((satir) =>
+      {kutuSatirlari(
+        hazirKutular(sira ?? [])
+          .filter((a) => a.acik && KUTU_BILESENI[a.k])
+          .map((a) => a.k),
+      ).map((satir) =>
         satir.length === 1 ? (
           <Fragment key={satir[0]}>{KUTU_BILESENI[satir[0]!]?.()}</Fragment>
         ) : (

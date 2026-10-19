@@ -2,6 +2,7 @@
 // her yazmada bugünden eski satırlar silinir.
 
 import { gunleriCoz, saatleriSirala, type Animsatici, type AnimsaticiGunu } from '@/mantik/animsatici';
+import { gecerliSes } from '@/mantik/sesler';
 import type { Gun } from '@/mantik/tarih';
 
 import type { Kapi, Okuyucu, Yazici } from './kapi';
@@ -15,6 +16,7 @@ interface AnimsaticiSatiri {
   ertele_dk: number;
   alarm: number | null;
   bitis?: string | null;
+  ses?: string | null;
 }
 
 function satirdan(s: AnimsaticiSatiri): Animsatici {
@@ -33,6 +35,7 @@ function satirdan(s: AnimsaticiSatiri): Animsatici {
     erteleDk: s.ertele_dk,
     alarm: s.alarm === 1,
     bitis: s.bitis ?? null,
+    ses: gecerliSes(s.ses),
   };
 }
 
@@ -79,7 +82,7 @@ export function eskiGunleriSil(kapi: Kapi, bugunGun: Gun, simdiMs: number = Date
 export function animsaticiEkle(kapi: Kapi, a: Animsatici, simdi: string = new Date().toISOString()): Promise<void> {
   return kapi.yaz(['animsatici'], (y) =>
     y.calistir(
-      'INSERT INTO animsatici (id, ad, saatler, gunler, sesli, ertele_dk, alarm, bitis, olusturma) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO animsatici (id, ad, saatler, gunler, sesli, ertele_dk, alarm, bitis, ses, olusturma) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         a.id,
         a.ad.trim(),
@@ -89,6 +92,7 @@ export function animsaticiEkle(kapi: Kapi, a: Animsatici, simdi: string = new Da
         a.erteleDk,
         a.alarm ? 1 : 0,
         a.bitis ? new Date(a.bitis).toISOString() : null,
+        gecerliSes(a.ses),
         simdi,
       ],
     ),
@@ -100,7 +104,7 @@ export function animsaticiGuncelle(kapi: Kapi, a: Animsatici): Promise<void> {
   const saatler = saatleriSirala(a.saatler);
   return kapi.yaz(['animsatici'], async (y) => {
     await y.calistir(
-      'UPDATE animsatici SET ad = ?, saatler = ?, gunler = ?, sesli = ?, ertele_dk = ?, alarm = ? WHERE id = ?',
+      'UPDATE animsatici SET ad = ?, saatler = ?, gunler = ?, sesli = ?, ertele_dk = ?, alarm = ?, ses = ? WHERE id = ?',
       [
         a.ad.trim(),
         JSON.stringify(saatler),
@@ -108,6 +112,7 @@ export function animsaticiGuncelle(kapi: Kapi, a: Animsatici): Promise<void> {
         a.sesli ? 1 : 0,
         a.erteleDk,
         a.alarm ? 1 : 0,
+        gecerliSes(a.ses),
         a.id,
       ],
     );

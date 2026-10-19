@@ -242,3 +242,11 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Bildirim tek ve düğmesiz:** bildirimin üstüne basılı tutunca çıkan Durdur / Ertele kalktı, durdurulmazsa 3 kez yeniden çalma da kalktı. Bildirime dokununca Rites Anımsatıcılar'ı açar. — Ürün sahibi (P-21; yeniden çalmanın kalkması: Öneri — düğme olmadan durdurmanın yolu kalmıyordu)
 - **"Ertele dersem" yalnız Alarm'da;** alarmda Durdur / Ertele eskisi gibi. Anımsatıcı satırında bildirimliler için erteleme yazmaz. — Öneri
 
+## Bildirim sesleri ve Gelenler bildirimi (19 Ekim, sürüm 1.3.0)
+
+- **Beş örnek ses:** Zil · Çan · Yumuşak · Kuş · Kısa bip (Rites'ın kendi ürettiği kısa sesler; telifsiz) ve "Telefonun sesi" (varsayılan). — Ürün sahibi (P-21; seslerin kendisi: Öneri)
+- **Ses kullanıcıya kalır:** her anımsatıcıda "Ses" (bildirimli olanlarda; dokununca bir kez çalar); kart hatırlatmaları için Anımsatıcılar ekranında "Ajanda hatırlatmalarının sesi". Alarmın sesi değişmez (telefonun alarm sesi). — Ürün sahibi (yerleri: Öneri)
+- **Gelenler bildirimi:** Gelenler'e bir şey düşünce telefona bildirim gelir — kart, kişi isteği (ve kabul edildi), grup daveti, benden istenen ya da herkese açık iş, buluşma (ve zamanı değişti), oylama (ve karar), birlikte rutin, nöbete eklenme; kuranın işi kabul edilince / tamamlanınca / kabul edilmeyince kurana. Bildirime dokununca Gelenler açılır. — Ürün sahibi (P-21; hangi olayların bildirim verdiği: Öneri)
+- **Aç / kapat Gelenler kutusundaki zilde** (Giriş'te ve Gelenler ekranının sağ üstünde); varsayılan açık; kapalıyken sunucu o telefona hiç göndermez. Tercih telefonda tutulur, telefon değişirse yeniden seçilir. — Ürün sahibi
+- Giriş'te "hazır değil" kutular (Ortak Listeler) artık hiç çizilmiyor (19 Ekim'de kaldırılan kutu eski ayarda açık kalmıştı). — Öneri
+

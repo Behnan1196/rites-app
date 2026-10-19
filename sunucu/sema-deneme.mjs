@@ -16,6 +16,13 @@ grant execute on function auth.uid() to anon, authenticated;
 alter default privileges in schema public grant all on tables to anon, authenticated;
 alter default privileges in schema public grant all on functions to anon, authenticated;
 `);
+// pg_net'in sahtesi: gönderilen istekler bir tabloya yazılır (bildirim denemesi için).
+await ex(`
+create schema if not exists net;
+create table net.giden (url text, body jsonb, headers jsonb);
+create function net.http_post(url text, body jsonb default '{}', params jsonb default '{}', headers jsonb default '{}', timeout_milliseconds integer default 5000)
+returns bigint language sql as $$ insert into net.giden values (url, body, headers) returning 1::bigint $$;
+`);
 const sema = fs.readFileSync(process.argv[2], 'utf8');
 await ex(sema);
 await ex(sema); // yeniden çalıştırmak güvenli mi
@@ -280,6 +287,33 @@ await olarak(ali, () => q('delete from karar where id = $1', [eski]));
 esit('üye başkasının kararını silemez', (await q('select count(*)::int n from karar')).rows[0].n, 3);
 await olarak(ayse, () => q('delete from karar where id = $1', [eski]));
 esit('kuran siler', (await q('select count(*)::int n from karar')).rows[0].n, 2);
+
+// Telefona bildirim (pilot 19 Ekim)
+await ex('delete from net.giden');
+await hataBekle('jeton yalnız işlevle yazılır', () => olarak(ali, () => q(`insert into bildirim_adresi values ('ExponentPushToken[ali]', $1, true, now())`, [ali])), 'permission denied');
+await olarak(ali, () => q(`select bildirim_adresi_yaz('ExponentPushToken[ali-telefon]', true)`));
+await olarak(ayse, () => q(`select bildirim_adresi_yaz('ExponentPushToken[ayse-telefon]', true)`));
+esit('kendi jetonunu görür, başkasınınkini görmez', (await olarak(ali, () => q('select jeton from bildirim_adresi'))).rows.map(r => r.jeton), ['ExponentPushToken[ali-telefon]']);
+const giden = async () => (await q('select body from net.giden')).rows.flatMap(r => r.body).map(m => [m.to.slice(18, -1), m.title, m.body, m.data.tur]);
+const bIs = (await tek(ayse, `select is_ekle($1, 'Faturayı öde', null, $2) i`, [aile, ali])).i;
+esit('istenen işte alıcıya bildirim', await giden(), [['ali-telefon', 'Aile', 'ayse senden istiyor: Faturayı öde', 'gelen']]);
+await ex('delete from net.giden');
+await olarak(ali, () => q(`select is_yanitla($1, 'al')`, [bIs]));
+await olarak(ali, () => q(`select is_yanitla($1, 'yaptim')`, [bIs]));
+esit('isteyene: kabul etti, tamamladı', (await giden()).map(m => m[2]), ['Ali kabul etti: Faturayı öde', 'Ali tamamladı: Faturayı öde']);
+await ex('delete from net.giden');
+await olarak(ali, () => q(`select bildirim_adresi_yaz('ExponentPushToken[ali-telefon]', false)`));
+await olarak(ayse, () => q(`select bulusma_kur($1, 'Piknik', '2099-03-05', '10:30', '')`, [aile]));
+esit('kapatan bildirim almaz', await giden(), []);
+await olarak(ali, () => q(`select bildirim_adresi_yaz('ExponentPushToken[ali-telefon]', true)`));
+await olarak(ayse, () => q(`select karar_kur($1, 'Ne yiyelim?', 'metin', false, null, '', '[{"metin":"a"},{"metin":"b"}]')`, [aile]));
+await olarak(ayse, () => q(`select rutin_kur($1, 'Yürüyüş', 3)`, [aile]));
+esit('oylama ve rutin: kurana gitmez, üyeye gider', (await giden()).map(m => [m[0], m[2]]), [['ali-telefon', 'Oylama: Ne yiyelim?'], ['ali-telefon', 'Birlikte rutin: Yürüyüş (haftada 3)']]);
+await ex('delete from net.giden');
+await olarak(ali, () => q(`insert into gelen (kimden, kime, kart) values ($1, $2, '{"baslik":"Bulgur"}')`, [ali, ayse]));
+esit('gelen kart', await giden(), [['ayse-telefon', 'Ali', 'Sana bir kart gönderdi: Bulgur', 'gelen']]);
+await olarak(ayse, () => q(`select bildirim_adresi_yaz('ExponentPushToken[ali-telefon]', true)`));
+esit('aynı telefonda başka kullanıcı girince jeton ona geçer', (await q(`select kullanici from bildirim_adresi where jeton = 'ExponentPushToken[ali-telefon]'`)).rows[0].kullanici, ayse);
 
 // Gruptan ayrıl, çıkar, grubu sil
 await olarak(ayse, () => q('delete from grup_uye where grup = $1 and kullanici = $2', [aile, ayse]));

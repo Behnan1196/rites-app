@@ -30,6 +30,7 @@ const goz: Animsatici = {
   erteleDk: 5,
   alarm: true,
   bitis: null,
+  ses: null,
 };
 
 beforeEach(async () => {
@@ -101,3 +102,16 @@ describe('anımsatıcılar (gerçek SQLite)', () => {
     expect(await animsaticilariOku(oku)).toEqual([]);
   });
 });
+
+describe('anımsatıcı sesi (pilot 19 Ekim)', () => {
+  it('ses yazılır, okunur; bilinmeyen ses telefonun sesine döner', async () => {
+    await animsaticiEkle(kapi, { ...goz, id: 's', ses: 'kus' });
+    await animsaticiEkle(kapi, { ...goz, id: 't', ses: 'yok-boyle' });
+    const l = await animsaticilariOku(oku);
+    expect(l.find((a) => a.id === 's')?.ses).toBe('kus');
+    expect(l.find((a) => a.id === 't')?.ses).toBeNull();
+    await animsaticiGuncelle(kapi, { ...goz, id: 's', ses: 'zil' });
+    expect((await animsaticilariOku(oku)).find((a) => a.id === 's')?.ses).toBe('zil');
+  });
+});
+

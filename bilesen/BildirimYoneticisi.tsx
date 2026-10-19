@@ -10,13 +10,7 @@ import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 
-import {
-  alarmiEslestir,
-  alarmPlani,
-  erteleGecerliMi,
-  kartAlarminiEslestir,
-  kartAlarmPlani,
-} from '@/mantik/alarm';
+import { alarmiEslestir, alarmPlani, erteleGecerliMi, kartAlarminiEslestir, kartAlarmPlani } from '@/mantik/alarm';
 import { bildirimPlani, erteleSaati, saatMetni } from '@/mantik/animsatici';
 import { bugun } from '@/mantik/tarih';
 import {
@@ -40,6 +34,7 @@ import {
 import type { Okuyucu } from '@/veri/kapi';
 import { gunYapilanlari, tumKartlar } from '@/veri/kartlar';
 import { useBugun } from '@/veri/useBugun';
+import { ayarOku } from '@/veri/ayar';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { useKisaMesaj } from './KisaMesaj';
@@ -56,6 +51,7 @@ async function planlariHesapla(oku: Okuyucu, bugunGun: string) {
   const kartlar = await tumKartlar(oku);
   const bugunYapilanlar = await gunYapilanlari(oku, bugunGun);
   const alarmVar = (await alarmIzni()) === 'var';
+  const kartSesi = (await ayarOku(oku, 'hatirlatma_sesi')) ?? null;
   return {
     bildirimler: bildirimPlani({
       animsaticilar,
@@ -71,6 +67,7 @@ async function planlariHesapla(oku: Okuyucu, bugunGun: string) {
             ...kartlar.filter((k) => k.alarm).map((k) => k.id),
           ])
         : undefined,
+      kartSesi,
     }),
     alarmlar: [
       ...alarmPlani(animsaticilar, durumlar, bugunGun, simdi),
@@ -109,7 +106,7 @@ export function BildirimYoneticisi() {
       }, 400);
     });
     void eskiGunleriSil(kapi, bugunRef.current).finally(planla);
-    const bitir = yayin.abone(['animsatici', 'kart', 'plan'], planla);
+    const bitir = yayin.abone(['animsatici', 'kart', 'plan', 'ayar'], planla);
     const abonelik = AppState.addEventListener('change', (d) => {
       if (d === 'active') planla();
     });
@@ -137,6 +134,10 @@ export function BildirimYoneticisi() {
   useEffect(() => {
     const isle = async ({ eylem, veri }: BildirimYaniti) => {
       if (!veri) return;
+      if (veri.tur === 'gelen') {
+        router.push('/giris/gelenler');
+        return;
+      }
       if (veri.tur === 'kart') {
         if (eylem === BILDIRIME_DOKUNULDU)
           router.push({
