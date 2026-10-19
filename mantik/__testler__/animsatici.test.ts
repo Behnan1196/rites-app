@@ -49,9 +49,9 @@ describe('form ve metinler (AN-1)', () => {
   });
   it('saatler sıralı ve tekil; meta metni', () => {
     expect(saatleriSirala(['21:00', '09:00', '21:00'])).toEqual(['09:00', '21:00']);
-    expect(animsaticiMeta(goz)).toBe('Her gün · Bildirim · erteleme 10 dk');
-    expect(animsaticiMeta(hs)).toBe('Hafta sonu · Bildirim · erteleme 5 dk');
-    expect(animsaticiMeta({ ...hs, gunler: [0, 2, 4] })).toBe('Pzt, Çar, Cum · Bildirim · erteleme 5 dk');
+    expect(animsaticiMeta(goz)).toBe('Her gün · Bildirim');
+    expect(animsaticiMeta(hs)).toBe('Hafta sonu · Bildirim');
+    expect(animsaticiMeta({ ...hs, gunler: [0, 2, 4] })).toBe('Pzt, Çar, Cum · Bildirim');
     expect(animsaticiMeta({ ...hs, alarm: true, bitis: '2026-10-12T11:52:00.000Z' })).toBe(
       'Bir kez · Alarm · erteleme 5 dk',
     );
@@ -111,9 +111,9 @@ describe('bugünün durumları (05 §7)', () => {
   });
 });
 
-describe('bildirim planı (10: 60 sınırı, 4 bildirim / saat)', () => {
+describe('bildirim planı (60 sınırı; pilot 19 Ekim: saat başına tek, düğmesiz bildirim)', () => {
   const temel = { gunDurumlari: [], kartlar: [], bugunYapilanlar: new Set<string>(), bugunGun: BUGUN };
-  it('her saat 4 bildirim; geçmiş olanlar atlanır; durdurulan saat planlanmaz', () => {
+  it('her saat tek bildirim; geçmiş olanlar atlanır; durdurulan saat planlanmaz', () => {
     const p = bildirimPlani({
       ...temel,
       animsaticilar: [goz],
@@ -121,11 +121,11 @@ describe('bildirim planı (10: 60 sınırı, 4 bildirim / saat)', () => {
       simdi: '08:15',
       gunSayisi: 1,
     });
-    expect(p.map((b) => b.saat)).toEqual(['08:20', '08:30', '20:00', '20:10', '20:20', '20:30']);
-    expect(p[0]).toMatchObject({ baslik: 'Göz damlası', govde: '08:00', erteleDk: 10, sesli: true });
-    expect(p[0]!.veri).toEqual({ tur: 'animsatici', animsaticiId: 'g', gun: BUGUN, saat: '08:00' });
+    expect(p.map((b) => b.saat)).toEqual(['20:00']);
+    expect(p[0]).toMatchObject({ baslik: 'Göz damlası', govde: '20:00', erteleDk: null, sesli: true });
+    expect(p[0]!.veri).toEqual({ tur: 'animsatici', animsaticiId: 'g', gun: BUGUN, saat: '20:00' });
   });
-  it('ertelenen saat ertelenen saatten çalar; gece yarısını aşan tekrar ertesi güne geçer', () => {
+  it('uygulamada ertelenen saat ertelenen saatten çalar', () => {
     const gec: Animsatici = { ...goz, id: 'x', saatler: ['23:50'], erteleDk: 15 };
     const p = bildirimPlani({
       ...temel,
@@ -134,13 +134,8 @@ describe('bildirim planı (10: 60 sınırı, 4 bildirim / saat)', () => {
       simdi: '23:51',
       gunSayisi: 1,
     });
-    expect(p.map((b) => `${b.gun} ${b.saat}`)).toEqual([
-      '2026-10-12 23:55',
-      '2026-10-13 00:10',
-      '2026-10-13 00:25',
-      '2026-10-13 00:40',
-    ]);
-    expect(p.map((b) => b.id)).toEqual(saatinBildirimleri('x', BUGUN, '23:50'));
+    expect(p.map((b) => `${b.gun} ${b.saat}`)).toEqual(['2026-10-12 23:55']);
+    expect(p.map((b) => b.id)).toEqual(saatinBildirimleri('x', BUGUN, '23:50').slice(0, 1));
   });
   it('kart hatırlatmaları: saatinde / 15 dk / 1 saat önce; bugün yapılan çalmaz', () => {
     const randevu = yeniKart('r', { baslik: 'Diş hekimi', tarih: '2026-10-13', saat: '10:30', hatirlatma: '1sa' });
@@ -167,10 +162,11 @@ describe('bildirim planı (10: 60 sınırı, 4 bildirim / saat)', () => {
     ]);
   });
   it('en çok 60 bildirim, yakından uzağa', () => {
-    const cok: Animsatici = { ...goz, id: 'c', saatler: ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00'] };
+    const saatler = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:30`);
+    const cok: Animsatici = { ...goz, id: 'c', saatler };
     const p = bildirimPlani({ ...temel, animsaticilar: [cok], simdi: '00:00' });
     expect(p).toHaveLength(BILDIRIM_SINIRI);
-    expect(p[0]!.saat).toBe('06:00');
+    expect(p[0]!.saat).toBe('00:30');
     expect(p.every((b, i) => i === 0 || `${p[i - 1]!.gun} ${p[i - 1]!.saat}` <= `${b.gun} ${b.saat}`)).toBe(true);
   });
 });

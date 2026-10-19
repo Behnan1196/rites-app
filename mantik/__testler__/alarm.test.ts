@@ -286,7 +286,7 @@ describe('Süre sonra (zamanlayıcı)', () => {
     };
     const b = bildirimPlani(girdi);
     expect(b[0]!.zamanMs).toBe(new Date(2026, 9, 12, 14, 52, 40).getTime());
-    expect(b).toHaveLength(4); // tam an + durdurulmazsa 3 kez daha
+    expect(b).toHaveLength(1); // tek bildirim (pilot 19 Ekim: yeniden çalma kalktı)
   });
 });
 

@@ -361,17 +361,22 @@ function AnimsaticiFormu({
           )}
         </View>
         {alarm && <Yazi tur="ikincil">{ALARM_ACIKLAMASI}</Yazi>}
-        <Yazi kalinlik="kalin">Ertele dersem</Yazi>
-        <View style={stiller.cipler}>
-          {ERTELEME_SECENEKLERI.map((dk) => (
-            <SecenekHapi
-              key={dk}
-              etiket={`${dk} dk`}
-              secili={form.erteleDk === dk}
-              onPress={() => guncelle({ erteleDk: dk })}
-            />
-          ))}
-        </View>
+        {/* Pilot 19 Ekim: erteleme yalnız alarmda; bildirim tek ve düğmesiz. */}
+        {alarm && (
+          <>
+            <Yazi kalinlik="kalin">Ertele dersem</Yazi>
+            <View style={stiller.cipler}>
+              {ERTELEME_SECENEKLERI.map((dk) => (
+                <SecenekHapi
+                  key={dk}
+                  etiket={`${dk} dk`}
+                  secili={form.erteleDk === dk}
+                  onPress={() => guncelle({ erteleDk: dk })}
+                />
+              ))}
+            </View>
+          </>
+        )}
       </Bolum>
 
       {duzenlenen && <Dugme tur="tehlike" etiket="Anımsatıcıyı sil" onPress={() => setSilSoruluyor(true)} />}

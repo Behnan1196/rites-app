@@ -139,7 +139,7 @@ export function sureMetni(dk: number): string {
 /** "Her gün · Bildirim · erteleme 10 dk" / "Bir kez · Alarm · erteleme 5 dk" */
 export function animsaticiMeta(a: Pick<Animsatici, 'gunler' | 'erteleDk' | 'alarm' | 'bitis'>): string {
   const ne = a.bitis ? 'Bir kez' : gunlerMetni(a.gunler);
-  return `${ne} · ${a.alarm ? 'Alarm' : 'Bildirim'} · erteleme ${a.erteleDk} dk`;
+  return a.alarm ? `${ne} · Alarm · erteleme ${a.erteleDk} dk` : `${ne} · Bildirim`;
 }
 
 /** "Süre sonra" anımsatıcısında kalan süre: "18 dk kaldı" / "1 sa 5 dk kaldı" / "şimdi". */
@@ -342,8 +342,10 @@ export interface PlanGirdisi {
 
 /**
  * Önümüzdeki günlerin bildirimleri, yakından uzağa; en çok `sinir` tane.
- * Her anımsatma saati, durdurulmazsa yeniden çalacağı 3 kez dahil 4 bildirimdir.
- * Durdurulan saatin bildirimleri planlanmaz; ertelenen saat ertelenen saatten çalar.
+ * Pilot 19 Ekim: her anımsatma saati tek, düğmesiz bildirimdir (basılı tutup
+ * Durdur / Ertele anlaşılmıyordu; yeniden çalma da kalktı). Durdurulan saatin
+ * bildirimi planlanmaz; uygulamada ertelenen saat ertelenen saatten çalar.
+ * Durdur / Ertele yalnız alarmda (`veri/alarmlar`).
  */
 export function bildirimPlani({
   animsaticilar,
@@ -371,20 +373,18 @@ export function bildirimPlani({
         const bas = dakika(d?.ertelenenSaat ?? saat);
         // "Süre sonra" ertelenmediyse saniyesiyle tam anında çalar.
         const tamAn = a.bitis && !d?.ertelenenSaat ? new Date(a.bitis).getTime() : null;
-        for (let k = 0; k <= YENIDEN_CALMA; k++) {
-          const yer = anaGoreKonum(gun, bas + k * a.erteleDk);
-          liste.push({
-            id: `a_${a.id}_${gun}_${saat.replace(':', '')}_${k}`,
-            gun: yer.gun,
-            saat: yer.saat,
-            baslik: a.ad,
-            govde: saatMetni(bas),
-            sesli: a.sesli,
-            erteleDk: a.erteleDk,
-            veri: { tur: 'animsatici', animsaticiId: a.id, gun, saat },
-            ...(tamAn !== null ? { zamanMs: tamAn + k * a.erteleDk * 60_000 } : {}),
-          });
-        }
+        const yer = anaGoreKonum(gun, bas);
+        liste.push({
+          id: `a_${a.id}_${gun}_${saat.replace(':', '')}_0`,
+          gun: yer.gun,
+          saat: yer.saat,
+          baslik: a.ad,
+          govde: saatMetni(bas),
+          sesli: a.sesli,
+          erteleDk: null,
+          veri: { tur: 'animsatici', animsaticiId: a.id, gun, saat },
+          ...(tamAn !== null ? { zamanMs: tamAn } : {}),
+        });
       }
     }
   }
