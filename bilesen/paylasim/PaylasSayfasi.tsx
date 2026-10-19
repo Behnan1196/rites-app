@@ -8,10 +8,9 @@ import { BAGLANAMIYOR, kisiBasHarf } from '@/mantik/kisiler';
 import { kartPaketi, type KartPaketi } from '@/mantik/paylasim';
 import { kartGonder } from '@/sunucu/gelenler';
 import { useOturum } from '@/sunucu/oturum';
-import { useSorgu } from '@/veri/kancalar';
-import { kisileriOku } from '@/veri/kisiler';
 
 import { AltSayfa } from '../AltSayfa';
+import { useKisiler } from '../gruplar/useKisiler';
 import { useKisaMesaj } from '../KisaMesaj';
 import { OturumGerekli } from '../oturum/OturumGerekli';
 import { useOturumAc } from '../oturum/OturumSayfasi';
@@ -30,8 +29,9 @@ function PaylasSayfasi({ hedef, gorunur, onKapat }: { hedef: Paylasilan; gorunur
   // Sayfa üst katmanda çizilir; oturum açma işlevi buradan (ekranın bağlamından) verilir.
   const oturumAc = useOturumAc();
   const kisaMesaj = useKisaMesaj();
-  const kisiler = useSorgu(['kisi'], (o) => kisileriOku(o), []);
-  const baglilar = (kisiler.veri ?? []).filter((k) => k.durum === 'bagli' && k.kullaniciId);
+  // Pilot 19 Ekim: sayfa açılınca Kişilerim sunucuyla eşleşir; yalnız sunucuda bağlı olanlar listelenir.
+  const kisiler = useKisiler(oturum);
+  const baglilar = kisiler.kisiler.filter((k) => k.durum === 'bagli' && k.kullaniciId);
   const [gonderiliyor, setGonderiliyor] = useState(false);
 
   const gonder = async (kime: string, ad: string) => {
@@ -43,7 +43,11 @@ function PaylasSayfasi({ hedef, gorunur, onKapat }: { hedef: Paylasilan; gorunur
       onKapat();
     } catch (e) {
       console.warn(e);
-      kisaMesaj(BAGLANAMIYOR);
+      // Satır düzeyi yetki: sunucuda bu kişiyle bağlantı yok (silinmiş ya da eski kalmış).
+      if ((e as { code?: string } | null)?.code === '42501') {
+        kisaMesaj(`${ad} ile bağlantın sunucuda görünmüyor; Kişilerim yenilendi.`);
+        void kisiler.yenile();
+      } else kisaMesaj(BAGLANAMIYOR);
     } finally {
       setGonderiliyor(false);
     }
