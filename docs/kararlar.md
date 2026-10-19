@@ -228,3 +228,8 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Listelerin tek yeri grup.** Gruplar sekmesindeki "Ortak listeler" bölümü, "+ Yeni liste" ve Giriş'teki Ortak Listeler kutusu kalktı; yeni liste grupta "+ Ekle → Yapılacak → Liste" ile açılır ve gruba açılır. Eskiden kişiye açılmış listeler Gruplar sekmesinde "Kişilerle listeler" altında görünmeye devam eder (düzenlerken kişileri değiştirilebilir); bir kişiyle paylaşmak için iki kişilik grup kurulur. — Ürün sahibi (P-17; eski listelerin kalması: Öneri)
 - Hızlı Not kutusunun ayardaki açıklaması güncellendi (Ajandam'daki bağlantı P-16'da kalkmıştı). — Öneri
 
+## İş metinleri ve anında güncelleme (19 Ekim)
+
+- **Birinden istenen iş kabul edilince "Elif kabul etti · ajandasında"**, herkese açık işte "Elif üstlendi · ajandasında"; bitince **"Elif tamamladı ✓"** (kendin için "Kabul ettin / Üstlendin · ajandanda", "Tamamladın ✓"). Reddedilen iş "Elif kabul etmedi". Düğme "Yaptım" yerine "Tamamladım". — Ürün sahibi (P-18; herkese açık işteki "üstlendi" ve kendi metinlerin: Öneri)
+- **Gruplardaki değişiklik öteki telefonlara anında gelir** (sekmeyi yenilemeye gerek yok): iş, buluşma ve yanıtlar, oylama ve oylar, birlikte rutin ve işaretleri, nöbet, grup üyeleri, Gelenler, kişi istekleri. Telefon yalnız "değişti" haberini alır, kendi yetkisiyle yeniden okur. — Ürün sahibi (P-18)
+

@@ -5,7 +5,10 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
-export function useSunucu<T>(yukle: (() => Promise<T>) | null, anahtar: string) {
+import { tablolariDinle } from './istemci';
+
+/** `dinle`: bu tablolarda değişiklik olunca anında yeniden okunur (Realtime; pilot 19 Ekim). */
+export function useSunucu<T>(yukle: (() => Promise<T>) | null, anahtar: string, dinle: readonly string[] = []) {
   const [durum, setDurum] = useState<{ veri: T | null; hata: boolean; yukleniyor: boolean }>({
     veri: null,
     hata: false,
@@ -35,6 +38,13 @@ export function useSunucu<T>(yukle: (() => Promise<T>) | null, anahtar: string) 
       void yenile();
     }, [yenile, anahtar]), // eslint-disable-line react-hooks/exhaustive-deps
   );
+  const dinlenecek = dinle.join(',');
+  const acik = !!yukle;
+  useEffect(() => {
+    if (!acik || !dinlenecek) return;
+    return tablolariDinle(`sunucu-${anahtar}`, dinlenecek.split(','), () => void yenile());
+  }, [acik, anahtar, dinlenecek, yenile]);
+
   useEffect(() => {
     const a = AppState.addEventListener('change', (d) => {
       if (d === 'active') void yenile();

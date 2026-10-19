@@ -9,6 +9,7 @@ import { AppState } from 'react-native';
 import { bulusmaKarti } from '@/mantik/bulusma';
 import type { Karar } from '@/mantik/karar';
 import { kararKur, kararlariOku, kararOyla, kararSil, kararVer, type KararTanimi } from '@/sunucu/karar';
+import { tablolariDinle } from '@/sunucu/istemci';
 import { useOturum } from '@/sunucu/oturum';
 import { yeniKartKaydet } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
@@ -69,7 +70,11 @@ export function KararSaglayici({ children }: { children: ReactNode }) {
     const a = AppState.addEventListener('change', (d) => {
       if (d === 'active') void yenile();
     });
-    return () => a.remove();
+    const dinlemeyiKapat = tablolariDinle('kararlar', ['karar', 'karar_oy'], () => void yenile());
+    return () => {
+      a.remove();
+      dinlemeyiKapat();
+    };
   }, [ben, yenile]);
 
   const kur = useCallback(

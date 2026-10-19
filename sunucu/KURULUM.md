@@ -33,6 +33,9 @@ güncel `sema.sql`'in tamamını aynı yolla bir kez daha çalıştır; var olan
 **18 Ekim'de şema yine büyüdü** (Buluşma: `bulusma`, `bulusma_yanit`; Birlikte rutin: `rutin`, `rutin_katilim`, `rutin_kayit`; Nöbet: `nobet`, `nobet_kayit`; İş: `grup_is`; Karar: `karar`, `karar_secenek`, `karar_oy` ve işlevleri). Güncel
 `sema.sql`'in tamamını aynı yolla bir kez daha çalıştır; var olan kayıtlar silinmez.
 
+**19 Ekim:** şemanın sonuna anında güncelleme (Realtime) bloğu eklendi; güncel `sema.sql`'i yine bir kez çalıştır.
+Denetlemek için **Database → Publications → supabase_realtime**'da `grup_is`, `bulusma`, `karar_oy` gibi tablolar görünmeli.
+
 Ortak listedeki değişikliklerin öteki telefona anında gitmesi için şema `madde` tablosunu
 Realtime'a ekler. Denetlemek istersen: **Database → Publications → supabase_realtime** satırında
 `madde` görünmeli. Görünmese de listeler ekran her açıldığında tazelenir.

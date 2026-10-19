@@ -33,3 +33,25 @@ export function sunucuGerekli(): SupabaseClient {
   if (!sunucu) throw new Error('Sunucu ayarı yok');
   return sunucu;
 }
+
+/**
+ * Tablolardaki değişiklikleri dinler (Supabase Realtime; pilot 19 Ekim). Haber
+ * yalnız "değişti" demektir: dinleyen kendi yetkisiyle yeniden okur. Art arda
+ * gelen haberler birleştirilir (yarım saniye). Dönen işlev aboneliği kapatır.
+ */
+export function tablolariDinle(ad: string, tablolar: readonly string[], onDegisti: () => void): () => void {
+  const s = sunucu;
+  if (!s || tablolar.length === 0) return () => undefined;
+  let zaman: ReturnType<typeof setTimeout> | null = null;
+  const haber = () => {
+    if (zaman) clearTimeout(zaman);
+    zaman = setTimeout(onDegisti, 500);
+  };
+  let kanal = s.channel(`${ad}-${Math.random().toString(36).slice(2, 8)}`);
+  for (const t of tablolar) kanal = kanal.on('postgres_changes', { event: '*', schema: 'public', table: t }, haber);
+  kanal.subscribe();
+  return () => {
+    if (zaman) clearTimeout(zaman);
+    void s.removeChannel(kanal);
+  };
+}

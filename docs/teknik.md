@@ -135,3 +135,9 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 
 - `mantik/grupBekleyenler.ts` `banaBekleyenler`: dört sağlayıcının (İş, Buluşma, Karar, Rutin) verisinden bana yanıt bekleyenler; `gelen_gizli` ayarındaki (en çok 200) anahtarlar düşer. `useGrupBekleyenleri` Gelenler ekranı, Giriş'teki Gelenler kutusu ve Gruplar sekmesi kullanır; ekranlar öne gelince dört sağlayıcıyı tazeler. Sunucu değişmedi.
 
+## Anında güncelleme (Supabase Realtime)
+
+- `sema.sql` sonundaki blok grup, grup_uye, liste_erisim, gelen, baglanti, bulusma, bulusma_yanit, grup_is, karar, karar_oy, rutin, rutin_katilim, rutin_kayit, nobet, nobet_kayit tablolarını `supabase_realtime` yayınına ekler (madde zaten vardı).
+- `sunucu/istemci.ts` `tablolariDinle(ad, tablolar, onDegisti)`: değişiklik haberi gelince (yarım saniye birleştirerek) yeniden okunur; haberin içeriği kullanılmaz, okuma her zamanki yetkiyle (RLS) yapılır. Sağlayıcılar (Buluşma, İş, Karar, Rutin, Nöbet) oturum açıkken dinler; `useSunucu(yukle, anahtar, dinle)` üçüncü parametreyle Gelenler, Kişilerim, Gruplarım ve Ortak listeler için.
+- Supabase'de Realtime açık olmalı (varsayılan). Denetim: Database → Publications → supabase_realtime'da tablolar görünür. Web denemesinde sahte sunucu Realtime vermez; gerçek iki telefonla denenir.
+

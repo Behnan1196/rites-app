@@ -10,6 +10,7 @@ import { AppState } from 'react-native';
 import { nobetBagCoz, nobetEslemesi, nobetIsaretFarki, nobetKarti, NOBET_UFKU, type Nobet } from '@/mantik/nobet';
 import { gunEkle } from '@/mantik/tarih';
 import { nobetDuzenle, nobetIsaretle, nobetKur, nobetleriOku, nobetSil, type NobetTanimi } from '@/sunucu/nobet';
+import { tablolariDinle } from '@/sunucu/istemci';
 import { useOturum } from '@/sunucu/oturum';
 import { bagliKartlar, gunlerinYapilanlari, kartlariSil, yeniKartKaydet } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
@@ -102,6 +103,7 @@ export function NobetSaglayici({ children }: { children: ReactNode }) {
     const a = AppState.addEventListener('change', (d) => {
       if (d === 'active') void yenile();
     });
+    const dinlemeyiKapat = tablolariDinle('nobetler', ['nobet', 'nobet_kayit'], () => void yenile());
     let zaman: ReturnType<typeof setTimeout> | null = null;
     const kapat = yayin.abone(['kart'], () => {
       if (!nobetVar.current) return;
@@ -110,6 +112,7 @@ export function NobetSaglayici({ children }: { children: ReactNode }) {
     });
     return () => {
       a.remove();
+      dinlemeyiKapat();
       kapat();
       if (zaman) clearTimeout(zaman);
     };

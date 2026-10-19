@@ -15,6 +15,7 @@ import {
   bulusmaYanitla,
   type BulusmaTanimi,
 } from '@/sunucu/bulusma';
+import { tablolariDinle } from '@/sunucu/istemci';
 import { useOturum } from '@/sunucu/oturum';
 import { bagliKart, bagliKartlar, kartlariSil, yeniKartKaydet } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
@@ -89,7 +90,11 @@ export function BulusmaSaglayici({ children }: { children: ReactNode }) {
     const a = AppState.addEventListener('change', (d) => {
       if (d === 'active') void yenile();
     });
-    return () => a.remove();
+    const dinlemeyiKapat = tablolariDinle('bulusma', ['bulusma', 'bulusma_yanit'], () => void yenile());
+    return () => {
+      a.remove();
+      dinlemeyiKapat();
+    };
   }, [ben, yenile]);
 
   const yanitla = useCallback(

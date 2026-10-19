@@ -12,7 +12,11 @@ export async function listeleriOku(): Promise<OrtakListe[]> {
 }
 
 export async function listeOlustur(ad: string, gruplar: string[], kisiler: string[]): Promise<string> {
-  const { data, error } = await sunucuGerekli().rpc('liste_olustur', { p_ad: ad.trim(), p_gruplar: gruplar, p_kisiler: kisiler });
+  const { data, error } = await sunucuGerekli().rpc('liste_olustur', {
+    p_ad: ad.trim(),
+    p_gruplar: gruplar,
+    p_kisiler: kisiler,
+  });
   if (error) throw new Error(error.message);
   return data as string;
 }
@@ -82,8 +86,10 @@ export function maddeleriDinle(ad: string, filtre: string | null, onDegisti: () 
   const s = sunucuGerekli();
   const kanal = s
     .channel(ad)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'madde', ...(filtre ? { filter: filtre } : {}) }, () =>
-      onDegisti(),
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'madde', ...(filtre ? { filter: filtre } : {}) },
+      () => onDegisti(),
     )
     .subscribe();
   return () => {

@@ -17,6 +17,7 @@ import {
   type Rutin,
 } from '@/mantik/rutin';
 import { gunEkle, type GunKisa } from '@/mantik/tarih';
+import { tablolariDinle } from '@/sunucu/istemci';
 import { useOturum } from '@/sunucu/oturum';
 import { rutinDuzenle, rutineKatil, rutinIsaretle, rutinKur, rutinleriOku, rutinSil } from '@/sunucu/rutin';
 import { bagiBitir, bagliKartlar, gunlerinYapilanlari, yeniKartKaydet } from '@/veri/kartlar';
@@ -120,6 +121,7 @@ export function RutinSaglayici({ children }: { children: ReactNode }) {
     const a = AppState.addEventListener('change', (d) => {
       if (d === 'active') void yenile();
     });
+    const dinlemeyiKapat = tablolariDinle('rutinler', ['rutin', 'rutin_katilim', 'rutin_kayit'], () => void yenile());
     // Ajandada "Yaptım" denince (biraz bekleyip) sunucuya yaz.
     let zaman: ReturnType<typeof setTimeout> | null = null;
     const kapat = yayin.abone(['kart'], () => {
@@ -129,6 +131,7 @@ export function RutinSaglayici({ children }: { children: ReactNode }) {
     });
     return () => {
       a.remove();
+      dinlemeyiKapat();
       kapat();
       if (zaman) clearTimeout(zaman);
     };

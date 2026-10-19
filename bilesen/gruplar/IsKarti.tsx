@@ -74,8 +74,9 @@ export function IsKarti({
                 void yanitla(is, e)
                   .then(() => {
                     if (e === 'al') kisaMesaj('Ajandana eklendi');
-                    else if (e === 'yaptim') kisaMesaj('Yapıldı; grupta görünüyor');
+                    else if (e === 'yaptim') kisaMesaj('Tamamlandı; grupta görünüyor');
                     else if (e === 'birak') kisaMesaj('Bıraktın');
+                    else if (e === 'reddet') kisaMesaj('İsteyene bildirildi');
                   })
                   .catch((h: unknown) => {
                     kisaMesaj(isHatasi(h instanceof Error ? h.message : String(h)) ?? BAGLANAMIYOR);

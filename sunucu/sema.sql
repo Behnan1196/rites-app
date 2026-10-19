@@ -1271,3 +1271,23 @@ grant execute on function
   public.karar_kur(uuid, text, text, boolean, date, text, jsonb), public.karar_oyla(uuid, uuid[]),
   public.karar_ver(uuid, uuid), public.kararlarim(), public.karara_erisir_mi(uuid, uuid)
   to authenticated;
+
+-- ---- Anında güncelleme (pilot 19 Ekim) ----------------------------------------------
+-- Grup etkinliklerindeki, Gelenler'deki ve kişilerdeki değişiklik öteki telefonlara
+-- anında gitsin (Supabase Realtime). Telefon yalnız "değişti" haberini alır ve
+-- kendi yetkisiyle yeniden okur.
+do $$
+declare t text;
+begin
+  if not exists (select 1 from pg_publication where pubname = 'supabase_realtime') then return; end if;
+  foreach t in array array[
+    'grup', 'grup_uye', 'liste_erisim', 'gelen', 'baglanti',
+    'bulusma', 'bulusma_yanit', 'grup_is', 'karar', 'karar_oy',
+    'rutin', 'rutin_katilim', 'rutin_kayit', 'nobet', 'nobet_kayit'
+  ] loop
+    if not exists (select 1 from pg_publication_tables
+                   where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t) then
+      execute format('alter publication supabase_realtime add table public.%I', t);
+    end if;
+  end loop;
+end $$;

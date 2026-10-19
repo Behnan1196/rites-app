@@ -7,10 +7,7 @@ import { epostaDuzelt } from '@/mantik/kisiler';
 import { sunucu, sunucuGerekli } from './istemci';
 
 export type Oturum =
-  | { durum: 'yukleniyor' }
-  | { durum: 'ayarsiz' }
-  | { durum: 'yok' }
-  | { durum: 'var'; id: string; eposta: string };
+  { durum: 'yukleniyor' } | { durum: 'ayarsiz' } | { durum: 'yok' } | { durum: 'var'; id: string; eposta: string };
 
 /** Oturum durumu; giriş/çıkışta kendiliğinden değişir. */
 export function useOturum(): Oturum {

@@ -12,11 +12,16 @@ import { kisileriOku } from '@/veri/kisiler';
 export function useListeler(oturum: Oturum) {
   const ben = oturum.durum === 'var' ? oturum.id : null;
   const yukle = useCallback(() => listeleriOku(), []);
-  const s = useSunucu(ben ? yukle : null, `listeler:${ben ?? ''}`);
+  const s = useSunucu(ben ? yukle : null, `listeler:${ben ?? ''}`, ['liste_erisim', 'madde']);
   const kisiler = useSorgu(['kisi'], (o) => kisileriOku(o), []);
   const listeler = useMemo(() => s.veri ?? [], [s.veri]);
   const ad = useMemo(
-    () => adBulucu(ben ?? '', kisiler.veri ?? [], listeler.flatMap((l) => l.uyeler)),
+    () =>
+      adBulucu(
+        ben ?? '',
+        kisiler.veri ?? [],
+        listeler.flatMap((l) => l.uyeler),
+      ),
     [ben, kisiler.veri, listeler],
   );
   return {

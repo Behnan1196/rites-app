@@ -24,7 +24,7 @@ export function useKisiler(oturum: Oturum) {
     return s;
   }, [ben, kapi, oku]);
 
-  const sunucu = useSunucu(ben ? yukle : null, ben ?? '');
+  const sunucu = useSunucu(ben ? yukle : null, ben ?? '', ['baglanti']);
   return {
     ben,
     kisiler: yerel.veri ?? [],

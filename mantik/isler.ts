@@ -26,7 +26,8 @@ export interface GrupIsi {
 
 export const IS_ORNEKLERI = ['Eczaneye uğra', 'Faturayı öde', 'Okuldan al', 'Ekmek al', 'Kargoyu teslim al'] as const;
 
-export const IS_NOTU = 'Alan kişinin ajandasına düşer; "Yaptım" deyince grupta yapıldı görünür (bir hafta).';
+export const IS_NOTU =
+  'Kabul eden ya da üstlenen kişinin ajandasına düşer; tamamlayınca grupta "tamamladı" görünür (bir hafta).';
 
 /** Satırdaki durum metni. */
 export function isDurumMetni(i: GrupIsi, ben: string, ad: (id: string) => string): string {
@@ -36,12 +37,14 @@ export function isDurumMetni(i: GrupIsi, ben: string, ad: (id: string) => string
       return 'Herkese açık · isteyen alır';
     case 'istendi':
       return i.kime === ben ? `${kim(i.isteyen)} senden istiyor` : `${kim(i.kime)} yanıtlayacak`;
+    // Pilot 19 Ekim: "aldı" yerine "kabul etti / üstlendi"; yapılınca "tamamladı".
     case 'alindi':
-      return i.alan === ben ? 'Sende' : `${kim(i.alan)} aldı`;
+      if (i.alan === ben) return i.kime ? 'Kabul ettin · ajandanda' : 'Üstlendin · ajandanda';
+      return i.kime ? `${kim(i.alan)} kabul etti · ajandasında` : `${kim(i.alan)} üstlendi · ajandasında`;
     case 'reddedildi':
-      return i.kime ? `${kim(i.kime)} alamadı` : 'Kimse almadı';
+      return i.kime ? `${kim(i.kime)} kabul etmedi` : 'Kimse üstlenmedi';
     case 'yapildi':
-      return `Yapıldı · ${kim(i.alan)} ✓`;
+      return i.alan === ben ? 'Tamamladın ✓' : `${kim(i.alan)} tamamladı ✓`;
   }
 }
 
@@ -58,7 +61,7 @@ export const EYLEM_ETIKETI: Record<IsEylemi, string> = {
   al: 'Ben alırım',
   reddet: 'Alamam',
   birak: 'Bırak',
-  yaptim: 'Yaptım',
+  yaptim: 'Tamamladım',
   geri: 'Geri al',
 };
 

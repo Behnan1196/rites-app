@@ -13,7 +13,7 @@ import { kisileriOku } from '@/veri/kisiler';
 export function useGruplar(oturum: Oturum) {
   const ben = oturum.durum === 'var' ? oturum.id : null;
   const yukle = useCallback(() => gruplariOku(), []);
-  const s = useSunucu(ben ? yukle : null, `gruplar:${ben ?? ''}`);
+  const s = useSunucu(ben ? yukle : null, `gruplar:${ben ?? ''}`, ['grup', 'grup_uye', 'liste_erisim']);
   const kisiler = useSorgu(['kisi'], (o) => kisileriOku(o), []);
   const gruplar = useMemo(() => s.veri ?? [], [s.veri]);
   const ad = useMemo(() => {

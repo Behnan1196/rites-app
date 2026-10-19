@@ -31,10 +31,13 @@ describe('grup işi', () => {
     expect(isDurumMetni(i(), BEN, ad)).toBe('Herkese açık · isteyen alır');
     expect(isDurumMetni(i({ durum: 'istendi', kime: BEN }), BEN, ad)).toBe('Ali senden istiyor');
     expect(isDurumMetni(i({ durum: 'istendi', kime: 'elif' }), BEN, ad)).toBe('Elif yanıtlayacak');
-    expect(isDurumMetni(i({ durum: 'alindi', alan: BEN }), BEN, ad)).toBe('Sende');
-    expect(isDurumMetni(i({ durum: 'alindi', alan: 'elif' }), BEN, ad)).toBe('Elif aldı');
-    expect(isDurumMetni(i({ durum: 'reddedildi', kime: 'elif' }), BEN, ad)).toBe('Elif alamadı');
-    expect(isDurumMetni(i({ durum: 'yapildi', alan: 'elif' }), BEN, ad)).toBe('Yapıldı · Elif ✓');
+    expect(isDurumMetni(i({ durum: 'alindi', alan: BEN }), BEN, ad)).toBe('Üstlendin · ajandanda');
+    expect(isDurumMetni(i({ durum: 'alindi', alan: BEN, kime: BEN }), BEN, ad)).toBe('Kabul ettin · ajandanda');
+    expect(isDurumMetni(i({ durum: 'alindi', alan: 'elif' }), BEN, ad)).toBe('Elif üstlendi · ajandasında');
+    expect(isDurumMetni(i({ durum: 'alindi', alan: 'elif', kime: 'elif' }), BEN, ad)).toBe('Elif kabul etti · ajandasında');
+    expect(isDurumMetni(i({ durum: 'reddedildi', kime: 'elif' }), BEN, ad)).toBe('Elif kabul etmedi');
+    expect(isDurumMetni(i({ durum: 'yapildi', alan: 'elif' }), BEN, ad)).toBe('Elif tamamladı ✓');
+    expect(isDurumMetni(i({ durum: 'yapildi', alan: BEN }), BEN, ad)).toBe('Tamamladın ✓');
   });
 
   it('eylemler duruma ve kişiye göre', () => {

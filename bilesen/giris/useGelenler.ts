@@ -11,7 +11,7 @@ import { kisileriOku } from '@/veri/kisiler';
 export function useGelenler(oturum: Oturum) {
   const ben = oturum.durum === 'var' ? oturum.id : null;
   const yukle = useCallback(() => gelenleriOku(), []);
-  const s = useSunucu(ben ? yukle : null, ben ?? '');
+  const s = useSunucu(ben ? yukle : null, ben ?? '', ['gelen']);
   const kisiler = useSorgu(['kisi'], (o) => kisileriOku(o), []);
   const gelenler = useMemo(
     () =>

@@ -138,7 +138,12 @@ export function KararFormu({ grup, onKapat }: { grup: { id: string; ad: string }
           <Yazi kalinlik="kalin">Son gün</Yazi>
           <View style={stiller.cipler}>
             {SON_GUNLER.map((s) => (
-              <SecenekHapi key={s.etiket} etiket={s.etiket} secili={sonGun === s.gun} onPress={() => setSonGun(s.gun)} />
+              <SecenekHapi
+                key={s.etiket}
+                etiket={s.etiket}
+                secili={sonGun === s.gun}
+                onPress={() => setSonGun(s.gun)}
+              />
             ))}
           </View>
           <Yazi tur="ikincil">Son günden sonra oy verilmez; kararı yine sen verirsin.</Yazi>

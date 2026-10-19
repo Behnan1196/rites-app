@@ -100,3 +100,8 @@ Ne dedi: "Grupları test ediyorum, çalışıyor ancak yönetmesi, uygulaması z
 Nerede: Gruplar, grup ekranı, Gelenler
 Sonuç: → kararlar.md (Gruplar sadeleşti: Gelenler, takip, üç ana tür, listelerin yeri grup)
 
+### P-18 · 19 Ekim 2026 · Behnan · iPhone
+Ne dedi: "Birine görev verirken, karşı taraf görevi aldıysa 'xxx aldı' demeyelim, 'xxx görevi kabul etti' diyelim; o xxx ajandasına eklemiş oldu, tamamlarsa 'xxx görevi tamamladı' diye yazdırabilir miyiz. Bir de genel bir sorun: mesaj gelecek sekmeyi yenilemezsem (başka sekmeye gidip gelip) mesajı görmüyorum, yani real time update etmiyor."
+Nerede: Grup ekranı / Gelenler (iş), bütün grup ekranları
+Sonuç: → kararlar.md (İş metinleri ve anında güncelleme)
+

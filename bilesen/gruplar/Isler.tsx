@@ -8,6 +8,7 @@ import { AppState } from 'react-native';
 
 import { isBagi, isEslemesi, isKarti, type GrupIsi, type IsEylemi } from '@/mantik/isler';
 import { isDuzenle, isEkle, isleriOku, isSil, isYanitla, type IsTanimi } from '@/sunucu/isler';
+import { tablolariDinle } from '@/sunucu/istemci';
 import { useOturum } from '@/sunucu/oturum';
 import { bagliKartlar, isaretle, isKartlari, kartlariSil, yeniKartKaydet } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
@@ -86,6 +87,7 @@ export function IsSaglayici({ children }: { children: ReactNode }) {
     const a = AppState.addEventListener('change', (d) => {
       if (d === 'active') void yenile();
     });
+    const dinlemeyiKapat = tablolariDinle('isler', ['grup_is'], () => void yenile());
     let zaman: ReturnType<typeof setTimeout> | null = null;
     const kapat = yayin.abone(['kart'], () => {
       if (!isVar.current) return;
@@ -94,6 +96,7 @@ export function IsSaglayici({ children }: { children: ReactNode }) {
     });
     return () => {
       a.remove();
+      dinlemeyiKapat();
       kapat();
       if (zaman) clearTimeout(zaman);
     };
