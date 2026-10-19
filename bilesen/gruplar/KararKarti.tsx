@@ -17,6 +17,7 @@ import {
   secenekMetni,
   type Karar,
 } from '@/mantik/karar';
+import { yanitlamayanlar } from '@/mantik/grupBekleyenler';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import type { Gun } from '@/mantik/tarih';
 
@@ -33,11 +34,14 @@ export function KararKarti({
   ben,
   bugunGun,
   ad,
+  uyeler,
 }: {
   karar: Karar;
   ben: string;
   bugunGun: Gun;
   ad: (id: string) => string;
+  /** Grubun üyeleri: kuran için "Oy vermedi: …" (pilot 19 Ekim). */
+  uyeler?: readonly string[];
 }) {
   const { oyla, ver, sil } = useKararlar();
   const kisaMesaj = useKisaMesaj();
@@ -48,6 +52,14 @@ export function KararKarti({
   const onde = ondeOlanlar(karar);
   const kuran = karar.kuran === ben;
   const sonuc = karar.secenekler.find((s) => s.id === karar.sonuc);
+  const oyVermeyen =
+    uyeler && kuran && !karar.sonuc
+      ? yanitlamayanlar(
+          uyeler,
+          karar.oylar.map((o) => o.kullanici),
+          '',
+        ).filter((u) => u !== ben)
+      : [];
 
   const oyVer = (secenek: string) => {
     if (!acik) return;
@@ -132,6 +144,9 @@ export function KararKarti({
         })}
       </View>
 
+      {oyVermeyen.length > 0 && (
+        <Yazi tur="ikincil" renk={renk.vurguYazi}>{`Oy vermedi: ${oyVermeyen.map(ad).join(', ')}`}</Yazi>
+      )}
       {kuran && !karar.sonuc && (
         <Dugme
           tur={secim ? 'yazi' : 'ikincil'}

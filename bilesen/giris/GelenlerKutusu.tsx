@@ -6,6 +6,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { bekleyenOzeti } from "@/mantik/grupBekleyenler";
 import { davetOzeti } from "@/mantik/gruplar";
 import { gelenlerOzeti } from "@/mantik/paylasim";
 import { kaynakAdi } from "@/mantik/paylasimAl";
@@ -14,6 +15,7 @@ import { paylasilanlariOku } from "@/veri/paylasilanlar";
 import { useOturum } from "@/sunucu/oturum";
 
 import { olcu, renk } from "../tema";
+import { useGrupBekleyenleri } from "../gruplar/useGrupBekleyenleri";
 import { useGruplar } from "../gruplar/useGruplar";
 import { Yazi } from "../Yazi";
 import { useGelenler } from "./useGelenler";
@@ -22,6 +24,7 @@ export function GelenlerKutusu() {
   const oturum = useOturum();
   const { ben, gelenler } = useGelenler(oturum);
   const { davetler, ad } = useGruplar(oturum);
+  const { bekleyenler } = useGrupBekleyenleri();
   const paylasilanlar = useSorgu(["paylasilan"], (o) => paylasilanlariOku(o), []).veri ?? [];
   if (!ben && paylasilanlar.length === 0) return null;
   const davet = davetOzeti(davetler, ad);
@@ -29,18 +32,20 @@ export function GelenlerKutusu() {
     ...paylasilanlar.map((p) => ({ kimden: kaynakAdi(p.adres), baslik: p.baslik })),
     ...gelenler.map((g) => ({ kimden: g.kimdenAd, baslik: g.paket.baslik })),
   ];
-  const sayi = ogeler.length + davetler.length;
+  const sayi = ogeler.length + davetler.length + bekleyenler.length;
+  const grupOzeti = bekleyenOzeti(bekleyenler);
   const ozet =
     ogeler.length > 0 || !davet
       ? [
-          gelenlerOzeti(ogeler),
+          ogeler.length > 0 || (!grupOzeti && davetler.length === 0) ? gelenlerOzeti(ogeler) : null,
           davet && davetler.length > 0
             ? `${davetler.length} grup daveti`
             : null,
+          grupOzeti,
         ]
           .filter(Boolean)
           .join(" · ")
-      : davet;
+      : [davet, grupOzeti].filter(Boolean).join(" · ");
   return (
     <Pressable
       onPress={() => router.push("/giris/gelenler")}

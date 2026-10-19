@@ -5,7 +5,7 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Dugme } from '@/bilesen/Dugme';
@@ -29,14 +29,13 @@ import { RutinFormu, type RutinFormuKipi } from '@/bilesen/gruplar/RutinFormu';
 import { RutinKarti } from '@/bilesen/gruplar/RutinKarti';
 import { useRutinler } from '@/bilesen/gruplar/Rutinler';
 import { Katman } from '@/bilesen/Katman';
-import { ListeFormu } from '@/bilesen/listeler/ListeFormu';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { OnayKutusu } from '@/bilesen/OnayKutusu';
 import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
 import { SecenekHapi } from '@/bilesen/Secim';
 import { kaynakRenk, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
-import { cagrilabilecekler, GRUP_LISTELERI_NOTU, grupAdi, grupHatasi, type GrupUyesi } from '@/mantik/gruplar';
+import { cagrilabilecekler, grupAdi, grupHatasi, type GrupUyesi } from '@/mantik/gruplar';
 import { yaklasanlar, type Bulusma } from '@/mantik/bulusma';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { grubunIsleri, type GrupIsi } from '@/mantik/isler';
@@ -55,7 +54,6 @@ export default function GrupEkrani() {
   const kisaMesaj = useKisaMesaj();
   const { ben, gruplar, kisiler, ad, yukleniyor, baglanamiyor, yenile } = useGruplar(oturum);
   const [soru, setSoru] = useState<Soru | null>(null);
-  const [listeFormu, setListeFormu] = useState(0);
   const [ekleAcik, setEkleAcik] = useState(false);
   const [bulusmaFormu, setBulusmaFormu] = useState<{ n: number; mevcut?: Bulusma } | null>(null);
   const bugunGun = useBugun();
@@ -94,6 +92,7 @@ export default function GrupEkrani() {
   const grubunKararListesi = grup ? grubunKararlari(karar.kararlar, grup.id) : [];
   const grubunIsleriListesi = grup && ben ? grubunIsleri(isler.isler, grup.id, ben) : [];
 
+  const uyeKimlikleri = grup ? grup.uyeler.filter((u) => u.durum === 'uye').map((u) => u.id) : [];
   const dene = async (is: () => Promise<void>, mesaj: string, sonra?: () => void) => {
     setSoru(null);
     try {
@@ -154,6 +153,118 @@ export default function GrupEkrani() {
   };
   const onay = onaySorusu();
 
+  const gunKararlari = grubunKararListesi.filter((k) => k.tur === 'gun');
+  const oylamalar = grubunKararListesi.filter((k) => k.tur === 'metin');
+  const bolumler: { anahtar: string; baslik: string; icerik: ReactNode }[] = [];
+  if (grup && ben) {
+    if (grubunIsleriListesi.length > 0 || grup.listeler.length > 0)
+      bolumler.push({
+        anahtar: 'yapilacak',
+        baslik: 'Yapılacaklar',
+        icerik: (
+          <>
+            {grubunIsleriListesi.map((i) => (
+              <IsKarti
+                key={i.id}
+                is={i}
+                ben={ben}
+                bugunGun={bugunGun}
+                ad={(k) => ad(k)}
+                onDuzenle={() => isFormuAc(i)}
+              />
+            ))}
+            {grup.listeler.length > 0 && (
+              <ListeKutusu>
+                {grup.listeler.map((l, j) => (
+                  <Pressable
+                    key={l.id}
+                    onPress={() =>
+                      router.push({ pathname: '/gruplar/liste/[id]', params: { id: l.id, geri: grup.ad } })
+                    }
+                    accessibilityRole="button"
+                    accessibilityLabel={`${l.ad} listesini aç`}
+                    style={({ pressed }) => [
+                      parcaStilleri.satir,
+                      j > 0 && parcaStilleri.cizgili,
+                      pressed && { opacity: 0.7 },
+                    ]}
+                  >
+                    <Ionicons name="list-outline" size={22} color={kaynakRenk.liste.serit} />
+                    <Yazi kalinlik="kalin" style={parcaStilleri.esnek}>
+                      {l.ad}
+                    </Yazi>
+                    <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
+                  </Pressable>
+                ))}
+              </ListeKutusu>
+            )}
+          </>
+        ),
+      });
+    if (grubunBulusmalari.length > 0 || gunKararlari.length > 0)
+      bolumler.push({
+        anahtar: 'bulusma',
+        baslik: 'Buluşmalar',
+        icerik: (
+          <>
+            {gunKararlari.map((k) => (
+              <KararKarti key={k.id} karar={k} ben={ben} bugunGun={bugunGun} ad={(x) => ad(x)} uyeler={uyeKimlikleri} />
+            ))}
+            {grubunBulusmalari.map((b) => (
+              <BulusmaKarti
+                key={b.id}
+                bulusma={b}
+                ben={ben}
+                ad={(k) => ad(k)}
+                onDuzenle={() => setBulusmaFormu((f) => ({ n: (f?.n ?? 0) + 1, mevcut: b }))}
+                uyeler={uyeKimlikleri}
+              />
+            ))}
+          </>
+        ),
+      });
+    if (grubunRutinleri.length > 0)
+      bolumler.push({
+        anahtar: 'rutin',
+        baslik: 'Birlikte rutinler',
+        icerik: grubunRutinleri.map((r) => (
+          <RutinKarti
+            key={r.id}
+            rutin={r}
+            ben={ben}
+            bugunGun={bugunGun}
+            ad={(k) => ad(k)}
+            onKatil={() => rutinFormuAc({ tur: 'katil', rutin: r })}
+            onAyril={() => setSoru({ tur: 'rutinAyril', rutin: r })}
+            onDuzenle={() => rutinFormuAc({ tur: 'duzenle', rutin: r })}
+          />
+        )),
+      });
+    if (oylamalar.length > 0)
+      bolumler.push({
+        anahtar: 'oylama',
+        baslik: 'Oylamalar',
+        icerik: oylamalar.map((k) => (
+          <KararKarti key={k.id} karar={k} ben={ben} bugunGun={bugunGun} ad={(x) => ad(x)} uyeler={uyeKimlikleri} />
+        )),
+      });
+    if (grubunNobetleri.length > 0)
+      bolumler.push({
+        anahtar: 'nobet',
+        baslik: 'Nöbetler',
+        icerik: grubunNobetleri.map((n) => (
+          <NobetKarti
+            key={n.id}
+            nobet={n}
+            ben={ben}
+            bugunGun={bugunGun}
+            ad={(k) => ad(k)}
+            onDuzenle={() => nobetFormuAc(n)}
+          />
+        )),
+      });
+  }
+
   return (
     <EkranKabi geri="Gruplar" baslik={grup?.ad ?? 'Grup'}>
       {!ben ? (
@@ -173,133 +284,25 @@ export default function GrupEkrani() {
               {BAGLANAMIYOR}
             </Yazi>
           )}
-          {grubunIsleriListesi.length > 0 && (
-            <>
-              <Yazi tur="bolumBasligi" accessibilityRole="header">
-                İşler
-              </Yazi>
-              {grubunIsleriListesi.map((i) => (
-                <IsKarti
-                  key={i.id}
-                  is={i}
-                  ben={ben}
-                  bugunGun={bugunGun}
-                  ad={(k) => ad(k)}
-                  onDuzenle={() => isFormuAc(i)}
-                />
-              ))}
-            </>
-          )}
-
-          {grubunKararListesi.length > 0 && (
-            <>
-              <Yazi
-                tur="bolumBasligi"
-                accessibilityRole="header"
-                style={grubunIsleriListesi.length > 0 && stiller.bolumArasi}
-              >
-                Kararlar
-              </Yazi>
-              {grubunKararListesi.map((k) => (
-                <KararKarti key={k.id} karar={k} ben={ben} bugunGun={bugunGun} ad={(x) => ad(x)} />
-              ))}
-            </>
-          )}
-
-          <Yazi
-            tur="bolumBasligi"
-            accessibilityRole="header"
-            style={(grubunIsleriListesi.length > 0 || grubunKararListesi.length > 0) && stiller.bolumArasi}
-          >
-            Buluşmalar
-          </Yazi>
-          {grubunBulusmalari.length === 0 ? (
-            <Yazi tur="ikincil">Yaklaşan buluşma yok. Bir gün önerince herkes geliyorum / belki / gelemem der.</Yazi>
-          ) : (
-            grubunBulusmalari.map((b) => (
-              <BulusmaKarti
-                key={b.id}
-                bulusma={b}
-                ben={ben}
-                ad={(k) => ad(k)}
-                onDuzenle={() => setBulusmaFormu((f) => ({ n: (f?.n ?? 0) + 1, mevcut: b }))}
-              />
-            ))
-          )}
-          {grubunRutinleri.length > 0 && (
-            <>
-              <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
-                Birlikte rutinler
-              </Yazi>
-              {grubunRutinleri.map((r) => (
-                <RutinKarti
-                  key={r.id}
-                  rutin={r}
-                  ben={ben}
-                  bugunGun={bugunGun}
-                  ad={(k) => ad(k)}
-                  onKatil={() => rutinFormuAc({ tur: 'katil', rutin: r })}
-                  onAyril={() => setSoru({ tur: 'rutinAyril', rutin: r })}
-                  onDuzenle={() => rutinFormuAc({ tur: 'duzenle', rutin: r })}
-                />
-              ))}
-            </>
-          )}
-
-          {grubunNobetleri.length > 0 && (
-            <>
-              <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
-                Nöbetler
-              </Yazi>
-              {grubunNobetleri.map((n) => (
-                <NobetKarti
-                  key={n.id}
-                  nobet={n}
-                  ben={ben}
-                  bugunGun={bugunGun}
-                  ad={(k) => ad(k)}
-                  onDuzenle={() => nobetFormuAc(n)}
-                />
-              ))}
-            </>
-          )}
-
-          <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
-            Listeler
-          </Yazi>
-          {grup.listeler.length === 0 ? (
+          {bolumler.length === 0 && (
             <Yazi tur="ikincil">
-              Bu grupta henüz liste yok. Yapılacaklar, hazırlık ya da market listesi açabilirsin.
+              Bu grupta henüz bir şey yok. “+ Ekle” ile bir iş ya da liste, buluşma veya birlikte rutin başlat.
             </Yazi>
-          ) : (
-            <>
-              <ListeKutusu>
-                {grup.listeler.map((l, i) => (
-                  <Pressable
-                    key={l.id}
-                    onPress={() =>
-                      router.push({ pathname: '/gruplar/liste/[id]', params: { id: l.id, geri: grup.ad } })
-                    }
-                    accessibilityRole="button"
-                    accessibilityLabel={`${l.ad} listesini aç`}
-                    style={({ pressed }) => [
-                      parcaStilleri.satir,
-                      i > 0 && parcaStilleri.cizgili,
-                      pressed && { opacity: 0.7 },
-                    ]}
-                  >
-                    <Ionicons name="list-outline" size={22} color={kaynakRenk.liste.serit} />
-                    <Yazi kalinlik="kalin" style={parcaStilleri.esnek}>
-                      {l.ad}
-                    </Yazi>
-                    <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
-                  </Pressable>
-                ))}
-              </ListeKutusu>
-              <Yazi tur="ikincil">{GRUP_LISTELERI_NOTU}</Yazi>
-            </>
           )}
-          <Dugme tur="vurgu" etiket="+ Ekle" onPress={() => setEkleAcik(true)} />
+          {bolumler.map((bolum, i) => (
+            <View key={bolum.anahtar} style={[stiller.bolum, i > 0 && stiller.bolumArasi]}>
+              <Yazi tur="bolumBasligi" accessibilityRole="header">
+                {bolum.baslik}
+              </Yazi>
+              {bolum.icerik}
+            </View>
+          ))}
+          <Dugme
+            tur="vurgu"
+            etiket="+ Ekle"
+            onPress={() => setEkleAcik(true)}
+            style={bolumler.length > 0 && stiller.bolumArasi}
+          />
 
           <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
             Üyeler
@@ -364,10 +367,9 @@ export default function GrupEkrani() {
           onKapat={() => setEkleAcik(false)}
           onSec={(tur) => {
             setEkleAcik(false);
-            if (tur === 'liste') setListeFormu((n) => n + 1);
+            if (tur === 'yapilacak') isFormuAc();
             else if (tur === 'rutin') rutinFormuAc({ tur: 'kur' });
             else if (tur === 'nobet') nobetFormuAc();
-            else if (tur === 'is') isFormuAc();
             else if (tur === 'karar') setKararFormu((n) => n + 1);
             else setBulusmaFormu((f) => ({ n: (f?.n ?? 0) + 1 }));
           }}
@@ -391,6 +393,7 @@ export default function GrupEkrani() {
           uyeler={grup.uyeler.filter((u) => u.durum === 'uye' && u.id !== ben).map((u) => ({ id: u.id, ad: ad(u) }))}
           mevcut={isFormu.mevcut}
           onKapat={() => setIsFormu(null)}
+          onListeOlustu={() => void yenile()}
         />
       )}
       {nobetFormu && grup && (
@@ -408,19 +411,6 @@ export default function GrupEkrani() {
           grup={{ id: grup.id, ad: grup.ad }}
           kip={rutinFormu.kip}
           onKapat={() => setRutinFormu(null)}
-        />
-      )}
-      {listeFormu > 0 && grup && (
-        <ListeFormu
-          key={listeFormu}
-          onKapat={() => setListeFormu(0)}
-          gruplar={gruplar}
-          kisiler={kisiler}
-          grup={grup.id}
-          onKaydedildi={(lid) => {
-            void yenile();
-            router.push({ pathname: '/gruplar/liste/[id]', params: { id: lid, geri: grup.ad } });
-          }}
         />
       )}
 
@@ -441,6 +431,7 @@ export default function GrupEkrani() {
 }
 
 const stiller = StyleSheet.create({
+  bolum: { gap: 12 },
   cipler: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   bolumArasi: { marginTop: 8 },
 });

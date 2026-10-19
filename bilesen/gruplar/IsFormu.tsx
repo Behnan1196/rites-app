@@ -1,16 +1,22 @@
-// İş ekle / düzenle (pilot 18 Ekim): ne iş (örneklerle), Kime? (Herkes ya da
-// gruptan biri), Ne zaman? (isteğe bağlı). Düzenlemede "İşi sil".
+// Yapılacak ekle (pilot 19 Ekim: İş ile Liste tek yerde) / iş düzenle.
+// - Tek iş: ne iş (örneklerle), Kime? (Herkes ya da gruptan biri), Ne zaman?;
+// - Liste: ad (örneklerle); gruba açılır, maddeler liste ekranında eklenir.
+// Düzenlemede "İşi sil".
 
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { IS_NOTU, IS_ORNEKLERI, isFormuHatasi, isHatasi, type GrupIsi } from '@/mantik/isler';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
+import { LISTE_ORNEKLERI, listeHatasi } from '@/mantik/listeler';
+import { listeOlustur } from '@/sunucu/listeler';
 import { gunEkle, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useBugun } from '@/veri/useBugun';
 
 import { AltSayfa } from '../AltSayfa';
 import { AyTakvimi } from '../AyTakvimi';
+import { BolumluDugme } from '../BolumluDugme';
 import { Dugme } from '../Dugme';
 import { GirisAlani } from '../GirisAlani';
 import { useKisaMesaj } from '../KisaMesaj';
@@ -23,17 +29,22 @@ export function IsFormu({
   uyeler,
   mevcut,
   onKapat,
+  onListeOlustu,
 }: {
   grup: { id: string; ad: string };
   /** Benim dışımdaki üyeler. */
   uyeler: { id: string; ad: string }[];
   mevcut?: GrupIsi;
   onKapat: () => void;
+  /** Liste kurulunca (grup tazelensin). */
+  onListeOlustu?: () => void;
 }) {
   const bugunGun = useBugun();
   const kisaMesaj = useKisaMesaj();
   const { ekle, duzenle, sil } = useIsler();
   const [baslik, setBaslik] = useState(mevcut?.baslik ?? '');
+  const [tur, setTur] = useState<'is' | 'liste'>('is');
+  const liste = !mevcut && tur === 'liste';
   const [kime, setKime] = useState<string | null>(mevcut && mevcut.durum !== 'reddedildi' ? mevcut.kime : null);
   const [tarih, setTarih] = useState<Gun | null>(mevcut?.tarih ?? null);
   const [takvim, setTakvim] = useState(false);
@@ -46,7 +57,30 @@ export function IsFormu({
     ? baslik.trim() !== mevcut.baslik || kime !== mevcut.kime || tarih !== mevcut.tarih
     : baslik.trim() !== '';
 
+  const listeyiKur = async () => {
+    if (!baslik.trim()) {
+      setHata('Listeye bir ad ver.');
+      return;
+    }
+    setCalisiyor(true);
+    try {
+      const id = await listeOlustur(baslik, [grup.id], []);
+      kisaMesaj(`${baslik.trim()} listesi açıldı`);
+      onListeOlustu?.();
+      onKapat();
+      router.push({ pathname: '/gruplar/liste/[id]', params: { id, geri: grup.ad } });
+    } catch (e) {
+      setHata(listeHatasi(e instanceof Error ? e.message : String(e)) ?? BAGLANAMIYOR);
+    } finally {
+      setCalisiyor(false);
+    }
+  };
+
   const kaydet = async () => {
+    if (liste) {
+      await listeyiKur();
+      return;
+    }
     const h = isFormuHatasi(baslik);
     if (h) {
       setHata(h);
@@ -86,7 +120,7 @@ export function IsFormu({
     <AltSayfa
       gorunur
       onKapat={onKapat}
-      baslik={mevcut ? (mevcut.durum === 'reddedildi' ? 'Başkasına ver' : 'İşi düzenle') : `${grup.ad} · İş`}
+      baslik={mevcut ? (mevcut.durum === 'reddedildi' ? 'Başkasına ver' : 'İşi düzenle') : `${grup.ad} · Yapılacak`}
       solVazgec
       degisti={degisti}
       onay={
@@ -101,23 +135,43 @@ export function IsFormu({
             }
           : null
       }
-      altAlan={<Dugme etiket={kime ? 'İste' : 'Herkese aç'} onPress={() => void kaydet()} pasif={calisiyor} />}
+      altAlan={
+        <Dugme
+          etiket={liste ? 'Listeyi aç' : kime ? 'İste' : 'Herkese aç'}
+          onPress={() => void kaydet()}
+          pasif={calisiyor}
+        />
+      }
     >
       <View style={stiller.kap}>
+        {!mevcut && (
+          <BolumluDugme
+            secenekler={[
+              { deger: 'is', etiket: 'Tek iş' },
+              { deger: 'liste', etiket: 'Liste' },
+            ]}
+            secili={tur}
+            erisimEtiketi="Yapılacak türü"
+            onSec={(t) => {
+              setTur(t);
+              setHata(null);
+            }}
+          />
+        )}
         <GirisAlani
-          etiket="Ne iş?"
+          etiket={liste ? 'Listenin adı' : 'Ne iş?'}
           value={baslik}
           onChangeText={(t) => {
             setBaslik(t);
             setHata(null);
           }}
-          placeholder="Örneğin: Eczaneye uğra"
+          placeholder={liste ? 'Örneğin: Tatil hazırlığı' : 'Örneğin: Eczaneye uğra'}
           hata={hata}
           returnKeyType="done"
         />
         {!mevcut && (
           <View style={stiller.cipler}>
-            {IS_ORNEKLERI.map((o) => (
+            {(liste ? LISTE_ORNEKLERI : IS_ORNEKLERI).map((o) => (
               <SecenekHapi
                 key={o}
                 etiket={o}
@@ -132,50 +186,62 @@ export function IsFormu({
           </View>
         )}
 
-        <Bolum>
-          <Yazi kalinlik="kalin">Kime?</Yazi>
-          <View style={stiller.cipler}>
-            <SecenekHapi etiket="Herkes" secili={kime === null} onPress={() => setKime(null)} />
-            {uyeler.map((u) => (
-              <SecenekHapi
-                key={u.id}
-                etiket={u.ad}
-                erisimEtiketi={`${u.ad} kişisinden iste`}
-                secili={kime === u.id}
-                onPress={() => setKime(u.id)}
-              />
-            ))}
-          </View>
+        {liste ? (
           <Yazi tur="ikincil">
-            {kime ? 'O kişi kabul ederse ajandasına düşer.' : 'Gruptan isteyen "Ben alırım" der.'}
+            Liste grubun herkesine açılır. Maddeleri listede eklersin; her maddeye Kime? ve Ne zaman? verilebilir.
           </Yazi>
-        </Bolum>
+        ) : (
+          <>
+            <Bolum>
+              <Yazi kalinlik="kalin">Kime?</Yazi>
+              <View style={stiller.cipler}>
+                <SecenekHapi etiket="Herkes" secili={kime === null} onPress={() => setKime(null)} />
+                {uyeler.map((u) => (
+                  <SecenekHapi
+                    key={u.id}
+                    etiket={u.ad}
+                    erisimEtiketi={`${u.ad} kişisinden iste`}
+                    secili={kime === u.id}
+                    onPress={() => setKime(u.id)}
+                  />
+                ))}
+              </View>
+              <Yazi tur="ikincil">
+                {kime ? 'O kişi kabul ederse ajandasına düşer.' : 'Gruptan isteyen "Ben alırım" der.'}
+              </Yazi>
+            </Bolum>
 
-        <Bolum>
-          <Yazi kalinlik="kalin">{tarih ? `Ne zaman? ${uzunTarih(tarih)}` : 'Ne zaman?'}</Yazi>
-          <View style={stiller.cipler}>
-            <SecenekHapi
-              etiket="Tarih yok"
-              secili={tarih === null}
-              onPress={() => (setTarih(null), setTakvim(false))}
-            />
-            <SecenekHapi
-              etiket="Bugün"
-              secili={tarih === bugunGun}
-              onPress={() => (setTarih(bugunGun), setTakvim(false))}
-            />
-            <SecenekHapi etiket="Yarın" secili={tarih === yarin} onPress={() => (setTarih(yarin), setTakvim(false))} />
-            <SecenekHapi
-              etiket="Başka gün"
-              secili={takvim || (tarih !== null && tarih !== bugunGun && tarih !== yarin)}
-              onPress={() => setTakvim(true)}
-            />
-          </View>
-          {takvim && <AyTakvimi secili={tarih} bugunGun={bugunGun} onSec={setTarih} />}
-          {tarih === null && <Yazi tur="ikincil">Tarih yoksa alanın ajandasına aldığı güne düşer.</Yazi>}
-        </Bolum>
+            <Bolum>
+              <Yazi kalinlik="kalin">{tarih ? `Ne zaman? ${uzunTarih(tarih)}` : 'Ne zaman?'}</Yazi>
+              <View style={stiller.cipler}>
+                <SecenekHapi
+                  etiket="Tarih yok"
+                  secili={tarih === null}
+                  onPress={() => (setTarih(null), setTakvim(false))}
+                />
+                <SecenekHapi
+                  etiket="Bugün"
+                  secili={tarih === bugunGun}
+                  onPress={() => (setTarih(bugunGun), setTakvim(false))}
+                />
+                <SecenekHapi
+                  etiket="Yarın"
+                  secili={tarih === yarin}
+                  onPress={() => (setTarih(yarin), setTakvim(false))}
+                />
+                <SecenekHapi
+                  etiket="Başka gün"
+                  secili={takvim || (tarih !== null && tarih !== bugunGun && tarih !== yarin)}
+                  onPress={() => setTakvim(true)}
+                />
+              </View>
+              {takvim && <AyTakvimi secili={tarih} bugunGun={bugunGun} onSec={setTarih} />}
+              {tarih === null && <Yazi tur="ikincil">Tarih yoksa alanın ajandasına aldığı güne düşer.</Yazi>}
+            </Bolum>
 
-        <Yazi tur="ikincil">{IS_NOTU}</Yazi>
+            <Yazi tur="ikincil">{IS_NOTU}</Yazi>
+          </>
+        )}
         {mevcut && <Dugme tur="tehlike" etiket="İşi sil" onPress={() => setSilSorusu(true)} />}
       </View>
     </AltSayfa>

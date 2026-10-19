@@ -219,3 +219,12 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Notlar ekranında nota uzun basıp sürükleyerek sıralanır** (Ajandam'daki gibi); soldaki tutamaç kalktı. Kısa dokunuş notu açar; ekran okuyucuda "Yukarı taşı / Aşağı taşı". — Ürün sahibi (P-16)
 - **Hızlı Not kutusu kapalıyken Ajandam'ın üstünde çıkan "Notlarım (N) ›" bağlantısı kalktı** (G-7'nin bu kısmı geçersiz). Notlara Giriş'teki Hızlı Not kutusundan ulaşılır; kutu kapalıysa Giriş ayarından açılır. — Ürün sahibi (P-16)
 
+## Gruplar sadeleşti: Gelenler, takip, üç ana tür, listelerin yeri grup (19 Ekim)
+
+- **Yanıt bekleyen her şey üyenin Gelenler'ine düşer** ("Gruplarından"): benden istenen iş, herkese açık iş, yanıtlamadığım buluşma, oy vermediğim oylama, katılmadığım birlikte rutin. Kart grup ekranındakinin aynısı; düğmeleri Gelenler'de çalışır, yanıtlayınca kalkar. Benden istenen iş ve buluşma dışındakilerde "Gizle" (telefonda tutulur; grupta yine görünür). Giriş'teki Gelenler kutusu bunları da sayar ("2 grup isteği"). — Ürün sahibi (P-17; gizlenebilenler: Öneri)
+- **Kuran için takip:** buluşmada "Yanıt bekleniyor: …", oylamada "Oy vermedi: …" (yalnız kurana). Gruplar sekmesinde grubun satırında "Senden N yanıt bekleniyor". — Ürün sahibi (P-17)
+- **"+ Ekle": üç ana tür** — Yapılacak (Tek iş | Liste), Buluşma (Gün belli | Günü oylayalım), Birlikte rutin; **"Diğer"** altında Nöbet / sıra ve Oylama (yalnız seçenekli; gün oylaması Buluşma'ya geçti). — Ürün sahibi (P-17)
+- **Grup ekranının bölümleri:** Yapılacaklar (işler ve listeler) · Buluşmalar (gün oylamaları ve buluşmalar) · Birlikte rutinler · Oylamalar · Nöbetler · + Ekle · Üyeler. Boş bölüm görünmez; hepsi boşsa "+ Ekle ile başlat" yazar. — Öneri
+- **Listelerin tek yeri grup.** Gruplar sekmesindeki "Ortak listeler" bölümü, "+ Yeni liste" ve Giriş'teki Ortak Listeler kutusu kalktı; yeni liste grupta "+ Ekle → Yapılacak → Liste" ile açılır ve gruba açılır. Eskiden kişiye açılmış listeler Gruplar sekmesinde "Kişilerle listeler" altında görünmeye devam eder (düzenlerken kişileri değiştirilebilir); bir kişiyle paylaşmak için iki kişilik grup kurulur. — Ürün sahibi (P-17; eski listelerin kalması: Öneri)
+- Hızlı Not kutusunun ayardaki açıklaması güncellendi (Ajandam'daki bağlantı P-16'da kalkmıştı). — Öneri
+

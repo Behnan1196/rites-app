@@ -131,3 +131,7 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Telefonda kart yok (`KararSaglayici` yalnız okur ve yazar); gün kararında kurulan buluşmanın kartı kuranın ajandasına eklenir, ötekiler Buluşma'dan yanıtlar.
 - Grup ekranındaki sıra: İşler · Kararlar · Buluşmalar · Birlikte rutinler · Nöbetler · Listeler · + Ekle · Üyeler (boş bölümler görünmez; Buluşmalar ve Listeler boşken de görünür).
 
+## Gruplardan bekleyenler (Gelenler)
+
+- `mantik/grupBekleyenler.ts` `banaBekleyenler`: dört sağlayıcının (İş, Buluşma, Karar, Rutin) verisinden bana yanıt bekleyenler; `gelen_gizli` ayarındaki (en çok 200) anahtarlar düşer. `useGrupBekleyenleri` Gelenler ekranı, Giriş'teki Gelenler kutusu ve Gruplar sekmesi kullanır; ekranlar öne gelince dört sağlayıcıyı tazeler. Sunucu değişmedi.
+

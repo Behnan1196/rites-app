@@ -55,14 +55,15 @@ export interface KutuTanimi {
 
 /** Varsayılan sıra (`02`); hepsi açık. */
 export const KUTULAR: readonly KutuTanimi[] = [
-  { k: 'not', ad: 'Hızlı Not', aciklama: 'Kapatırsan notların Ajandam’dan açılır', hazir: true },
-  { k: 'gelenler', ad: 'Gelenler', aciklama: 'Sana gönderilen kartlar', hazir: true },
+  { k: 'not', ad: 'Hızlı Not', aciklama: 'Notların; kapatırsan buradan yeniden açarsın', hazir: true },
+  { k: 'gelenler', ad: 'Gelenler', aciklama: 'Sana gönderilenler ve gruplarından yanıt bekleyenler', hazir: true },
   { k: 'bugun', ad: 'Bugün sırada', aciklama: 'Ajandandaki sıradaki iş', hazir: true },
   { k: 'animsatici', ad: 'Anımsatıcılar', aciklama: 'Sıradaki anımsatma', hazir: true },
   { k: 'devam', ad: 'Devam edenler', aciklama: 'Süren planların', hazir: true },
   { k: 'soru', ad: 'Günün sorusu', aciklama: 'Planında soru varsa görünür', hazir: true },
   { k: 'su', ad: 'Su', aciklama: 'Yarım kutu · günlük bardak sayacı', hazir: false },
-  { k: 'ortak', ad: 'Ortak Listeler', aciklama: 'Yarım kutu · başkalarıyla listeler', hazir: true },
+  // Pilot 19 Ekim: listelerin yeri grup; kutu kalktı (ayarda da görünmez).
+  { k: 'ortak', ad: 'Ortak Listeler', aciklama: 'Yarım kutu · başkalarıyla listeler', hazir: false },
 ];
 
 /** Yarım kutular (`05` §10). */
@@ -82,7 +83,8 @@ export function kutuSatirlari(kutular: readonly KutuAnahtari[]): KutuAnahtari[][
   return satirlar;
 }
 
-export const GIRIS_AYARI_ACIKLAMASI = "Okla sırasını değiştir, düğmeyle aç ya da kapat. Kapattığın kutu silinmez, yalnız Giriş'ten kalkar.";
+export const GIRIS_AYARI_ACIKLAMASI =
+  "Okla sırasını değiştir, düğmeyle aç ya da kapat. Kapattığın kutu silinmez, yalnız Giriş'ten kalkar.";
 
 /**
  * Kayıtlı ayar ile bilinen kutuları birleştirir: bilinmeyenler atılır, kayıtta

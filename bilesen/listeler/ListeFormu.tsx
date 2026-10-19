@@ -148,23 +148,26 @@ export function ListeFormu({
             </View>
           )}
         </Bolum>
-        <Bolum>
-          <Yazi kalinlik="kalin">Kişiler</Yazi>
-          {kisiSecenekleri.length === 0 ? (
-            <Yazi tur="ikincil">{"Listeyi açabilmek için önce Kişilerim'den biriyle bağlanmalısın."}</Yazi>
-          ) : (
-            <View style={stiller.cipler}>
-              {kisiSecenekleri.map((k) => (
-                <SecenekHapi
-                  key={k.id}
-                  etiket={k.ad}
-                  secili={secKisi.has(k.id)}
-                  onPress={() => setSecKisi((s) => degistir(s, k.id))}
-                />
-              ))}
-            </View>
-          )}
-        </Bolum>
+        {/* Pilot 19 Ekim: yeni listeler yalnız gruba açılır; eskiden kişiye açılmış listede kişiler düzenlenebilir. */}
+        {(mevcut?.kisiler.length ?? 0) > 0 && (
+          <Bolum>
+            <Yazi kalinlik="kalin">Kişiler</Yazi>
+            {kisiSecenekleri.length === 0 ? (
+              <Yazi tur="ikincil">{"Listeyi açabilmek için önce Kişilerim'den biriyle bağlanmalısın."}</Yazi>
+            ) : (
+              <View style={stiller.cipler}>
+                {kisiSecenekleri.map((k) => (
+                  <SecenekHapi
+                    key={k.id}
+                    etiket={k.ad}
+                    secili={secKisi.has(k.id)}
+                    onPress={() => setSecKisi((s) => degistir(s, k.id))}
+                  />
+                ))}
+              </View>
+            )}
+          </Bolum>
+        )}
       </View>
     </AltSayfa>
   );

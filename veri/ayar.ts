@@ -18,14 +18,13 @@ export interface Ayarlar {
   ilk_acilis: Gun;
   /** Telefonun bağlı olduğu e-posta: ilk girişte yazılır; başka e-postayla girilemez (13 Ekim kararı). */
   bagli_eposta: string;
+  /** Gelenler'de "Gizle" denen grup istekleri (`mantik/grupBekleyenler`; pilot 19 Ekim). */
+  gelen_gizli: string[];
 }
 
 export type AyarAnahtari = keyof Ayarlar;
 
-export async function ayarOku<K extends AyarAnahtari>(
-  oku: Okuyucu,
-  anahtar: K,
-): Promise<Ayarlar[K] | null> {
+export async function ayarOku<K extends AyarAnahtari>(oku: Okuyucu, anahtar: K): Promise<Ayarlar[K] | null> {
   const satir = await oku.ilk<{ deger: string }>('SELECT deger FROM ayar WHERE anahtar = ?', [anahtar]);
   if (!satir) return null;
   try {

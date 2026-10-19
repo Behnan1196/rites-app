@@ -5,6 +5,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, View } from 'react-native';
 
 import { benimYanitim, bulusmaZamani, YANITLAR, yanitAyrintisi, yanitOzeti, type Bulusma } from '@/mantik/bulusma';
+import { yanitlamayanlar } from '@/mantik/grupBekleyenler';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 
 import { Dugme } from '../Dugme';
@@ -19,16 +20,27 @@ export function BulusmaKarti({
   ben,
   ad,
   onDuzenle,
+  uyeler,
 }: {
   bulusma: Bulusma;
   ben: string;
   ad: (id: string) => string;
   onDuzenle: () => void;
+  /** Grubun üyeleri: kuran için "Yanıt bekleniyor: …" (pilot 19 Ekim). */
+  uyeler?: readonly string[];
 }) {
   const { yanitla } = useBulusmalar();
   const kisaMesaj = useKisaMesaj();
   const benim = benimYanitim(bulusma, ben);
   const ayrinti = yanitAyrintisi(bulusma, ad);
+  const bekleyen =
+    uyeler && bulusma.kuran === ben
+      ? yanitlamayanlar(
+          uyeler,
+          bulusma.yanitlar.map((y) => y.kullanici),
+          bulusma.kuran,
+        )
+      : [];
 
   return (
     <View style={stiller.kart}>
@@ -40,6 +52,9 @@ export function BulusmaKarti({
             {bulusmaZamani(bulusma)}
           </Yazi>
           <Yazi tur="ikincil">{ayrinti || yanitOzeti(bulusma)}</Yazi>
+          {bekleyen.length > 0 && (
+            <Yazi tur="ikincil" renk={renk.vurguYazi}>{`Yanıt bekleniyor: ${bekleyen.map(ad).join(', ')}`}</Yazi>
+          )}
         </View>
         {bulusma.kuran === ben && <Dugme tur="yazi" etiket="Düzenle" onPress={onDuzenle} />}
       </View>

@@ -95,3 +95,8 @@ Ne dedi: "Notlar'da sürükleme ajandadaki gibi olsun. Bir de notlar kapalı ike
 Nerede: Giriş → Notlar; Ajandam üstü
 Sonuç: → kararlar.md (Notlar: ajandadaki gibi sürükleme; ajandadaki "Notlarım" bağlantısı kalktı)
 
+### P-17 · 19 Ekim 2026 · Behnan · iPhone
+Ne dedi: "Grupları test ediyorum, çalışıyor ancak yönetmesi, uygulaması zor olacak gibi. Öncelikle bizim ortak listelerimizle karışıyor, ayrı bir liste ekleme, gruba girince ayrı daha çok seçenek. Gelenleri bu amaçla henüz kullanmıyoruz, belki bir çözüm olabilir, tabi yönetici için takip sorunu da var."
+Nerede: Gruplar, grup ekranı, Gelenler
+Sonuç: → kararlar.md (Gruplar sadeleşti: Gelenler, takip, üç ana tür, listelerin yeri grup)
+
