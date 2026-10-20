@@ -19,6 +19,7 @@ import { PaylasimAlici } from "@/bilesen/paylasim/PaylasimAlici";
 import { GirisAyariSaglayici } from "@/bilesen/giris/GirisAyari";
 import { OturumSaglayici } from "@/bilesen/oturum/OturumSayfasi";
 import { KatmanSaglayici } from "@/bilesen/Katman";
+import { KatalogGuncelleyici } from "@/bilesen/KatalogGuncelleyici";
 import { BulusmaSaglayici } from "@/bilesen/gruplar/Bulusmalar";
 import { IsSaglayici } from "@/bilesen/gruplar/Isler";
 import { KararSaglayici } from "@/bilesen/gruplar/Kararlar";
@@ -64,6 +65,7 @@ export default function KokDuzen() {
                 <KararSaglayici>
                 <GelenBildirimiSaglayici>
                   <GirisAyariSaglayici>
+                    <KatalogGuncelleyici />
                     <ProfilSaglayici>
                       <Stack
                         screenOptions={{

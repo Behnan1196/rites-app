@@ -130,3 +130,8 @@ Sonuç: → kararlar.md (Yaşam Tarzım: planlar yerine programlar)
 Ne dedi: "Bir program oluşturduk, adını, etiketini tekrar nereden değiştireceğim?" (Düzenle "⋯" menüsündeydi.) "Bir ara hangi menü nerede yer alır çalışması yaparız, şu an pek standart değil; mümkünse konu başlığının hizasında sağda olabilir."
 Nerede: Program ekranı; genel olarak ekranların üst satırı
 Sonuç: Program ekranının sağ üstüne görünür "Düzenle" kondu. Menü yerleşimi çalışması sonraya (ürün sahibi önerisi: düzenle / menü, ekranın başlığıyla aynı hizada sağda).
+
+### P-24 · 20 Ekim 2026 · Behnan
+Ne dedi: "Yaşam Tarzı'nda belirlediğimiz alanlarda öneri program veya kartlar var; onları kütüphanede hazır kaydedilmiş olarak kullanıcıya sunsak nasıl olur? Bu hiç bitmeyecek bir çalışma, uzmanlık ve deneyim de gerektirebilir; alanların, programların ve kartların ileride bir uzmanla yeniden belirlenmesi durumunda bunları indirilebilir hale getirebilir miyiz?"
+Nerede: Kütüphanem, Yaşam Tarzım
+Sonuç: → kararlar.md (Rites önerileri Kütüphanem'de; içerik kataloğu indirilebilir)

@@ -4,8 +4,8 @@
 
 import { yeniKartSirasi } from '@/mantik/ajanda';
 import {
-  ALAN_ANAHTARLARI,
   alanBul,
+  hazirAlanAnahtarlari,
   OZEL_ONEK,
   ozelAlanlariAyarla,
   varsayilanAcikMi,
@@ -209,7 +209,7 @@ export async function alanDurumlari(oku: Okuyucu): Promise<Map<AlanAnahtari, Ala
   const satirlar = await oku.hepsi<AlanSatiri>('SELECT * FROM alan_durumu');
   const ozeller = await ozelAlanlariOku(oku);
   const sonuc = new Map<AlanAnahtari, AlanDurumu>(
-    [...ALAN_ANAHTARLARI, ...ozeller.map((o) => o.anahtar)].map((a) => [a, varsayilanAlanDurumu(a)]),
+    [...hazirAlanAnahtarlari(), ...ozeller.map((o) => o.anahtar)].map((a) => [a, varsayilanAlanDurumu(a)]),
   );
   for (const s of satirlar) {
     if (sonuc.has(s.alan)) sonuc.set(s.alan, { acik: s.acik === 1, puan: s.puan, ilerlemek: s.ilerlemek === 1 });

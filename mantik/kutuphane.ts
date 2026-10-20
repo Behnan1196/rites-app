@@ -3,27 +3,19 @@
 // eklenir. Programlar kendi tablolarında durur ve Kütüphanem'de de görünür (pilot 20 Ekim).
 
 import { alanAdi, type AlanAnahtari } from './alanlar';
+import { TURLER, type EtiketTuru, type KatalogBlogu } from './katalog';
 import { tekrarMetni } from './gorunurluk';
 import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Hatirlatma, type Kart, type Tekrar } from './kart';
 import { trKucuk } from './metin';
 import type { KartPaketi } from './paylasim';
 import type { Gun } from './tarih';
 
-export const TURLER = ['Tarif', 'Egzersiz', 'Bilgi', 'Ölçüm', 'Rutin', 'Diğer'] as const;
-export type EtiketTuru = (typeof TURLER)[number];
+export { TURLER, turMu, turTahmini, type EtiketTuru } from './katalog';
 
 export type KayitTuru = 'kart';
 
-export interface KutuphaneBlogu {
-  tur: BlokTuru;
-  ad: string;
-  metin: string;
-  birim: string;
-  dakika: number | null;
-  maddeler: string[];
-  /** Telefondaki fotoğraf / dosya (yalnız bu telefonda). */
-  dosya: string | null;
-}
+/** Kartın bloğu, kayıtsız (katalogla aynı biçim). */
+export type KutuphaneBlogu = KatalogBlogu;
 
 export interface KartIcerigi {
   baslik: string;
@@ -90,15 +82,6 @@ export function paketIcerigi(p: KartPaketi): KartIcerigi {
   };
 }
 
-/** Tahmini tür (L-1): liste + talimat → Tarif; video → Egzersiz; yalnız ölçüm/talimat → Ölçüm/Bilgi. */
-export function turTahmini(bloklar: readonly { tur: BlokTuru }[]): EtiketTuru {
-  const t = bloklar.map((b) => b.tur);
-  if (t.includes('liste') && t.includes('talimat')) return 'Tarif';
-  if (t.includes('video')) return 'Egzersiz';
-  if (t.length && t.every((x) => x === 'olcum' || x === 'talimat')) return t.includes('olcum') ? 'Ölçüm' : 'Bilgi';
-  return 'Diğer';
-}
-
 /** "Kendim" ya da Gelenler'den eklenmiş kartta "Gönderen: Elif". */
 export function kaynakMetni(kart: Pick<Kart, 'kaynak' | 'gelenKimden'>): string {
   return kart.kaynak === 'gelen' && kart.gelenKimden ? `Gönderen: ${kart.gelenKimden}` : KENDIM;
@@ -153,7 +136,8 @@ export function suzgecSecenekleri(
   return { alanlar: tumAlanlar.filter((x) => a.has(x)), turler: TURLER.filter((x) => t.has(x)) };
 }
 
-export const BOS_KUTUPHANE = 'Henüz kayıtlı kartın yok. Bir kartı açıp "Kütüphaneye kaydet" dediğinde burada durur.';
+export const BOS_KUTUPHANE =
+  'Kendi kaydettiğin kart henüz yok; aşağıdakiler Rites önerileri. Bir kartı açıp "Kütüphaneye kaydet" dediğinde burada durur.';
 export const SUZGECTE_YOK = 'Bu süzgeçle kayıt yok.';
 
 /** Ayrıntıda blok satırı: "Liste: Malzemeler", "Talimat". */
@@ -229,8 +213,4 @@ export function kayitPaketi(k: KutuphaneKaydi): KartPaketi {
     alanlar: [...k.alanlar],
     etiketTur: k.etiketTur,
   };
-}
-
-export function turMu(t: unknown): t is EtiketTuru {
-  return typeof t === 'string' && (TURLER as readonly string[]).includes(t);
 }

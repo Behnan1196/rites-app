@@ -24,6 +24,12 @@ export interface Ayarlar {
   hatirlatma_sesi: string | null;
   /** Gelenler'e bir şey düşünce telefona bildirim gelsin mi (sunucudan; pilot 19 Ekim). */
   gelen_bildirimi: boolean;
+  /** İçerik kataloğunun telefondaki kopyası (`mantik/katalog`; pilot 20 Ekim). */
+  katalog: unknown;
+  /** Kataloğun en son indirilmeye çalışıldığı an (ISO). */
+  katalog_denendi: string;
+  /** Kütüphanem'de gizlenen öneriler (`p:<id>`, `k:<id>`). */
+  gizli_oneriler: string[];
 }
 
 export type AyarAnahtari = keyof Ayarlar;

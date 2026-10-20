@@ -264,3 +264,12 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Pilottaki planlar silindi** (kartları ve kütüphanedeki plan kopyaları da; sürüm 15). Eski yedek geri yüklenirken plan kartları alınmaz. — Ürün sahibi
 - Giriş'teki **Devam edenler** uygulanan programları gösterir; **Günün sorusu** kutusu kalktı. — Öneri
 - Sonraya: programı başkasına göndermek (Gelenler'e program olarak), gelişimi daha ayrıntılı izlemek (rutin / alışkanlık sayıları). — Not
+
+## Rites önerileri Kütüphanem'de; içerik kataloğu indirilebilir (20 Ekim)
+
+- **Öneriler kişinin kayıtlarının arasında:** Kütüphanem'de Programlar ve Kartlar listelerinde, kişinin kendilerinden sonra "Öneri" etiketiyle ("Rites önerisi"). Arama ve alan / tür süzgeci önerilerde de çalışır. İstemediğini "Önerilerden gizle" der; "Gizlediğin öneriler (N)" ile yeniden görür. — Ürün sahibi
+- **Öneri kartları da var:** alanlardaki hazır etkinlikler (Su, Sabah esnemesi, Şükran notu…) tek tek öneri kart; "Bugün Ajandama ekle" ya da "Programa ekle". Alan ekranındaki "Rites önerileri" programları ve kartları birlikte gösterir. — Ürün sahibi
+- Öneri program "Programlarıma ekle" denince kişinin programı olur ve öneri Kütüphanem'de artık görünmez (gizlenir; isterse yeniden gösterir). — Öneri
+- **İçerik kataloğu sunucuda:** alanlar, öneri kartları ve öneri programları Supabase'deki üç tabloda (`icerik_alan`, `icerik_kart`, `icerik_program`); herkes okur, uygulamadan kimse yazamaz; ürün sahibi ya da uzman Supabase panelinden düzenler (ileride ayrı bir düzenleme sayfası). Uygulama açılışta ve öne dönünce, en çok 6 saatte bir indirir, telefonda saklar; indiremezse saklı kopyayı, o da yoksa uygulamayla geleni kullanır. Sunucuya kişinin verisi gitmez. — Ürün sahibi (6 saat: Öneri)
+- **Katalog alanları da değiştirebilir:** ad, açıklama, simge, yeni kişide açık olup olmadığı; yeni alan eklenebilir. Anahtarlar değişmez; katalogdan kalkan alan kişinin etiketlerinde adıyla kalır. Kişinin kendi kopyaları katalog değişince değişmez. — Ürün sahibi
+- Uzman için yazım kuralları `docs/icerik.md`de; "Klinik değildir" ilkesi içerik için de geçerli (doz, tanı yok). — Öneri

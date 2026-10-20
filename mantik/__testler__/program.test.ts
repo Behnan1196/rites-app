@@ -1,4 +1,5 @@
-import { ALANLAR, alanAdi, alanAdiHatasi, alanBul, ozelAlanlariAyarla, tumAlanlar, varsayilanAcikMi } from '../alanlar';
+import { alanAdi, alanAdiHatasi, alanBul, ozelAlanlariAyarla, tumAlanlar, varsayilanAcikMi } from '../alanlar';
+import { ALANLAR } from '../hazirIcerik';
 import { yeniKart } from '../kart';
 import {
   ajandaKarti,
@@ -10,7 +11,7 @@ import {
   kartSirasi,
   kartZamanMetni,
   karttanIcerik,
-  ONERILER,
+  oneriler,
   onerdenProgram,
   programBagCoz,
   programBitisi,
@@ -78,7 +79,7 @@ describe('alanlar', () => {
   it('kişinin eklediği alan da bulunur', () => {
     ozelAlanlariAyarla([{ anahtar: 'ozel-1', ad: 'Bahçe', aciklama: '' }]);
     expect(alanAdi('ozel-1')).toBe('Bahçe');
-    expect(alanBul('ozel-1')?.paketler).toEqual([]);
+    expect(alanBul('ozel-1')?.ikon).toBeNull();
     expect(tumAlanlar().map((a) => a.ad).at(-1)).toBe('Bahçe');
     expect(alanAdiHatasi(' ', tumAlanlar())).toBe('Alana bir ad ver.');
     expect(alanAdiHatasi('bahçe', tumAlanlar())).toBe('Bu adla bir alan var.');
@@ -193,8 +194,8 @@ describe('ilerleme ve gelişim', () => {
 
 describe('Rites önerileri', () => {
   it('her hazır paket bir öneri; kopyası hazır program', () => {
-    expect(ONERILER.length).toBe(ALANLAR.reduce((t, a) => t + a.paketler.length, 0));
-    const o = ONERILER.find((x) => x.id === 'ph1')!;
+    expect(oneriler().length).toBe(ALANLAR.reduce((t, a) => t + a.paketler.length, 0));
+    const o = oneriler().find((x) => x.id === 'ph1')!;
     expect(o.sure).toBe(28);
     const { program: p, kartlar } = onerdenProgram(o, kimlik, '2026-10-20T10:00:00Z');
     expect(p).toMatchObject({ ad: 'Sabah hareketi', alanlar: ['hareket'], durum: 'hazir', kaynak: 'Rites önerisi', sure: 28 });

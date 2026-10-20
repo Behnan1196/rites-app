@@ -100,3 +100,13 @@ yetki kuralları, davetin isteğe dönmesi, 5 kişi sınırı, Hesabımı sil.
 
 Denetim: telefonda Gelenler kutusundaki zil açıkken, Supabase → Table Editor → `bildirim_adresi`'nde telefonun satırı görünür. Başka bir hesaptan sana kart gönderilince bildirim gelmeli.
 
+
+## 6. İçerik kataloğu (20 Ekim)
+
+Alanlar, öneri kartları ve öneri programları artık sunucudan indirilebilir. Uygulama açılışta ve öne dönünce (en çok 6 saatte bir) bakar; yeni içerik varsa telefona kaydeder. Katalog yoksa ya da indirilemezse uygulamayla gelen içerik kullanılır, yani bu adım yapılmasa da uygulama çalışır.
+
+1. Güncel `sema.sql`'i SQL Editor'de bir kez çalıştır (`icerik_alan`, `icerik_kart`, `icerik_program` tabloları).
+2. `sunucu/icerik.sql`'i SQL Editor'de bir kez çalıştır (ilk içerik: uygulamayla gelenin aynısı). Yeniden çalıştırmak güvenlidir; değiştirdiğin satırlara dokunmaz.
+3. İçeriği **Table Editor**'de düzenle. Yazım kuralları ve örnekler: `docs/icerik.md`.
+
+Tablolar herkese yalnız okunur; uygulamadan kimse yazamaz. Panelden yaptığın değişiklik telefonlara en geç 6 saat içinde (ya da uygulama yeniden açılınca, 6 saat geçtiyse) gelir.

@@ -5,24 +5,18 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import type { AlanAnahtari } from '@/mantik/alanlar';
+import { alanBul, type AlanAnahtari } from '@/mantik/alanlar';
 
 import { kaynakRenk, olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 
 type IkonAdi = ComponentProps<typeof Ionicons>['name'];
 
-const ALAN_IKONU: Record<string, IkonAdi> = {
-  hareket: 'walk-outline',
-  beslenme: 'nutrition-outline',
-  uyku: 'moon-outline',
-  zihin: 'sunny-outline',
-  anlam: 'star-outline',
-  sosyal: 'people-outline',
-  ogrenme: 'school-outline',
-  is: 'briefcase-outline',
-  ugras: 'color-palette-outline',
-};
+/** Alanın simgesi katalogdan (uzman Ionicons adı yazar); tanınmayan ya da yoksa yaprak. */
+function alanIkonu(alan: AlanAnahtari): IkonAdi {
+  const ad = alanBul(alan)?.ikon;
+  return ad && ad in Ionicons.glyphMap ? (ad as IkonAdi) : 'leaf-outline';
+}
 
 export function AlanSimgesi({ alan, buyuk = false }: { alan: AlanAnahtari; buyuk?: boolean }) {
   const cap = buyuk ? 72 : 52;
@@ -32,7 +26,7 @@ export function AlanSimgesi({ alan, buyuk = false }: { alan: AlanAnahtari; buyuk
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <Ionicons name={ALAN_IKONU[alan] ?? 'leaf-outline'} size={buyuk ? 34 : 26} color={renk.ana} />
+      <Ionicons name={alanIkonu(alan)} size={buyuk ? 34 : 26} color={renk.ana} />
     </View>
   );
 }

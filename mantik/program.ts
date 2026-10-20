@@ -12,7 +12,8 @@
 // - Uygulanmış program 1–5 yıldız ve kısa notla değerlendirilir.
 // - Alan puanı programlardan bağımsızdır (kişinin kendi değerlendirmesi).
 
-import { ALANLAR, alanAdi, type AlanAnahtari, type Etkinlik, type EtkinlikBlogu, type HazirPaket } from './alanlar';
+import { alanAdi, type AlanAnahtari } from './alanlar';
+import { katalog, type KatalogKart, type KatalogProgram } from './katalog';
 import { gorunurMu, tekrarMetni } from './gorunurluk';
 import { gecerliHatirlatma, yeniKart, type Blok, type Hatirlatma, type Kart, type Tekrar } from './kart';
 import type { KutuphaneBlogu } from './kutuphane';
@@ -360,76 +361,72 @@ export function uygulamaOzeti(
   return { yapilan, toplam };
 }
 
-// ---- Rites önerileri (hazır paketler) ----------------------------------------
+// ---- Rites önerileri (içerik kataloğundan) -------------------------------------
 
-export const VIDEO_TALIMATI = 'Videoyu açıp birlikte uygula.';
-
-function etkinlikBloklari(b: EtkinlikBlogu): KutuphaneBlogu[] {
-  const bos = (tur: KutuphaneBlogu['tur']): KutuphaneBlogu => ({
-    tur,
-    ad: '',
-    metin: '',
-    birim: '',
-    dakika: null,
-    maddeler: [],
-    dosya: null,
-  });
-  switch (b.tur) {
-    case 'sayac':
-      return [{ ...bos('sayac'), dakika: b.dakika }];
-    case 'video':
-      // Bağlantı yok (`09`); kişi Düzenle'den yapıştırır.
-      return [bos('video'), { ...bos('talimat'), metin: VIDEO_TALIMATI }];
-    case 'olcum':
-      return [{ ...bos('olcum'), ad: b.ad, birim: b.birim }];
-    case 'talimat':
-      return [{ ...bos('talimat'), metin: b.metin }];
-    case 'gunnot':
-      return [bos('gunnot')];
-  }
-}
+export { VIDEO_TALIMATI } from './katalog';
 
 export interface Oneri {
   id: string;
-  alan: AlanAnahtari;
+  alanlar: AlanAnahtari[];
   ad: string;
   aciklama: string;
-  sure: number;
+  sure: number | null;
   kartlar: Omit<ProgramKarti, 'id' | 'programId'>[];
 }
 
-function etkinliktenKart(e: Etkinlik, sira: number): Omit<ProgramKarti, 'id' | 'programId'> {
+/** Katalogdaki kartın program kartı içeriği. */
+export function oneriKartIcerigi(c: KatalogKart, gun = 0, sira = 0): Omit<ProgramKarti, 'id' | 'programId'> {
   return {
     sira,
-    gun: 0,
-    baslik: e.baslik,
-    kisa: '',
-    saat: e.saat,
+    gun,
+    baslik: c.baslik,
+    kisa: c.kisa,
+    saat: c.saat,
     hatirlatma: null,
     alarm: false,
-    tekrar: tekrarKopyasi(e.tekrar),
-    bloklar: etkinlikBloklari(e.blok),
+    tekrar: tekrarKopyasi(c.tekrar),
+    bloklar: c.bloklar.map((b) => ({ ...b, maddeler: [...b.maddeler] })),
   };
 }
 
-function paketOnerisi(alan: (typeof ALANLAR)[number], p: HazirPaket): Oneri {
+function programOnerisi(p: KatalogProgram, kartlar: readonly KatalogKart[]): Oneri {
   return {
     id: p.id,
-    alan: alan.anahtar,
+    alanlar: [...p.alanlar],
     ad: p.ad,
     aciklama: p.aciklama,
-    sure: p.hafta * 7,
-    kartlar: p.etkinlikler
-      .map((id) => alan.etkinlikler.find((e) => e.id === id))
-      .filter((e): e is Etkinlik => !!e)
-      .map((e, i) => etkinliktenKart(e, i)),
+    sure: p.sure,
+    kartlar: p.kartlar
+      .map((x, i) => {
+        const c = kartlar.find((k) => k.id === x.kart);
+        return c ? oneriKartIcerigi(c, x.gun, i) : null;
+      })
+      .filter((x): x is Omit<ProgramKarti, 'id' | 'programId'> => !!x),
   };
 }
 
-export const ONERILER: readonly Oneri[] = ALANLAR.flatMap((a) => a.paketler.map((p) => paketOnerisi(a, p)));
+/** Şu anki katalogdaki öneri programları. */
+export function oneriler(): Oneri[] {
+  const k = katalog();
+  return k.programlar.map((p) => programOnerisi(p, k.kartlar));
+}
 
 export function oneriBul(id: string): Oneri | undefined {
-  return ONERILER.find((o) => o.id === id);
+  return oneriler().find((o) => o.id === id);
+}
+
+/** Şu anki katalogdaki öneri kartları. */
+export function oneriKartlari(): KatalogKart[] {
+  return katalog().kartlar;
+}
+
+export function oneriKartBul(id: string): KatalogKart | undefined {
+  return oneriKartlari().find((k) => k.id === id);
+}
+
+/** Gizlenen önerilerin anahtarı: program `p:<id>`, kart `k:<id>`. */
+export function oneriAnahtari(tur: 'program' | 'kart', id: string): string {
+  return `${tur === 'program' ? 'p' : 'k'}:${id}`;
 }
 
 /** Öneriden kişinin programı (hazır; kartlar kopyalanır). */
@@ -443,7 +440,7 @@ export function onerdenProgram(
     program: {
       id,
       ad: o.ad,
-      alanlar: [o.alan],
+      alanlar: [...o.alanlar],
       neden: o.aciklama,
       sure: o.sure,
       durum: 'hazir',

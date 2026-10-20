@@ -342,4 +342,20 @@ await hataBekle('oturumsuz iş okunamaz', () => q('select islerim()'), 'permissi
 await hataBekle('oturumsuz nöbet okunamaz', () => q(`select nobetlerim('2099-01-01')`), 'permission denied');
 await hataBekle('oturumsuz rutin okunamaz', () => q(`select rutinlerim('2099-01-01')`), 'permission denied');
 await ex('reset role');
+// İçerik kataloğu: herkes okur, kimse yazamaz; pasif satır görünmez.
+const icerik = fs.readFileSync(new URL('./icerik.sql', import.meta.url), 'utf8');
+await ex(icerik);
+await ex(icerik); // yeniden çalıştırmak güvenli mi
+await q(`update icerik_kart set baslik = 'Su (yeni)' where id = 'b1'`);
+await q(`update icerik_kart set aktif = false where id = 'b2'`);
+await ex('set role anon');
+esit('oturumsuz alanları okur', (await q('select count(*)::int n from icerik_alan')).rows[0].n, 9);
+esit('panelde değişen kart görünür, pasif görünmez', (await q(`select id, baslik from icerik_kart where id in ('b1','b2')`)).rows, [{ id: 'b1', baslik: 'Su (yeni)' }]);
+esit('programlar okunur', (await q('select count(*)::int n from icerik_program')).rows[0].n > 0, true);
+await hataBekle('oturumsuz içerik yazamaz', () => q(`insert into icerik_alan (anahtar, ad) values ('x', 'X')`), 'permission denied');
+await ex('reset role');
+await hataBekle('oturumlu içerik değiştiremez', () => olarak(ali, () => q(`update icerik_kart set baslik = 'x'`)), 'permission denied');
+esit('güncelleme zamanı yenilenir', (await q(`select guncelleme > (select guncelleme from icerik_alan limit 1) - interval '1 day' ok from icerik_kart where id = 'b1'`)).rows[0].ok, true);
+await hataBekle('özel alan anahtarı katalogda olamaz', () => q(`insert into icerik_alan (anahtar, ad) values ('ozel-1', 'X')`), 'check');
+
 console.log(hatalar ? `${hatalar} HATA` : 'HEPSİ TAMAM');

@@ -1475,3 +1475,68 @@ revoke execute on function
   from anon, authenticated, public;
 revoke execute on function public.bildirim_adresi_yaz(text, boolean) from anon, public;
 grant execute on function public.bildirim_adresi_yaz(text, boolean) to authenticated;
+
+-- ---- İçerik kataloğu (pilot 20 Ekim) ---------------------------------------------
+-- Alanlar, öneri kartları ve öneri programları. Herkes (oturumsuz da) okur; kimse
+-- uygulamadan yazamaz: içeriği Supabase panelinden (Table Editor) uzman ya da
+-- ürün sahibi düzenler. İlk içerik `sunucu/icerik.sql` ile yüklenir. Yazım
+-- kuralları `docs/icerik.md`de. Kişinin hiçbir verisi bu tablolara gitmez.
+
+create table if not exists public.icerik_alan (
+  anahtar         text primary key check (anahtar ~ '^[a-z0-9_]+$'),
+  ad              text not null,
+  aciklama        text not null default '',
+  ikon            text,
+  varsayilan_acik boolean not null default true,
+  sira            integer not null default 0,
+  aktif           boolean not null default true,
+  guncelleme      timestamptz not null default now()
+);
+
+create table if not exists public.icerik_kart (
+  id         text primary key,
+  alanlar    jsonb not null default '[]',
+  baslik     text not null,
+  kisa       text not null default '',
+  saat       text,
+  tekrar     jsonb,
+  bloklar    jsonb not null default '[]',
+  tur        text,
+  sira       integer not null default 0,
+  aktif      boolean not null default true,
+  guncelleme timestamptz not null default now()
+);
+
+create table if not exists public.icerik_program (
+  id         text primary key,
+  alanlar    jsonb not null default '[]',
+  ad         text not null,
+  aciklama   text not null default '',
+  sure       integer check (sure is null or sure > 0),
+  kartlar    jsonb not null default '[]',
+  sira       integer not null default 0,
+  aktif      boolean not null default true,
+  guncelleme timestamptz not null default now()
+);
+
+create or replace function public.icerik_guncelleme() returns trigger language plpgsql as $$
+begin
+  new.guncelleme := now();
+  return new;
+end;
+$$;
+
+do $$
+declare t text;
+begin
+  foreach t in array array['icerik_alan', 'icerik_kart', 'icerik_program'] loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('drop policy if exists icerik_oku on public.%I', t);
+    execute format('create policy icerik_oku on public.%I for select to anon, authenticated using (aktif)', t);
+    execute format('revoke insert, update, delete, truncate on public.%I from anon, authenticated', t);
+    execute format('grant select on public.%I to anon, authenticated', t);
+    execute format('drop trigger if exists guncelleme on public.%I', t);
+    execute format('create trigger guncelleme before update on public.%I for each row execute function public.icerik_guncelleme()', t);
+  end loop;
+end $$;
+revoke execute on function public.icerik_guncelleme() from anon, authenticated, public;

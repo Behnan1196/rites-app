@@ -3,7 +3,7 @@
  */
 import { alanAdi } from '@/mantik/alanlar';
 import { yeniKart } from '@/mantik/kart';
-import { ONERILER, onerdenProgram, type Program, type ProgramKarti } from '@/mantik/program';
+import { oneriler, onerdenProgram, type Program, type ProgramKarti } from '@/mantik/program';
 
 import { gocleriUygula } from '../gocler';
 import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
@@ -198,7 +198,7 @@ describe('programlar (gerçek SQLite)', () => {
   });
 
   it('Rites önerisinden program', async () => {
-    const { program: p, kartlar } = onerdenProgram(ONERILER[0]!, idUret, '2026-10-20T00:00:00Z');
+    const { program: p, kartlar } = onerdenProgram(oneriler()[0]!, idUret, '2026-10-20T00:00:00Z');
     await programKur(kapi, p, kartlar);
     expect((await programKartlariOku(oku, p.id)).length).toBe(kartlar.length);
   });

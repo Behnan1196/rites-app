@@ -20,7 +20,10 @@ import { AlanSimgesi, ProgramSatiri } from '@/bilesen/yasam/parcalar';
 import { useProgramFormu } from '@/bilesen/yasam/ProgramFormu';
 import { useProgramlar } from '@/bilesen/yasam/useProgramlar';
 import { alanAdiHatasi, ozelMi, PUAN_SOZLERI, type Alan } from '@/mantik/alanlar';
-import { ONERILER, sureMetni, yildizMetni } from '@/mantik/program';
+import { oneriAnahtari, oneriKartlari, oneriler as tumOneriler, sureMetni, yildizMetni } from '@/mantik/program';
+import { icerikMetaMetni } from '@/mantik/kutuphane';
+import { useSorgu } from '@/veri/kancalar';
+import { gizliOneriler } from '@/veri/katalog';
 import { alanDurumuYaz, ozelAlanSil, ozelAlanYaz, varsayilanAlanDurumu } from '@/veri/programlar';
 import { useVeri } from '@/veri/VeriSaglayici';
 
@@ -44,7 +47,13 @@ function AlanIcerigi({ alan, p }: { alan: Alan; p: ReturnType<typeof usePrograml
   const kisaMesaj = useKisaMesaj();
   const durum = p.durumlar?.get(alan.anahtar) ?? varsayilanAlanDurumu(alan.anahtar);
   const programlar = p.ozetler.filter((o) => o.program.alanlar.includes(alan.anahtar));
-  const oneriler = ONERILER.filter((o) => o.alan === alan.anahtar);
+  const gizli = useSorgu(['ayar', 'kutuphane'], (o) => gizliOneriler(o), []).veri ?? new Set<string>();
+  const oneriler = tumOneriler().filter(
+    (o) => o.alanlar.includes(alan.anahtar) && !gizli.has(oneriAnahtari('program', o.id)),
+  );
+  const oneriKartlar = oneriKartlari().filter(
+    (c) => c.alanlar.includes(alan.anahtar) && !gizli.has(oneriAnahtari('kart', c.id)),
+  );
   const programFormu = useProgramFormu((id) => router.push({ pathname: '/yasam/program/[id]', params: { id } }));
   const ozel = ozelMi(alan.anahtar);
   const [duzenle, setDuzenle] = useState<{ ad: string; aciklama: string } | null>(null);
@@ -171,13 +180,13 @@ function AlanIcerigi({ alan, p }: { alan: Alan; p: ReturnType<typeof usePrograml
 
       <Dugme tur="vurgu" etiket="+ Yeni program" onPress={() => programFormu.ac({ tur: 'yeni', alan: alan.anahtar })} />
 
-      {oneriler.length > 0 && (
+      {oneriler.length + oneriKartlar.length > 0 && (
         <>
           <View style={stiller.paketBasligi}>
             <Yazi tur="bolumBasligi" accessibilityRole="header">
               Rites önerileri
             </Yazi>
-            <Yazi tur="ikincil">Hazır programlar. Programlarına ekleyip istediğin gibi değiştirebilirsin.</Yazi>
+            <Yazi tur="ikincil">Hazır programlar ve kartlar. Kendine alıp istediğin gibi değiştirebilirsin.</Yazi>
           </View>
           <View style={stiller.liste}>
             {oneriler.map((o) => (
@@ -190,7 +199,19 @@ function AlanIcerigi({ alan, p }: { alan: Alan; p: ReturnType<typeof usePrograml
               >
                 <Yazi tur="kartBasligi">{o.ad}</Yazi>
                 <Yazi>{o.aciklama}</Yazi>
-                <Yazi tur="ikincil">{`${sureMetni(o.sure)} · ${o.kartlar.length} kart`}</Yazi>
+                <Yazi tur="ikincil">{`Program · ${sureMetni(o.sure)} · ${o.kartlar.length} kart`}</Yazi>
+              </Pressable>
+            ))}
+            {oneriKartlar.map((c) => (
+              <Pressable
+                key={c.id}
+                onPress={() => router.push({ pathname: '/yasam/oneri/[id]', params: { id: c.id, tur: 'kart' } })}
+                accessibilityRole="button"
+                accessibilityLabel={`${c.baslik}, kart, ${icerikMetaMetni(c)}`}
+                style={({ pressed }) => [stiller.paket, pressed && { opacity: 0.75 }]}
+              >
+                <Yazi kalinlik="kalin">{c.baslik}</Yazi>
+                <Yazi tur="ikincil">{['Kart', c.tur, icerikMetaMetni(c)].filter(Boolean).join(' · ')}</Yazi>
               </Pressable>
             ))}
           </View>

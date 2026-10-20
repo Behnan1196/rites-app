@@ -4,7 +4,7 @@
 
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Linking, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
@@ -12,21 +12,17 @@ import { Katman } from '@/bilesen/Katman';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { OnayKutusu } from '@/bilesen/OnayKutusu';
 import { usePaylas } from '@/bilesen/paylasim/PaylasSayfasi';
-import { Bolum } from '@/bilesen/Secim';
 import { renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import {
-  blokBasligi,
   etiketMetni,
-  icerikMetaMetni,
   kayitAltMetni,
   kayitPaketi,
   kutuphanedenKart,
   type KartIcerigi,
-  type KutuphaneBlogu,
 } from '@/mantik/kutuphane';
 import { useSorgu } from '@/veri/kancalar';
-import { BuyutulebilirFoto } from '@/bilesen/kart/BuyutulebilirFoto';
+import { KartIcerigiGorunumu } from '@/bilesen/kutuphane/KartIcerigi';
 import { yeniKartKaydet } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
 import { kutuphaneKaydiOku, kutuphanedenCikar } from '@/veri/kutuphane';
@@ -161,49 +157,7 @@ export default function KayitAyrintisi() {
   );
 }
 
-/** Kartın içeriği, salt okunur: meta, kısa açıklama, bloklar. */
-function KartIcerigiGorunumu({ c }: { c: KartIcerigi }) {
-  const meta = icerikMetaMetni(c);
-  return (
-    <>
-      {!!meta && <Yazi tur="ikincil">{meta}</Yazi>}
-      {!!c.kisa && <Yazi>{c.kisa}</Yazi>}
-      {c.bloklar.map((b, i) => (
-        <BlokGorunumu key={i} b={b} />
-      ))}
-    </>
-  );
-}
-
-function BlokGorunumu({ b }: { b: KutuphaneBlogu }) {
-  switch (b.tur) {
-    case 'talimat':
-      return b.metin ? <Yazi>{b.metin}</Yazi> : null;
-    case 'liste':
-    case 'adimlar':
-      return (
-        <Bolum>
-          <Yazi kalinlik="kalin">{b.ad || (b.tur === 'adimlar' ? 'Proje adımları' : 'Liste')}</Yazi>
-          {b.maddeler.map((m, i) => (
-            <Yazi key={i}>{`• ${m}`}</Yazi>
-          ))}
-        </Bolum>
-      );
-    case 'video':
-      return /^https?:\/\//i.test(b.metin) ? (
-        <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Videoyu aç" onPress={() => void Linking.openURL(b.metin)} />
-      ) : (
-        <Yazi tur="ikincil">Video</Yazi>
-      );
-    case 'foto':
-      return b.dosya ? <BuyutulebilirFoto uri={b.dosya} style={stiller.foto} etiket="Fotoğraf" /> : null;
-    default:
-      return <Yazi tur="ikincil">{blokBasligi(b)}</Yazi>;
-  }
-}
-
 const stiller = StyleSheet.create({
   ust: { gap: 2 },
   eylemler: { gap: 10, marginTop: 8 },
-  foto: { width: '100%', aspectRatio: 4 / 3, borderRadius: 12 },
 });
