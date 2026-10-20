@@ -1,11 +1,9 @@
 // Kütüphanem: yerel veritabanı (`03` → kutuphane).
 
 import type { AlanAnahtari } from '@/mantik/alanlar';
-import { KENDIM, planIcerigi, turMu, type KutuphaneKaydi } from '@/mantik/kutuphane';
-import type { Plan } from '@/mantik/plan';
+import { turMu, type KutuphaneKaydi } from '@/mantik/kutuphane';
 
 import type { Kapi, Okuyucu } from './kapi';
-import { kartAyrinti, planKartlari } from './kartlar';
 
 interface Satir {
   id: string;
@@ -30,8 +28,8 @@ function satirdan(s: Satir): KutuphaneKaydi | null {
       paylasilabilir: s.paylasilabilir === 1,
       olusturma: s.olusturma,
     } as const;
-    const icerik = JSON.parse(s.icerik);
-    return s.tur === 'plan' ? { ...ortak, tur: 'plan', icerik } : { ...ortak, tur: 'kart', icerik };
+    if (s.tur !== 'kart') return null;
+    return { ...ortak, tur: 'kart', icerik: JSON.parse(s.icerik) };
   } catch (e) {
     console.warn('Kütüphane kaydı okunamadı', s.id, e);
     return null;
@@ -84,31 +82,4 @@ export function kutuphaneyeKaydet(kapi: Kapi, k: KutuphaneKaydi, ajandadanKaldir
 
 export function kutuphanedenCikar(kapi: Kapi, id: string): Promise<void> {
   return kapi.yaz(['kutuphane'], (y) => y.calistir('DELETE FROM kutuphane WHERE id = ?', [id]));
-}
-
-/** "Planı kütüphaneye kaydet" (L-3): planın ve kartlarının kayıtsız kopyası; plan sürer. */
-export async function planiKutuphaneyeKaydet(
-  kapi: Kapi,
-  oku: Okuyucu,
-  plan: Plan,
-  id: string,
-  simdi: string = new Date().toISOString(),
-): Promise<void> {
-  const kartlar = await planKartlari(oku, plan.id);
-  const ayrintilar = [];
-  for (const k of kartlar) {
-    const a = await kartAyrinti(oku, k.id);
-    if (a) ayrintilar.push(a);
-  }
-  await kutuphaneyeKaydet(kapi, {
-    id,
-    tur: 'plan',
-    baslik: plan.ad,
-    alanlar: [plan.alan],
-    etiketTur: 'Rutin',
-    kaynak: KENDIM,
-    paylasilabilir: false,
-    olusturma: simdi,
-    icerik: planIcerigi(plan, ayrintilar),
-  });
 }

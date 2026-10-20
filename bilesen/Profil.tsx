@@ -168,7 +168,7 @@ function ProfilSayfasi({ ad, gorunur, onKapat }: { ad: string; gorunur: boolean;
           ? {
               baslik: "Rites'taki kaydın silinsin mi?",
               aciklama:
-                'Kişilerinle bağlantıların ve sana gelenler sunucudan silinir; bu geri alınamaz. Telefondaki ajandan, notların ve planların da silinsin mi?',
+                'Kişilerinle bağlantıların ve sana gelenler sunucudan silinir; bu geri alınamaz. Telefondaki ajandan, notların ve programların da silinsin mi?',
               secenekler: [
                 { etiket: 'Sil, telefondakiler kalsın', tur: 'tehlike', onPress: () => void hesabiSil(false) },
                 { etiket: 'Sil, telefondakiler de silinsin', tur: 'tehlike', onPress: () => void hesabiSil(true) },

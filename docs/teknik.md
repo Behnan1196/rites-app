@@ -41,6 +41,8 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 11 | `animsatici.bitis` ("Süre sonra"nın çalacağı an, ISO); `animsatici.gunler` artık hafta günü listesi (JSON, 0 = Pzt); eski `hergun / haftaici / haftasonu` okurken çevrilir |
 | 12 | `kart.sira` görünen sırayla yeniden numaralanır (saat, sonra eski sıra); ajanda artık yalnız `sira`ya göre dizilir. Yeni kartın sırası `yeniKartKaydet` içinde `yeniKartSirasi` ile verilir; sürüklemede `siraDegisikligi` (komşuların ortası) → `siralariYaz` |
 | 13 | `kart.bag`: kartın bir grup etkinliğine bağı (`bulusma:<id>\|<gün>\|<saat>`); kaynağı `grup` olan kart (grubun adı `gelen_kimden`de) |
+| 14 | `animsatici.ses` (bildirim sesi; null = telefonun sesi) |
+| 15 | Planlar yerine **programlar**: pilottaki planlar, kartları ve kütüphanedeki plan kopyaları silinir; `plan` ve `soru_cevap` kalkar. Yeni: `program` (ad, alanlar JSON, neden, süre gün / null, durum `hazir\|uygulaniyor\|ara\|bitti`, son başlangıç, yıldız, değerlendirme, kaynak), `program_kart` (programın kartı: gün = başlangıçtan kaç gün sonra, saat, hatırlatma, alarm, tekrar, bloklar JSON). `alan_durumu`na `ad`, `aciklama`, `sira` (kişinin eklediği alan, anahtar `ozel-<id>`). `kart.plan_id` artık programı gösterir |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 
@@ -53,12 +55,12 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Tek JSON dosyası, adı `rites-yedek-YYYY-AA-GG.json`, parolasız.
 - Alanlar:
   - `bicim`: `"rites-yedek"`
-  - `surum`: veritabanı göç sürümü (şu an 11)
+  - `surum`: veritabanı göç sürümü (şu an 15)
   - `olusturma`: ISO zaman
   - `dosyaKlasoru`: yedeği alan telefondaki dosya klasörü (geri yüklemede yollar yeni klasöre çevrilir)
   - `tablolar`: `{ tabloAdı: satır[] }` — satırlar SQLite sütun adlarıyla; JSON sütunlar metin olarak
   - `dosyalar`: `{ dosyaAdı: base64 }` — fotoğraf, ses, belge
-- Yedeğe giren tablolar: `ayar, kart, blok, kayit, not, plan, alan_durumu, soru_cevap, animsatici, animsatici_gun, kisi, kutuphane, paylasilan`.
+- Yedeğe giren tablolar: `ayar, kart, blok, kayit, not, program, program_kart, alan_durumu, animsatici, animsatici_gun, kisi, kutuphane, paylasilan`. Sürüm 15'ten eski yedek geri yüklenirken plan kartları (ve blok / kayıtları) ile kütüphanedeki plan kopyaları alınmaz (`eskiPlanlariAyikla`).
 - Geri yükleme tek işlemdir: telefondaki veriler silinir, yedektekiler yazılır; eski sürümden yedekte olmayan sütunlar varsayılanını alır; daha yeni sürümün yedeği reddedilir.
 
 ## Derleme ve dağıtım
@@ -152,4 +154,14 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - `bildirim_tetik()` tetikleyicisi gelen, baglanti, grup_uye, grup_is, bulusma, karar, rutin, nobet tablolarında; `bildirim_gonder(alicilar, baslik, govde, veri)` açık jetonlara tek istekte (en çok 100) `net.http_post` ile `https://exp.host/--/api/v2/push/send`. `pg_net` yoksa (yerel deneme) gönderilmez; gönderim hatası asıl yazmayı bozmaz. Yerel denemede `net.http_post`'un sahtesi istekleri bir tabloya yazar.
 - Bildirimin `data.tur = 'gelen'`; dokununca `BildirimYoneticisi` Gelenler'i açar.
 - Apple'a gönderim için EAS'ta bir kez bildirim anahtarı (APNs key) kurulur; Expo'nun bildirim servisi anahtarsız ("enhanced security" kapalı) kullanılır.
+
+## Programlar (telefon)
+
+- Mantık `mantik/program.ts`, veri `veri/programlar.ts`, ekranlar `app/(sekmeler)/yasam/` (`index`, `alan/[alan]`, `program/[id]`, `oneri/[id]`, `kutuphane/`), parçalar `bilesen/yasam/` (`useProgramlar`, `ProgramFormu`, `ProgramSayfalari`).
+- Programın kartı `program_kart`ta durur. **Başlat** (`programBaslat`): her kart için `ajandaKarti` → ajandaya kart; `kart.plan_id = program`, `kart.bag = program:<programKartı>`; gün `başlangıç + gün`, tekrarlının bitişi programın son günü (`programBitisi`).
+- Uygulanırken programa kart eklenince (`programKartiEkle`) o günden itibaren ajandaya düşer. Ajandada kart düzenlenince (`KartFormu` → `programaYansit`; "yalnız bu gün" hariç) programdaki karşılığı da değişir. Ajandadaki bir kart "⋯ → Programa ekle" ile (`karttanProgramaEkle`) uygulanan programa bağlanır, öbürlerine kopyalanır.
+- **Ara ver / Bitir / Sil / programdan kart çıkar:** `durdurmaFarki` → bugünden önce başlamış dizilerin bitişi dün, gelecekteki ve bugünün yapılmamış kartları silinir; kalanların bağı kopar (geçmiş kayıtları durur). Süresi geçen program ekranda "bitti" sayılır (`etkinDurum`), değerlendirilince kapanır.
+- Kart formu programın kartında tarih yerine "N. gün" gösterir (`ProgramGunu`; formun içinde sabit bir Pazartesi 1. gün sayılır); tekrar programla biter ("Kaç gün sürecek?" sorulmaz).
+- Kişinin alanları açılışta ve her `alanDurumlari` okumasında `ozelAlanlariAyarla` ile `mantik/alanlar`a bildirilir (`alanAdi` her yerde bilir).
+- Rites önerileri `ONERILER` (`mantik/alanlar` hazır paketlerinden); "Programlarıma ekle" kopyasını `kaynak = Rites önerisi` ile kurar.
 

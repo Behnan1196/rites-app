@@ -227,6 +227,50 @@ export const GOCLER: readonly Goc[] = [
     surum: 14,
     sql: `ALTER TABLE animsatici ADD COLUMN ses TEXT;`,
   },
+  {
+    // Planlar yerine Programlar (pilot 20 Ekim). Ürün sahibinin kararıyla pilottaki
+    // planlar, kartları ve kütüphanedeki plan kopyaları silinir. Kartın `plan_id`si
+    // artık programı gösterir. Kişi kendi alanını ekleyebilir (`alan_durumu.ad`).
+    surum: 15,
+    sql: `
+      DELETE FROM kayit WHERE kart_id IN (SELECT id FROM kart WHERE plan_id IS NOT NULL);
+      DELETE FROM blok WHERE kart_id IN (SELECT id FROM kart WHERE plan_id IS NOT NULL);
+      DELETE FROM kart WHERE plan_id IS NOT NULL;
+      DELETE FROM kutuphane WHERE tur = 'plan';
+      DROP TABLE IF EXISTS soru_cevap;
+      DROP TABLE IF EXISTS plan;
+      CREATE TABLE IF NOT EXISTS program (
+        id            TEXT PRIMARY KEY NOT NULL,
+        ad            TEXT NOT NULL,
+        alanlar       TEXT NOT NULL DEFAULT '[]',
+        neden         TEXT NOT NULL DEFAULT '',
+        sure          INTEGER,
+        durum         TEXT NOT NULL DEFAULT 'hazir',
+        baslangic     TEXT,
+        yildiz        INTEGER NOT NULL DEFAULT 0,
+        degerlendirme TEXT NOT NULL DEFAULT '',
+        kaynak        TEXT NOT NULL DEFAULT 'Kendim',
+        olusturma     TEXT NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS program_kart (
+        id         TEXT PRIMARY KEY NOT NULL,
+        program_id TEXT NOT NULL REFERENCES program (id) ON DELETE CASCADE,
+        sira       REAL NOT NULL DEFAULT 0,
+        gun        INTEGER NOT NULL DEFAULT 0,
+        baslik     TEXT NOT NULL,
+        kisa       TEXT NOT NULL DEFAULT '',
+        saat       TEXT,
+        hatirlatma TEXT,
+        alarm      INTEGER NOT NULL DEFAULT 0,
+        tekrar     TEXT,
+        bloklar    TEXT NOT NULL DEFAULT '[]'
+      );
+      CREATE INDEX IF NOT EXISTS program_kart_program ON program_kart (program_id, gun, sira);
+      ALTER TABLE alan_durumu ADD COLUMN ad TEXT;
+      ALTER TABLE alan_durumu ADD COLUMN aciklama TEXT NOT NULL DEFAULT '';
+      ALTER TABLE alan_durumu ADD COLUMN sira REAL NOT NULL DEFAULT 0;
+    `,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

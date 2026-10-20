@@ -1,14 +1,14 @@
 # Ürün
 
-_Son güncelleme: 14 Ekim 2026_
+_Son güncelleme: 20 Ekim 2026_
 
 ## Rites nedir?
 
-Rites, kişinin gününü ve kendine iyi bakma alışkanlıklarını tek yerde tuttuğu bir ajandadır. Ad **rituals**tan gelir: başlangıçta alışkanlık kazandırmaya odaklıydı; tasarım ilerledikçe **yaşam tarzına** (hayatın alanları ve onlar için planlar) genişledi.
+Rites, kişinin gününü ve kendine iyi bakma alışkanlıklarını tek yerde tuttuğu bir ajandadır. Ad **rituals**tan gelir: başlangıçta alışkanlık kazandırmaya odaklıydı; tasarım ilerledikçe **yaşam tarzına** (hayatın alanları ve kişinin denediği programlar) genişledi.
 
-- **Giriş:** her şeyin özeti; kişinin açıp kapatabildiği ve sıraladığı kutular (Hızlı Not, Gelenler, Bugün sırada, Anımsatıcılar, Devam edenler, Günün sorusu, Ortak Listeler).
+- **Giriş:** her şeyin özeti; kişinin açıp kapatabildiği ve sıraladığı kutular (Hızlı Not, Gelenler, Bugün sırada, Anımsatıcılar, Devam edenler).
 - **Ajandam:** günün işleri. Tek tip kart; içine istenen kadar blok (talimat, video, liste, proje adımları, fotoğraf, dosya, zamanlayıcı, ölçüm, günün notu, gelişim fotoğrafı). Tekrar, seri, günlük kayıt.
-- **Yaşam Tarzım:** dokuz alan (Hareket, Beslenme, Uyku, Zihin, Anlam, Sosyal bağlar, Öğrenme, İş, Uğraşlar), alan puanı ve her alanda **planlar** (düzenli kartlar ve/veya adımlar). Kütüphanem.
+- **Yaşam Tarzım:** kişinin gördüğü, okuduğu, denemek istediği pratikleri **programa** çevirdiği yer. Program, adı olan ve uygulanabilen bir kart topluluğudur (ör. "Evde direnç egzersizi": araştırma videosu ve notlar 1. gün, haftada üç gün çalışma, her gün kreatin); süreli ("3 hafta") ya da süresiz (alışkanlık). Başlatınca kartlar ajandaya düşer; ara verilir, bitirilir, sonra yeniden başlatılır; uygulanınca 1–5 yıldızla değerlendirilir. Programlar **alanlarla** etiketlenir: dokuz hazır alan (Hareket, Beslenme, Uyku, Zihin, Anlam, Sosyal bağlar, Öğrenme, İş, Uğraşlar) yol gösterir, kişi kendi alanını ekler. Alan puanı kişinin kendi değerlendirmesidir (programlardan bağımsız); alanların asıl işi dengeyi hatırlatmaktır. **Kütüphanem:** programlar (yıldızlarıyla), saklanan kartlar, Rites önerileri (hazır programlar). İş projeleri programda değil, kartın "Proje adımları" bloğunda yürür.
 - **Gruplar:** gruplar ve grupta birlikte yapılanlar (yanıt bekleyenler üyenin Gelenler'ine düşer; "+ Ekle": Yapılacak, Buluşma, Birlikte rutin; Diğer: Nöbet, Oylama): buluşma (Geliyorum / Belki / Gelemem; gelenin ajandasına düşer), ortak listeler (maddeye Kime? / Ne zaman?); birlikte rutin (haftada N kez; kişi kişi bu haftaki sayı); nöbet / sıra (sırası gelenin ajandasına düşer); iş (herkese aç ya da birinden iste; alanın ajandasına düşer); karar / oylama (gün oylamasından buluşma). Kişilerim (bağlantı isteği, davet).
 
 ## Kimin için?

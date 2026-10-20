@@ -1,4 +1,6 @@
 // Kart formu (alttan sayfa): yeni kart ve düzenleme (K-1, K-4, K-6, K-11, K-14).
+// Programın kartı da bu formla yazılır (pilot 20 Ekim): tarih yerine "N. gün";
+// uygulanan programın ajandadaki kartı düzenlenince programdaki karşılığı da değişir.
 
 import { useCallback, useMemo, useState } from 'react';
 import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
@@ -6,26 +8,41 @@ import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
 import { adimDurumu, adimlariEsle } from '@/mantik/adimlar';
 import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Kart } from '@/mantik/kart';
-import type { Gun } from '@/mantik/tarih';
+import {
+  blokKopyasi,
+  kacinciGun,
+  programBagCoz,
+  uygulaniyorMu,
+  type Program,
+  type ProgramKarti,
+} from '@/mantik/program';
+import { gunEkle, gunFarki, type Gun } from '@/mantik/tarih';
 import { islemleriUygula, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
+import { programaYansit, programKartiEkle, programKartiSil, programKartiYaz } from '@/veri/programlar';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { AltSayfa } from '../AltSayfa';
 import { GirisAlani } from '../GirisAlani';
+import { Dugme } from '../Dugme';
 import { useKisaMesaj } from '../KisaMesaj';
 import type { OnaySecenegi } from '../OnayKutusu';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 import { BlokDuzenleyici } from './BlokDuzenleyici';
 import { BlokSecici } from './BlokSecici';
-import { ZamanlamaCubugu, ZamanlamaPaneli, type Zamanlama, type ZamanlamaBolmesi } from './Zamanlama';
+import { ZamanlamaCubugu, ZamanlamaPaneli, type ProgramGunu, type Zamanlama, type ZamanlamaBolmesi } from './Zamanlama';
 
 export type KartFormuHedefi =
   /** `taslak`: başka uygulamadan paylaşılan videodan dolu gelen yeni kart. */
   | { tur: 'yeni'; gun: Gun; taslak?: { baslik: string; videoAdresi: string } }
-  | { tur: 'duzenle'; kart: Kart; bloklar: readonly Blok[]; gun: Gun };
+  | { tur: 'duzenle'; kart: Kart; bloklar: readonly Blok[]; gun: Gun }
+  /** Programın kartı; `kart` null ise yeni. */
+  | { tur: 'sablon'; program: Program; kart: ProgramKarti | null; bugunGun: Gun };
+
+/** Programın kartında "1. gün" sayılan sabit gün (yalnız formun içinde; Pazartesi). */
+const SABLON_REF: Gun = '2001-01-01';
 
 export interface KartFormuSonucu {
   /** Düzenlenen gün yeni bir karta geçtiyse onun kimliği. */
@@ -78,6 +95,25 @@ function bosBlok(tur: BlokTuru): BlokTaslagi {
 }
 
 function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
+  if (hedef.tur === 'sablon') {
+    const k = hedef.kart;
+    const p = hedef.program;
+    // Uygulanırken eklenen kart bugünden başlar.
+    const bugunku = uygulaniyorMu(p, hedef.bugunGun) ? Math.max(0, (kacinciGun(p, hedef.bugunGun) ?? 1) - 1) : 0;
+    return {
+      baslik: k?.baslik ?? '',
+      kisa: k?.kisa ?? '',
+      tarihsiz: false,
+      zamanlama: {
+        tarih: gunEkle(SABLON_REF, k ? k.gun : bugunku),
+        saat: k?.saat ?? null,
+        hatirlatma: k?.hatirlatma ?? null,
+        alarm: k?.alarm ?? false,
+        tekrar: k?.tekrar ?? null,
+      },
+      bloklar: (k?.bloklar ?? []).map((b) => formaBlok({ ...b, id: geciciKimlik(), kartId: '', sira: 0 })),
+    };
+  }
   if (hedef.tur === 'yeni') {
     return {
       baslik: '',
@@ -114,7 +150,7 @@ interface Ozellikler {
 }
 
 export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
-  const { kapi } = useVeri();
+  const { kapi, oku } = useVeri();
   const bugunGun = useBugun();
   const kisaMesaj = useKisaMesaj();
 
@@ -136,6 +172,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     [durum, ilk, hedef],
   );
   const duzenleme = hedef.tur === 'duzenle' ? hedef : null;
+  const sablon = hedef.tur === 'sablon' ? hedef : null;
+  const programGunu: ProgramGunu | null = sablon ? { ref: SABLON_REF, sure: sablon.program.sure } : null;
 
   const guncelle = (alanlar: Partial<FormDurumu>) => setDurum((d) => ({ ...d, ...alanlar }));
   const blokDegis = (i: number, b: BlokTaslagi) =>
@@ -191,7 +229,22 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     calistir(async () => {
       setSoru(null);
       const bloklar = durum.bloklar.map(kaydaBlok);
-      if (!duzenleme) {
+      if (sablon) {
+        const t = tanim();
+        const icerik = {
+          gun: Math.max(0, gunFarki(SABLON_REF, durum.zamanlama.tarih)),
+          baslik: t.baslik,
+          kisa: t.kisa,
+          saat: t.saat,
+          hatirlatma: t.hatirlatma,
+          alarm: !!t.alarm,
+          tekrar: t.tekrar,
+          bloklar: bloklar.map(blokKopyasi),
+        };
+        if (sablon.kart) await programKartiYaz(kapi, { ...sablon.kart, ...icerik });
+        else await programKartiEkle(kapi, sablon.program.id, icerik, sablon.bugunGun, yeniKimlik);
+        onSonuc?.({});
+      } else if (!duzenleme) {
         const kart = yeniKart(yeniKimlik(), { ...tanim(), sira: 0 });
         await yeniKartKaydet(kapi, kart, bloklar, yeniKimlik);
         onSonuc?.({});
@@ -199,6 +252,10 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         const sonuc = duzenle(duzenleme.kart, duzenleme.gun, tanim(), secim, yeniKimlik);
         await islemleriUygula(kapi, sonuc.islemler, bloklar, yeniKimlik);
         const eklenen = sonuc.islemler.find((i) => i.tur === 'kartEkle');
+        // Uygulanan programın kartı: programdaki karşılığı da değişir ("yalnız bu gün" hariç).
+        if (programBagCoz(duzenleme.kart.bag) && secim !== 'yalnizBuGun') {
+          await programaYansit(kapi, oku, eklenen?.tur === 'kartEkle' ? eklenen.kart.id : duzenleme.kart.id);
+        }
         if (sonuc.mesaj) kisaMesaj(sonuc.mesaj);
         onSonuc?.({ yeniKartId: eklenen?.tur === 'kartEkle' ? eklenen.kart.id : undefined });
       }
@@ -228,7 +285,9 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       <AltSayfa
         gorunur={gorunur}
         onKapat={onKapat}
-        baslik={duzenleme ? 'Kartı düzenle' : 'Yeni kart'}
+        baslik={
+          sablon ? (sablon.kart ? 'Programın kartı' : 'Programa yeni kart') : duzenleme ? 'Kartı düzenle' : 'Yeni kart'
+        }
         solVazgec
         degisti={degisti}
         onay={onay}
@@ -241,12 +300,14 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               onAc={bolmeAc}
               tarihYok={durum.tarihsiz}
               acik={altSayfa}
+              programGunu={programGunu}
             />
             <ZamanlamaPaneli
               acik={altSayfa}
               deger={durum.zamanlama}
               bugunGun={bugunGun}
               tarihYok={durum.tarihsiz}
+              programGunu={programGunu}
               onDegis={(zamanlama) =>
                 guncelle({
                   zamanlama,
@@ -268,7 +329,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           placeholder="Ne yapacaksın?"
           hata={hata}
           returnKeyType="done"
-          autoFocus={!duzenleme}
+          autoFocus={!duzenleme && !sablon?.kart}
         />
         <GirisAlani
           etiket="Kısa açıklama"
@@ -303,6 +364,21 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
             + Blok ekle
           </Yazi>
         </Pressable>
+
+        {sablon?.kart && (
+          <Dugme
+            tur="tehlike"
+            etiket="Programdan çıkar"
+            onPress={() =>
+              void calistir(async () => {
+                await programKartiSil(kapi, sablon.kart!.id, sablon.bugunGun);
+                kisaMesaj('Programdan çıkarıldı');
+                onSonuc?.({ silindi: true });
+                onKapat();
+              })
+            }
+          />
+        )}
       </AltSayfa>
 
       <BlokSecici

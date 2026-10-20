@@ -8,8 +8,7 @@ import { YEDEK_TABLOLARI } from '@/mantik/yedek';
 import { gocleriUygula } from '../gocler';
 import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
 import { isaretle, tumKartlar, yeniKartKaydet } from '../kartlar';
-import { kutuphaneKaydiOku, kutuphanedenCikar, kutuphaneSayisi, kutuphaneyeKaydet, kutuphaneyiOku, planiKutuphaneyeKaydet } from '../kutuphane';
-import { planBaslat, planlariOku } from '../planlar';
+import { kutuphaneKaydiOku, kutuphanedenCikar, kutuphaneSayisi, kutuphaneyeKaydet, kutuphaneyiOku } from '../kutuphane';
 import { yayinOlustur, type Konu } from '../yayin';
 import { sqljsVeriTabani } from './sqljsVeriTabani';
 
@@ -56,22 +55,6 @@ it('"Ajandamdan kaldır": kart, blokları ve kayıtları aynı işlemde silinir'
   expect(await oku.hepsi('SELECT * FROM blok')).toEqual([]);
   expect(await oku.hepsi('SELECT * FROM kayit')).toEqual([]);
   expect(duyurulan).toEqual([['kart', 'kutuphane']]);
-});
-
-it('planın kopyası kartları ve bloklarıyla kaydedilir; plan sürer', async () => {
-  const plan = { id: 'p1', ad: 'Sabah', alan: 'hareket' as const, kaynak: 'kendim' as const, neden: '', hedef: '', baslangic: '2026-10-01', bitis: '2026-10-29', baslangicPuani: 2, gununSorusu: null, durum: 'etkin' as const };
-  await planBaslat(kapi, {
-    plan,
-    duzenliler: [{ kart: yeniKart('k1', { baslik: 'Yürüyüş', tarih: '2026-10-01', tekrar: { gunSayisi: null, gunler: null, desen: 'hergun' }, planId: 'p1' }), bloklar: [{ id: 'x', tur: 'video', ad: '', metin: 'https://v', birim: '', dakika: null, maddeler: [], dosya: null }] }],
-    adimlar: [yeniKart('k2', { baslik: 'Rota seç', tarihsiz: true, planId: 'p1', sira: 1 })],
-  }, idUret);
-  await planiKutuphaneyeKaydet(kapi, oku, plan, 'L9', '2026-10-13T10:00:00Z');
-  const k = await kutuphaneKaydiOku(oku, 'L9');
-  expect(k?.tur).toBe('plan');
-  if (k?.tur !== 'plan') return;
-  expect(k.alanlar).toEqual(['hareket']);
-  expect(k.icerik.kartlar.map((c) => [c.baslik, c.gun, c.bloklar.length])).toEqual([['Yürüyüş', 0, 1], ['Rota seç', null, 0]]);
-  expect((await planlariOku(oku)).map((p) => p.durum)).toEqual(['etkin']);
 });
 
 it('yedeğe girer', () => {

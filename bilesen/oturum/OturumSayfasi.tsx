@@ -185,7 +185,7 @@ function OturumSayfasi({ gorunur, onKapat }: { gorunur: boolean; onKapat: () => 
         <Katman>
           <OnayKutusu
             baslik="Telefondaki bütün veriler silinsin mi?"
-            aciklama="Ajandan, notların, planların, anımsatıcıların ve kişilerin bu telefondan silinir. Yedeğin varsa sonra geri yükleyebilirsin."
+            aciklama="Ajandan, notların, programların, anımsatıcıların ve kişilerin bu telefondan silinir. Yedeğin varsa sonra geri yükleyebilirsin."
             secenekler={[
               {
                 etiket: 'Sil',

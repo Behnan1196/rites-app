@@ -1,22 +1,34 @@
-// Alan ekranı (Y-1): puan, "ilerlemek istiyorum", planlar, + Yeni plan, hazır paketler.
+// Alan ekranı (pilot 20 Ekim): puan (kişinin kendi değerlendirmesi; programlardan
+// bağımsız), "ilerlemek istiyorum", bu alana etiketli programlar, + Yeni program,
+// Rites önerileri. Kişinin eklediği alan yeniden adlandırılır ya da silinir.
 
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { AltSayfa } from '@/bilesen/AltSayfa';
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
+import { GirisAlani } from '@/bilesen/GirisAlani';
+import { Katman } from '@/bilesen/Katman';
+import { useKisaMesaj } from '@/bilesen/KisaMesaj';
+import { OnayKutusu } from '@/bilesen/OnayKutusu';
 import { AcKapa, Bolum } from '@/bilesen/Secim';
 import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
-import { AlanSimgesi, PlanSatiri } from '@/bilesen/yasam/parcalar';
-import { usePlanlar } from '@/bilesen/yasam/usePlanlar';
-import { alanBul, HAZIR_ORNEK_METNI, PUAN_SOZLERI, type Alan } from '@/mantik/alanlar';
-import { alanDurumuYaz, varsayilanAlanDurumu } from '@/veri/planlar';
+import { AlanSimgesi, ProgramSatiri } from '@/bilesen/yasam/parcalar';
+import { useProgramFormu } from '@/bilesen/yasam/ProgramFormu';
+import { useProgramlar } from '@/bilesen/yasam/useProgramlar';
+import { alanAdiHatasi, ozelMi, PUAN_SOZLERI, type Alan } from '@/mantik/alanlar';
+import { ONERILER, sureMetni, yildizMetni } from '@/mantik/program';
+import { alanDurumuYaz, ozelAlanSil, ozelAlanYaz, varsayilanAlanDurumu } from '@/veri/programlar';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 export default function AlanEkrani() {
   const { alan: anahtar } = useLocalSearchParams<{ alan: string }>();
-  const alan = alanBul(anahtar ?? '');
+  const p = useProgramlar();
+  const alan = p.alanlar.find((a) => a.anahtar === anahtar);
+  if (p.yukleniyor) return <EkranKabi geri="Yaşam Tarzım" />;
   if (!alan) {
     return (
       <EkranKabi geri="Yaşam Tarzım">
@@ -24,19 +36,51 @@ export default function AlanEkrani() {
       </EkranKabi>
     );
   }
-  return <AlanIcerigi alan={alan} />;
+  return <AlanIcerigi alan={alan} p={p} />;
 }
 
-function AlanIcerigi({ alan }: { alan: Alan }) {
+function AlanIcerigi({ alan, p }: { alan: Alan; p: ReturnType<typeof useProgramlar> }) {
   const { kapi } = useVeri();
-  const { yukleniyor, ozetler, durumlar } = usePlanlar();
-  const durum = durumlar?.get(alan.anahtar) ?? varsayilanAlanDurumu(alan.anahtar);
-  const planlar = ozetler
-    .filter((o) => o.plan.alan === alan.anahtar)
-    .sort((a, b) => (a.plan.durum === b.plan.durum ? 0 : a.plan.durum === 'etkin' ? -1 : 1));
+  const kisaMesaj = useKisaMesaj();
+  const durum = p.durumlar?.get(alan.anahtar) ?? varsayilanAlanDurumu(alan.anahtar);
+  const programlar = p.ozetler.filter((o) => o.program.alanlar.includes(alan.anahtar));
+  const oneriler = ONERILER.filter((o) => o.alan === alan.anahtar);
+  const programFormu = useProgramFormu((id) => router.push({ pathname: '/yasam/program/[id]', params: { id } }));
+  const ozel = ozelMi(alan.anahtar);
+  const [duzenle, setDuzenle] = useState<{ ad: string; aciklama: string } | null>(null);
+  const [adHatasi, setAdHatasi] = useState<string | null>(null);
+  const [silSorusu, setSilSorusu] = useState(false);
 
-  const yeniPlan = (paket?: string) =>
-    router.push({ pathname: '/yasam/yeni-plan', params: paket ? { alan: alan.anahtar, paket } : { alan: alan.anahtar } });
+  const duzenlemeyiKaydet = async () => {
+    if (!duzenle) return;
+    const h = alanAdiHatasi(
+      duzenle.ad,
+      p.alanlar.filter((a) => a.anahtar !== alan.anahtar),
+    );
+    if (h) {
+      setAdHatasi(h);
+      return;
+    }
+    try {
+      await ozelAlanYaz(kapi, alan.anahtar, duzenle.ad, duzenle.aciklama);
+      setDuzenle(null);
+    } catch (e) {
+      console.warn(e);
+      kisaMesaj('Kaydedilemedi. Yeniden dene.');
+    }
+  };
+
+  const sil = async () => {
+    setSilSorusu(false);
+    try {
+      await ozelAlanSil(kapi, alan.anahtar);
+      kisaMesaj(`Alan silindi: ${alan.ad}`);
+      router.back();
+    } catch (e) {
+      console.warn(e);
+      kisaMesaj('Silinemedi. Yeniden dene.');
+    }
+  };
 
   return (
     <EkranKabi geri="Yaşam Tarzım">
@@ -46,42 +90,51 @@ function AlanIcerigi({ alan }: { alan: Alan }) {
           <Yazi tur="ekranBasligi" accessibilityRole="header">
             {alan.ad}
           </Yazi>
-          <Yazi tur="ikincil">{alan.aciklama}</Yazi>
+          {!!alan.aciklama && <Yazi tur="ikincil">{alan.aciklama}</Yazi>}
         </View>
       </View>
 
       <Bolum>
         <Yazi kalinlik="kalin">Bu alanda kendini nasıl hissediyorsun?</Yazi>
         <View style={stiller.puanlar} accessibilityRole="radiogroup">
-          {[1, 2, 3, 4, 5].map((p) => {
-            const secili = durum.puan === p;
+          {[1, 2, 3, 4, 5].map((n) => {
+            const secili = durum.puan === n;
             return (
               <Pressable
-                key={p}
-                onPress={() => void alanDurumuYaz(kapi, alan.anahtar, { puan: p })}
+                key={n}
+                onPress={() => void alanDurumuYaz(kapi, alan.anahtar, { puan: n })}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: secili }}
-                accessibilityLabel={`${p}, ${PUAN_SOZLERI[p]}`}
+                accessibilityLabel={`${n}, ${PUAN_SOZLERI[n]}`}
                 style={({ pressed }) => [stiller.puan, secili && stiller.puanSecili, pressed && { opacity: 0.75 }]}
               >
                 <Yazi tur="bolumBasligi" renk={secili ? renk.yuzey : renk.yazi}>
-                  {String(p)}
+                  {String(n)}
                 </Yazi>
               </Pressable>
             );
           })}
         </View>
         <View style={stiller.uclar} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-          <Yazi tur="ikincil" kalinlik={durum.puan === 1 ? 'kalin' : 'normal'} renk={durum.puan === 1 ? renk.ana : renk.ikincil}>
+          <Yazi
+            tur="ikincil"
+            kalinlik={durum.puan === 1 ? 'kalin' : 'normal'}
+            renk={durum.puan === 1 ? renk.ana : renk.ikincil}
+          >
             {PUAN_SOZLERI[1]}
           </Yazi>
           <Yazi tur="ikincil" kalinlik="kalin" renk={renk.ana} style={stiller.orta}>
             {durum.puan >= 2 && durum.puan <= 4 ? PUAN_SOZLERI[durum.puan] : ''}
           </Yazi>
-          <Yazi tur="ikincil" kalinlik={durum.puan === 5 ? 'kalin' : 'normal'} renk={durum.puan === 5 ? renk.ana : renk.ikincil}>
+          <Yazi
+            tur="ikincil"
+            kalinlik={durum.puan === 5 ? 'kalin' : 'normal'}
+            renk={durum.puan === 5 ? renk.ana : renk.ikincil}
+          >
             {PUAN_SOZLERI[5]}
           </Yazi>
         </View>
+        <Yazi tur="ikincil">Puan senin değerlendirmen; program uygulamadan da verebilirsin.</Yazi>
       </Bolum>
 
       <Bolum style={stiller.satir}>
@@ -95,52 +148,106 @@ function AlanIcerigi({ alan }: { alan: Alan }) {
         />
       </Bolum>
 
-      {!yukleniyor && planlar.length > 0 && (
+      {programlar.length > 0 && (
         <>
           <Yazi tur="bolumBasligi" accessibilityRole="header">
-            Planlar
+            Programlar
           </Yazi>
           <View style={stiller.liste}>
-            {planlar.map((o) => (
-              <PlanSatiri
-                key={o.plan.id}
-                ad={o.plan.ad}
-                meta={o.meta}
-                hap={o.plan.durum === 'bitti' ? 'Bitti' : o.ilerleme}
-                bitti={o.plan.durum === 'bitti'}
-                onPress={() => router.push({ pathname: '/yasam/plan/[id]', params: { id: o.plan.id } })}
+            {programlar.map((o) => (
+              <ProgramSatiri
+                key={o.program.id}
+                ad={o.program.ad}
+                meta={o.durumMetni}
+                hap={o.bugun}
+                soluk={o.durum !== 'uygulaniyor'}
+                yildiz={yildizMetni(o.program.yildiz)}
+                onPress={() => router.push({ pathname: '/yasam/program/[id]', params: { id: o.program.id } })}
               />
             ))}
           </View>
         </>
       )}
 
-      <Dugme etiket="+ Yeni plan" onPress={() => yeniPlan()} />
+      <Dugme tur="vurgu" etiket="+ Yeni program" onPress={() => programFormu.ac({ tur: 'yeni', alan: alan.anahtar })} />
 
-      {alan.paketler.length > 0 && (
+      {oneriler.length > 0 && (
         <>
           <View style={stiller.paketBasligi}>
             <Yazi tur="bolumBasligi" accessibilityRole="header">
-              Hazır paketler
+              Rites önerileri
             </Yazi>
-            <Yazi tur="ikincil">{HAZIR_ORNEK_METNI}</Yazi>
+            <Yazi tur="ikincil">Hazır programlar. Programlarına ekleyip istediğin gibi değiştirebilirsin.</Yazi>
           </View>
           <View style={stiller.liste}>
-            {alan.paketler.map((p) => (
+            {oneriler.map((o) => (
               <Pressable
-                key={p.id}
-                onPress={() => yeniPlan(p.id)}
+                key={o.id}
+                onPress={() => router.push({ pathname: '/yasam/oneri/[id]', params: { id: o.id } })}
                 accessibilityRole="button"
-                accessibilityLabel={`${p.ad}, ${p.aciklama}, ${p.hafta} hafta`}
+                accessibilityLabel={`${o.ad}, ${o.aciklama}, ${sureMetni(o.sure)}`}
                 style={({ pressed }) => [stiller.paket, pressed && { opacity: 0.75 }]}
               >
-                <Yazi tur="kartBasligi">{p.ad}</Yazi>
-                <Yazi>{p.aciklama}</Yazi>
-                <Yazi tur="ikincil">{`${p.hafta} hafta · ${p.etkinlikler.length} etkinlik`}</Yazi>
+                <Yazi tur="kartBasligi">{o.ad}</Yazi>
+                <Yazi>{o.aciklama}</Yazi>
+                <Yazi tur="ikincil">{`${sureMetni(o.sure)} · ${o.kartlar.length} kart`}</Yazi>
               </Pressable>
             ))}
           </View>
         </>
+      )}
+
+      {ozel && (
+        <View style={stiller.ozelEylemler}>
+          <Dugme
+            tur="ikincil"
+            yaziRengi={renk.ana}
+            etiket="Alanı düzenle"
+            onPress={() => setDuzenle({ ad: alan.ad, aciklama: alan.aciklama })}
+          />
+          <Dugme tur="tehlike" etiket="Alanı sil" onPress={() => setSilSorusu(true)} />
+        </View>
+      )}
+
+      {programFormu.oge}
+
+      <AltSayfa
+        gorunur={duzenle !== null}
+        onKapat={() => setDuzenle(null)}
+        baslik="Alanı düzenle"
+        solVazgec
+        sagEylem={{ etiket: 'Kaydet', onPress: () => void duzenlemeyiKaydet() }}
+      >
+        <GirisAlani
+          etiket="Alanın adı"
+          value={duzenle?.ad ?? ''}
+          onChangeText={(ad) => {
+            setDuzenle((d) => (d ? { ...d, ad } : d));
+            setAdHatasi(null);
+          }}
+          hata={adHatasi}
+          returnKeyType="done"
+        />
+        <GirisAlani
+          etiket="Kısa açıklama (isteğe bağlı)"
+          value={duzenle?.aciklama ?? ''}
+          onChangeText={(aciklama) => setDuzenle((d) => (d ? { ...d, aciklama } : d))}
+          placeholder="Örneğin: Sebze, çiçek, kompost"
+          returnKeyType="done"
+        />
+      </AltSayfa>
+
+      {silSorusu && (
+        <Katman>
+          <OnayKutusu
+            baslik={`"${alan.ad}" alanı silinsin mi?`}
+            aciklama="Programların ve kartların silinmez; yalnız bu etiket kalkar."
+            secenekler={[
+              { etiket: 'Alanı sil', tur: 'tehlike', onPress: () => void sil() },
+              { etiket: 'Vazgeç', tur: 'yazi', onPress: () => setSilSorusu(false) },
+            ]}
+          />
+        </Katman>
       )}
     </EkranKabi>
   );
@@ -174,4 +281,5 @@ const stiller = StyleSheet.create({
     padding: olcu.kartIci,
     gap: 4,
   },
+  ozelEylemler: { gap: 10, marginTop: 8 },
 });

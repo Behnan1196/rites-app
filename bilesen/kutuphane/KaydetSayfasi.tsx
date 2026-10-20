@@ -5,7 +5,7 @@
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ALANLAR, type AlanAnahtari } from '@/mantik/alanlar';
+import { tumAlanlar, type AlanAnahtari } from '@/mantik/alanlar';
 import type { Blok, Kart } from '@/mantik/kart';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import {
@@ -37,8 +37,8 @@ export type Kaydedilen =
       tur: 'kart';
       kart: Kart;
       bloklar: readonly Pick<Blok, 'tur' | 'ad' | 'metin' | 'birim' | 'dakika' | 'maddeler' | 'dosya'>[];
-      /** Plan kartında planın alanı. */
-      alan: AlanAnahtari | null;
+      /** Program kartında programın alanları. */
+      alanlar: readonly AlanAnahtari[];
     }
   | { tur: 'gelen'; gelen: Gelen }
   /** Başka uygulamadan paylaşılan bağlantı (Gelenler'de, telefonda). */
@@ -57,7 +57,7 @@ function hazirla(h: Kaydedilen): Hazirlik {
   if (h.tur === 'kart') {
     return {
       icerik: kartIcerigi(h.kart, h.bloklar),
-      alanlar: h.alan ? [h.alan] : [],
+      alanlar: [...h.alanlar],
       etiketTur: turTahmini(h.bloklar),
       kaynak: kaynakMetni(h.kart),
       kaldirilacak: h.kart.planId || h.kart.kilitli ? null : h.kart,
@@ -74,7 +74,7 @@ function hazirla(h: Kaydedilen): Hazirlik {
     };
   }
   const p = h.gelen.paket;
-  const bilinen = new Set<string>(ALANLAR.map((a) => a.anahtar));
+  const bilinen = new Set<string>(tumAlanlar().map((a) => a.anahtar));
   return {
     icerik: paketIcerigi(p),
     alanlar: (p.alanlar ?? []).filter((a): a is AlanAnahtari => bilinen.has(a)),
@@ -112,7 +112,9 @@ function KaydetSayfasi({
           id: yeniKimlik(),
           tur: 'kart',
           baslik: h.icerik.baslik,
-          alanlar: ALANLAR.map((a) => a.anahtar).filter((a) => alanlar.includes(a)),
+          alanlar: tumAlanlar()
+            .map((a) => a.anahtar)
+            .filter((a) => alanlar.includes(a)),
           etiketTur: tur,
           kaynak: h.kaynak,
           paylasilabilir: true,
@@ -149,7 +151,7 @@ function KaydetSayfasi({
       <Bolum>
         <Yazi kalinlik="kalin">Hangi alanlarla ilgili?</Yazi>
         <View style={stiller.cipler}>
-          {ALANLAR.map((a) => (
+          {tumAlanlar().map((a) => (
             <SecenekHapi
               key={a.anahtar}
               etiket={a.ad}

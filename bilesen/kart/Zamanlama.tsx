@@ -18,7 +18,7 @@ import {
   type OzelHatirlatma,
   type Tekrar,
 } from '@/mantik/kart';
-import { GUN_KISA, gunEkle, uzunTarih, type Gun, type GunKisa } from '@/mantik/tarih';
+import { GUN_KISA, gunEkle, gunFarki, uzunTarih, type Gun, type GunKisa } from '@/mantik/tarih';
 
 import { AyTakvimi } from '../AyTakvimi';
 import { Dugme } from '../Dugme';
@@ -40,6 +40,20 @@ export interface Zamanlama {
 
 type IkonAdi = ComponentProps<typeof Ionicons>['name'];
 
+/**
+ * Programın kartı (pilot 20 Ekim): tarih yerine programın kaçıncı günü. `ref`
+ * programın 1. günü sayılan gündür; `tarih - ref` gün sayısını verir.
+ */
+export interface ProgramGunu {
+  ref: Gun;
+  /** Programın süresi (gün); süresizde null. */
+  sure: number | null;
+}
+
+export function programGunuMetni(pg: ProgramGunu, tarih: Gun): string {
+  return `${gunFarki(pg.ref, tarih) + 1}. gün`;
+}
+
 // ---- Çubuk -------------------------------------------------------------------
 
 export function ZamanlamaCubugu({
@@ -48,6 +62,7 @@ export function ZamanlamaCubugu({
   onAc,
   tarihYok = false,
   acik = null,
+  programGunu = null,
 }: {
   deger: Zamanlama;
   bugunGun: Gun;
@@ -56,13 +71,19 @@ export function ZamanlamaCubugu({
   acik?: ZamanlamaBolmesi | null;
   /** Tarihsiz plan adımı: tarih bölmesi boş görünür. */
   tarihYok?: boolean;
+  /** Programın kartı: tarih yerine "N. gün". */
+  programGunu?: ProgramGunu | null;
 }) {
   const bolmeler: { k: ZamanlamaBolmesi; ad: string; ikon: IkonAdi; deger: string | null }[] = [
     {
       k: 'tarih',
-      ad: 'Tarih',
+      ad: programGunu ? 'Gün' : 'Tarih',
       ikon: 'calendar-outline',
-      deger: tarihYok ? null : kisaGoreliTarih(deger.tarih, bugunGun),
+      deger: tarihYok
+        ? null
+        : programGunu
+          ? programGunuMetni(programGunu, deger.tarih)
+          : kisaGoreliTarih(deger.tarih, bugunGun),
     },
     { k: 'saat', ad: 'Saat', ikon: 'time-outline', deger: deger.saat },
     {
@@ -127,6 +148,7 @@ interface SayfaOzellikleri {
   bugunGun: Gun;
   onDegis: (z: Zamanlama) => void;
   onAc: (b: ZamanlamaBolmesi | null) => void;
+  programGunu?: ProgramGunu | null;
 }
 
 const BOLME_BASLIGI: Record<ZamanlamaBolmesi, string> = {
@@ -141,10 +163,27 @@ const BOLME_BASLIGI: Record<ZamanlamaBolmesi, string> = {
  * alttan açılan sayfalar klavyenin altında kalıyordu). "Tamam" ya da aynı bölmeye
  * yeniden dokunmak kapatır.
  */
-export function ZamanlamaPaneli({ acik, deger, bugunGun, onDegis, onAc, tarihYok = false }: SayfaOzellikleri) {
+export function ZamanlamaPaneli({
+  acik,
+  deger,
+  bugunGun,
+  onDegis,
+  onAc,
+  tarihYok = false,
+  programGunu = null,
+}: SayfaOzellikleri) {
   const alarm = useAlarmDestegi();
   if (!acik) return null;
-  const baslik = acik === 'tarih' && deger.tekrar ? 'Başlangıç tarihi' : BOLME_BASLIGI[acik];
+  const baslik =
+    acik === 'tarih' && programGunu
+      ? deger.tekrar
+        ? 'Programın kaçıncı gününden'
+        : 'Programın kaçıncı günü'
+      : acik === 'tarih' && deger.tekrar
+        ? 'Başlangıç tarihi'
+        : BOLME_BASLIGI[acik];
+  const pgGun = programGunu ? gunFarki(programGunu.ref, deger.tarih) : 0;
+  const pgSon = programGunu?.sure ? programGunu.sure - 1 : 365;
   return (
     <View style={stiller.panel}>
       <View style={stiller.panelUst}>
@@ -158,7 +197,42 @@ export function ZamanlamaPaneli({ acik, deger, bugunGun, onDegis, onAc, tarihYok
         contentContainerStyle={stiller.panelIcerikKap}
         keyboardShouldPersistTaps="handled"
       >
-        {acik === 'tarih' && (
+        {acik === 'tarih' && programGunu && (
+          <>
+            <View style={stiller.alarmSatiri}>
+              <Yazi kalinlik="kalin" style={stiller.esnek}>
+                {`${Math.floor(pgGun / 7) + 1}. hafta · ${(pgGun % 7) + 1}. gün`}
+              </Yazi>
+              <ArtiEksi
+                deger={String(pgGun + 1)}
+                onEksi={() => onDegis({ ...deger, tarih: gunEkle(programGunu.ref, Math.max(0, pgGun - 1)) })}
+                onArti={() => onDegis({ ...deger, tarih: gunEkle(programGunu.ref, Math.min(pgSon, pgGun + 1)) })}
+                eksiEtiket="Bir gün önce"
+                artiEtiket="Bir gün sonra"
+              />
+            </View>
+            <View style={stiller.haplar}>
+              {[0, 7, 14]
+                .filter((g) => g <= pgSon)
+                .map((g) => (
+                  <SecenekHapi
+                    key={g}
+                    etiket={g === 0 ? '1. gün' : `${g / 7 + 1}. hafta`}
+                    secili={pgGun === g}
+                    onPress={() => onDegis({ ...deger, tarih: gunEkle(programGunu.ref, g) })}
+                    style={stiller.esit}
+                  />
+                ))}
+            </View>
+            <Yazi tur="ikincil">
+              {deger.tekrar
+                ? 'Tekrar bu günden başlar; süreli programda program bitince durur.'
+                : 'Programı başlattığın gün 1. gündür.'}
+            </Yazi>
+          </>
+        )}
+
+        {acik === 'tarih' && !programGunu && (
           <>
             <View style={stiller.haplar}>
               <SecenekHapi
@@ -267,7 +341,13 @@ export function ZamanlamaPaneli({ acik, deger, bugunGun, onDegis, onAc, tarihYok
           </>
         )}
 
-        {acik === 'tekrar' && <TekrarAyari tekrar={deger.tekrar} onDegis={(tekrar) => onDegis({ ...deger, tekrar })} />}
+        {acik === 'tekrar' && (
+          <TekrarAyari
+            tekrar={deger.tekrar}
+            onDegis={(tekrar) => onDegis({ ...deger, tekrar })}
+            programda={!!programGunu}
+          />
+        )}
       </ScrollView>
     </View>
   );
@@ -402,8 +482,18 @@ function seciliGunler(tekrar: Tekrar): GunKisa[] {
   return [...GUN_KISA];
 }
 
-function TekrarAyari({ tekrar, onDegis }: { tekrar: Tekrar | null; onDegis: (t: Tekrar | null) => void }) {
-  const ac = (acik: boolean) => onDegis(acik ? { gunSayisi: VARSAYILAN_GUN, gunler: null, desen: null } : null);
+function TekrarAyari({
+  tekrar,
+  onDegis,
+  programda = false,
+}: {
+  tekrar: Tekrar | null;
+  onDegis: (t: Tekrar | null) => void;
+  /** Programın kartı: tekrar programla birlikte biter; "Kaç gün sürecek?" sorulmaz. */
+  programda?: boolean;
+}) {
+  const ac = (acik: boolean) =>
+    onDegis(acik ? { gunSayisi: programda ? null : VARSAYILAN_GUN, gunler: null, desen: null } : null);
 
   if (!tekrar) {
     return (
@@ -429,23 +519,28 @@ function TekrarAyari({ tekrar, onDegis }: { tekrar: Tekrar | null; onDegis: (t: 
         <AcKapa acik onDegis={ac} etiket="Tekrar etsin" />
       </View>
       <Bolum>
-        <View style={stiller.satir}>
-          <Yazi>Kaç gün sürecek?</Yazi>
-          <ArtiEksi
-            deger={sayi === null ? 'Süresiz' : String(sayi)}
-            bos={sayi === null}
-            onEksi={() => sayi !== null && onDegis({ ...tekrar, gunSayisi: Math.max(1, sayi - 1) })}
-            onArti={() => onDegis({ ...tekrar, gunSayisi: sayi === null ? 7 : sayi + 1 })}
-            eksiEtiket="Bir gün azalt"
-            artiEtiket="Bir gün artır"
-          />
-        </View>
-        <SecenekHapi
-          etiket="Süresiz (bitiş yok)"
-          secili={sayi === null}
-          onPress={() => onDegis({ ...tekrar, gunSayisi: null })}
-          style={stiller.solaYasli}
-        />
+        {programda && tekrar.gunSayisi === null && <Yazi tur="ikincil">Program bitince tekrar da biter.</Yazi>}
+        {(!programda || tekrar.gunSayisi !== null) && (
+          <>
+            <View style={stiller.satir}>
+              <Yazi>Kaç gün sürecek?</Yazi>
+              <ArtiEksi
+                deger={sayi === null ? 'Süresiz' : String(sayi)}
+                bos={sayi === null}
+                onEksi={() => sayi !== null && onDegis({ ...tekrar, gunSayisi: Math.max(1, sayi - 1) })}
+                onArti={() => onDegis({ ...tekrar, gunSayisi: sayi === null ? 7 : sayi + 1 })}
+                eksiEtiket="Bir gün azalt"
+                artiEtiket="Bir gün artır"
+              />
+            </View>
+            <SecenekHapi
+              etiket="Süresiz (bitiş yok)"
+              secili={sayi === null}
+              onPress={() => onDegis({ ...tekrar, gunSayisi: null })}
+              style={stiller.solaYasli}
+            />
+          </>
+        )}
         <Yazi>Hangi günler?</Yazi>
         <View style={stiller.gunler}>
           {GUN_KISA.map((g) => (

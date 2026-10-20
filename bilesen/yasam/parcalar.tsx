@@ -1,5 +1,5 @@
-// Yaşam Tarzım'ın küçük parçaları: alan simgesi, puan noktaları, plan satırı,
-// ilerleme hapı, bilgi kutusu, ilerleme çubuğu.
+// Yaşam Tarzım'ın küçük parçaları: alan simgesi, puan noktaları, program satırı,
+// ilerleme hapı, bilgi kutusu, ilerleme çubuğu, yıldız seçici.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
@@ -7,12 +7,12 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { AlanAnahtari } from '@/mantik/alanlar';
 
-import { olcu, renk } from '../tema';
+import { kaynakRenk, olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 
 type IkonAdi = ComponentProps<typeof Ionicons>['name'];
 
-const ALAN_IKONU: Record<AlanAnahtari, IkonAdi> = {
+const ALAN_IKONU: Record<string, IkonAdi> = {
   hareket: 'walk-outline',
   beslenme: 'nutrition-outline',
   uyku: 'moon-outline',
@@ -32,7 +32,7 @@ export function AlanSimgesi({ alan, buyuk = false }: { alan: AlanAnahtari; buyuk
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <Ionicons name={ALAN_IKONU[alan]} size={buyuk ? 34 : 26} color={renk.ana} />
+      <Ionicons name={ALAN_IKONU[alan] ?? 'leaf-outline'} size={buyuk ? 34 : 26} color={renk.ana} />
     </View>
   );
 }
@@ -58,27 +58,33 @@ export function IlerlemeHapi({ metin, soluk = false }: { metin: string; soluk?: 
   );
 }
 
-/** Planlarım ve Alan ekranındaki plan satırı. */
-export function PlanSatiri({
+/** Programlarım, Alan ekranı ve Kütüphanem'deki program satırı. */
+export function ProgramSatiri({
   ad,
   meta,
   hap,
-  bitti = false,
+  soluk = false,
+  yildiz = '',
   onPress,
 }: {
   ad: string;
   meta: string;
-  hap: string;
-  bitti?: boolean;
+  hap?: string | null;
+  soluk?: boolean;
+  /** "★★★★☆" */
+  yildiz?: string;
   onPress: () => void;
 }) {
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${ad}, ${meta}, ${hap}`}
+      accessibilityLabel={[ad, meta, hap, yildiz ? `${yildiz.split('★').length - 1} yıldız` : null]
+        .filter(Boolean)
+        .join(', ')}
       style={({ pressed }) => [stiller.planSatiri, pressed && { opacity: 0.75 }]}
     >
+      <View style={stiller.serit} />
       <View style={stiller.esnek}>
         <Yazi tur="kartBasligi" numberOfLines={2}>
           {ad}
@@ -86,9 +92,47 @@ export function PlanSatiri({
         <Yazi tur="ikincil" numberOfLines={2}>
           {meta}
         </Yazi>
+        {!!yildiz && (
+          <Yazi kalinlik="kalin" renk={renk.vurguYazi} importantForAccessibility="no">
+            {yildiz}
+          </Yazi>
+        )}
       </View>
-      <IlerlemeHapi metin={hap} soluk={bitti} />
+      {!!hap && <IlerlemeHapi metin={hap} soluk={soluk} />}
     </Pressable>
+  );
+}
+
+/** 1–5 yıldız seçici (değerlendirme). */
+export function YildizSecici({
+  deger,
+  onSec,
+  sozler,
+}: {
+  deger: number;
+  onSec: (n: number) => void;
+  sozler: readonly string[];
+}) {
+  return (
+    <View style={stiller.yildizlar} accessibilityRole="radiogroup">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Pressable
+          key={i}
+          onPress={() => onSec(i)}
+          accessibilityRole="radio"
+          accessibilityState={{ selected: deger === i }}
+          accessibilityLabel={`${i} yıldız, ${sozler[i] ?? ''}`}
+          hitSlop={4}
+          style={stiller.yildiz}
+        >
+          <Ionicons
+            name={i <= deger ? 'star' : 'star-outline'}
+            size={38}
+            color={i <= deger ? renk.vurgu : renk.soluk}
+          />
+        </Pressable>
+      ))}
+    </View>
   );
 }
 
@@ -142,6 +186,9 @@ const stiller = StyleSheet.create({
     minHeight: 64,
   },
   esnek: { flex: 1, gap: 2 },
+  serit: { width: 6, alignSelf: 'stretch', borderRadius: 3, backgroundColor: kaynakRenk.plan.serit },
+  yildizlar: { flexDirection: 'row', gap: 6, justifyContent: 'center' },
+  yildiz: { minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
   bilgiKutusu: {
     width: '48.5%',
     minHeight: 84,

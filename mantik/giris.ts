@@ -59,8 +59,9 @@ export const KUTULAR: readonly KutuTanimi[] = [
   { k: 'gelenler', ad: 'Gelenler', aciklama: 'Sana gönderilenler ve gruplarından yanıt bekleyenler', hazir: true },
   { k: 'bugun', ad: 'Bugün sırada', aciklama: 'Ajandandaki sıradaki iş', hazir: true },
   { k: 'animsatici', ad: 'Anımsatıcılar', aciklama: 'Sıradaki anımsatma', hazir: true },
-  { k: 'devam', ad: 'Devam edenler', aciklama: 'Süren planların', hazir: true },
-  { k: 'soru', ad: 'Günün sorusu', aciklama: 'Planında soru varsa görünür', hazir: true },
+  { k: 'devam', ad: 'Devam edenler', aciklama: 'Uyguladığın programlar', hazir: true },
+  // Pilot 20 Ekim: Günün sorusu planla birlikte kalktı (ayarda da görünmez).
+  { k: 'soru', ad: 'Günün sorusu', aciklama: '', hazir: false },
   { k: 'su', ad: 'Su', aciklama: 'Yarım kutu · günlük bardak sayacı', hazir: false },
   // Pilot 19 Ekim: listelerin yeri grup; kutu kalktı (ayarda da görünmez).
   { k: 'ortak', ad: 'Ortak Listeler', aciklama: 'Yarım kutu · başkalarıyla listeler', hazir: false },

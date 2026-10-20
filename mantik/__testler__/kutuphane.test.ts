@@ -1,10 +1,9 @@
-import { yeniKart, type Kart } from '../kart';
+import { yeniKart } from '../kart';
 import {
   blokBasligi, etiketMetni, icerikMetaMetni, kartIcerigi, kaynakMetni, kayitAltMetni, kayitPaketi, kutuphanedenKart,
-  kutuphaneSuz, paketIcerigi, planIcerigi, planiYenidenBaslat, planKartiMetni, suzgecSecenekleri, turTahmini,
+  kutuphaneSuz, paketIcerigi, suzgecSecenekleri, turTahmini,
   type KutuphaneKaydi,
 } from '../kutuphane';
-import type { Plan } from '../plan';
 
 const BUGUN = '2026-10-13';
 let n = 0;
@@ -84,37 +83,5 @@ describe('bulmak (L-2)', () => {
     expect(p.bloklar.map((b) => b.tur)).toEqual(['liste', 'talimat']);
     expect(p.alanlar).toEqual(['beslenme']);
     expect(p.etiketTur).toBe('Tarif');
-  });
-});
-
-describe('planı kütüphaneye kaydetmek ve yeniden başlatmak (L-3)', () => {
-  const plan: Plan = { id: 'p1', ad: 'Sabah hareketi', alan: 'hareket', kaynak: 'kendim', neden: 'Enerji', hedef: 'Her sabah 20 dk', baslangic: '2026-10-01', bitis: '2026-10-29', baslangicPuani: 2, gununSorusu: { metin: 'Enerjin?', alt: 'Hiç', ust: 'Çok' }, durum: 'etkin' };
-  const duzenli: Kart = yeniKart('k1', { baslik: 'Yürüyüş', tarih: '2026-10-01', saat: '07:30', tekrar: { gunSayisi: null, gunler: null, desen: 'hergun' }, bitis: '2026-10-29', planId: 'p1', sira: 0 });
-  const adimTarihli: Kart = yeniKart('k2', { baslik: 'Ayakkabı al', tarih: '2026-10-03', planId: 'p1', sira: 1, yapildi: true });
-  const adimTarihsiz: Kart = yeniKart('k3', { baslik: 'Rota seç', tarihsiz: true, planId: 'p1', sira: 2 });
-  const icerik = planIcerigi(plan, [
-    { kart: adimTarihsiz, bloklar: [] },
-    { kart: duzenli, bloklar: [blok('video', { metin: 'https://y.t/v' })] },
-    { kart: adimTarihli, bloklar: [] },
-  ]);
-  it('kopya: süre gün olarak, kartlar plan başlangıcına göre', () => {
-    expect(icerik.sure).toBe(28);
-    expect(icerik.kartlar.map((k) => [k.baslik, k.gun])).toEqual([['Yürüyüş', 0], ['Ayakkabı al', 2], ['Rota seç', null]]);
-    expect(planKartiMetni(icerik.kartlar[0]!)).toBe('Yürüyüş · Her gün · 07:30');
-    expect(planKartiMetni(icerik.kartlar[2]!)).toBe('Adım: Rota seç');
-    expect(kayitAltMetni({ ...kayit(), tur: 'plan', icerik } as KutuphaneKaydi)).toBe('Plan · 28 gün · 3 kart');
-  });
-  it('yeniden başlat: bugünden, aynı uzunlukta; adımlar yapılmamış', () => {
-    n = 0;
-    const y = planiYenidenBaslat(icerik, BUGUN, 3, kimlik);
-    expect(y.plan).toMatchObject({ id: 'id1', ad: 'Sabah hareketi', baslangic: BUGUN, bitis: '2026-11-10', baslangicPuani: 3, durum: 'etkin', kaynak: 'kendim' });
-    expect(y.plan.gununSorusu).toEqual({ metin: 'Enerjin?', alt: 'Hiç', ust: 'Çok' });
-    expect(y.duzenliler.map((d) => [d.kart.baslik, d.kart.tarih, d.kart.bitis, d.kart.planId, d.bloklar.length])).toEqual([['Yürüyüş', BUGUN, '2026-11-10', 'id1', 1]]);
-    expect(y.adimlar.map((k) => [k.baslik, k.tarih, k.tarihsiz, k.yapildi])).toEqual([['Ayakkabı al', '2026-10-15', false, false], ['Rota seç', null, true, false]]);
-  });
-  it('bitişsiz plan', () => {
-    const p = planIcerigi({ ...plan, bitis: null }, []);
-    expect(p.sure).toBeNull();
-    expect(planiYenidenBaslat(p, BUGUN, 0, kimlik).plan.bitis).toBeNull();
   });
 });

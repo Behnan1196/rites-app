@@ -13,7 +13,6 @@ import { BugunSirada } from '@/bilesen/giris/BugunSirada';
 import { DevamEdenler } from '@/bilesen/giris/DevamEdenler';
 import { GelenlerKutusu } from '@/bilesen/giris/GelenlerKutusu';
 import { useGirisAyari, useKutuSirasi } from '@/bilesen/giris/GirisAyari';
-import { GununSorusu } from '@/bilesen/giris/GununSorusu';
 import { HizliNot } from '@/bilesen/giris/HizliNot';
 import { OrtakListelerKutusu } from '@/bilesen/giris/OrtakListelerKutusu';
 import { hazirKutular, kutuSatirlari, type KutuAnahtari } from '@/mantik/giris';
@@ -24,7 +23,7 @@ const KUTU_BILESENI: Partial<Record<KutuAnahtari, () => React.ReactNode>> = {
   bugun: () => <BugunSirada />,
   animsatici: () => <AnimsaticilarKutusu />,
   devam: () => <DevamEdenler />,
-  soru: () => <GununSorusu />,
+  soru: () => null,
   ortak: () => <OrtakListelerKutusu />,
 };
 

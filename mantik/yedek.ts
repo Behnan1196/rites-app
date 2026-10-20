@@ -15,9 +15,9 @@ export const YEDEK_TABLOLARI = [
   'blok',
   'kayit',
   'not',
-  'plan',
+  'program',
+  'program_kart',
   'alan_durumu',
-  'soru_cevap',
   'animsatici',
   'animsatici_gun',
   'kisi',
@@ -78,6 +78,26 @@ export const YEDEK_SORUNU_METNI: Record<YedekSorunu, string> = {
   bicim: 'Bu dosya bir Rites yedeği değil.',
   yeni: "Bu yedek Rites'ın daha yeni bir sürümünden. Önce uygulamayı güncelle.",
 };
+
+/** Programlardan önceki (sürüm 15'ten eski) yedekte plan kartları ve onların blok / kayıtları. */
+export const PROGRAM_SURUMU = 15;
+
+/**
+ * Eski yedekteki plan kartlarını ayıklar (göç 15'teki gibi planlar silinir);
+ * yeni yedekte satırlar olduğu gibi kalır.
+ */
+export function eskiPlanlariAyikla(yedek: Pick<YedekDosyasi, 'surum' | 'tablolar'>): Record<string, Satir[]> {
+  if (yedek.surum >= PROGRAM_SURUMU) return yedek.tablolar;
+  const planKartlari = new Set(
+    (yedek.tablolar.kart ?? []).filter((k) => k.plan_id !== null && k.plan_id !== undefined).map((k) => String(k.id)),
+  );
+  const t = { ...yedek.tablolar };
+  t.kart = (t.kart ?? []).filter((k) => !planKartlari.has(String(k.id)));
+  t.blok = (t.blok ?? []).filter((b) => !planKartlari.has(String(b.kart_id)));
+  t.kayit = (t.kayit ?? []).filter((r) => !planKartlari.has(String(r.kart_id)));
+  t.kutuphane = (t.kutuphane ?? []).filter((k) => k.tur !== 'plan');
+  return t;
+}
 
 /**
  * Yedekteki dosya yollarını yeni telefonun klasörüne çevirir. Yollar metin

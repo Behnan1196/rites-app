@@ -1,19 +1,12 @@
 // Alanlar, hazır etkinlikler ve hazır paketler (`09-hazir-icerik.md`).
-// Uygulamanın içinde sabittir; platformdan indirilmez.
+// Dokuz alan uygulamanın içinde sabittir; kişi kendi alanlarını da ekler
+// (pilot 20 Ekim; telefonda `alan_durumu`nda durur, `ozelAlanlariAyarla` ile buraya gelir).
 
 import type { Tekrar } from './kart';
 import type { GunKisa } from './tarih';
 
-export type AlanAnahtari =
-  | 'hareket'
-  | 'beslenme'
-  | 'uyku'
-  | 'zihin'
-  | 'anlam'
-  | 'sosyal'
-  | 'ogrenme'
-  | 'is'
-  | 'ugras';
+/** Hazır dokuz alanın anahtarı ya da kişinin eklediği alanın `ozel-…` anahtarı. */
+export type AlanAnahtari = string;
 
 /** Etkinliğin bloğu: plan başlatılınca kartın blokları buna göre kurulur. */
 export type EtkinlikBlogu =
@@ -68,10 +61,20 @@ export const ALANLAR: readonly Alan[] = [
       e('h1', 'Sabah esnemesi', herGun, '07:30', { tur: 'sayac', dakika: 10 }),
       e('h2', 'Tai chi, 8 hareket', herGun, '07:45', { tur: 'video' }),
       e('h3', 'Yürüyüş', gunler('Pzt', 'Çar', 'Cum'), '18:00', { tur: 'sayac', dakika: 30 }),
-      e('h4', 'Direnç egzersizi', gunler('Sal', 'Per', 'Cmt'), '18:00', { tur: 'olcum', ad: 'Tekrar sayısı', birim: 'tekrar' }),
+      e('h4', 'Direnç egzersizi', gunler('Sal', 'Per', 'Cmt'), '18:00', {
+        tur: 'olcum',
+        ad: 'Tekrar sayısı',
+        birim: 'tekrar',
+      }),
     ],
     paketler: [
-      { id: 'ph1', ad: 'Sabah hareketi', hafta: 4, aciklama: 'Her sabah esneme ve tai chi.', etkinlikler: ['h1', 'h2'] },
+      {
+        id: 'ph1',
+        ad: 'Sabah hareketi',
+        hafta: 4,
+        aciklama: 'Her sabah esneme ve tai chi.',
+        etkinlikler: ['h1', 'h2'],
+      },
       { id: 'ph2', ad: 'Yürüyüşe başla', hafta: 6, aciklama: 'Haftada üç gün 30 dakika yürüyüş.', etkinlikler: ['h3'] },
     ],
   },
@@ -235,15 +238,56 @@ export const ALANLAR: readonly Alan[] = [
 
 export const ALAN_ANAHTARLARI = ALANLAR.map((a) => a.anahtar);
 
+// ---- Kişinin kendi alanları --------------------------------------------------
+
+export interface OzelAlan {
+  anahtar: AlanAnahtari;
+  ad: string;
+  aciklama: string;
+}
+
+let ozelAlanlar: readonly OzelAlan[] = [];
+
+/** Veritabanından okununca çağrılır; `alanBul` / `alanAdi` / `tumAlanlar` bunları da bilir. */
+export function ozelAlanlariAyarla(liste: readonly OzelAlan[]): void {
+  ozelAlanlar = liste;
+}
+
+export const OZEL_ONEK = 'ozel-';
+
+export function ozelMi(anahtar: AlanAnahtari): boolean {
+  return anahtar.startsWith(OZEL_ONEK);
+}
+
+function ozeldenAlan(o: OzelAlan): Alan {
+  return { anahtar: o.anahtar, ad: o.ad, aciklama: o.aciklama, etkinlikler: [], paketler: [] };
+}
+
+/** Hazır dokuz alan, ardından kişinin eklediği alanlar. */
+export function tumAlanlar(): Alan[] {
+  return [...ALANLAR, ...ozelAlanlar.map(ozeldenAlan)];
+}
+
 export function alanBul(anahtar: string): Alan | undefined {
-  return ALANLAR.find((a) => a.anahtar === anahtar);
+  const hazir = ALANLAR.find((a) => a.anahtar === anahtar);
+  if (hazir) return hazir;
+  const o = ozelAlanlar.find((a) => a.anahtar === anahtar);
+  return o ? ozeldenAlan(o) : undefined;
+}
+
+export function alanAdiHatasi(ad: string, varOlanlar: readonly Pick<Alan, 'ad'>[]): string | null {
+  const t = ad.trim();
+  if (!t) return 'Alana bir ad ver.';
+  if (varOlanlar.some((a) => a.ad.toLocaleLowerCase('tr') === t.toLocaleLowerCase('tr')))
+    return 'Bu adla bir alan var.';
+  return null;
 }
 
 export function alanAdi(anahtar: string): string {
   return alanBul(anahtar)?.ad ?? '';
 }
 
-/** Varsayılan açık alanlar: hepsi, Öğrenme hariç. */
+/** Varsayılan açık alanlar: hepsi, Öğrenme hariç (kişinin eklediği alan açık). */
 export function varsayilanAcikMi(anahtar: AlanAnahtari): boolean {
   return anahtar !== 'ogrenme';
 }

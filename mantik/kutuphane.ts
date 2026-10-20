@@ -1,19 +1,18 @@
-// Kütüphanem (L-1 … L-4, `03` → kutuphane). Kart ya da planın kayıtsız bir kopyası
-// etiketlerle (alanlar, tür) saklanır; bulunur, bugüne yeniden eklenir, paylaşılır.
-// Plan kaydı bir kopyadır; plan sürmeye devam eder (11. görev kararı).
+// Kütüphanem (L-1 … L-4, `03` → kutuphane). Kartın kayıtsız bir kopyası etiketlerle
+// (alanlar, tür) saklanır; bulunur, bugüne yeniden eklenir, paylaşılır, bir programa
+// eklenir. Programlar kendi tablolarında durur ve Kütüphanem'de de görünür (pilot 20 Ekim).
 
 import { alanAdi, type AlanAnahtari } from './alanlar';
 import { tekrarMetni } from './gorunurluk';
 import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Hatirlatma, type Kart, type Tekrar } from './kart';
 import { trKucuk } from './metin';
 import type { KartPaketi } from './paylasim';
-import type { GununSorusu, Plan } from './plan';
-import { gunEkle, gunFarki, type Gun } from './tarih';
+import type { Gun } from './tarih';
 
 export const TURLER = ['Tarif', 'Egzersiz', 'Bilgi', 'Ölçüm', 'Rutin', 'Diğer'] as const;
 export type EtiketTuru = (typeof TURLER)[number];
 
-export type KayitTuru = 'kart' | 'plan';
+export type KayitTuru = 'kart';
 
 export interface KutuphaneBlogu {
   tur: BlokTuru;
@@ -35,22 +34,6 @@ export interface KartIcerigi {
   bloklar: KutuphaneBlogu[];
 }
 
-export interface PlanKarti extends KartIcerigi {
-  /** Planın başlangıcından kaç gün sonra; tarihsiz adımda null. */
-  gun: number | null;
-}
-
-export interface PlanIcerigi {
-  ad: string;
-  alan: AlanAnahtari;
-  neden: string;
-  hedef: string;
-  /** Planın gün olarak uzunluğu (bitiş - başlangıç); bitişsizse null. */
-  sure: number | null;
-  gununSorusu: GununSorusu | null;
-  kartlar: PlanKarti[];
-}
-
 interface Ortak {
   id: string;
   baslik: string;
@@ -62,18 +45,29 @@ interface Ortak {
   olusturma: string;
 }
 
-export type KutuphaneKaydi = (Ortak & { tur: 'kart'; icerik: KartIcerigi }) | (Ortak & { tur: 'plan'; icerik: PlanIcerigi });
+export type KutuphaneKaydi = Ortak & { tur: 'kart'; icerik: KartIcerigi };
 
 export const KENDIM = 'Kendim';
 
 type BlokBenzeri = Pick<Blok, 'tur' | 'ad' | 'metin' | 'birim' | 'dakika' | 'maddeler'> & { dosya?: string | null };
 
 function blokKopyasi(b: BlokBenzeri): KutuphaneBlogu {
-  return { tur: b.tur, ad: b.ad, metin: b.metin, birim: b.birim, dakika: b.dakika, maddeler: [...b.maddeler], dosya: b.dosya ?? null };
+  return {
+    tur: b.tur,
+    ad: b.ad,
+    metin: b.metin,
+    birim: b.birim,
+    dakika: b.dakika,
+    maddeler: [...b.maddeler],
+    dosya: b.dosya ?? null,
+  };
 }
 
 /** Kartın kayıtsız kopyası (tarih, yapıldı, değerler gitmez). */
-export function kartIcerigi(kart: Pick<Kart, 'baslik' | 'kisa' | 'saat' | 'hatirlatma' | 'tekrar'>, bloklar: readonly BlokBenzeri[]): KartIcerigi {
+export function kartIcerigi(
+  kart: Pick<Kart, 'baslik' | 'kisa' | 'saat' | 'hatirlatma' | 'tekrar'>,
+  bloklar: readonly BlokBenzeri[],
+): KartIcerigi {
   return {
     baslik: kart.baslik,
     kisa: kart.kisa,
@@ -86,7 +80,14 @@ export function kartIcerigi(kart: Pick<Kart, 'baslik' | 'kisa' | 'saat' | 'hatir
 
 /** Gelenler'den gelen paket → içerik. */
 export function paketIcerigi(p: KartPaketi): KartIcerigi {
-  return { baslik: p.baslik, kisa: p.kisa, saat: p.saat, hatirlatma: null, tekrar: p.tekrar, bloklar: p.bloklar.map(blokKopyasi) };
+  return {
+    baslik: p.baslik,
+    kisa: p.kisa,
+    saat: p.saat,
+    hatirlatma: null,
+    tekrar: p.tekrar,
+    bloklar: p.bloklar.map(blokKopyasi),
+  };
 }
 
 /** Tahmini tür (L-1): liste + talimat → Tarif; video → Egzersiz; yalnız ölçüm/talimat → Ölçüm/Bilgi. */
@@ -108,11 +109,9 @@ export function etiketMetni(k: Pick<KutuphaneKaydi, 'alanlar' | 'etiketTur'>): s
   return [...k.alanlar.map(alanAdi), k.etiketTur].join(' · ');
 }
 
-/** Listede ikinci satır: kaynak; planda "Plan · 28 gün · 4 kart". */
+/** Listede ikinci satır: kaynak. */
 export function kayitAltMetni(k: KutuphaneKaydi): string {
-  if (k.tur === 'kart') return k.kaynak;
-  const p = k.icerik;
-  return ['Plan', p.sure !== null ? `${p.sure} gün` : null, `${p.kartlar.length} kart`].filter(Boolean).join(' · ');
+  return k.kaynak;
 }
 
 export function kutuphaneSayiMetni(adet: number): string {
@@ -120,11 +119,10 @@ export function kutuphaneSayiMetni(adet: number): string {
 }
 
 function aranan(k: KutuphaneKaydi): string {
-  const kartlar = k.tur === 'kart' ? [k.icerik] : k.icerik.kartlar;
+  const kartlar = [k.icerik];
   const parcalar = [
     k.baslik,
     etiketMetni(k),
-    k.tur === 'plan' ? `${k.icerik.neden} ${k.icerik.hedef}` : '',
     ...kartlar.flatMap((c) => [c.baslik, c.kisa, ...c.bloklar.flatMap((b) => [b.ad, b.metin, ...b.maddeler])]),
   ];
   return trKucuk(parcalar.join(' '));
@@ -140,7 +138,8 @@ export interface KutuphaneSuzgeci {
 export function kutuphaneSuz(kayitlar: readonly KutuphaneKaydi[], s: KutuphaneSuzgeci): KutuphaneKaydi[] {
   const q = trKucuk(s.sorgu.trim());
   return kayitlar.filter(
-    (k) => (!s.alan || k.alanlar.includes(s.alan)) && (!s.tur || k.etiketTur === s.tur) && (!q || aranan(k).includes(q)),
+    (k) =>
+      (!s.alan || k.alanlar.includes(s.alan)) && (!s.tur || k.etiketTur === s.tur) && (!q || aranan(k).includes(q)),
   );
 }
 
@@ -154,8 +153,7 @@ export function suzgecSecenekleri(
   return { alanlar: tumAlanlar.filter((x) => a.has(x)), turler: TURLER.filter((x) => t.has(x)) };
 }
 
-export const BOS_KUTUPHANE =
-  'Henüz kütüphanende kayıt yok. Bir kartı açıp "Kütüphaneye kaydet" dediğinde burada durur.';
+export const BOS_KUTUPHANE = 'Henüz kayıtlı kartın yok. Bir kartı açıp "Kütüphaneye kaydet" dediğinde burada durur.';
 export const SUZGECTE_YOK = 'Bu süzgeçle kayıt yok.';
 
 /** Ayrıntıda blok satırı: "Liste: Malzemeler", "Talimat". */
@@ -189,7 +187,12 @@ export type YeniBlok = KutuphaneBlogu & { id: string };
  * "Bugün Ajandama ekle" (L-2): düzenlenebilir kopya; saat ve tekrar korunur,
  * dizi bugün başlar (11. görev kararı).
  */
-export function kutuphanedenKart(c: KartIcerigi, bugunGun: Gun, kimlik: () => string, sira = Date.now()): { kart: Kart; bloklar: YeniBlok[] } {
+export function kutuphanedenKart(
+  c: KartIcerigi,
+  bugunGun: Gun,
+  kimlik: () => string,
+  sira = Date.now(),
+): { kart: Kart; bloklar: YeniBlok[] } {
   return {
     kart: yeniKart(kimlik(), {
       baslik: c.baslik,
@@ -204,81 +207,8 @@ export function kutuphanedenKart(c: KartIcerigi, bugunGun: Gun, kimlik: () => st
   };
 }
 
-/** Planın kayıtsız kopyası (L-3): kartlar, planın başlangıcına göre günleriyle. */
-export function planIcerigi(plan: Plan, kartlar: readonly { kart: Kart; bloklar: readonly BlokBenzeri[] }[]): PlanIcerigi {
-  return {
-    ad: plan.ad,
-    alan: plan.alan,
-    neden: plan.neden,
-    hedef: plan.hedef,
-    sure: plan.bitis ? gunFarki(plan.baslangic, plan.bitis) : null,
-    gununSorusu: plan.gununSorusu ? { ...plan.gununSorusu } : null,
-    kartlar: [...kartlar]
-      .sort((a, b) => a.kart.sira - b.kart.sira)
-      .map(({ kart, bloklar }) => ({
-        ...kartIcerigi(kart, bloklar),
-        gun: kart.tarihsiz || !kart.tarih ? null : Math.max(0, gunFarki(plan.baslangic, kart.tarih)),
-      })),
-  };
-}
-
-export interface YenidenBaslatma {
-  plan: Plan;
-  duzenliler: { kart: Kart; bloklar: YeniBlok[] }[];
-  adimlar: Kart[];
-}
-
-/** "Planı yeniden başlat" (L-3): bugünden başlayan yeni plan; kartların günleri kayar. */
-export function planiYenidenBaslat(
-  p: PlanIcerigi,
-  bugunGun: Gun,
-  baslangicPuani: number,
-  kimlik: () => string,
-): YenidenBaslatma {
-  const planId = kimlik();
-  const bitis = p.sure !== null ? gunEkle(bugunGun, p.sure) : null;
-  const plan: Plan = {
-    id: planId,
-    ad: p.ad,
-    alan: p.alan,
-    kaynak: 'kendim',
-    neden: p.neden,
-    hedef: p.hedef,
-    baslangic: bugunGun,
-    bitis,
-    baslangicPuani,
-    gununSorusu: p.gununSorusu ? { ...p.gununSorusu } : null,
-    durum: 'etkin',
-  };
-  const duzenliler: YenidenBaslatma['duzenliler'] = [];
-  const adimlar: Kart[] = [];
-  p.kartlar.forEach((c, i) => {
-    const kart = yeniKart(kimlik(), {
-      baslik: c.baslik,
-      kisa: c.kisa,
-      tarih: c.gun === null ? null : gunEkle(bugunGun, c.gun),
-      tarihsiz: c.gun === null,
-      saat: c.saat,
-      hatirlatma: gecerliHatirlatma(c.hatirlatma, c.saat),
-      tekrar: c.tekrar ? { ...c.tekrar, gunler: c.tekrar.gunler ? [...c.tekrar.gunler] : null } : null,
-      bitis: c.tekrar ? bitis : null,
-      planId,
-      sira: i,
-    });
-    if (c.tekrar || c.bloklar.length > 0) duzenliler.push({ kart, bloklar: c.bloklar.map((b) => ({ ...blokKopyasi(b), id: kimlik() })) });
-    else adimlar.push(kart);
-  });
-  return { plan, duzenliler, adimlar };
-}
-
-/** Plan ayrıntısındaki kart satırı: "Sabah yürüyüşü · Her gün · 07:30" / "Adım: …". */
-export function planKartiMetni(c: PlanKarti): string {
-  if (c.tekrar) return [c.baslik, tekrarMetni(c.tekrar), c.saat].filter(Boolean).join(' · ');
-  return `Adım: ${c.baslik}`;
-}
-
 /** Kütüphanedeki kartı paylaşmak için paket (dosyalar gitmez; etiketler gider). */
-export function kayitPaketi(k: KutuphaneKaydi & { tur: 'kart' }): KartPaketi {
+export function kayitPaketi(k: KutuphaneKaydi): KartPaketi {
   const c = k.icerik;
   return {
     surum: 1,
@@ -288,7 +218,14 @@ export function kayitPaketi(k: KutuphaneKaydi & { tur: 'kart' }): KartPaketi {
     tekrar: c.tekrar,
     bloklar: c.bloklar
       .filter((b) => b.tur !== 'foto' && b.tur !== 'dosya')
-      .map((b) => ({ tur: b.tur, ad: b.ad, metin: b.metin, birim: b.birim, dakika: b.dakika, maddeler: [...b.maddeler] })),
+      .map((b) => ({
+        tur: b.tur,
+        ad: b.ad,
+        metin: b.metin,
+        birim: b.birim,
+        dakika: b.dakika,
+        maddeler: [...b.maddeler],
+      })),
     alanlar: [...k.alanlar],
     etiketTur: k.etiketTur,
   };

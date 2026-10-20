@@ -16,13 +16,13 @@ describe('Giriş kutuları (G-7, 05 §10)', () => {
   });
   it('yalnız yazılmış kutular ayarda; ↑ ↓ görünen komşuyla yer değiştirir', () => {
     const s = kutuSirasi(null);
-    expect(hazirKutular(s).map((a) => a.k)).toEqual(['not', 'gelenler', 'bugun', 'animsatici', 'devam', 'soru']);
-    const t = kutuTasi(s, 'devam', 1);
-    // devam, görünen komşusu soru ile yer değiştirir; görünmeyenler (su, ortak) yerinde kalır.
-    expect(t.map((a) => a.k)).toEqual(['not', 'gelenler', 'bugun', 'animsatici', 'soru', 'devam', 'su', 'ortak']);
-    expect(hazirKutular(t).map((a) => a.k)).toEqual(['not', 'gelenler', 'bugun', 'animsatici', 'soru', 'devam']);
+    expect(hazirKutular(s).map((a) => a.k)).toEqual(['not', 'gelenler', 'bugun', 'animsatici', 'devam']);
+    const t = kutuTasi(s, 'animsatici', 1);
+    // animsatici, görünen komşusu devam ile yer değiştirir; görünmeyenler (soru, su, ortak) yerinde kalır.
+    expect(t.map((a) => a.k)).toEqual(['not', 'gelenler', 'bugun', 'devam', 'animsatici', 'soru', 'su', 'ortak']);
+    expect(hazirKutular(t).map((a) => a.k)).toEqual(['not', 'gelenler', 'bugun', 'devam', 'animsatici']);
     // Son görünen aşağı inemez, ilk görünen yukarı çıkamaz.
-    expect(kutuTasi(t, 'devam', 1)).toEqual(t);
+    expect(kutuTasi(t, 'animsatici', 1)).toEqual(t);
     expect(kutuTasi(s, 'not', -1)).toEqual(s);
   });
 });

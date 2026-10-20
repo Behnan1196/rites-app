@@ -121,3 +121,7 @@ Ne dedi: "Anımsatıcılarda ayarlanan bildirimin üstüne basılı tutup gelen 
 Nerede: Anımsatıcı bildirimi; Gelenler
 Sonuç: → kararlar.md (Anımsatıcı bildirimi sadeleşti; Bildirim sesleri ve Gelenler bildirimi, sürüm 1.3.0)
 
+### P-22 · 20 Ekim 2026 · Behnan
+Ne dedi: "Yaşam Tarzı'nın şu anki karmaşıklığını iş projelerini de rutinlerle birlikte yürütebilmek istediğimden ben yarattım. Asıl amaca dönmemiz lazım." Anlattığı kullanım: kişi bir videoda direnç egzersizinin yararını görür, videoları Rites'a alır, izleyip not alır, ne yapacağına karar verir (evde egzersiz, kreatin, protein), ajandada süre tutan, ölçüm alan kartlarla 3 haftalık bir program kurar, uygular; ara vermek zorunda kalınca iyi araştırdığı programı sonra başlatmak ya da başkasıyla paylaşmak için kütüphaneye kaydeder. Sonra Sosyal bağlar için doğrudan program kurar (haftada bir eski bir arkadaşını ara, bir etkinliğe katıl), uygularken yeni kart ekler ya da ajandadaki kartı programa ekler. Alanlar yön göstermek için; puan kişinin kendi değerlendirmesi, programlara bağlı olmamalı; amaç bir konuya ağırlık verirken Sosyal bağlar gibi alanları da gözönünde tutmak. Uygulanmış programa yıldız verilsin.
+Nerede: Yaşam Tarzım, Kütüphanem
+Sonuç: → kararlar.md (Yaşam Tarzım: planlar yerine programlar)

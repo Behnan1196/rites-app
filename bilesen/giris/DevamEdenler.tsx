@@ -1,19 +1,19 @@
-// Devam edenler (PL-3): en çok 3 süren plan; her satırda sol şerit, ad,
-// sıradaki iş ve ilerleme. "Tümü ›" Yaşam Tarzım'ı açar.
+// Devam edenler: en çok 3 uygulanan program (pilot 20 Ekim; eskiden planlar);
+// her satırda sol şerit, ad, sıradaki iş ve bugünkü ilerleme. "Tümü ›" Yaşam Tarzım'ı açar.
 
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { DEVAM_EN_COK, fazlaPlanMetni, PLAN_YOK_METNI } from '@/mantik/plan';
+import { DEVAM_EN_COK, fazlaProgramMetni, PROGRAM_YOK_METNI } from '@/mantik/program';
 
 import { kaynakRenk, olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
-import { usePlanlar } from '../yasam/usePlanlar';
+import { useProgramlar } from '../yasam/useProgramlar';
 
 export function DevamEdenler() {
-  const { yukleniyor, ozetler } = usePlanlar();
+  const { yukleniyor, ozetler } = useProgramlar();
   if (yukleniyor) return null;
-  const etkinler = ozetler.filter((o) => o.plan.durum === 'etkin');
+  const etkinler = ozetler.filter((o) => o.durum === 'uygulaniyor');
   const gosterilen = etkinler.slice(0, DEVAM_EN_COK);
   const fazla = etkinler.length - gosterilen.length;
 
@@ -26,7 +26,7 @@ export function DevamEdenler() {
         <Pressable
           onPress={() => router.navigate('/yasam')}
           accessibilityRole="button"
-          accessibilityLabel="Bütün planlar: Yaşam Tarzım"
+          accessibilityLabel="Bütün programlar: Yaşam Tarzım"
           style={stiller.tumu}
           hitSlop={6}
         >
@@ -37,35 +37,37 @@ export function DevamEdenler() {
       </View>
 
       {etkinler.length === 0 ? (
-        <Yazi tur="ikincil">{PLAN_YOK_METNI}</Yazi>
+        <Yazi tur="ikincil">{PROGRAM_YOK_METNI}</Yazi>
       ) : (
         <>
           {gosterilen.map((o) => (
             <Pressable
-              key={o.plan.id}
-              onPress={() => router.push({ pathname: '/yasam/plan/[id]', params: { id: o.plan.id } })}
+              key={o.program.id}
+              onPress={() => router.push({ pathname: '/yasam/program/[id]', params: { id: o.program.id } })}
               accessibilityRole="button"
-              accessibilityLabel={`${o.plan.ad}, ${o.siradaki}, ${o.ilerleme}`}
+              accessibilityLabel={[o.program.ad, o.siradaki, o.bugun].filter(Boolean).join(', ')}
               style={({ pressed }) => [stiller.satir, pressed && { opacity: 0.75 }]}
             >
               <View style={stiller.serit} />
               <View style={stiller.esnek}>
                 <Yazi tur="kartBasligi" numberOfLines={2}>
-                  {o.plan.ad}
+                  {o.program.ad}
                 </Yazi>
                 <Yazi tur="ikincil" numberOfLines={2}>
                   {o.siradaki}
                 </Yazi>
               </View>
-              <Yazi kalinlik="kalin" style={stiller.ilerleme}>
-                {o.ilerleme}
-              </Yazi>
+              {!!o.bugun && (
+                <Yazi kalinlik="kalin" style={stiller.ilerleme}>
+                  {o.bugun}
+                </Yazi>
+              )}
             </Pressable>
           ))}
           {fazla > 0 && (
             <Pressable onPress={() => router.navigate('/yasam')} accessibilityRole="button" style={stiller.fazla}>
               <Yazi kalinlik="kalin" renk={renk.ana}>
-                {fazlaPlanMetni(fazla)}
+                {fazlaProgramMetni(fazla)}
               </Yazi>
             </Pressable>
           )}

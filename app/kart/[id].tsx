@@ -25,7 +25,10 @@ import { bosKayit, type Kart, type Kayit } from '@/mantik/kart';
 import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import { kartAyrinti, kartKayitlari, kayitDegistir } from '@/veri/kartlar';
-import { planOku } from '@/veri/planlar';
+import { karttanProgramaEkle, programOku } from '@/veri/programlar';
+import { ProgramSecSayfasi } from '@/bilesen/yasam/ProgramSayfalari';
+import { useKisaMesaj } from '@/bilesen/KisaMesaj';
+import { yeniKimlik } from '@/veri/kimlik';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
@@ -35,7 +38,9 @@ export default function KartGorunumu() {
   const bugunGun = useBugun();
   const gun: Gun = gunParam ?? bugunGun;
   const kenar = useSafeAreaInsets();
-  const { kapi } = useVeri();
+  const { kapi, oku } = useVeri();
+  const kisaMesaj = useKisaMesaj();
+  const [programSec, setProgramSec] = useState(0);
 
   const form = useKartFormu((sonuc) => {
     if (sonuc.silindi) router.back();
@@ -53,12 +58,11 @@ export default function KartGorunumu() {
     async (oku) => {
       const ayrinti = await kartAyrinti(oku, id);
       if (!ayrinti) return null;
-      const plan = ayrinti.kart.planId ? await planOku(oku, ayrinti.kart.planId) : null;
+      const program = ayrinti.kart.planId ? await programOku(oku, ayrinti.kart.planId) : null;
       return {
         ...ayrinti,
         kayitlar: await kartKayitlari(oku, id),
-        planAdi: plan?.ad ?? null,
-        planAlani: plan?.alan ?? null,
+        program,
       };
     },
     [id],
@@ -72,7 +76,18 @@ export default function KartGorunumu() {
 
   if (veri.yukleniyor || !veri.veri) return <View style={[stiller.kap, { paddingTop: kenar.top }]} />;
 
-  const { kart, bloklar, kayitlar, planAdi, planAlani } = veri.veri;
+  const { kart, bloklar, kayitlar, program } = veri.veri;
+
+  const programaEkle = async (programId: string) => {
+    setProgramSec(0);
+    try {
+      const sonuc = await karttanProgramaEkle(kapi, oku, kart.id, programId, bugunGun, yeniKimlik);
+      kisaMesaj(sonuc === 'baglandi' ? 'Kart artık programın parçası' : 'Programa eklendi');
+    } catch (e) {
+      console.warn(e);
+      kisaMesaj('Kaydedilemedi. Yeniden dene.');
+    }
+  };
   const kayit: Kayit = kayitlar.find((k) => k.tarih === gun) ?? bosKayit(kart.id, gun);
   const meta = [kart.saat, kart.tekrar ? tekrarMetni(kart.tekrar) : null].filter(Boolean).join(' · ');
   const kayitDegis = (degistir: (k: Kayit) => Kayit) => void kayitDegistir(kapi, kart.id, gun, degistir);
@@ -106,12 +121,18 @@ export default function KartGorunumu() {
             {kart.baslik}
           </Yazi>
           {!!meta && <Yazi tur="ikincil">{meta}</Yazi>}
-          {!!planAdi && (
-            <View style={stiller.planEtiketi}>
+          {!!program && (
+            <Pressable
+              onPress={() => router.push({ pathname: '/yasam/program/[id]', params: { id: program.id } })}
+              accessibilityRole="button"
+              accessibilityLabel={`Program: ${program.ad}, aç`}
+              style={stiller.planEtiketi}
+              hitSlop={8}
+            >
               <Yazi tur="etiket" kalinlik="kalin" renk={kaynakRenk.plan.yazi}>
-                {planAdi}
+                {`Program: ${program.ad} ›`}
               </Yazi>
-            </View>
+            </Pressable>
           )}
         </View>
 
@@ -143,8 +164,17 @@ export default function KartGorunumu() {
             {
               etiket: 'Kütüphaneye kaydet',
               ikon: 'bookmark-outline',
-              onPress: () => kutuphane.ac({ tur: 'kart', kart, bloklar, alan: planAlani }),
+              onPress: () => kutuphane.ac({ tur: 'kart', kart, bloklar, alanlar: program?.alanlar ?? [] }),
             },
+            ...(!kart.planId && !kart.bag && !kart.kilitli
+              ? [
+                  {
+                    etiket: 'Programa ekle',
+                    ikon: 'albums-outline' as const,
+                    onPress: () => setProgramSec((n) => n + 1),
+                  },
+                ]
+              : []),
             ...(kart.kilitli
               ? []
               : [
@@ -163,6 +193,15 @@ export default function KartGorunumu() {
       {paylas.oge}
       {kutuphane.oge}
       {kartSil.oge}
+      {programSec > 0 && (
+        <ProgramSecSayfasi
+          key={programSec}
+          baslik={kart.baslik}
+          gorunur
+          onKapat={() => setProgramSec(0)}
+          onSec={(pid) => void programaEkle(pid)}
+        />
+      )}
     </View>
   );
 }

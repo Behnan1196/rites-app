@@ -28,7 +28,7 @@ import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { maddeKarti, maddeKartiMi, maddeYapilanlari, yapilanlariBirlestir } from '@/mantik/listeler';
 import { gecerliGunMu, gunEkle, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
-import { planlariOku } from '@/veri/planlar';
+import { programlariOku } from '@/veri/programlar';
 import {
   blokMetinleri,
   gunlerinYapilanlari,
@@ -89,7 +89,7 @@ export default function Ajandam() {
     ['kart', 'plan'],
     async (oku) => ({
       kartlar: await tumKartlar(oku),
-      planAdlari: new Map((await planlariOku(oku)).map((p) => [p.id, p.ad])),
+      planAdlari: new Map((await programlariOku(oku)).map((p) => [p.id, p.ad])),
       yapilanlar: await gunlerinYapilanlari(oku, hafta[0]!, hafta[6]!),
       bloklar: aramaAcik ? await blokMetinleri(oku) : null,
     }),
@@ -218,7 +218,7 @@ export default function Ajandam() {
               }}
               onPlaniAc={(s) => {
                 setSorgu(null);
-                if (s.kart.planId) router.push({ pathname: '/yasam/plan/[id]', params: { id: s.kart.planId } });
+                if (s.kart.planId) router.push({ pathname: '/yasam/program/[id]', params: { id: s.kart.planId } });
               }}
             />
           )}

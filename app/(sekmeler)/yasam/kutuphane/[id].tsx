@@ -1,5 +1,5 @@
-// Kayıt ayrıntısı (L-2, L-3): etiketler, kaynak, içerik; kartta "Bugün Ajandama
-// ekle" (düzenlenebilir kopya), "Paylaş"; planda "Planı yeniden başlat";
+// Kayıt ayrıntısı (L-2): etiketler, kaynak, içerik; "Bugün Ajandama ekle"
+// (düzenlenebilir kopya), "Programa ekle" (pilot 20 Ekim), "Paylaş",
 // "Kütüphaneden çıkar".
 
 import { router, useLocalSearchParams } from 'expo-router';
@@ -22,8 +22,6 @@ import {
   kayitAltMetni,
   kayitPaketi,
   kutuphanedenKart,
-  planiYenidenBaslat,
-  planKartiMetni,
   type KartIcerigi,
   type KutuphaneBlogu,
 } from '@/mantik/kutuphane';
@@ -32,18 +30,20 @@ import { BuyutulebilirFoto } from '@/bilesen/kart/BuyutulebilirFoto';
 import { yeniKartKaydet } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
 import { kutuphaneKaydiOku, kutuphanedenCikar } from '@/veri/kutuphane';
-import { alanDurumlari, planBaslat } from '@/veri/planlar';
+import { programKartiEkle } from '@/veri/programlar';
+import { ProgramSecSayfasi } from '@/bilesen/yasam/ProgramSayfalari';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 export default function KayitAyrintisi() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { kapi, oku } = useVeri();
+  const { kapi } = useVeri();
   const bugunGun = useBugun();
   const kisaMesaj = useKisaMesaj();
   const paylas = usePaylas();
   const veri = useSorgu(['kutuphane'], (o) => kutuphaneKaydiOku(o, id), [id]);
   const [cikarSorusu, setCikarSorusu] = useState(false);
+  const [programSec, setProgramSec] = useState(0);
   const k = veri.veri;
 
   const hata = (e: unknown) => {
@@ -61,14 +61,28 @@ export default function KayitAyrintisi() {
     }
   };
 
-  const yenidenBaslat = async () => {
-    if (k?.tur !== 'plan') return;
+  const programaEkle = async (programId: string) => {
+    setProgramSec(0);
+    if (!k) return;
     try {
-      const puan = (await alanDurumlari(oku)).get(k.icerik.alan)?.puan ?? 0;
-      const y = planiYenidenBaslat(k.icerik, bugunGun, puan, yeniKimlik);
-      await planBaslat(kapi, y, yeniKimlik);
-      kisaMesaj('Plan yeniden başladı');
-      router.replace({ pathname: '/yasam/plan/[id]', params: { id: y.plan.id } });
+      const c = k.icerik;
+      await programKartiEkle(
+        kapi,
+        programId,
+        {
+          gun: 0,
+          baslik: c.baslik,
+          kisa: c.kisa,
+          saat: c.saat,
+          hatirlatma: c.hatirlatma,
+          alarm: false,
+          tekrar: c.tekrar,
+          bloklar: c.bloklar,
+        },
+        bugunGun,
+        yeniKimlik,
+      );
+      kisaMesaj(`Programa eklendi: ${c.baslik}`);
     } catch (e) {
       hata(e);
     }
@@ -98,30 +112,17 @@ export default function KayitAyrintisi() {
             </Yazi>
           </View>
 
-          {k.tur === 'kart' ? (
-            <KartIcerigiGorunumu c={k.icerik} />
-          ) : (
-            <>
-              {!!k.icerik.neden && <Yazi>{`Neden: ${k.icerik.neden}`}</Yazi>}
-              {!!k.icerik.hedef && <Yazi>{`Hedef: ${k.icerik.hedef}`}</Yazi>}
-              <Bolum>
-                <Yazi kalinlik="kalin">Planın kartları</Yazi>
-                {k.icerik.kartlar.length === 0 ? (
-                  <Yazi tur="ikincil">Bu planda kart yok.</Yazi>
-                ) : (
-                  k.icerik.kartlar.map((c, i) => <Yazi key={i}>{planKartiMetni(c)}</Yazi>)
-                )}
-              </Bolum>
-            </>
-          )}
+          <KartIcerigiGorunumu c={k.icerik} />
 
           <View style={stiller.eylemler}>
-            {k.tur === 'kart' ? (
-              <Dugme etiket="Bugün Ajandama ekle" onPress={() => void ajandayaEkle(k.icerik)} />
-            ) : (
-              <Dugme etiket="Planı yeniden başlat" onPress={() => void yenidenBaslat()} />
-            )}
-            {k.tur === 'kart' && k.paylasilabilir && (
+            <Dugme etiket="Bugün Ajandama ekle" onPress={() => void ajandayaEkle(k.icerik)} />
+            <Dugme
+              tur="ikincil"
+              yaziRengi={renk.ana}
+              etiket="Programa ekle"
+              onPress={() => setProgramSec((n) => n + 1)}
+            />
+            {k.paylasilabilir && (
               <Dugme
                 tur="ikincil"
                 yaziRengi={renk.ana}
@@ -138,7 +139,7 @@ export default function KayitAyrintisi() {
         <Katman>
           <OnayKutusu
             baslik={`"${k.baslik}" kütüphaneden çıkarılsın mı?`}
-            aciklama={k.tur === 'kart' ? 'Ajandandaki kopyalar yerinde kalır.' : 'Süren plan yerinde kalır.'}
+            aciklama="Ajandandaki ve programlarındaki kopyalar yerinde kalır."
             secenekler={[
               { etiket: 'Çıkar', tur: 'tehlike', onPress: () => void cikar() },
               { etiket: 'Vazgeç', tur: 'yazi', onPress: () => setCikarSorusu(false) },
@@ -147,6 +148,15 @@ export default function KayitAyrintisi() {
         </Katman>
       )}
       {paylas.oge}
+      {k && programSec > 0 && (
+        <ProgramSecSayfasi
+          key={programSec}
+          baslik={k.baslik}
+          gorunur
+          onKapat={() => setProgramSec(0)}
+          onSec={(id) => void programaEkle(id)}
+        />
+      )}
     </EkranKabi>
   );
 }

@@ -110,7 +110,7 @@ export function AramaSonuclari<T extends KaynakliKart>({
               !!s.kart.planId && (
                 <Dugme
                   tur="ikincil"
-                  etiket="Planı aç ›"
+                  etiket="Programı aç ›"
                   yaziRengi={renk.ana}
                   onPress={() => onPlaniAc(s)}
                   style={[stiller.dugme, stiller.cerceveli]}

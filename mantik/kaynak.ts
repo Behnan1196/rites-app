@@ -34,7 +34,7 @@ export function kaynakTuru(anahtar: KaynakAnahtari): KaynakTuru {
 export function kaynakAdi(anahtar: KaynakAnahtari, planAdlari: ReadonlyMap<string, string>): string {
   switch (kaynakTuru(anahtar)) {
     case 'plan':
-      return planAdlari.get(anahtar.slice(5)) ?? 'Plan';
+      return planAdlari.get(anahtar.slice(5)) ?? 'Program';
     case 'koc':
       return `${anahtar.slice(4)} (koç)`;
     case 'gelen':

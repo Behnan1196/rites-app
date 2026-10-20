@@ -5,6 +5,7 @@ import { openDatabaseAsync } from 'expo-sqlite';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import { gocleriUygula } from './gocler';
+import { ozelAlanlariOku } from './programlar';
 import { kapiOlustur, okuyucuOlustur, type HamVeriTabani, type Kapi, type Okuyucu } from './kapi';
 import { yayinOlustur, type Yayin } from './yayin';
 
@@ -39,6 +40,8 @@ export function VeriSaglayici({ children, bekleme, hata }: Ozellikler) {
         await gocleriUygula(db);
         const yayin = yayinOlustur();
         const veri: Veri = { oku: okuyucuOlustur(db), kapi: kapiOlustur(db, yayin), yayin };
+        // Kişinin eklediği alanların adları her ekranda bilinsin.
+        await ozelAlanlariOku(veri.oku).catch((e: unknown) => console.warn('Alanlar okunamadı', e));
         if (!iptal) setDurum({ tur: 'hazir', veri });
       } catch (e) {
         console.error('Veritabanı açılamadı', e);

@@ -1,7 +1,14 @@
 // Yedeğin veritabanı tarafı: bütün tabloları okur, geri yüklemede tek işlemde
 // yerine yazar. Dosyaların okunup yazılması `yedekDosyasi.ts`te.
 
-import { YEDEK_BICIMI, YEDEK_TABLOLARI, yollariCevir, type Satir, type YedekDosyasi } from '@/mantik/yedek';
+import {
+  eskiPlanlariAyikla,
+  YEDEK_BICIMI,
+  YEDEK_TABLOLARI,
+  yollariCevir,
+  type Satir,
+  type YedekDosyasi,
+} from '@/mantik/yedek';
 
 import type { Kapi, Okuyucu, SqlDeger } from './kapi';
 
@@ -33,11 +40,10 @@ export async function yedekVerisi(oku: Okuyucu, dosyaKlasoru: string): Promise<Y
 export function yedegiYaz(kapi: Kapi, yedek: YedekDosyasi, yeniKlasor: string): Promise<void> {
   return kapi.yaz(['ayar', 'kart', 'not', 'plan', 'animsatici', 'kisi', 'kutuphane', 'paylasilan'], async (y) => {
     for (const t of [...YEDEK_TABLOLARI].reverse()) await y.calistir(`DELETE FROM ${tirnak(t)}`);
+    const tablolar = eskiPlanlariAyikla(yedek);
     for (const t of YEDEK_TABLOLARI) {
-      const sutunlar = new Set(
-        (await y.hepsi<{ name: string }>(`PRAGMA table_info(${tirnak(t)})`)).map((s) => s.name),
-      );
-      const satirlar = yollariCevir(yedek.tablolar[t] ?? [], yedek.dosyaKlasoru, yeniKlasor);
+      const sutunlar = new Set((await y.hepsi<{ name: string }>(`PRAGMA table_info(${tirnak(t)})`)).map((s) => s.name));
+      const satirlar = yollariCevir(tablolar[t] ?? [], yedek.dosyaKlasoru, yeniKlasor);
       for (const s of satirlar) {
         const adlar = Object.keys(s).filter((k) => sutunlar.has(k));
         if (adlar.length === 0) continue;
