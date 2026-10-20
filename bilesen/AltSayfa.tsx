@@ -1,7 +1,8 @@
 // Alttan açılan sayfa (`06` Biçimler, `05` §12).
 //
 // - Zemin #F3F5F7, üst köşeler 24, üstte 44×5 tutamaç, arkada yarı saydam perde.
-// - Ekranın üstünden en az 54 pt boşluk kalır.
+// - Ekranın üstünden en az 54 pt boşluk kalır; klavye açıkken de (pilot 20 Ekim:
+//   uzun formda klavye sayfayı iterken başlık ve ilk alan ekranın üstünde kalıyordu).
 // - Kapatma yolları: "Vazgeç"/"Kapat" düğmesi, tutamaçtan aşağı kaydırma,
 //   perdeye dokunma, Android geri tuşu. İçinde değişiklik varsa (`degisti`)
 //   hepsi önce "Yazdıkların silinsin mi?" diye sorar.
@@ -11,6 +12,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Animated,
   BackHandler,
+  Keyboard,
   KeyboardAvoidingView,
   PanResponder,
   Platform,
@@ -83,6 +85,21 @@ export function AltSayfa({
   const [kapaniyor, setKapaniyor] = useState(false);
   const [onaySoruluyor, setOnaySoruluyor] = useState(false);
   const [kayma] = useState(() => new Animated.Value(ekranYuksekligi));
+  const [klavye, setKlavye] = useState(0);
+
+  // Klavye açıkken sayfanın en büyük yüksekliği klavye kadar küçülür; içerik kayar.
+  useEffect(() => {
+    if (!gorunur) return;
+    const ios = Platform.OS === 'ios';
+    const acildi = Keyboard.addListener(ios ? 'keyboardWillShow' : 'keyboardDidShow', (e) =>
+      setKlavye(e.endCoordinates.height),
+    );
+    const kapandi = Keyboard.addListener(ios ? 'keyboardWillHide' : 'keyboardDidHide', () => setKlavye(0));
+    return () => {
+      acildi.remove();
+      kapandi.remove();
+    };
+  }, [gorunur]);
 
   // Animasyonlar JS tarafında sürülür (useNativeDriver: false).
   //
@@ -104,11 +121,9 @@ export function AltSayfa({
       setKapaniyor(false);
       /* eslint-enable react-hooks/set-state-in-effect */
       kayma.setValue(ekranYuksekligi);
-      Animated.spring(kayma, { toValue: 0, useNativeDriver: false, bounciness: 0, speed: 16 }).start(
-        ({ finished }) => {
-          if (!finished && acikRef.current) kayma.setValue(0);
-        },
-      );
+      Animated.spring(kayma, { toValue: 0, useNativeDriver: false, bounciness: 0, speed: 16 }).start(({ finished }) => {
+        if (!finished && acikRef.current) kayma.setValue(0);
+      });
       return;
     }
     setKapaniyor(true);
@@ -193,7 +208,7 @@ export function AltSayfa({
             stiller.sayfa,
             {
               backgroundColor: zemin,
-              maxHeight: ekranYuksekligi - kenar.top - olcu.sayfaUstBosluk,
+              maxHeight: Math.max(200, ekranYuksekligi - kenar.top - olcu.sayfaUstBosluk - klavye),
               transform: [{ translateY: kayma }],
             },
           ]}
@@ -231,19 +246,14 @@ export function AltSayfa({
 
           <ScrollView
             style={stiller.icerikKaydirma}
-            contentContainerStyle={[
-              stiller.icerik,
-              !altAlan && { paddingBottom: kenar.bottom + 24 },
-            ]}
+            contentContainerStyle={[stiller.icerik, !altAlan && { paddingBottom: kenar.bottom + 24 }]}
             keyboardShouldPersistTaps="handled"
           >
             {children}
           </ScrollView>
 
           {altAlan && (
-            <View style={[stiller.altAlan, { paddingBottom: Math.max(kenar.bottom, 12) + 8 }]}>
-              {altAlan}
-            </View>
+            <View style={[stiller.altAlan, { paddingBottom: Math.max(kenar.bottom, 12) + 8 }]}>{altAlan}</View>
           )}
         </Animated.View>
 
