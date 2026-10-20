@@ -1,6 +1,6 @@
 // Program ekranı (pilot 20 Ekim): ad, alanlar, durum; Başlat / Ara ver / Bitir /
 // Yeniden başlat; programın kartları (uygulanırken bugünkü durumlarıyla); Gelişim;
-// Değerlendirme. "⋯": Programı düzenle · Programı sil.
+// Değerlendirme. Sağ üstte "Düzenle" (ad, alanlar, neden, süre); "⋯": Programı düzenle · Programı sil.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -193,7 +193,10 @@ export default function ProgramEkrani() {
       <EkranKabi
         geri="Yaşam Tarzım"
         baslikSag={
-          <SimgeDugmesi ikon="ellipsis-horizontal" etiket="Diğer işlemler" onPress={() => setMenuAcik(true)} />
+          <View style={stiller.ustSag}>
+            <Dugme tur="yazi" etiket="Düzenle" onPress={() => programFormu.ac({ tur: 'duzenle', program })} />
+            <SimgeDugmesi ikon="ellipsis-horizontal" etiket="Diğer işlemler" onPress={() => setMenuAcik(true)} />
+          </View>
         }
       >
         <View style={stiller.ust}>
@@ -461,6 +464,7 @@ function KartSatiri({
 
 const stiller = StyleSheet.create({
   ust: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  ustSag: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   esnek: { flex: 1 },
   eylemler: { gap: 10 },
   ikili: { flexDirection: 'row', gap: 10 },
