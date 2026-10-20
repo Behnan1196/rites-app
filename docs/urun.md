@@ -34,6 +34,7 @@ Sürüm 1'deki 11 görevin hepsi yapıldı (bkz. `rites-paket/01-kapsam-ve-gorev
 | Yedek için iCloud / Google Drive yönlendirme metinleri | İleride |
 | Alarm gibi çalan anımsatıcı (AlarmKit) | Kendi derlemeyle mümkün; ileride |
 | Rites'a ait alan adı ve e-posta servisi | Yayından önce gerekli (şu an Gmail SMTP) |
+| Menü ve düzenle düğmelerinin yeri (bütün ekranlarda tek düzen; başlıkla aynı hizada sağda) | Sonraya (P-23) |
 
 ## Pilot
 

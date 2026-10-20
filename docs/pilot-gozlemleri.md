@@ -125,3 +125,8 @@ Sonuç: → kararlar.md (Anımsatıcı bildirimi sadeleşti; Bildirim sesleri ve
 Ne dedi: "Yaşam Tarzı'nın şu anki karmaşıklığını iş projelerini de rutinlerle birlikte yürütebilmek istediğimden ben yarattım. Asıl amaca dönmemiz lazım." Anlattığı kullanım: kişi bir videoda direnç egzersizinin yararını görür, videoları Rites'a alır, izleyip not alır, ne yapacağına karar verir (evde egzersiz, kreatin, protein), ajandada süre tutan, ölçüm alan kartlarla 3 haftalık bir program kurar, uygular; ara vermek zorunda kalınca iyi araştırdığı programı sonra başlatmak ya da başkasıyla paylaşmak için kütüphaneye kaydeder. Sonra Sosyal bağlar için doğrudan program kurar (haftada bir eski bir arkadaşını ara, bir etkinliğe katıl), uygularken yeni kart ekler ya da ajandadaki kartı programa ekler. Alanlar yön göstermek için; puan kişinin kendi değerlendirmesi, programlara bağlı olmamalı; amaç bir konuya ağırlık verirken Sosyal bağlar gibi alanları da gözönünde tutmak. Uygulanmış programa yıldız verilsin.
 Nerede: Yaşam Tarzım, Kütüphanem
 Sonuç: → kararlar.md (Yaşam Tarzım: planlar yerine programlar)
+
+### P-23 · 20 Ekim 2026 · Behnan · iPhone
+Ne dedi: "Bir program oluşturduk, adını, etiketini tekrar nereden değiştireceğim?" (Düzenle "⋯" menüsündeydi.) "Bir ara hangi menü nerede yer alır çalışması yaparız, şu an pek standart değil; mümkünse konu başlığının hizasında sağda olabilir."
+Nerede: Program ekranı; genel olarak ekranların üst satırı
+Sonuç: Program ekranının sağ üstüne görünür "Düzenle" kondu. Menü yerleşimi çalışması sonraya (ürün sahibi önerisi: düzenle / menü, ekranın başlığıyla aynı hizada sağda).
