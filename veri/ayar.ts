@@ -30,6 +30,8 @@ export interface Ayarlar {
   katalog_denendi: string;
   /** Kütüphanem'de gizlenen öneriler (`p:<id>`, `k:<id>`). */
   gizli_oneriler: string[];
+  /** Profil fotoğrafının telefondaki yolu (yalnız bu telefonda; sunucuya gitmez). */
+  avatar: string | null;
 }
 
 export type AyarAnahtari = keyof Ayarlar;

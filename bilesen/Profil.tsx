@@ -1,17 +1,21 @@
 // Avatar menüsü (pilot kararı, 14 Ekim): avatara dokununca küçük menü açılır:
 // Profil · Ayarlar (ileride başka seçenekler de eklenebilir).
-// - Profil (PR-3): ad ve e-posta, "E-postanla devam et", Çıkış yap, Hesabımı sil.
+// - Profil (PR-3): avatar, görünen ad ve e-posta; sağda "Düzenle" (pilot 20 Ekim:
+//   fotoğraf seç / çek / kaldır ve görünen ad; fotoğraf yalnız telefonda, ad
+//   kişilerine de görünür), "E-postanla devam et", Çıkış yap, Hesabımı sil.
 //   Arayüzde "hesap" sözcüğü yalnız "Hesabımı sil"de geçer.
 // - Ayarlar: Giriş ekranı (G-7), Yedekleme (PR-2), Üyelik (ücretsiz sınır göstergesi, GR-3).
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { Keyboard, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { adTemizle, AD_EN_UZUN } from '@/mantik/metin';
 import { sonYedekMetni, YEDEK_ACIKLAMASI, type YedekDosyasi } from '@/mantik/yedek';
-import { adKaydet, ayarSil } from '@/veri/ayar';
+import { adKaydet, ayarSil, ayarYaz } from '@/veri/ayar';
+import { dosyayiSakla } from '@/veri/dosyalar';
 import { BAGLANAMIYOR, ekledigimSayi } from '@/mantik/kisiler';
 import { adiGuncelle, cikisYap, hesabimiSil, useOturum } from '@/sunucu/oturum';
 import { useAyar, useSorgu } from '@/veri/kancalar';
@@ -111,22 +115,56 @@ export function useProfil() {
 function ProfilSayfasi({ ad, gorunur, onKapat }: { ad: string; gorunur: boolean; onKapat: () => void }) {
   const { kapi } = useVeri();
   const kisaMesaj = useKisaMesaj();
+  const kayitliFoto = useAyar('avatar').veri ?? null;
+  const [duzenle, setDuzenle] = useState(false);
   const [taslak, setTaslak] = useState(ad);
+  const [taslakFoto, setTaslakFoto] = useState<string | null>(null);
   const [hata, setHata] = useState<string | null>(null);
   const [silSorusu, setSilSorusu] = useState(false);
   const oturum = useOturum();
   const oturumAc = useOturumAc();
 
-  const degisti = adTemizle(taslak) !== ad;
+  const degisti = duzenle && (adTemizle(taslak) !== ad || taslakFoto !== kayitliFoto);
+
+  const duzenlemeyiAc = () => {
+    setTaslak(ad);
+    setTaslakFoto(kayitliFoto);
+    setHata(null);
+    setDuzenle(true);
+  };
+
+  const fotografSec = async (kamera: boolean) => {
+    try {
+      if (kamera) {
+        const izin = await ImagePicker.requestCameraPermissionsAsync();
+        if (!izin.granted) return;
+      }
+      const secenek: ImagePicker.ImagePickerOptions = {
+        mediaTypes: ['images'],
+        quality: 0.7,
+        allowsEditing: true,
+        aspect: [1, 1],
+      };
+      const sonuc = kamera
+        ? await ImagePicker.launchCameraAsync(secenek)
+        : await ImagePicker.launchImageLibraryAsync(secenek);
+      const secilen = sonuc.canceled ? undefined : sonuc.assets[0];
+      if (secilen) setTaslakFoto(await dosyayiSakla(secilen.uri, secilen.fileName ?? undefined));
+    } catch (e) {
+      console.warn(e);
+      kisaMesaj('Fotoğraf alınamadı.');
+    }
+  };
 
   const kaydet = async () => {
     const sonuc = await adKaydet(kapi, taslak);
     setHata(sonuc);
-    if (!sonuc) {
-      setTaslak(adTemizle(taslak));
-      Keyboard.dismiss();
-      void adiGuncelle(adTemizle(taslak)).catch(() => undefined);
-    }
+    if (sonuc) return;
+    if (taslakFoto !== kayitliFoto) await ayarYaz(kapi, 'avatar', taslakFoto);
+    Keyboard.dismiss();
+    if (adTemizle(taslak) !== ad) void adiGuncelle(adTemizle(taslak)).catch(() => undefined);
+    setDuzenle(false);
+    kisaMesaj('Profil kaydedildi');
   };
 
   const cikis = async () => {
@@ -178,15 +216,51 @@ function ProfilSayfasi({ ad, gorunur, onKapat }: { ad: string; gorunur: boolean;
           : null
       }
     >
-      <View style={stiller.kimlik}>
-        <Avatar ad={ad} boyut={64} />
-        <View style={stiller.ad}>
-          <Yazi tur="bolumBasligi" numberOfLines={2}>
-            {ad}
-          </Yazi>
-          {oturum.durum === 'var' && <Yazi tur="ikincil">{oturum.eposta}</Yazi>}
+      {!duzenle ? (
+        <View style={stiller.kimlik}>
+          <Avatar ad={ad} boyut={64} />
+          <View style={stiller.ad}>
+            <Yazi tur="bolumBasligi" numberOfLines={2}>
+              {ad}
+            </Yazi>
+            {oturum.durum === 'var' && <Yazi tur="ikincil">{oturum.eposta}</Yazi>}
+          </View>
+          <Dugme tur="yazi" etiket="Düzenle" onPress={duzenlemeyiAc} />
         </View>
-      </View>
+      ) : (
+        <View style={stiller.kart}>
+          <View style={stiller.ortala}>
+            <Avatar ad={taslak || ad} boyut={104} foto={taslakFoto} />
+          </View>
+          <View style={stiller.fotoDugmeleri}>
+            <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Fotoğraf seç" onPress={() => void fotografSec(false)} />
+            {Platform.OS !== 'web' && (
+              <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Fotoğraf çek" onPress={() => void fotografSec(true)} />
+            )}
+            {!!taslakFoto && <Dugme tur="tehlike" etiket="Fotoğrafı kaldır" onPress={() => setTaslakFoto(null)} />}
+          </View>
+          <Yazi tur="ikincil">Fotoğrafın yalnız bu telefonda durur.</Yazi>
+          <GirisAlani
+            etiket="Görünen ad"
+            value={taslak}
+            onChangeText={(t) => {
+              setTaslak(t);
+              if (hata) setHata(null);
+            }}
+            maxLength={AD_EN_UZUN}
+            autoCapitalize="words"
+            autoCorrect={false}
+            returnKeyType="done"
+            onSubmitEditing={() => void kaydet()}
+            hata={hata}
+          />
+          <Yazi tur="ikincil">Rites sana bu adla hitap eder; kişilerin ve grupların da seni bu adla görür.</Yazi>
+          <View style={stiller.ikili}>
+            <Dugme tur="yazi" etiket="Vazgeç" onPress={() => setDuzenle(false)} />
+            <Dugme etiket="Kaydet" onPress={() => void kaydet()} pasif={!degisti} style={stiller.esnek} />
+          </View>
+        </View>
+      )}
 
       {(oturum.durum === 'yok' || oturum.durum === 'ayarsiz') && (
         <View style={stiller.kart}>
@@ -197,24 +271,6 @@ function ProfilSayfasi({ ad, gorunur, onKapat }: { ad: string; gorunur: boolean;
           <Dugme etiket="E-postanla devam et" onPress={oturumAc} pasif={oturum.durum === 'ayarsiz'} />
         </View>
       )}
-
-      <View style={stiller.kart}>
-        <GirisAlani
-          etiket="Sana nasıl hitap edelim?"
-          value={taslak}
-          onChangeText={(t) => {
-            setTaslak(t);
-            if (hata) setHata(null);
-          }}
-          maxLength={AD_EN_UZUN}
-          autoCapitalize="words"
-          autoCorrect={false}
-          returnKeyType="done"
-          onSubmitEditing={kaydet}
-          hata={hata}
-        />
-        <Dugme etiket="Kaydet" onPress={kaydet} pasif={!degisti} />
-      </View>
 
       {oturum.durum === 'var' && (
         <>
@@ -336,6 +392,9 @@ function AyarlarSayfasi({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =>
 
 const stiller = StyleSheet.create({
   kimlik: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingVertical: 8 },
+  ortala: { alignItems: 'center' },
+  fotoDugmeleri: { gap: 8 },
+  ikili: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   ad: { flex: 1, gap: 2 },
   baslikSatiri: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   menu: {
@@ -353,7 +412,13 @@ const stiller = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 8,
   },
-  menuKimlik: { paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: renk.satirCizgi, gap: 2 },
+  menuKimlik: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: renk.satirCizgi,
+    gap: 2,
+  },
   menuSatiri: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 50, paddingHorizontal: 16 },
   esnek: { flex: 1 },
   kart: {
