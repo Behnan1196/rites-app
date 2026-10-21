@@ -116,10 +116,9 @@ describe('süre ve durum', () => {
   it('yıldız ve alan satırı', () => {
     expect(yildizMetni(4)).toBe('★★★★☆');
     expect(yildizMetni(0)).toBe('');
-    expect(alanAltSatiri(1, 2, false)).toBe('1 program uygulanıyor');
-    expect(alanAltSatiri(0, 2, true)).toBe('İlerlemek istiyorum');
-    expect(alanAltSatiri(0, 2, false)).toBe('2 program');
-    expect(alanAltSatiri(0, 0, false)).toBe('Program yok');
+    expect(alanAltSatiri(1, 2)).toBe('1 program uygulanıyor');
+    expect(alanAltSatiri(0, 2)).toBe('2 program');
+    expect(alanAltSatiri(0, 0)).toBe('Program yok');
   });
 });
 

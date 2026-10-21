@@ -233,7 +233,7 @@ async function alanDurumuYazY(y: Yazici, alan: AlanAnahtari, degisiklik: Partial
   );
 }
 
-/** Alanın puanı, "ilerlemek istiyorum" ya da Yaşam'da görünürlüğü. */
+/** Alanın puanı ya da Yaşam'da görünürlüğü. (`ilerlemek` 22 Ekim'den beri arayüzde yok; sütun durur.) */
 export function alanDurumuYaz(kapi: Kapi, alan: AlanAnahtari, degisiklik: Partial<AlanDurumu>): Promise<void> {
   return kapi.yaz(['plan'], (y) => alanDurumuYazY(y, alan, degisiklik));
 }

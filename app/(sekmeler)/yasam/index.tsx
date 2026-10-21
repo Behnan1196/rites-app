@@ -76,8 +76,8 @@ export default function YasamTarzim() {
                 const d = durum(a);
                 const buAlan = ozetler.filter((o) => o.program.alanlar.includes(a.anahtar));
                 const uygulanan = buAlan.filter((o) => o.durum === 'uygulaniyor').length;
-                const alt = alanAltSatiri(uygulanan, buAlan.length, d.ilerlemek);
-                const altRenk = uygulanan > 0 ? renk.ana : d.ilerlemek ? renk.vurguYazi : renk.ikincil;
+                const alt = alanAltSatiri(uygulanan, buAlan.length);
+                const altRenk = uygulanan > 0 ? renk.ana : renk.ikincil;
                 return (
                   <Pressable
                     key={a.anahtar}

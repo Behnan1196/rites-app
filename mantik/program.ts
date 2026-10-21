@@ -305,10 +305,9 @@ export function fazlaProgramMetni(adet: number): string {
   return `+${adet} program daha`;
 }
 
-/** Alan kutusunun alt satırı: "1 program uygulanıyor" / "İlerlemek istiyorum" / "Program yok". */
-export function alanAltSatiri(uygulanan: number, toplam: number, ilerlemek: boolean): string {
+/** Alan kutusunun alt satırı: "1 program uygulanıyor" / "2 program" / "Program yok". */
+export function alanAltSatiri(uygulanan: number, toplam: number): string {
   if (uygulanan > 0) return `${uygulanan} program uygulanıyor`;
-  if (ilerlemek) return 'İlerlemek istiyorum';
   return toplam > 0 ? `${toplam} program` : 'Program yok';
 }
 

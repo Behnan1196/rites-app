@@ -1,5 +1,5 @@
 // Alan ekranı (pilot 20 Ekim): puan (kişinin kendi değerlendirmesi; programlardan
-// bağımsız), "ilerlemek istiyorum", bu alana etiketli programlar, + Yeni program,
+// bağımsız), bu alana etiketli programlar, + Yeni program,
 // Rites önerileri. Kişinin eklediği alan yeniden adlandırılır ya da silinir.
 
 import { router, useLocalSearchParams } from 'expo-router';
@@ -13,7 +13,7 @@ import { GirisAlani } from '@/bilesen/GirisAlani';
 import { Katman } from '@/bilesen/Katman';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { OnayKutusu } from '@/bilesen/OnayKutusu';
-import { AcKapa, Bolum } from '@/bilesen/Secim';
+import { Bolum } from '@/bilesen/Secim';
 import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { AlanSimgesi, ProgramSatiri } from '@/bilesen/yasam/parcalar';
@@ -144,17 +144,6 @@ function AlanIcerigi({ alan, p }: { alan: Alan; p: ReturnType<typeof usePrograml
           </Yazi>
         </View>
         <Yazi tur="ikincil">Puan senin değerlendirmen; program uygulamadan da verebilirsin.</Yazi>
-      </Bolum>
-
-      <Bolum style={stiller.satir}>
-        <Yazi kalinlik="kalin" style={stiller.esnek}>
-          Bu alanda ilerlemek istiyorum
-        </Yazi>
-        <AcKapa
-          acik={durum.ilerlemek}
-          etiket="Bu alanda ilerlemek istiyorum"
-          onDegis={(ilerlemek) => void alanDurumuYaz(kapi, alan.anahtar, { ilerlemek })}
-        />
       </Bolum>
 
       {programlar.length > 0 && (

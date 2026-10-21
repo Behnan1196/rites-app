@@ -307,3 +307,7 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 
 - **Kartı açınca tek, uzun beyaz kart:** üstte başlık, zaman (saat · tekrar), program etiketi ve kısa açıklama; tekrarlı kartta seri; sonra **her blok kendi bölümünde**, bölümün başında türünün simgesi ve adı (VİDEO, TALİMAT, LİSTE · Malzemeler, ÖLÇÜM…; içerik blokları ana renk, kayıt blokları kehribar). Bölümler ince çizgiyle ayrılır. Kaynaklı kartta (program, grup, gelen…) solda ajandadaki gibi renkli şerit. Bloksuz kartta "Düzenle"ye yönlendiren kısa bir not. — Ürün sahibi (P-29; yerleşim: Öneri)
 - Kart görünümünde yapılabilecekler pilot denemelerinde ayrıca konuşulacak. — Not
+
+## Alanlardaki "Bu alanda ilerlemek istiyorum" kalktı (22 Ekim)
+
+- Düğmenin alan kutusunda "İlerlemek istiyorum" yazdırmaktan başka işlevi yoktu; alan ekranından ve alan kutusundan kalktı. Alan kutusu artık "N program uygulanıyor" · "N program" · "Program yok" yazar. Telefondaki eski değer silinmez, kullanılmaz. — Ürün sahibi
