@@ -302,3 +302,8 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 
 - **"Giriş'te neler görünsün?"** listesinde her kutunun adının solunda kutudaki simgenin aynısı; sıra, satıra **uzun basıp sürükleyerek** değişir (↑ ↓ okları kalktı; ekran okuyucuda "Yukarı / Aşağı taşı"). Aç / kapat düğmesi yerinde. — Ürün sahibi (P-28)
 - **Bugün sırada:** sıradaki iş koyu kutunun içinde beyaz bir **kart**: başlık, saat ve tekrar; açılabilen kartta dokununca açılır (›); **"Yaptım" kartın üstünde** (dolu, ✓). Altında "Bugün N iş daha var" ve "Geçmişten kalan" eskisi gibi. — Ürün sahibi (P-28; kartın içeriği: Öneri)
+
+## Kart görünümü: tek uzun kart, bloklar bölüm bölüm (21 Ekim)
+
+- **Kartı açınca tek, uzun beyaz kart:** üstte başlık, zaman (saat · tekrar), program etiketi ve kısa açıklama; tekrarlı kartta seri; sonra **her blok kendi bölümünde**, bölümün başında türünün simgesi ve adı (VİDEO, TALİMAT, LİSTE · Malzemeler, ÖLÇÜM…; içerik blokları ana renk, kayıt blokları kehribar). Bölümler ince çizgiyle ayrılır. Kaynaklı kartta (program, grup, gelen…) solda ajandadaki gibi renkli şerit. Bloksuz kartta "Düzenle"ye yönlendiren kısa bir not. — Ürün sahibi (P-29; yerleşim: Öneri)
+- Kart görünümünde yapılabilecekler pilot denemelerinde ayrıca konuşulacak. — Not

@@ -20,7 +20,6 @@ import { useVeri } from '@/veri/VeriSaglayici';
 import { Dugme } from '../Dugme';
 import { useKisaMesaj } from '../KisaMesaj';
 import { SesOynatici } from '../not/SesOynatici';
-import { Bolum } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
 
@@ -109,7 +108,6 @@ function ListeBlogu({ blok, kayit, onKayit }: Ozellikler) {
     });
   return (
     <View style={stiller.liste}>
-      {!!blok.ad && <Yazi tur="kartBasligi">{blok.ad}</Yazi>}
       {blok.maddeler.map((madde, i) => {
         const isaretli = !!isaretler[i];
         return (
@@ -152,9 +150,7 @@ function AdimlarBlogu({ blok, gun }: { blok: Blok; gun: Gun }) {
   return (
     <View style={stiller.liste}>
       <View style={stiller.adimBaslik}>
-        <Yazi tur="kartBasligi" style={stiller.esnek}>
-          {blok.ad || 'Proje adımları'}
-        </Yazi>
+        <View style={stiller.esnek} />
         <Yazi tur="ikincil" kalinlik="yariKalin" renk={yapilan === toplam && toplam > 0 ? renk.ana : renk.ikincil}>
           {ilerlemeMetni(durum)}
         </Yazi>
@@ -202,10 +198,10 @@ function DosyaBlogu({ blok }: { blok: Blok }) {
   // Ses dosyası (ör. ajandaya alınan sesli not) kartın içinde dinlenir.
   if (sesDosyasiMi(uri)) {
     return (
-      <Bolum>
+      <View style={stiller.ic}>
         <Yazi kalinlik="kalin">{blok.ad || 'Ses kaydı'}</Yazi>
         <SesOynatici uri={uri} />
-      </Bolum>
+      </View>
     );
   }
   return (
@@ -250,7 +246,7 @@ function Zamanlayici({ blok }: { blok: Blok }) {
 
   const bitti = kalan === 0;
   return (
-    <Bolum style={stiller.satir}>
+    <View style={stiller.satir}>
       <View style={stiller.esnek}>
         <Yazi kalinlik="kalin">{blok.ad || 'Süre'}</Yazi>
         <Yazi kalinlik="kalin" style={stiller.saat} accessibilityLiveRegion="polite">
@@ -263,7 +259,7 @@ function Zamanlayici({ blok }: { blok: Blok }) {
         pasif={bitti && !calisiyor}
         style={[stiller.zamanlayiciDugme, calisiyor && { backgroundColor: renk.hata }]}
       />
-    </Bolum>
+    </View>
   );
 }
 
@@ -311,7 +307,7 @@ function OlcumBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
   const onceki = oncekiDeger(kayitlar, blok.id, gun);
   return (
     <View style={stiller.olcumKap}>
-      <Bolum style={stiller.satir}>
+      <View style={stiller.satir}>
         <Yazi kalinlik="kalin" style={stiller.esnek}>
           {blok.ad || 'Ölçüm'}
         </Yazi>
@@ -327,7 +323,7 @@ function OlcumBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
           style={[stiller.olcum, yazi('kalin')]}
         />
         {!!blok.birim && <Yazi tur="ikincil">{blok.birim}</Yazi>}
-      </Bolum>
+      </View>
       {onceki && (
         <Yazi tur="ikincil" style={stiller.onceki}>
           {`Önceki: ${onceki.deger}${blok.birim ? ` ${blok.birim}` : ''} · ${uzunTarih(onceki.tarih)}`}
@@ -342,7 +338,7 @@ function GununNotu({ blok, kayit, onKayit }: Ozellikler) {
     onKayit((k) => ({ ...k, degerler: { ...k.degerler, [blok.id]: d } })),
   );
   return (
-    <Bolum>
+    <View style={stiller.ic}>
       <Yazi kalinlik="kalin">Günün notu</Yazi>
       <TextInput
         accessibilityLabel="Günün notu"
@@ -355,7 +351,7 @@ function GununNotu({ blok, kayit, onKayit }: Ozellikler) {
         multiline
         style={[stiller.not, yazi('normal')]}
       />
-    </Bolum>
+    </View>
   );
 }
 
@@ -393,6 +389,7 @@ const stiller = StyleSheet.create({
   cubukDolu: { height: 6, borderRadius: 3, backgroundColor: renk.ana },
   esnek: { flex: 1 },
   satir: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  ic: { gap: 10 },
   foto: { width: '100%', aspectRatio: 4 / 3, borderRadius: olcu.kose.kart, backgroundColor: renk.satirCizgi },
   videoKabi: { gap: 8 },
   disariAc: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', minHeight: 32 },

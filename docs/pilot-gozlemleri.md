@@ -155,3 +155,8 @@ Sonuç: → kararlar.md (Hızlı Not: ses kaydı başlık satırında…; dikte 
 Ne dedi: "Giriş ekranında görünecek widget'ları seçtiğimiz ekranda widget adları da aynı ikonu kullansın; uyumluluk açısından sıralarını değiştirme de üstüne basılı tutarak başlatılsın. Bir de Bugün Sırada'da yapılacak iş daha kart gibi görünse, belki Yaptım da o kartın üzerinde olur."
 Nerede: Giriş, Giriş ayarı
 Sonuç: → kararlar.md (Giriş ayarı ve Bugün sırada kartı)
+
+### P-29 · 21 Ekim 2026 · Behnan
+Ne dedi: "Karta bastığımızda açılan görünüm ekranının hiç stili yok; daha uzun bir kart görünümünde, sahip olduğu blokların belli olduğu bir yapıda olabilir mi? Kart görünümünde yapılabilecekleri testler sırasında ayrıca konuşuruz."
+Nerede: Kart görünümü
+Sonuç: → kararlar.md (Kart görünümü: tek uzun kart, bloklar bölüm bölüm)
