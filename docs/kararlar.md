@@ -280,7 +280,7 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 
 ## Giriş: kutularda modül simgesi; Giriş'te iğneli notlar (21 Ekim)
 
-- **Her Giriş kutusunun başlık hizasında sağda, kutunun modülünü açan simge:** Hızlı Not → yapışkan notlar simgesi (Notlar), Bugün sırada → takvim (Ajandam), Gelenler → gelen kutusu (Gelenler), Anımsatıcılar → zil (Anımsatıcılar), Devam edenler → yaprak (Yaşam Tarzım). Eski "›" okları ve "Tümü ›" bunların yerine kalktı; satıra dokunmak da eskisi gibi açar. — Ürün sahibi (P-25)
+- **Her Giriş kutusunda, kutunun modülünü açan simge** (21 Ekim öğleden sonra: sağdan başlığın soluna, en başa alındı): Hızlı Not → yapışkan notlar simgesi (Notlar), Bugün sırada → takvim (Ajandam), Gelenler → gelen kutusu (Gelenler), Anımsatıcılar → zil (Anımsatıcılar), Devam edenler → yaprak (Yaşam Tarzım). Eski "›" okları ve "Tümü ›" bunların yerine kalktı; satıra dokunmak da eskisi gibi açar. — Ürün sahibi (P-25)
 - **Giriş'te yalnız iğnelenen notlar:** Notlar ekranında her notun sağında iğne; not sayfasında "Giriş'e iğnele / Giriş'ten kaldır". İğneli notlar Giriş'te hemen görünür (en çok 3, Notlar'daki sırayla; fazlası "N iğneli not daha ›"). "Göster / Gizle" ve en yeni iki not kalktı. İğneli not yoksa yazma kutusu kalır; not varsa "Bir notu burada görmek için Notlar'da iğnele." — Ürün sahibi (P-25; ipucu metni: Öneri)
 - Kaydedilen not için "Kaydedildi: …" satırı artık her zaman 4 saniye görünür (notlar listesi olmadığından). — Öneri
 
@@ -291,3 +291,9 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Ses kaydında "İptal":** kayıt sürerken "Kaydediliyor…" satırında İptal (kayıt atılır) ve Bitir (sesli not olur). — Ürün sahibi (P-26)
 - **Sesli notu paylaş ya da kaydet:** not sayfasında "Ses kaydını paylaş ya da kaydet" → telefonun paylaşım sayfası (Dosyalar'a kaydet, mesajla gönder…). Dosya adı notun adı ve zamanı ("Sesli not 21 Ekim 11.22.m4a"). Biçim **m4a** (AAC): iPhone kaydı böyle tutar, her yerde çalar; mp3'e çevirmek ek bir kodlayıcı ister, şimdilik yok. — Ürün sahibi (P-26; m4a: Öneri)
 - Yeni yerel modül (konuşma tanıma) eklendiği için sürüm **1.4.0**; güncelleme olarak gitmez, yeni derleme gerekir. — Not
+
+## Hızlı Not: ses kaydı başlık satırında, adı yazı kutusundan; dikte duraklamada silinmez (21 Ekim)
+
+- **Modül simgeleri kutuların solunda, en başta** (sağda değil). — Ürün sahibi (P-27)
+- **"Ses kaydı" düğmesi Hızlı Not'un başlık satırında sağda** (dalga + "Ses kaydı"); yazı kutusunda yalnız mikrofon (dikte) ve yazı varken kaydet oku kalır. Kayıt sürerken yazı kutusu açık kalır ("Kaydın adı (isteğe bağlı)"), altında Kaydediliyor… · İptal · Bitir; kutuya yazılan **kaydın adı** olur, boşsa "Sesli not". — Ürün sahibi (P-27; başlık satırı: Öneri)
+- **Dikte duraklamada öncekini silmiyor:** iPhone her duraklamada parçayı kesinleştirip yeni parçaya baştan başlıyor; kesin parçalar birikip arka arkaya ekleniyor. — Hata düzeltmesi (P-27)

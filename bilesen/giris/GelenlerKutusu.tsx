@@ -1,4 +1,4 @@
-// Gelenler (G-3): Hızlı Not'un altında tek satır; sağda zil ve Gelenler simgesi (pilot 21 Ekim). Grup davetleri de burada
+// Gelenler (G-3): Hızlı Not'un altında tek satır; solda Gelenler simgesi, sağda zil (pilot 21 Ekim). Grup davetleri de burada
 // sayılır (10. görev kararı); başka uygulamadan paylaşılan bağlantılar da
 // (16 Ekim). Oturum yoksa ve paylaşılan da yoksa görünmez.
 
@@ -57,6 +57,11 @@ export function GelenlerKutusu() {
       accessibilityLabel={`Gelenler${sayi ? `, ${sayi} yeni` : ''}. ${ozet}`}
       style={({ pressed }) => [stiller.kutu, pressed && { opacity: 0.75 }]}
     >
+      <ModulDugmesi
+        etiket="Gelenler'i aç"
+        onPress={() => router.push('/giris/gelenler')}
+        simge={<Ionicons name="file-tray-outline" size={24} color={renk.ana} />}
+      />
       <View style={stiller.esnek}>
         <View style={stiller.ust}>
           <Yazi tur="kartBasligi">Gelenler</Yazi>
@@ -92,11 +97,6 @@ export function GelenlerKutusu() {
           />
         </Pressable>
       )}
-      <ModulDugmesi
-        etiket="Gelenler'i aç"
-        onPress={() => router.push('/giris/gelenler')}
-        simge={<Ionicons name="file-tray-outline" size={24} color={renk.ana} />}
-      />
     </Pressable>
   );
 }

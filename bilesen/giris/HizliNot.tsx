@@ -1,8 +1,9 @@
 // Hızlı Not kutusu (G-2, G-2a, G-2b; pilot 21 Ekim).
-// - Başlık hizasında sağda yapışkan not simgesi: Notlar'ı açar.
-// - Yazı kutusu doğrudan görünür; sağda mikrofon (söyleneni yazıya çevirir, yazı
-//   kutusuna yazar; pilot 21 Ekim) ve ikinci düğme: boşken ses kaydı (dalga; "İptal"
-//   ve "Bitir" ile), yazı varken kaydet (ok).
+// - Başlığın solunda yapışkan not simgesi: Notlar'ı açar.
+// - Yazı kutusu doğrudan görünür; içinde mikrofon (söyleneni yazıya çevirir; pilot
+//   21 Ekim) ve yazı varken kaydet (ok).
+// - Başlık satırında sağda "Ses kaydı" (dalga): kayıt sürerken altta "İptal" / "Bitir";
+//   kutuya yazılan kaydın adı olur (yoksa "Sesli not").
 // - Altında yalnız iğnelenen notlar (en çok 3, fazlası "N not daha"); "Göster /
 //   Gizle" ve en yeni iki not kalktı. Kaydedilen not için 4 sn "Kaydedildi: …".
 
@@ -84,8 +85,11 @@ export function HizliNot() {
     if (ses.dinliyor) {
       const sonuc = await ses.bitir();
       if (sonuc.tur === 'tamam') {
-        await notEkle(kapi, { id: yeniKimlik(), metin: 'Sesli not', sesli: true, sesYolu: sonuc.uri });
-        eklendi('Sesli not');
+        // Kutuda yazı varsa kaydın adı olur.
+        const ad = metin.trim() || 'Sesli not';
+        if (metin.trim()) setMetin('');
+        await notEkle(kapi, { id: yeniKimlik(), metin: ad, sesli: true, sesYolu: sonuc.uri });
+        eklendi(ad);
       } else {
         kisaMesaj('Ses kaydedilemedi.');
       }
@@ -104,17 +108,72 @@ export function HizliNot() {
   return (
     <View style={stiller.kutu}>
       <View style={stiller.baslik}>
-        <Yazi tur="kutuBasligi" accessibilityRole="header">
-          Hızlı Not
-        </Yazi>
         <ModulDugmesi
           etiket={`Notlar'ı aç${notlar.length ? `, ${notlar.length} not` : ''}`}
           onPress={notlariAc}
           simge={<MaterialCommunityIcons name="note-multiple-outline" size={24} color={renk.ana} />}
         />
+        <Yazi tur="kutuBasligi" accessibilityRole="header" style={stiller.esnek}>
+          Hızlı Not
+        </Yazi>
+        {!ses.dinliyor && (
+          <Pressable
+            onPress={() => void sesKaydi()}
+            accessibilityRole="button"
+            accessibilityLabel="Ses kaydı al; kutuya yazdığın kaydın adı olur"
+            style={({ pressed }) => [stiller.kayitDugmesi, pressed && { opacity: 0.7 }]}
+            hitSlop={4}
+          >
+            <MaterialCommunityIcons name="waveform" size={22} color={renk.ana} />
+            <Yazi kalinlik="kalin" renk={renk.ana}>
+              Ses kaydı
+            </Yazi>
+          </Pressable>
+        )}
       </View>
-      {ses.dinliyor ? (
-        <View style={[stiller.giris, stiller.dinliyor]} accessibilityLiveRegion="polite">
+      <View style={[stiller.giris, dikte.dinliyor && stiller.dikteGiris]}>
+        <TextInput
+          accessibilityLabel="Hızlı not"
+          value={metin}
+          onChangeText={setMetin}
+          placeholder={
+            ses.dinliyor ? 'Kaydın adı (isteğe bağlı)' : dikte.dinliyor ? 'Dinliyorum, konuş…' : 'Yaz ya da söyle'
+          }
+          placeholderTextColor={renk.soluk}
+          selectionColor={renk.ana}
+          returnKeyType="done"
+          submitBehavior="submit"
+          onSubmitEditing={() => void (ses.dinliyor ? undefined : yaziyiKaydet())}
+          style={[stiller.alan, yazi('normal')]}
+        />
+        {!ses.dinliyor && (
+          <Pressable
+            onPress={() => void dikteyeBas()}
+            accessibilityRole="button"
+            accessibilityLabel={dikte.dinliyor ? 'Dinlemeyi bitir' : 'Söyle, yazıya çevireyim'}
+            accessibilityState={{ selected: dikte.dinliyor }}
+            style={[stiller.yuvarlak, dikte.dinliyor && { backgroundColor: renk.hata }]}
+          >
+            <Ionicons
+              name={dikte.dinliyor ? 'stop' : 'mic-outline'}
+              size={dikte.dinliyor ? 22 : 26}
+              color={dikte.dinliyor ? renk.yuzey : renk.ana}
+            />
+          </Pressable>
+        )}
+        {yaziVar && !ses.dinliyor && (
+          <Pressable
+            onPress={() => void yaziyiKaydet()}
+            accessibilityRole="button"
+            accessibilityLabel="Notu kaydet"
+            style={[stiller.yuvarlak, { backgroundColor: renk.ana }]}
+          >
+            <Ionicons name="arrow-up" size={26} color={renk.yuzey} />
+          </Pressable>
+        )}
+      </View>
+      {ses.dinliyor && (
+        <View style={stiller.kayitSatiri} accessibilityLiveRegion="polite">
           <View style={stiller.kirmiziNokta} />
           <Yazi kalinlik="kalin" renk={renk.hata} style={stiller.esnek}>
             Kaydediliyor…
@@ -138,46 +197,6 @@ export function HizliNot() {
             <Yazi kalinlik="kalin" renk={renk.yuzey}>
               Bitir
             </Yazi>
-          </Pressable>
-        </View>
-      ) : (
-        <View style={[stiller.giris, dikte.dinliyor && stiller.dikteGiris]}>
-          <TextInput
-            accessibilityLabel="Hızlı not"
-            value={metin}
-            onChangeText={setMetin}
-            placeholder={dikte.dinliyor ? 'Dinliyorum, konuş…' : 'Yaz ya da söyle'}
-            placeholderTextColor={renk.soluk}
-            selectionColor={renk.ana}
-            returnKeyType="done"
-            submitBehavior="submit"
-            onSubmitEditing={() => void yaziyiKaydet()}
-            style={[stiller.alan, yazi('normal')]}
-          />
-          <Pressable
-            onPress={() => void dikteyeBas()}
-            accessibilityRole="button"
-            accessibilityLabel={dikte.dinliyor ? 'Dinlemeyi bitir' : 'Söyle, yazıya çevireyim'}
-            accessibilityState={{ selected: dikte.dinliyor }}
-            style={[stiller.yuvarlak, dikte.dinliyor && { backgroundColor: renk.hata }]}
-          >
-            <Ionicons
-              name={dikte.dinliyor ? 'stop' : 'mic-outline'}
-              size={dikte.dinliyor ? 22 : 26}
-              color={dikte.dinliyor ? renk.yuzey : renk.ana}
-            />
-          </Pressable>
-          <Pressable
-            onPress={() => void (yaziVar ? yaziyiKaydet() : sesKaydi())}
-            accessibilityRole="button"
-            accessibilityLabel={yaziVar ? 'Notu kaydet' : 'Ses kaydı al'}
-            style={[stiller.yuvarlak, yaziVar && { backgroundColor: renk.ana }]}
-          >
-            {yaziVar ? (
-              <Ionicons name="arrow-up" size={26} color={renk.yuzey} />
-            ) : (
-              <MaterialCommunityIcons name="waveform" size={26} color={renk.ana} />
-            )}
           </Pressable>
         </View>
       )}
@@ -233,7 +252,27 @@ const stiller = StyleSheet.create({
     paddingRight: 6,
     gap: 6,
   },
-  dinliyor: { borderColor: renk.hata, backgroundColor: '#FBEDEA' },
+  kayitSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: renk.hata,
+    backgroundColor: '#FBEDEA',
+    minHeight: 60,
+    paddingLeft: 14,
+    paddingRight: 6,
+  },
+  kayitDugmesi: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 44,
+    paddingHorizontal: 12,
+    borderRadius: 22,
+    backgroundColor: renk.anaAcik,
+  },
   dikteGiris: { borderColor: renk.hata },
   iptal: { minHeight: 48, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
   kirmiziNokta: { width: 12, height: 12, borderRadius: 6, backgroundColor: renk.hata },
@@ -257,7 +296,7 @@ const stiller = StyleSheet.create({
   esnek: { flex: 1 },
   kaydedildi: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 },
   notlar: { gap: 10 },
-  baslik: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 4 },
+  baslik: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   ipucu: { paddingHorizontal: 4 },
   tumu: { alignSelf: 'flex-start', minHeight: olcu.enAzDokunma, justifyContent: 'center', paddingHorizontal: 4 },
 });

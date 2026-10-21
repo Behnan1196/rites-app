@@ -7,21 +7,18 @@
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { useRef, useState } from 'react';
 
+import { baslangicTutar, birlestir } from '@/mantik/dikte';
+
 export type DikteSorunu = 'izinYok' | 'yok' | 'hata';
 
 const DIL = 'tr-TR';
-
-function birlestir(onceki: string, yeni: string): string {
-  const a = onceki.trimEnd();
-  const b = yeni.trim();
-  if (!b) return onceki;
-  return a ? `${a} ${b}` : b;
-}
 
 export function useDikte(onMetin: (metin: string) => void) {
   const [dinliyor, setDinliyor] = useState(false);
   const [sorun, setSorun] = useState<DikteSorunu | null>(null);
   const bas = useRef('');
+  /** Henüz kesinleşmemiş son parça. */
+  const parca = useRef('');
   const yerelDenendi = useRef(false);
 
   const basla = (yerel: boolean) => {
@@ -36,9 +33,23 @@ export function useDikte(onMetin: (metin: string) => void) {
 
   useSpeechRecognitionEvent('start', () => setDinliyor(true));
   useSpeechRecognitionEvent('end', () => setDinliyor(false));
+  // iOS 18'de sürekli dinlemede her duraklamada parça "kesin" (isFinal) gelir ve
+  // sonraki parça baştan başlar (pilot 21 Ekim: ara verince öncekiler siliniyordu).
+  // Kesin parça birikene eklenir; kesin işareti gelmeden metin baştan başlarsa da
+  // önceki parça korunur.
   useSpeechRecognitionEvent('result', (e) => {
-    const metin = e.results[0]?.transcript ?? '';
-    onMetin(birlestir(bas.current, metin));
+    const metin = (e.results[0]?.transcript ?? '').trim();
+    if (!metin) return;
+    const onceki = parca.current;
+    if (onceki && !baslangicTutar(onceki, metin)) bas.current = birlestir(bas.current, onceki);
+    if (e.isFinal) {
+      bas.current = birlestir(bas.current, metin);
+      parca.current = '';
+      onMetin(bas.current);
+    } else {
+      parca.current = metin;
+      onMetin(birlestir(bas.current, metin));
+    }
   });
   useSpeechRecognitionEvent('error', (e) => {
     // Telefonun içinde Türkçe tanıma yoksa bir kez Apple'ın tanımasıyla dene.
@@ -60,6 +71,7 @@ export function useDikte(onMetin: (metin: string) => void) {
       const izin = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
       if (!izin.granted) return 'izinYok';
       bas.current = mevcut;
+      parca.current = '';
       const yerel = ExpoSpeechRecognitionModule.supportsOnDeviceRecognition();
       yerelDenendi.current = yerel;
       basla(yerel);

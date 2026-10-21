@@ -1,4 +1,4 @@
-// Giriş kutularının başlık hizasında sağdaki simge düğmesi (pilot 21 Ekim): kutunun
+// Giriş kutularının başlığının solundaki simge düğmesi (pilot 21 Ekim): kutunun
 // modülünü açar (Notlar, Ajandam, Gelenler, Anımsatıcılar, Yaşam Tarzım). Her kutuda
 // aynı yerde, aynı biçimde.
 

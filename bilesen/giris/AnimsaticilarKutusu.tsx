@@ -81,6 +81,12 @@ export function AnimsaticilarKutusu() {
         accessibilityLabel={`${ust}. ${alt}`}
         style={({ pressed }) => [stiller.sakin, pressed && { opacity: 0.75 }]}
       >
+        <ModulDugmesi
+          etiket="Anımsatıcılar'ı aç"
+          onPress={ac}
+          zemin={renk.vurguAcik}
+          simge={<Ionicons name="notifications-outline" size={24} color={renk.vurguYazi} />}
+        />
         <View style={stiller.esnek}>
           <Yazi tur="kutuBasligi" renk={renk.vurguYazi}>
             {ust}
@@ -89,12 +95,6 @@ export function AnimsaticilarKutusu() {
             {alt}
           </Yazi>
         </View>
-        <ModulDugmesi
-          etiket="Anımsatıcılar'ı aç"
-          onPress={ac}
-          zemin={renk.vurguAcik}
-          simge={<Ionicons name="notifications-outline" size={24} color={renk.vurguYazi} />}
-        />
       </Pressable>
       {sureler.map((a) => (
         <View key={a.id} style={stiller.sureSatiri}>

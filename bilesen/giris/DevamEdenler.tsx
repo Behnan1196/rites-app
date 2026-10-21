@@ -1,5 +1,5 @@
 // Devam edenler: en çok 3 uygulanan program (pilot 20 Ekim; eskiden planlar);
-// her satırda sol şerit, ad, sıradaki iş ve bugünkü ilerleme. Başlık hizasındaki yaprak simgesi Yaşam Tarzım'ı açar.
+// her satırda sol şerit, ad, sıradaki iş ve bugünkü ilerleme. Başlığın solundaki yaprak simgesi Yaşam Tarzım'ı açar.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
@@ -22,14 +22,14 @@ export function DevamEdenler() {
   return (
     <View style={stiller.kutu}>
       <View style={stiller.baslik}>
-        <Yazi tur="kutuBasligi" accessibilityRole="header">
-          Devam edenler
-        </Yazi>
         <ModulDugmesi
           etiket="Yaşam Tarzım'ı aç"
           onPress={() => router.navigate('/yasam')}
           simge={<Ionicons name="leaf-outline" size={24} color={renk.ana} />}
         />
+        <Yazi tur="kutuBasligi" accessibilityRole="header">
+          Devam edenler
+        </Yazi>
       </View>
 
       {etkinler.length === 0 ? (
@@ -82,7 +82,7 @@ const stiller = StyleSheet.create({
     padding: olcu.kartIci,
     gap: 4,
   },
-  baslik: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44 },
+  baslik: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44 },
   satir: {
     flexDirection: 'row',
     alignItems: 'center',

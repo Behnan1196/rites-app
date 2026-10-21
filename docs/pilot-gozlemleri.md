@@ -145,3 +145,8 @@ Sonuç: → kararlar.md (Giriş: kutularda modül simgesi; Giriş'te iğneli not
 Ne dedi: "Notlarda ses kayıt ikonu ile klavyede çıkan mikrofon (sesi dikte eden) karışıyor. Doğrudan ses dikteyi açmamız mümkün mü?" Sonra: "2 simge olması daha uygun. Kayda başladığında İptal düğmesi de olmalı. Bir beste ilhamı geldi ve kaydetti; kaydedilmiş sesli notun örneğin mp3 olarak paylaş (ya da kaydet) seçeneği güzel olur."
 Nerede: Giriş → Hızlı Not; not sayfası
 Sonuç: → kararlar.md (Hızlı Not: söyleneni yazıya çeviren mikrofon ve ayrı ses kaydı; sesli notu paylaşma)
+
+### P-27 · 21 Ekim 2026 · Behnan · iPhone (1.4.0)
+Ne dedi: "Girişteki widget'larda gideceği uygulamanın ikonunun sağda değil solda en başta olması daha iyi olacak. Ses kayıt belki not giriş kutusunun içinde değil, sağında ayrı ya da üstte dursa; ses kaydına not giriş kutusunda bir isim verebilir miyiz? Bir de dikte sırasında bir şeyler söylüyorum, kutuya yazıyor; biraz ara verip devam ettiğimde eskisini kaybedip yeniden yazıyor."
+Nerede: Giriş, Hızlı Not
+Sonuç: → kararlar.md (Hızlı Not: ses kaydı başlık satırında…; dikte duraklamada silinmez)
