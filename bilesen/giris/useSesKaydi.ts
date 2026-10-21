@@ -1,11 +1,6 @@
-// Sesli not kaydı (G-2a): bir dokunuş başlatır, bir dokunuş bitirir.
+// Sesli not kaydı (G-2a): bir dokunuş başlatır, "Bitir" kaydeder, "İptal" kaydı atar (pilot 21 Ekim).
 
-import {
-  RecordingPresets,
-  requestRecordingPermissionsAsync,
-  setAudioModeAsync,
-  useAudioRecorder,
-} from 'expo-audio';
+import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioRecorder } from 'expo-audio';
 import { useState } from 'react';
 
 import { dosyayiSakla } from '@/veri/dosyalar';
@@ -47,5 +42,16 @@ export function useSesKaydi() {
     }
   };
 
-  return { dinliyor, baslat, bitir };
+  /** Kaydı durdurur, dosyayı saklamaz. */
+  const iptal = async (): Promise<void> => {
+    setDinliyor(false);
+    try {
+      await kaydedici.stop();
+      await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
+    } catch (e) {
+      console.warn('Ses kaydı durdurulamadı', e);
+    }
+  };
+
+  return { dinliyor, baslat, bitir, iptal };
 }

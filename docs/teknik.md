@@ -172,3 +172,8 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Sunucu: `icerik_alan`, `icerik_kart`, `icerik_program` (`sema.sql`; RLS: `aktif` olanlar anon ve authenticated için okunur, yazma kapalı; `guncelleme` tetikleyiciyle). İlk içerik `sunucu/icerik.sql` (`npx tsx sunucu/icerik-uret.ts > sunucu/icerik.sql` ile uygulamayla gelenden üretilir; `on conflict do nothing`).
 - İndirme `sunucu/katalog.ts`; saklama `veri/katalog.ts` (`ayar`: `katalog`, `katalog_denendi`, `gizli_oneriler`); `bilesen/KatalogGuncelleyici.tsx` açılışta ve öne dönünce, en çok 6 saatte bir indirir; farklıysa kaydeder (`plan`, `kutuphane` konuları duyurulur, ekranlar tazelenir). Açılışta saklı katalog `VeriSaglayici`de yüklenir.
 - Kütüphanem'de öneri kartları kayıt biçimine çevrilir (`oneri:<id>`), aynı süzgeçten geçer; öneri ekranı `app/(sekmeler)/yasam/oneri/[id]` (`tur=kart` ya da program).
+
+## Konuşma tanıma (sürüm 1.4.0)
+
+- `expo-speech-recognition` (~57.1, SDK 57 çizgisi; `app.json` eklentisi: mikrofon ve konuşma tanıma izin metinleri). `bilesen/giris/useDikte.ts`: `tr-TR`, ara sonuçlar, sürekli, noktalama; `supportsOnDeviceRecognition()` doğruysa önce telefonun içinde (`requiresOnDeviceRecognition`), `language-not-supported` / `service-not-allowed` gelirse bir kez ağ tanımasıyla. Yazılan, dinleme başladığında kutuda olan metnin sonuna eklenir.
+- Ses kaydı `useSesKaydi` (`expo-audio`, m4a); `iptal()` kaydı saklamadan durdurur. Paylaşım `veri/dosyalar.ts` `sesliNotuPaylas` (geçici klasöre okunur adla kopya, `expo-sharing`, `audio/mp4`).

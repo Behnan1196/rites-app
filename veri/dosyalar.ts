@@ -21,3 +21,18 @@ export async function dosyayiSakla(geciciUri: string, ad?: string): Promise<stri
   await kaynak.copy(hedef);
   return hedef.uri;
 }
+
+/**
+ * Sesli notu paylaşır ya da Dosyalar'a kaydettirir (pilot 21 Ekim): kayıt
+ * okunur bir adla geçici klasöre kopyalanır ("Sesli not 21 Ekim 11.22.m4a").
+ * Biçim m4a (AAC): iPhone kaydı böyle tutar; Mac, Windows ve telefonlar çalar.
+ */
+export async function sesliNotuPaylas(uri: string, ad: string): Promise<void> {
+  const Sharing = await import('expo-sharing');
+  if (Platform.OS === 'web' || !(await Sharing.isAvailableAsync())) throw new Error('Paylaşım yok');
+  const guvenli = ad.replace(/[\\/:*?"<>|]/g, '-').slice(0, 80);
+  const hedef = new File(Paths.cache, `${guvenli}.m4a`);
+  if (hedef.exists) hedef.delete();
+  await new File(uri).copy(hedef);
+  await Sharing.shareAsync(hedef.uri, { mimeType: 'audio/mp4', UTI: 'public.mpeg-4-audio', dialogTitle: ad });
+}

@@ -1,6 +1,8 @@
 // Hızlı Not kutusu (G-2, G-2a, G-2b; pilot 21 Ekim).
 // - Başlık hizasında sağda yapışkan not simgesi: Notlar'ı açar.
-// - Yazı kutusu doğrudan görünür; sağda tek düğme: boşken mikrofon, yazı varken ok.
+// - Yazı kutusu doğrudan görünür; sağda mikrofon (söyleneni yazıya çevirir, yazı
+//   kutusuna yazar; pilot 21 Ekim) ve ikinci düğme: boşken ses kaydı (dalga; "İptal"
+//   ve "Bitir" ile), yazı varken kaydet (ok).
 // - Altında yalnız iğnelenen notlar (en çok 3, fazlası "N not daha"); "Göster /
 //   Gizle" ve en yeni iki not kalktı. Kaydedilen not için 4 sn "Kaydedildi: …".
 
@@ -22,6 +24,7 @@ import { YapiskanNot } from '../not/YapiskanNot';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
 import { ModulDugmesi } from './ModulDugmesi';
+import { useDikte } from './useDikte';
 import { useSesKaydi } from './useSesKaydi';
 
 const KAYDEDILDI_SURESI = 4000;
@@ -34,6 +37,7 @@ export function HizliNot() {
   const ses = useSesKaydi();
 
   const [metin, setMetin] = useState('');
+  const dikte = useDikte(setMetin);
   const [kaydedildi, setKaydedildi] = useState<string | null>(null);
   const zamanlayici = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -51,6 +55,7 @@ export function HizliNot() {
   };
 
   const yaziyiKaydet = async () => {
+    if (dikte.dinliyor) dikte.bitir();
     const temiz = metin.trim();
     if (temiz === '') return;
     setMetin('');
@@ -58,7 +63,24 @@ export function HizliNot() {
     eklendi(temiz);
   };
 
-  const mikrofon = async () => {
+  const dikteyeBas = async () => {
+    if (dikte.dinliyor) {
+      dikte.bitir();
+      return;
+    }
+    const sorun = await dikte.baslat(metin);
+    if (sorun === 'izinYok')
+      kisaMesaj("Mikrofon ya da konuşma tanıma izni verilmedi. Telefonun Ayarlar'ından açabilirsin.");
+    else if (sorun === 'yok') kisaMesaj('Bu telefonda konuşma tanıma kullanılamıyor.');
+    else if (sorun) kisaMesaj('Dinleme başlatılamadı.');
+  };
+
+  const kayitIptal = async () => {
+    await ses.iptal();
+    kisaMesaj('Kayıt iptal edildi');
+  };
+
+  const sesKaydi = async () => {
     if (ses.dinliyor) {
       const sonuc = await ses.bitir();
       if (sonuc.tur === 'tamam') {
@@ -95,10 +117,20 @@ export function HizliNot() {
         <View style={[stiller.giris, stiller.dinliyor]} accessibilityLiveRegion="polite">
           <View style={stiller.kirmiziNokta} />
           <Yazi kalinlik="kalin" renk={renk.hata} style={stiller.esnek}>
-            Dinliyorum…
+            Kaydediliyor…
           </Yazi>
           <Pressable
-            onPress={() => void mikrofon()}
+            onPress={() => void kayitIptal()}
+            accessibilityRole="button"
+            accessibilityLabel="Kaydı iptal et"
+            style={stiller.iptal}
+          >
+            <Yazi kalinlik="kalin" renk={renk.hata}>
+              İptal
+            </Yazi>
+          </Pressable>
+          <Pressable
+            onPress={() => void sesKaydi()}
             accessibilityRole="button"
             accessibilityLabel="Kaydı bitir"
             style={stiller.bitir}
@@ -109,12 +141,12 @@ export function HizliNot() {
           </Pressable>
         </View>
       ) : (
-        <View style={stiller.giris}>
+        <View style={[stiller.giris, dikte.dinliyor && stiller.dikteGiris]}>
           <TextInput
             accessibilityLabel="Hızlı not"
             value={metin}
             onChangeText={setMetin}
-            placeholder="Aklına geleni yaz ya da söyle"
+            placeholder={dikte.dinliyor ? 'Dinliyorum, konuş…' : 'Yaz ya da söyle'}
             placeholderTextColor={renk.soluk}
             selectionColor={renk.ana}
             returnKeyType="done"
@@ -123,12 +155,29 @@ export function HizliNot() {
             style={[stiller.alan, yazi('normal')]}
           />
           <Pressable
-            onPress={() => void (yaziVar ? yaziyiKaydet() : mikrofon())}
+            onPress={() => void dikteyeBas()}
             accessibilityRole="button"
-            accessibilityLabel={yaziVar ? 'Notu kaydet' : 'Sesli not al'}
+            accessibilityLabel={dikte.dinliyor ? 'Dinlemeyi bitir' : 'Söyle, yazıya çevireyim'}
+            accessibilityState={{ selected: dikte.dinliyor }}
+            style={[stiller.yuvarlak, dikte.dinliyor && { backgroundColor: renk.hata }]}
+          >
+            <Ionicons
+              name={dikte.dinliyor ? 'stop' : 'mic-outline'}
+              size={dikte.dinliyor ? 22 : 26}
+              color={dikte.dinliyor ? renk.yuzey : renk.ana}
+            />
+          </Pressable>
+          <Pressable
+            onPress={() => void (yaziVar ? yaziyiKaydet() : sesKaydi())}
+            accessibilityRole="button"
+            accessibilityLabel={yaziVar ? 'Notu kaydet' : 'Ses kaydı al'}
             style={[stiller.yuvarlak, yaziVar && { backgroundColor: renk.ana }]}
           >
-            <Ionicons name={yaziVar ? 'arrow-up' : 'mic-outline'} size={26} color={yaziVar ? renk.yuzey : renk.ana} />
+            {yaziVar ? (
+              <Ionicons name="arrow-up" size={26} color={renk.yuzey} />
+            ) : (
+              <MaterialCommunityIcons name="waveform" size={26} color={renk.ana} />
+            )}
           </Pressable>
         </View>
       )}
@@ -182,9 +231,11 @@ const stiller = StyleSheet.create({
     minHeight: 64,
     paddingLeft: 14,
     paddingRight: 6,
-    gap: 8,
+    gap: 6,
   },
   dinliyor: { borderColor: renk.hata, backgroundColor: '#FBEDEA' },
+  dikteGiris: { borderColor: renk.hata },
+  iptal: { minHeight: 48, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
   kirmiziNokta: { width: 12, height: 12, borderRadius: 6, backgroundColor: renk.hata },
   bitir: {
     minHeight: 48,
@@ -194,11 +245,11 @@ const stiller = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  alan: { flex: 1, minHeight: 52, fontSize: boyut.govde + 1, color: renk.yazi },
+  alan: { flex: 1, minWidth: 0, minHeight: 52, fontSize: boyut.govde + 1, color: renk.yazi },
   yuvarlak: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: renk.anaAcik,
     alignItems: 'center',
     justifyContent: 'center',

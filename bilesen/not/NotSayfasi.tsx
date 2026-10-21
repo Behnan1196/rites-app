@@ -3,6 +3,8 @@
 import { useCallback, useState } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
 
+import { AY_ADLARI } from '@/mantik/tarih';
+import { sesliNotuPaylas } from '@/veri/dosyalar';
 import { yeniKimlik } from '@/veri/kimlik';
 import { notIgnele, notMetniniDegistir, notSil, notuAjandayaAl, type Not } from '@/veri/notlar';
 import { useBugun } from '@/veri/useBugun';
@@ -14,6 +16,14 @@ import { useKisaMesaj } from '../KisaMesaj';
 import { boyut, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
 import { SesOynatici } from './SesOynatici';
+
+/** "21 Ekim 11.22" */
+function dosyaZamani(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const s = (n: number) => String(n).padStart(2, '0');
+  return `${d.getDate()} ${AY_ADLARI[d.getMonth()]} ${s(d.getHours())}.${s(d.getMinutes())}`;
+}
 
 function NotSayfasi({ not, gorunur, onKapat }: { not: Not; gorunur: boolean; onKapat: () => void }) {
   const { kapi } = useVeri();
@@ -81,7 +91,24 @@ function NotSayfasi({ not, gorunur, onKapat }: { not: Not; gorunur: boolean; onK
           : null
       }
     >
-      {not.sesli && not.sesYolu && <SesOynatici uri={not.sesYolu} />}
+      {not.sesli && not.sesYolu && (
+        <>
+          <SesOynatici uri={not.sesYolu} />
+          <Dugme
+            tur="ikincil"
+            yaziRengi={renk.ana}
+            etiket="Ses kaydını paylaş ya da kaydet"
+            onPress={() =>
+              void sesliNotuPaylas(not.sesYolu!, `${metin.trim() || 'Sesli not'} ${dosyaZamani(not.olusturma)}`).catch(
+                (e: unknown) => {
+                  console.warn(e);
+                  kisaMesaj('Paylaşılamadı.');
+                },
+              )
+            }
+          />
+        </>
+      )}
       <TextInput
         accessibilityLabel="Not metni"
         value={metin}

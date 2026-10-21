@@ -140,3 +140,8 @@ Sonuç: → kararlar.md (Rites önerileri Kütüphanem'de; içerik kataloğu ind
 Ne dedi: "Notlarda altında Göster düğmesi var ve 2 notu görebiliyoruz, daha fazlası için tümüne ulaşıyoruz. Girişteki widget'larda ilgili modüle gitmek için bir ikon bulunsun: notlarda sticky note gibi bir ikonla notlar açılabilsin, Bugün sırada ajanda ikonuyla ajandayı açabilsin. Son iki notu göstermek yerine iğnelenen notlar ana ekranda bulunabilir."
 Nerede: Giriş
 Sonuç: → kararlar.md (Giriş: kutularda modül simgesi; Giriş'te iğneli notlar)
+
+### P-26 · 21 Ekim 2026 · Behnan
+Ne dedi: "Notlarda ses kayıt ikonu ile klavyede çıkan mikrofon (sesi dikte eden) karışıyor. Doğrudan ses dikteyi açmamız mümkün mü?" Sonra: "2 simge olması daha uygun. Kayda başladığında İptal düğmesi de olmalı. Bir beste ilhamı geldi ve kaydetti; kaydedilmiş sesli notun örneğin mp3 olarak paylaş (ya da kaydet) seçeneği güzel olur."
+Nerede: Giriş → Hızlı Not; not sayfası
+Sonuç: → kararlar.md (Hızlı Not: söyleneni yazıya çeviren mikrofon ve ayrı ses kaydı; sesli notu paylaşma)
