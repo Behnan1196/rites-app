@@ -1,7 +1,6 @@
 // Devam edenler: en çok 3 uygulanan program (pilot 20 Ekim; eskiden planlar);
 // her satırda sol şerit, ad, sıradaki iş ve bugünkü ilerleme. Başlığın solundaki yaprak simgesi Yaşam Tarzım'ı açar.
 
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -9,6 +8,7 @@ import { DEVAM_EN_COK, fazlaProgramMetni, PROGRAM_YOK_METNI } from '@/mantik/pro
 
 import { kaynakRenk, olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
+import { KutuSimgesi } from './KutuSimgesi';
 import { ModulDugmesi } from './ModulDugmesi';
 import { useProgramlar } from '../yasam/useProgramlar';
 
@@ -25,7 +25,7 @@ export function DevamEdenler() {
         <ModulDugmesi
           etiket="Yaşam Tarzım'ı aç"
           onPress={() => router.navigate('/yasam')}
-          simge={<Ionicons name="leaf-outline" size={24} color={renk.ana} />}
+          simge={<KutuSimgesi k="devam" />}
         />
         <Yazi tur="kutuBasligi" accessibilityRole="header">
           Devam edenler

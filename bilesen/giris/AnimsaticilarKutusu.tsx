@@ -18,6 +18,7 @@ import { Dugme } from '../Dugme';
 import { useKisaMesaj } from '../KisaMesaj';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
+import { KutuSimgesi } from './KutuSimgesi';
 import { ModulDugmesi } from './ModulDugmesi';
 
 const ac = () => router.push('/giris/animsaticilar');
@@ -85,7 +86,7 @@ export function AnimsaticilarKutusu() {
           etiket="Anımsatıcılar'ı aç"
           onPress={ac}
           zemin={renk.vurguAcik}
-          simge={<Ionicons name="notifications-outline" size={24} color={renk.vurguYazi} />}
+          simge={<KutuSimgesi k="animsatici" />}
         />
         <View style={stiller.esnek}>
           <Yazi tur="kutuBasligi" renk={renk.vurguYazi}>

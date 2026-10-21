@@ -1,16 +1,33 @@
-import { kutuAcikMi, kutuSirasi, kutuTasi, hazirKutular } from '../giris';
+import { kutuAcikMi, kutulariSirala, kutuSirasi, kutuTasi, hazirKutular } from '../giris';
 import { sonYedekMetni, yedekDosyaAdi, yedekSorunu, yedekSorusu, yollariCevir } from '../yedek';
 
 const BUGUN = '2026-10-13';
 
 describe('Giriş kutuları (G-7, 05 §10)', () => {
   it('varsayılan sıra, hepsi açık', () => {
-    expect(kutuSirasi(null).map((a) => a.k)).toEqual(['not', 'gelenler', 'bugun', 'animsatici', 'devam', 'soru', 'su', 'ortak']);
+    expect(kutuSirasi(null).map((a) => a.k)).toEqual([
+      'not',
+      'gelenler',
+      'bugun',
+      'animsatici',
+      'devam',
+      'soru',
+      'su',
+      'ortak',
+    ]);
     expect(kutuSirasi(null).every((a) => a.acik)).toBe(true);
   });
   it('kayıtlı sıra korunur; bilinmeyen atılır, yeni kutu sona açık eklenir', () => {
-    const s = kutuSirasi([{ k: 'devam', acik: false }, { k: 'koc' as never, acik: true }, { k: 'not', acik: true }]);
-    expect(s.slice(0, 3)).toEqual([{ k: 'devam', acik: false }, { k: 'not', acik: true }, { k: 'gelenler', acik: true }]);
+    const s = kutuSirasi([
+      { k: 'devam', acik: false },
+      { k: 'koc' as never, acik: true },
+      { k: 'not', acik: true },
+    ]);
+    expect(s.slice(0, 3)).toEqual([
+      { k: 'devam', acik: false },
+      { k: 'not', acik: true },
+      { k: 'gelenler', acik: true },
+    ]);
     expect(s).toHaveLength(8);
     expect(kutuAcikMi(s, 'devam')).toBe(false);
   });
@@ -24,6 +41,13 @@ describe('Giriş kutuları (G-7, 05 §10)', () => {
     // Son görünen aşağı inemez, ilk görünen yukarı çıkamaz.
     expect(kutuTasi(t, 'animsatici', 1)).toEqual(t);
     expect(kutuTasi(s, 'not', -1)).toEqual(s);
+  });
+  it('sürükleyerek sıralama: görünmeyenler yerinde kalır', () => {
+    const s = kutuSirasi(null).map((a) => (a.k === 'gelenler' ? { ...a, acik: false } : a));
+    const t = kutulariSirala(s, ['devam', 'not', 'gelenler', 'bugun', 'animsatici']);
+    expect(t.map((a) => a.k)).toEqual(['devam', 'not', 'gelenler', 'bugun', 'animsatici', 'soru', 'su', 'ortak']);
+    expect(t.find((a) => a.k === 'gelenler')?.acik).toBe(false);
+    expect(kutulariSirala(s, ['not'])).toEqual(s);
   });
 });
 
@@ -57,6 +81,11 @@ describe('yedek (PR-2, 10 madde 10)', () => {
       eski,
       yeni,
     );
-    expect(s[0]).toEqual({ dosya: `${yeni}a.jpg`, fotolar: JSON.stringify({ b1: `${yeni}b.jpg` }), sayi: 3, bos: null });
+    expect(s[0]).toEqual({
+      dosya: `${yeni}a.jpg`,
+      fotolar: JSON.stringify({ b1: `${yeni}b.jpg` }),
+      sayi: 3,
+      bos: null,
+    });
   });
 });

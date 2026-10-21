@@ -24,6 +24,7 @@ import { useNotSayfasi } from '../not/NotSayfasi';
 import { YapiskanNot } from '../not/YapiskanNot';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
+import { KutuSimgesi } from './KutuSimgesi';
 import { ModulDugmesi } from './ModulDugmesi';
 import { useDikte } from './useDikte';
 import { useSesKaydi } from './useSesKaydi';
@@ -111,7 +112,7 @@ export function HizliNot() {
         <ModulDugmesi
           etiket={`Notlar'ı aç${notlar.length ? `, ${notlar.length} not` : ''}`}
           onPress={notlariAc}
-          simge={<MaterialCommunityIcons name="note-multiple-outline" size={24} color={renk.ana} />}
+          simge={<KutuSimgesi k="not" />}
         />
         <Yazi tur="kutuBasligi" accessibilityRole="header" style={stiller.esnek}>
           Hızlı Not

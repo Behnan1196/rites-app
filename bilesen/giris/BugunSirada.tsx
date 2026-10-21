@@ -1,4 +1,5 @@
-// Bugün sırada (G-8) ve altında "Geçmişten kalan N iş ›" satırı (A-7). Başlığın solunda
+// Bugün sırada (G-8; pilot 21 Ekim: sıradaki iş beyaz bir kart, "Yaptım" kartın üstünde;
+// kart açılabiliyorsa dokununca açılır) ve altında "Geçmişten kalan N iş ›" satırı (A-7). Başlığın solunda
 // takvim simgesi Ajandam'ı açar (pilot 21 Ekim).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -7,6 +8,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { gununKartlari } from '@/mantik/ajanda';
 import { kalanIsMetni, siradaki } from '@/mantik/giris';
+import { tekrarMetni } from '@/mantik/gorunurluk';
 import { kalanlar } from '@/mantik/kalanlar';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { maddeKarti, maddeKartiMi } from '@/mantik/listeler';
@@ -20,6 +22,7 @@ import { useKisaMesaj } from '../KisaMesaj';
 import { useBanaVerilenler } from '../listeler/BanaVerilenler';
 import { renk } from '../tema';
 import { Yazi } from '../Yazi';
+import { KutuSimgesi } from './KutuSimgesi';
 import { ModulDugmesi } from './ModulDugmesi';
 
 export function BugunSirada() {
@@ -50,7 +53,7 @@ export function BugunSirada() {
           koyu
           etiket="Ajandam'ı aç"
           onPress={() => router.navigate({ pathname: '/ajandam', params: { gun: bugunGun, an: String(Date.now()) } })}
-          simge={<Ionicons name="calendar-outline" size={24} color={renk.yuzey} />}
+          simge={<KutuSimgesi k="bugun" renkler={renk.yuzey} />}
         />
         <Yazi tur="kutuBasligi" renk={renk.anaKoyuUstuYazi} accessibilityRole="header">
           Bugün sırada
@@ -59,49 +62,53 @@ export function BugunSirada() {
 
       {sira ? (
         <>
-          <View style={stiller.ust}>
-            <View style={stiller.esnek}>
-              <Yazi kalinlik="kalin" renk={renk.yuzey} style={stiller.baslik} numberOfLines={3}>
-                {sira.kart.baslik}
-              </Yazi>
-              <Yazi renk={renk.anaKoyuUstuYazi}>{sira.kart.saat ?? 'Bugün'}</Yazi>
-            </View>
-            {(sira.kart.blokSayisi > 0 || sira.kart.kilitli || maddeKartiMi(sira.kart)) && (
-              <Pressable
-                onPress={() => {
-                  const k = sira.kart;
-                  if (maddeKartiMi(k)) router.push({ pathname: '/giris/liste/[id]', params: { id: k.listeId } });
-                  else router.push({ pathname: '/kart/[id]', params: { id: k.id, gun: bugunGun } });
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={`${sira.kart.baslik}: aç`}
-                style={({ pressed }) => [stiller.ac, pressed && { opacity: 0.7 }]}
-              >
-                <Yazi kalinlik="kalin" renk={renk.yuzey}>
-                  Aç
-                </Yazi>
-              </Pressable>
-            )}
-          </View>
-          <Pressable
-            onPress={async () => {
-              const k = sira.kart;
-              if (maddeKartiMi(k)) {
-                if (!(await verilenler.isaretle(k.maddeId, true))) {
-                  kisaMesaj(BAGLANAMIYOR);
-                  return;
-                }
-              } else await isaretle(kapi, k.id, bugunGun, true);
-              kisaMesaj(`Yapıldı: ${k.baslik}`);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={`${sira.kart.baslik}: yaptım`}
-            style={({ pressed }) => [stiller.yaptim, pressed && { opacity: 0.85 }]}
-          >
-            <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.yaptimYazi}>
-              Yaptım
-            </Yazi>
-          </Pressable>
+          {(() => {
+            const k = sira.kart;
+            const acilir = k.blokSayisi > 0 || k.kilitli || maddeKartiMi(k);
+            const ac = () => {
+              if (maddeKartiMi(k)) router.push({ pathname: '/giris/liste/[id]', params: { id: k.listeId } });
+              else router.push({ pathname: '/kart/[id]', params: { id: k.id, gun: bugunGun } });
+            };
+            const meta = [k.saat ?? 'Bugün', k.tekrar ? tekrarMetni(k.tekrar) : null].filter(Boolean).join(' · ');
+            return (
+              <View style={stiller.kart}>
+                <Pressable
+                  onPress={acilir ? ac : undefined}
+                  disabled={!acilir}
+                  accessibilityRole={acilir ? 'button' : undefined}
+                  accessibilityLabel={`${k.baslik}, ${meta}${acilir ? ', aç' : ''}`}
+                  style={({ pressed }) => [stiller.kartUst, pressed && { opacity: 0.7 }]}
+                >
+                  <View style={stiller.esnek}>
+                    <Yazi kalinlik="kalin" style={stiller.baslik} numberOfLines={3}>
+                      {k.baslik}
+                    </Yazi>
+                    <Yazi tur="ikincil">{meta}</Yazi>
+                  </View>
+                  {acilir && <Ionicons name="chevron-forward" size={24} color={renk.soluk} />}
+                </Pressable>
+                <Pressable
+                  onPress={async () => {
+                    if (maddeKartiMi(k)) {
+                      if (!(await verilenler.isaretle(k.maddeId, true))) {
+                        kisaMesaj(BAGLANAMIYOR);
+                        return;
+                      }
+                    } else await isaretle(kapi, k.id, bugunGun, true);
+                    kisaMesaj(`Yapıldı: ${k.baslik}`);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${k.baslik}: yaptım`}
+                  style={({ pressed }) => [stiller.yaptim, pressed && { opacity: 0.85 }]}
+                >
+                  <Ionicons name="checkmark" size={26} color={renk.yuzey} />
+                  <Yazi kalinlik="kalin" renk={renk.yuzey} style={stiller.yaptimYazi}>
+                    Yaptım
+                  </Yazi>
+                </Pressable>
+              </View>
+            );
+          })()}
           <Yazi renk={renk.anaKoyuUstuYazi}>{kalanIsMetni(sira.kalan)}</Yazi>
         </>
       ) : (
@@ -134,23 +141,16 @@ const stiller = StyleSheet.create({
   kutu: { backgroundColor: renk.ana, borderRadius: 22, padding: 20, gap: 12 },
   basliklar: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: -6 },
   bos: { minHeight: 180 },
-  ust: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   esnek: { flex: 1 },
-  baslik: { fontSize: 26, lineHeight: 32 },
-  ac: {
-    minHeight: 52,
-    minWidth: 76,
-    paddingHorizontal: 16,
-    borderRadius: 26,
-    borderWidth: 2,
-    borderColor: renk.anaKoyuUstuYazi,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  baslik: { fontSize: 24, lineHeight: 30 },
+  kart: { backgroundColor: renk.yuzey, borderRadius: 18, padding: 16, gap: 14 },
+  kartUst: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   yaptim: {
     minHeight: 60,
     borderRadius: 16,
-    backgroundColor: renk.yuzey,
+    backgroundColor: renk.ana,
+    flexDirection: 'row',
+    gap: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },

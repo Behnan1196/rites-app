@@ -20,6 +20,7 @@ import { useGrupBekleyenleri } from '../gruplar/useGrupBekleyenleri';
 import { useGruplar } from '../gruplar/useGruplar';
 import { useKisiler } from '../gruplar/useKisiler';
 import { Yazi } from '../Yazi';
+import { KutuSimgesi } from './KutuSimgesi';
 import { ModulDugmesi } from './ModulDugmesi';
 import { useGelenler } from './useGelenler';
 
@@ -60,7 +61,7 @@ export function GelenlerKutusu() {
       <ModulDugmesi
         etiket="Gelenler'i aç"
         onPress={() => router.push('/giris/gelenler')}
-        simge={<Ionicons name="file-tray-outline" size={24} color={renk.ana} />}
+        simge={<KutuSimgesi k="gelenler" />}
       />
       <View style={stiller.esnek}>
         <View style={stiller.ust}>

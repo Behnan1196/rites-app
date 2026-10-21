@@ -57,6 +57,8 @@ interface Ozellikler {
   altAlan?: ReactNode;
   /** Sayfa zemini (not sayfası sarıdır). */
   zemin?: string;
+  /** İçerik kayabilir mi (sürükleyerek sıralarken kapatılır). */
+  kaydirilabilir?: boolean;
   /** Sayfanın üstünde gösterilecek onay kutusu (ör. "Hangi günler silinsin?"). */
   onay?: { baslik: string; aciklama?: string | null; secenekler: OnaySecenegi[] } | null;
   children: ReactNode;
@@ -77,6 +79,7 @@ export function AltSayfa({
   altAlan,
   zemin = renk.zemin,
   onay = null,
+  kaydirilabilir = true,
   children,
 }: Ozellikler) {
   const { height: ekranYuksekligi } = useWindowDimensions();
@@ -248,6 +251,7 @@ export function AltSayfa({
             style={stiller.icerikKaydirma}
             contentContainerStyle={[stiller.icerik, !altAlan && { paddingBottom: kenar.bottom + 24 }]}
             keyboardShouldPersistTaps="handled"
+            scrollEnabled={kaydirilabilir}
           >
             {children}
           </ScrollView>

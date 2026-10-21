@@ -150,3 +150,8 @@ Sonuç: → kararlar.md (Hızlı Not: söyleneni yazıya çeviren mikrofon ve ay
 Ne dedi: "Girişteki widget'larda gideceği uygulamanın ikonunun sağda değil solda en başta olması daha iyi olacak. Ses kayıt belki not giriş kutusunun içinde değil, sağında ayrı ya da üstte dursa; ses kaydına not giriş kutusunda bir isim verebilir miyiz? Bir de dikte sırasında bir şeyler söylüyorum, kutuya yazıyor; biraz ara verip devam ettiğimde eskisini kaybedip yeniden yazıyor."
 Nerede: Giriş, Hızlı Not
 Sonuç: → kararlar.md (Hızlı Not: ses kaydı başlık satırında…; dikte duraklamada silinmez)
+
+### P-28 · 21 Ekim 2026 · Behnan
+Ne dedi: "Giriş ekranında görünecek widget'ları seçtiğimiz ekranda widget adları da aynı ikonu kullansın; uyumluluk açısından sıralarını değiştirme de üstüne basılı tutarak başlatılsın. Bir de Bugün Sırada'da yapılacak iş daha kart gibi görünse, belki Yaptım da o kartın üzerinde olur."
+Nerede: Giriş, Giriş ayarı
+Sonuç: → kararlar.md (Giriş ayarı ve Bugün sırada kartı)

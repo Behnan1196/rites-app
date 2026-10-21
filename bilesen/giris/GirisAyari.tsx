@@ -1,20 +1,31 @@
 // "Giriş'te neler görünsün?" (G-7): alttan sayfa. Giriş'in altındaki bağlantı ve
 // Profil → Giriş ekranı aynı sayfayı açar. Değişiklik hemen kaydedilir.
+// Pilot 21 Ekim: her satırda kutunun simgesi; sıra, satıra uzun basıp sürükleyerek
+// değişir (oklar kalktı; ekran okuyucuda "Yukarı / Aşağı taşı").
 
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { GIRIS_AYARI_ACIKLAMASI, hazirKutular, KUTULAR, kutuSirasi, kutuTasi, type KutuAyari } from '@/mantik/giris';
+import {
+  GIRIS_AYARI_ACIKLAMASI,
+  hazirKutular,
+  KUTULAR,
+  kutulariSirala,
+  kutuSirasi,
+  type KutuAnahtari,
+  type KutuAyari,
+} from '@/mantik/giris';
 import { ayarYaz } from '@/veri/ayar';
 import { useAyar } from '@/veri/kancalar';
 import { useVeri } from '@/veri/VeriSaglayici';
 
+import { SiraliKartlar } from '../ajanda/SiraliKartlar';
 import { AltSayfa } from '../AltSayfa';
 import { useKisaMesaj } from '../KisaMesaj';
 import { AcKapa } from '../Secim';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
+import { kutuRengi, KutuSimgesi } from './KutuSimgesi';
 
 const Baglam = createContext<{ girisAyariniAc: () => void } | null>(null);
 
@@ -46,8 +57,9 @@ function GirisAyari({ gorunur, onKapat }: { gorunur: boolean; onKapat: () => voi
   const { kapi } = useVeri();
   const kisaMesaj = useKisaMesaj();
   const sira = useKutuSirasi();
+  const [surukleniyor, setSurukleniyor] = useState(false);
   if (!sira) return null;
-  const gorunen = hazirKutular(sira);
+  const gorunen = hazirKutular(sira).map((a, i) => ({ ...a, id: a.k, sira: i }));
 
   const yaz = (yeni: KutuAyari[]) =>
     ayarYaz(kapi, 'giris_kutulari', yeni).catch((e: unknown) => {
@@ -56,62 +68,65 @@ function GirisAyari({ gorunur, onKapat }: { gorunur: boolean; onKapat: () => voi
     });
 
   return (
-    <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Giriş'te neler görünsün?" sagKapat="Bitti">
+    <AltSayfa
+      gorunur={gorunur}
+      onKapat={onKapat}
+      baslik="Giriş'te neler görünsün?"
+      sagKapat="Bitti"
+      kaydirilabilir={!surukleniyor}
+    >
       <Yazi tur="ikincil">{GIRIS_AYARI_ACIKLAMASI}</Yazi>
-      <View style={stiller.liste}>
-        {gorunen.map((a, i) => {
+      <SiraliKartlar
+        kartlar={gorunen}
+        aralik={8}
+        onSurukleme={setSurukleniyor}
+        onSira={(kimlikler) => void yaz(kutulariSirala(sira, kimlikler as KutuAnahtari[]))}
+        satir={(a, surukle) => {
           const t = KUTULAR.find((x) => x.k === a.k)!;
           return (
-            <View key={a.k} style={[stiller.satir, i > 0 && stiller.cizgili]}>
+            <Pressable
+              onLongPress={surukle.onUzunBas}
+              delayLongPress={300}
+              onPressOut={surukle.onBirak}
+              accessibilityActions={surukle.eylemler}
+              onAccessibilityAction={surukle.onEylem}
+              accessibilityLabel={`${t.ad}. ${t.aciklama}`}
+              accessibilityHint="Sırasını değiştirmek için uzun basıp sürükle"
+              style={stiller.satir}
+            >
+              <View style={[stiller.simge, { backgroundColor: kutuRengi(a.k).zemin }]}>
+                <KutuSimgesi k={a.k} />
+              </View>
               <View style={stiller.esnek}>
                 <Yazi kalinlik="kalin">{t.ad}</Yazi>
                 <Yazi tur="ikincil">{t.aciklama}</Yazi>
               </View>
-              <Ok yon="yukari" ad={t.ad} pasif={i === 0} onPress={() => void yaz(kutuTasi(sira, a.k, -1))} />
-              <Ok
-                yon="asagi"
-                ad={t.ad}
-                pasif={i === gorunen.length - 1}
-                onPress={() => void yaz(kutuTasi(sira, a.k, 1))}
-              />
               <AcKapa
                 acik={a.acik}
                 etiket={t.ad}
                 onDegis={(acik) => void yaz(sira.map((x) => (x.k === a.k ? { ...x, acik } : x)))}
               />
-            </View>
+            </Pressable>
           );
-        })}
-      </View>
+        }}
+      />
     </AltSayfa>
   );
 }
 
-function Ok({ yon, ad, pasif, onPress }: { yon: 'yukari' | 'asagi'; ad: string; pasif: boolean; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={pasif}
-      accessibilityRole="button"
-      accessibilityState={{ disabled: pasif }}
-      accessibilityLabel={`${ad}: ${yon === 'yukari' ? 'yukarı al' : 'aşağı al'}`}
-      style={({ pressed }) => [stiller.ok, pressed && { opacity: 0.6 }]}
-    >
-      <Ionicons name={yon === 'yukari' ? 'arrow-up' : 'arrow-down'} size={24} color={pasif ? renk.pasif : renk.ana} />
-    </Pressable>
-  );
-}
-
 const stiller = StyleSheet.create({
-  liste: {
+  satir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 72,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     backgroundColor: renk.yuzey,
     borderWidth: 1,
     borderColor: renk.cizgi,
     borderRadius: olcu.kose.kart,
-    paddingHorizontal: 14,
   },
-  satir: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 72, paddingVertical: 10 },
-  cizgili: { borderTopWidth: 1, borderTopColor: renk.satirCizgi },
+  simge: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   esnek: { flex: 1, paddingRight: 4 },
-  ok: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
 });

@@ -95,7 +95,7 @@ export function kutuSatirlari(kutular: readonly KutuAnahtari[]): KutuAnahtari[][
 }
 
 export const GIRIS_AYARI_ACIKLAMASI =
-  "Okla sırasını değiştir, düğmeyle aç ya da kapat. Kapattığın kutu silinmez, yalnız Giriş'ten kalkar.";
+  "Sırasını değiştirmek için satıra uzun basıp sürükle; düğmeyle aç ya da kapat. Kapattığın kutu silinmez, yalnız Giriş'ten kalkar.";
 
 /**
  * Kayıtlı ayar ile bilinen kutuları birleştirir: bilinmeyenler atılır, kayıtta
@@ -131,6 +131,22 @@ export function kutuTasi(sira: readonly KutuAyari[], k: KutuAnahtari, yon: -1 | 
   const yeni = [...sira];
   [yeni[a], yeni[b]] = [yeni[b]!, yeni[a]!];
   return yeni;
+}
+
+/**
+ * Sürükleyerek sıralama (pilot 21 Ekim): görünen kutuların yeni sırası; görünmeyen
+ * (henüz yazılmamış) kutular yerinde kalır, görünenler kendi yerlerine yeni sırayla oturur.
+ */
+export function kutulariSirala(sira: readonly KutuAyari[], gorunenYeniSira: readonly KutuAnahtari[]): KutuAyari[] {
+  const gorunen = new Set(hazirKutular(sira).map((a) => a.k));
+  const kuyruk = gorunenYeniSira.filter((k) => gorunen.has(k));
+  if (kuyruk.length !== gorunen.size) return [...sira];
+  let i = 0;
+  return sira.map((a) => {
+    if (!gorunen.has(a.k)) return a;
+    const k = kuyruk[i++];
+    return { ...sira.find((x) => x.k === k)! };
+  });
 }
 
 export function kutuAcikMi(sira: readonly KutuAyari[], k: KutuAnahtari): boolean {

@@ -297,3 +297,8 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Modül simgeleri kutuların solunda, en başta** (sağda değil). — Ürün sahibi (P-27)
 - **"Ses kaydı" düğmesi Hızlı Not'un başlık satırında sağda** (dalga + "Ses kaydı"); yazı kutusunda yalnız mikrofon (dikte) ve yazı varken kaydet oku kalır. Kayıt sürerken yazı kutusu açık kalır ("Kaydın adı (isteğe bağlı)"), altında Kaydediliyor… · İptal · Bitir; kutuya yazılan **kaydın adı** olur, boşsa "Sesli not". — Ürün sahibi (P-27; başlık satırı: Öneri)
 - **Dikte duraklamada öncekini silmiyor:** iPhone her duraklamada parçayı kesinleştirip yeni parçaya baştan başlıyor; kesin parçalar birikip arka arkaya ekleniyor. — Hata düzeltmesi (P-27)
+
+## Giriş ayarı ve Bugün sırada kartı (21 Ekim)
+
+- **"Giriş'te neler görünsün?"** listesinde her kutunun adının solunda kutudaki simgenin aynısı; sıra, satıra **uzun basıp sürükleyerek** değişir (↑ ↓ okları kalktı; ekran okuyucuda "Yukarı / Aşağı taşı"). Aç / kapat düğmesi yerinde. — Ürün sahibi (P-28)
+- **Bugün sırada:** sıradaki iş koyu kutunun içinde beyaz bir **kart**: başlık, saat ve tekrar; açılabilen kartta dokununca açılır (›); **"Yaptım" kartın üstünde** (dolu, ✓). Altında "Bugün N iş daha var" ve "Geçmişten kalan" eskisi gibi. — Ürün sahibi (P-28; kartın içeriği: Öneri)
