@@ -43,6 +43,7 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 13 | `kart.bag`: kartın bir grup etkinliğine bağı (`bulusma:<id>\|<gün>\|<saat>`); kaynağı `grup` olan kart (grubun adı `gelen_kimden`de) |
 | 14 | `animsatici.ses` (bildirim sesi; null = telefonun sesi) |
 | 15 | Planlar yerine **programlar**: pilottaki planlar, kartları ve kütüphanedeki plan kopyaları silinir; `plan` ve `soru_cevap` kalkar. Yeni: `program` (ad, alanlar JSON, neden, süre gün / null, durum `hazir\|uygulaniyor\|ara\|bitti`, son başlangıç, yıldız, değerlendirme, kaynak), `program_kart` (programın kartı: gün = başlangıçtan kaç gün sonra, saat, hatırlatma, alarm, tekrar, bloklar JSON). `alan_durumu`na `ad`, `aciklama`, `sira` (kişinin eklediği alan, anahtar `ozel-<id>`). `kart.plan_id` artık programı gösterir |
+| 16 | `not.igneli` (Giriş'te görünen notlar) |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 
@@ -55,7 +56,7 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Tek JSON dosyası, adı `rites-yedek-YYYY-AA-GG.json`, parolasız.
 - Alanlar:
   - `bicim`: `"rites-yedek"`
-  - `surum`: veritabanı göç sürümü (şu an 15)
+  - `surum`: veritabanı göç sürümü (şu an 16)
   - `olusturma`: ISO zaman
   - `dosyaKlasoru`: yedeği alan telefondaki dosya klasörü (geri yüklemede yollar yeni klasöre çevrilir)
   - `tablolar`: `{ tabloAdı: satır[] }` — satırlar SQLite sütun adlarıyla; JSON sütunlar metin olarak

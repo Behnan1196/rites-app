@@ -1,4 +1,5 @@
-// Bugün sırada (G-8) ve altında "Geçmişten kalan N iş ›" satırı (A-7).
+// Bugün sırada (G-8) ve altında "Geçmişten kalan N iş ›" satırı (A-7). Başlık hizasında
+// sağda takvim simgesi Ajandam'ı açar (pilot 21 Ekim).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
@@ -19,6 +20,7 @@ import { useKisaMesaj } from '../KisaMesaj';
 import { useBanaVerilenler } from '../listeler/BanaVerilenler';
 import { renk } from '../tema';
 import { Yazi } from '../Yazi';
+import { ModulDugmesi } from './ModulDugmesi';
 
 export function BugunSirada() {
   const { kapi } = useVeri();
@@ -43,9 +45,17 @@ export function BugunSirada() {
 
   return (
     <View style={stiller.kutu}>
-      <Yazi tur="kutuBasligi" renk={renk.anaKoyuUstuYazi} accessibilityRole="header">
-        Bugün sırada
-      </Yazi>
+      <View style={stiller.basliklar}>
+        <Yazi tur="kutuBasligi" renk={renk.anaKoyuUstuYazi} accessibilityRole="header">
+          Bugün sırada
+        </Yazi>
+        <ModulDugmesi
+          koyu
+          etiket="Ajandam'ı aç"
+          onPress={() => router.navigate({ pathname: '/ajandam', params: { gun: bugunGun, an: String(Date.now()) } })}
+          simge={<Ionicons name="calendar-outline" size={24} color={renk.yuzey} />}
+        />
+      </View>
 
       {sira ? (
         <>
@@ -122,6 +132,7 @@ export function BugunSirada() {
 
 const stiller = StyleSheet.create({
   kutu: { backgroundColor: renk.ana, borderRadius: 22, padding: 20, gap: 12 },
+  basliklar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: -6 },
   bos: { minHeight: 180 },
   ust: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   esnek: { flex: 1 },
@@ -156,4 +167,3 @@ const stiller = StyleSheet.create({
   },
   turuncuNokta: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#F2B05E' },
 });
-

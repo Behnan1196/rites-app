@@ -11,18 +11,21 @@ interface Ozellikler {
   notlar: readonly Not[];
   onAc: (not: Not) => void;
   onSira: (kimlikler: string[]) => void;
+  onIgne: (not: Not, igneli: boolean) => void;
   /** Sürükleme başlayınca true, bitince false (ekran kaydırması durdurulsun diye). */
   onSurukleme: (aktif: boolean) => void;
 }
 
-export function SiraliNotlar({ notlar, onAc, onSira, onSurukleme }: Ozellikler) {
+export function SiraliNotlar({ notlar, onAc, onSira, onIgne, onSurukleme }: Ozellikler) {
   return (
     <SiraliKartlar
       kartlar={notlar}
       aralik={10}
       onSira={onSira}
       onSurukleme={onSurukleme}
-      satir={(not, surukle) => <YapiskanNot not={not} onPress={() => onAc(not)} surukle={surukle} />}
+      satir={(not, surukle) => (
+        <YapiskanNot not={not} onPress={() => onAc(not)} surukle={surukle} onIgne={(i) => onIgne(not, i)} />
+      )}
     />
   );
 }

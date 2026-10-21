@@ -1,14 +1,16 @@
-// Hızlı Not kutusu (G-2, G-2a, G-2b).
+// Hızlı Not kutusu (G-2, G-2a, G-2b; pilot 21 Ekim).
+// - Başlık hizasında sağda yapışkan not simgesi: Notlar'ı açar.
 // - Yazı kutusu doğrudan görünür; sağda tek düğme: boşken mikrofon, yazı varken ok.
-// - Notlar her açılışta ve arka plandan dönüşte gizli başlar.
-// - Notlar kapalıyken kaydedilen not için 4 sn "Kaydedildi: …" satırı.
+// - Altında yalnız iğnelenen notlar (en çok 3, fazlası "N not daha"); "Göster /
+//   Gizle" ve en yeni iki not kalktı. Kaydedilen not için 4 sn "Kaydedildi: …".
 
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { AppState, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
-import { enYeniNotlar } from '@/mantik/giris';
+import { igneliNotlar } from '@/mantik/giris';
 import { useSorgu } from '@/veri/kancalar';
 import { yeniKimlik } from '@/veri/kimlik';
 import { notEkle, notlariOku } from '@/veri/notlar';
@@ -19,6 +21,7 @@ import { useNotSayfasi } from '../not/NotSayfasi';
 import { YapiskanNot } from '../not/YapiskanNot';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
+import { ModulDugmesi } from './ModulDugmesi';
 import { useSesKaydi } from './useSesKaydi';
 
 const KAYDEDILDI_SURESI = 4000;
@@ -31,17 +34,9 @@ export function HizliNot() {
   const ses = useSesKaydi();
 
   const [metin, setMetin] = useState('');
-  const [gizli, setGizli] = useState(true);
   const [kaydedildi, setKaydedildi] = useState<string | null>(null);
   const zamanlayici = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Arka plandan dönünce notlar yine kapalı.
-  useEffect(() => {
-    const abonelik = AppState.addEventListener('change', (durum) => {
-      if (durum !== 'active') setGizli(true);
-    });
-    return () => abonelik.remove();
-  }, []);
   useEffect(
     () => () => {
       if (zamanlayici.current) clearTimeout(zamanlayici.current);
@@ -50,7 +45,6 @@ export function HizliNot() {
   );
 
   const eklendi = (yazi: string) => {
-    if (!gizli) return;
     setKaydedildi(yazi);
     if (zamanlayici.current) clearTimeout(zamanlayici.current);
     zamanlayici.current = setTimeout(() => setKaydedildi(null), KAYDEDILDI_SURESI);
@@ -82,8 +76,21 @@ export function HizliNot() {
 
   const yaziVar = metin.trim() !== '';
 
+  const { gosterilen, fazla } = igneliNotlar(notlar);
+  const notlariAc = () => router.push('/giris/notlar');
+
   return (
     <View style={stiller.kutu}>
+      <View style={stiller.baslik}>
+        <Yazi tur="kutuBasligi" accessibilityRole="header">
+          Hızlı Not
+        </Yazi>
+        <ModulDugmesi
+          etiket={`Notlar'ı aç${notlar.length ? `, ${notlar.length} not` : ''}`}
+          onPress={notlariAc}
+          simge={<MaterialCommunityIcons name="note-multiple-outline" size={24} color={renk.ana} />}
+        />
+      </View>
       {ses.dinliyor ? (
         <View style={[stiller.giris, stiller.dinliyor]} accessibilityLiveRegion="polite">
           <View style={stiller.kirmiziNokta} />
@@ -126,7 +133,7 @@ export function HizliNot() {
         </View>
       )}
 
-      {kaydedildi && gizli && (
+      {kaydedildi && (
         <View style={stiller.kaydedildi} accessibilityLiveRegion="polite">
           <Ionicons name="checkmark-circle" size={20} color={renk.ana} />
           <Yazi tur="ikincil" numberOfLines={1} style={stiller.esnek}>
@@ -135,42 +142,22 @@ export function HizliNot() {
         </View>
       )}
 
-      {notlar.length > 0 && (
-        <>
-          <View style={stiller.ayrac} />
-          <View style={stiller.satir}>
-            <Yazi tur="ikincil">{`${notlar.length} not`}</Yazi>
-            <Pressable
-              onPress={() => setGizli(!gizli)}
-              accessibilityRole="button"
-              accessibilityLabel={gizli ? 'Notları göster' : 'Notları gizle'}
-              style={stiller.goz}
-              hitSlop={6}
-            >
-              <Ionicons name={gizli ? 'eye-outline' : 'eye-off-outline'} size={24} color={renk.ana} />
-              <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.gozYazi}>
-                {gizli ? 'Göster' : 'Gizle'}
-              </Yazi>
+      {gosterilen.length > 0 && (
+        <View style={stiller.notlar}>
+          {gosterilen.map((n) => (
+            <YapiskanNot key={n.id} not={n} onPress={() => notSayfasi.ac(n)} />
+          ))}
+          {fazla > 0 && (
+            <Pressable onPress={notlariAc} accessibilityRole="button" style={stiller.tumu} hitSlop={6}>
+              <Yazi kalinlik="kalin" renk={renk.ana}>{`${fazla} iğneli not daha ›`}</Yazi>
             </Pressable>
-          </View>
-          {!gizli && (
-            <View style={stiller.notlar}>
-              {enYeniNotlar(notlar).map((n) => (
-                <YapiskanNot key={n.id} not={n} onPress={() => notSayfasi.ac(n)} />
-              ))}
-              {notlar.length > 2 && (
-                <Pressable
-                  onPress={() => router.push('/giris/notlar')}
-                  accessibilityRole="button"
-                  style={stiller.tumu}
-                  hitSlop={6}
-                >
-                  <Yazi kalinlik="kalin" renk={renk.ana}>{`Tümünü gör (${notlar.length}) ›`}</Yazi>
-                </Pressable>
-              )}
-            </View>
           )}
-        </>
+        </View>
+      )}
+      {gosterilen.length === 0 && notlar.length > 0 && !kaydedildi && (
+        <Yazi tur="ikincil" style={stiller.ipucu}>
+          {"Bir notu burada görmek için Notlar'da iğnele."}
+        </Yazi>
       )}
       {notSayfasi.oge}
     </View>
@@ -218,10 +205,8 @@ const stiller = StyleSheet.create({
   },
   esnek: { flex: 1 },
   kaydedildi: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 },
-  ayrac: { height: 1, backgroundColor: renk.cizgi },
-  satir: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 },
-  goz: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: olcu.enAzDokunma },
-  gozYazi: { fontSize: 19 },
   notlar: { gap: 10 },
+  baslik: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 4 },
+  ipucu: { paddingHorizontal: 4 },
   tumu: { alignSelf: 'flex-start', minHeight: olcu.enAzDokunma, justifyContent: 'center', paddingHorizontal: 4 },
 });

@@ -18,6 +18,7 @@ import { Dugme } from '../Dugme';
 import { useKisaMesaj } from '../KisaMesaj';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
+import { ModulDugmesi } from './ModulDugmesi';
 
 const ac = () => router.push('/giris/animsaticilar');
 
@@ -80,9 +81,6 @@ export function AnimsaticilarKutusu() {
         accessibilityLabel={`${ust}. ${alt}`}
         style={({ pressed }) => [stiller.sakin, pressed && { opacity: 0.75 }]}
       >
-        <View style={stiller.simge}>
-          <Ionicons name="notifications-outline" size={24} color={renk.vurguYazi} />
-        </View>
         <View style={stiller.esnek}>
           <Yazi tur="kutuBasligi" renk={renk.vurguYazi}>
             {ust}
@@ -91,7 +89,12 @@ export function AnimsaticilarKutusu() {
             {alt}
           </Yazi>
         </View>
-        <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
+        <ModulDugmesi
+          etiket="Anımsatıcılar'ı aç"
+          onPress={ac}
+          zemin={renk.vurguAcik}
+          simge={<Ionicons name="notifications-outline" size={24} color={renk.vurguYazi} />}
+        />
       </Pressable>
       {sureler.map((a) => (
         <View key={a.id} style={stiller.sureSatiri}>
@@ -128,14 +131,6 @@ const stiller = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: renk.satirCizgi,
     paddingTop: 8,
-  },
-  simge: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: renk.vurguAcik,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   esnek: { flex: 1 },
   alt: { fontSize: 18 },

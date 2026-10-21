@@ -1,4 +1,4 @@
-// Gelenler (G-3): Hızlı Not'un altında tek satır. Grup davetleri de burada
+// Gelenler (G-3): Hızlı Not'un altında tek satır; sağda zil ve Gelenler simgesi (pilot 21 Ekim). Grup davetleri de burada
 // sayılır (10. görev kararı); başka uygulamadan paylaşılan bağlantılar da
 // (16 Ekim). Oturum yoksa ve paylaşılan da yoksa görünmez.
 
@@ -20,6 +20,7 @@ import { useGrupBekleyenleri } from '../gruplar/useGrupBekleyenleri';
 import { useGruplar } from '../gruplar/useGruplar';
 import { useKisiler } from '../gruplar/useKisiler';
 import { Yazi } from '../Yazi';
+import { ModulDugmesi } from './ModulDugmesi';
 import { useGelenler } from './useGelenler';
 
 export function GelenlerKutusu() {
@@ -56,9 +57,6 @@ export function GelenlerKutusu() {
       accessibilityLabel={`Gelenler${sayi ? `, ${sayi} yeni` : ''}. ${ozet}`}
       style={({ pressed }) => [stiller.kutu, pressed && { opacity: 0.75 }]}
     >
-      <View style={stiller.simge}>
-        <Ionicons name="file-tray-outline" size={22} color={renk.ana} />
-      </View>
       <View style={stiller.esnek}>
         <View style={stiller.ust}>
           <Yazi tur="kartBasligi">Gelenler</Yazi>
@@ -94,7 +92,11 @@ export function GelenlerKutusu() {
           />
         </Pressable>
       )}
-      <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
+      <ModulDugmesi
+        etiket="Gelenler'i aç"
+        onPress={() => router.push('/giris/gelenler')}
+        simge={<Ionicons name="file-tray-outline" size={24} color={renk.ana} />}
+      />
     </Pressable>
   );
 }
@@ -111,14 +113,6 @@ const stiller = StyleSheet.create({
     paddingHorizontal: olcu.kartIci,
     paddingVertical: 12,
     minHeight: 64,
-  },
-  simge: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: renk.anaAcik,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   esnek: { flex: 1 },
   zil: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },

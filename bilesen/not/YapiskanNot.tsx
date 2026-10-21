@@ -1,4 +1,5 @@
-// Açık sarı yapışkan not görünümü (N-3, `06` Not renkleri).
+// Açık sarı yapışkan not görünümü (N-3, `06` Not renkleri). Notlar ekranında sağda
+// iğne: iğneli not Giriş'te görünür (pilot 21 Ekim).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
@@ -16,12 +17,15 @@ export function YapiskanNot({
   onPress,
   sol,
   surukle,
+  onIgne,
 }: {
   not: Not;
   onPress: () => void;
   sol?: ReactNode;
   /** Notlar ekranında uzun basıp sürükleyerek sıralama (pilot 19 Ekim). */
   surukle?: SurukleIslemleri;
+  /** Verilirse sağda iğne düğmesi (Notlar ekranı); verilmezse iğneli notta yalnız küçük iğne. */
+  onIgne?: (igneli: boolean) => void;
 }) {
   return (
     <View style={stiller.not}>
@@ -46,7 +50,24 @@ export function YapiskanNot({
         <Yazi numberOfLines={3} style={stiller.metin}>
           {not.metin}
         </Yazi>
+        {!onIgne && not.igneli && <Ionicons name="pin" size={18} color={renk.vurguYazi} accessibilityLabel="İğneli" />}
       </Pressable>
+      {onIgne && (
+        <Pressable
+          onPress={() => onIgne(!not.igneli)}
+          accessibilityRole="button"
+          accessibilityLabel={not.igneli ? "Giriş'ten kaldır" : "Giriş'e iğnele"}
+          accessibilityState={{ selected: not.igneli }}
+          hitSlop={6}
+          style={stiller.igne}
+        >
+          <Ionicons
+            name={not.igneli ? 'pin' : 'pin-outline'}
+            size={24}
+            color={not.igneli ? renk.vurguYazi : renk.soluk}
+          />
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -76,4 +97,5 @@ const stiller = StyleSheet.create({
     justifyContent: 'center',
   },
   metin: { flex: 1 },
+  igne: { width: 52, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center' },
 });

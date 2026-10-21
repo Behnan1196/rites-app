@@ -31,9 +31,19 @@ export function yerDegistir<T>(liste: readonly T[], nereden: number, nereye: num
   return sonuc;
 }
 
-/** Notlar açıkken Giriş'te görünen en yeni notlar (G-2). */
-export function enYeniNotlar<T extends { olusturma: string }>(notlar: readonly T[], adet = 2): T[] {
-  return [...notlar].sort((a, b) => b.olusturma.localeCompare(a.olusturma)).slice(0, adet);
+/** Giriş'te görünen iğneli notların en çok sayısı (pilot 21 Ekim). */
+export const IGNELI_EN_COK = 3;
+
+/**
+ * Giriş'teki notlar (pilot 21 Ekim; eskiden en yeni iki not): yalnız iğnelenenler,
+ * Notlar'daki sırasıyla; en çok 3, fazlası sayılır.
+ */
+export function igneliNotlar<T extends { igneli: boolean }>(
+  notlar: readonly T[],
+  adet = IGNELI_EN_COK,
+): { gosterilen: T[]; fazla: number } {
+  const igneli = notlar.filter((n) => n.igneli);
+  return { gosterilen: igneli.slice(0, adet), fazla: Math.max(0, igneli.length - adet) };
 }
 
 // ---- Giriş kutuları (G-7, `05` §10) -------------------------------------------

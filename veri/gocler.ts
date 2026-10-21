@@ -271,6 +271,11 @@ export const GOCLER: readonly Goc[] = [
       ALTER TABLE alan_durumu ADD COLUMN sira REAL NOT NULL DEFAULT 0;
     `,
   },
+  {
+    // İğneli notlar Giriş'te görünür (pilot 21 Ekim).
+    surum: 16,
+    sql: `ALTER TABLE "not" ADD COLUMN igneli INTEGER NOT NULL DEFAULT 0;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

@@ -1,4 +1,5 @@
-// Notlar ekranı (N-1, N-3): bütün notlar, sürükleyerek sıralama, not sayfası.
+// Notlar ekranı (N-1, N-3): bütün notlar, sürükleyerek sıralama, not sayfası;
+// sağdaki iğne notu Giriş'te gösterir (pilot 21 Ekim).
 
 import { useState } from 'react';
 
@@ -7,20 +8,22 @@ import { useNotSayfasi } from '@/bilesen/not/NotSayfasi';
 import { SiraliNotlar } from '@/bilesen/not/SiraliNotlar';
 import { Yazi } from '@/bilesen/Yazi';
 import { useSorgu } from '@/veri/kancalar';
-import { notlariOku, notlariSirala } from '@/veri/notlar';
+import { notIgnele, notlariOku, notlariSirala } from '@/veri/notlar';
+import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 export default function Notlar() {
   const { kapi } = useVeri();
   const notlar = useSorgu(['not'], notlariOku);
   const notSayfasi = useNotSayfasi();
+  const kisaMesaj = useKisaMesaj();
   const [surukleniyor, setSurukleniyor] = useState(false);
 
   return (
     <EkranKabi
       geri="Giriş"
       baslik="Notlar"
-      altBaslik="Aklına gelenler. Bir nota dokun: düzenle, sil ya da ajandana al. Sırasını değiştirmek için uzun basıp sürükle."
+      altBaslik="Aklına gelenler. Bir nota dokun: düzenle, sil ya da ajandana al. İğnelediğin notlar Giriş'te görünür. Sırasını değiştirmek için uzun basıp sürükle."
       kaydirilabilir={!surukleniyor}
     >
       {notlar.veri && notlar.veri.length === 0 && <Yazi tur="ikincil">Henüz not yok.</Yazi>}
@@ -29,6 +32,11 @@ export default function Notlar() {
           notlar={notlar.veri}
           onAc={notSayfasi.ac}
           onSira={(kimlikler) => void notlariSirala(kapi, kimlikler)}
+          onIgne={(not, igneli) =>
+            void notIgnele(kapi, not.id, igneli)
+              .then(() => kisaMesaj(igneli ? "Giriş'e iğnelendi" : "Giriş'ten kaldırıldı"))
+              .catch(() => kisaMesaj('Kaydedilemedi. Yeniden dene.'))
+          }
           onSurukleme={setSurukleniyor}
         />
       )}

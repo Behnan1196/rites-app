@@ -1,4 +1,4 @@
-import { enYeniNotlar, kalanIsMetni, siradaki, yerDegistir } from '../giris';
+import { igneliNotlar, kalanIsMetni, siradaki, yerDegistir } from '../giris';
 import { yeniKart } from '../kart';
 
 const k = (id: string, saat: string | null) => yeniKart(id, { baslik: id, tarih: '2026-10-12', saat });
@@ -31,8 +31,10 @@ describe('sıralama ve notlar', () => {
     expect(yerDegistir(['a', 'b', 'c', 'd'], 3, 0)).toEqual(['d', 'a', 'b', 'c']);
     expect(yerDegistir(['a', 'b'], 5, 0)).toEqual(['a', 'b']);
   });
-  it('en yeni iki not', () => {
-    const n = (id: string, olusturma: string) => ({ id, olusturma });
-    expect(enYeniNotlar([n('a', '2026-10-10'), n('b', '2026-10-12'), n('c', '2026-10-11')]).map((x) => x.id)).toEqual(['b', 'c']);
+  it("Giriş'te iğneli notlar (en çok 3)", () => {
+    const ig = (id: string, igneli: boolean) => ({ id, igneli });
+    const l = [ig('a', true), ig('b', false), ig('c', true), ig('d', true), ig('e', true)];
+    expect(igneliNotlar(l)).toEqual({ gosterilen: [ig('a', true), ig('c', true), ig('d', true)], fazla: 1 });
+    expect(igneliNotlar([ig('b', false)])).toEqual({ gosterilen: [], fazla: 0 });
   });
 });

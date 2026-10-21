@@ -68,7 +68,12 @@ function GirisAyari({ gorunur, onKapat }: { gorunur: boolean; onKapat: () => voi
                 <Yazi tur="ikincil">{t.aciklama}</Yazi>
               </View>
               <Ok yon="yukari" ad={t.ad} pasif={i === 0} onPress={() => void yaz(kutuTasi(sira, a.k, -1))} />
-              <Ok yon="asagi" ad={t.ad} pasif={i === gorunen.length - 1} onPress={() => void yaz(kutuTasi(sira, a.k, 1))} />
+              <Ok
+                yon="asagi"
+                ad={t.ad}
+                pasif={i === gorunen.length - 1}
+                onPress={() => void yaz(kutuTasi(sira, a.k, 1))}
+              />
               <AcKapa
                 acik={a.acik}
                 etiket={t.ad}

@@ -41,5 +41,12 @@ const stiller = StyleSheet.create({
     padding: olcu.kartIci,
     minHeight: 120,
   },
-  simge: { width: 40, height: 40, borderRadius: 20, backgroundColor: kaynakRenk.liste.zemin, alignItems: 'center', justifyContent: 'center' },
+  simge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: kaynakRenk.liste.zemin,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

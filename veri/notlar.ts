@@ -13,6 +13,8 @@ export interface Not {
   sesYolu: string | null;
   sira: number;
   olusturma: string;
+  /** Giriş'te görünsün (pilot 21 Ekim). */
+  igneli: boolean;
 }
 
 interface NotSatiri {
@@ -22,6 +24,7 @@ interface NotSatiri {
   ses_yolu: string | null;
   sira: number;
   olusturma: string;
+  igneli?: number;
 }
 
 const notSatirdan = (s: NotSatiri): Not => ({
@@ -31,6 +34,7 @@ const notSatirdan = (s: NotSatiri): Not => ({
   sesYolu: s.ses_yolu,
   sira: s.sira,
   olusturma: s.olusturma,
+  igneli: s.igneli === 1,
 });
 
 /** Notlar kişinin sırasıyla (yeni not en üstte başlar). */
@@ -67,6 +71,11 @@ export function notMetniniDegistir(kapi: Kapi, id: string, metin: string): Promi
   return kapi.yaz(['not'], (y) => y.calistir('UPDATE "not" SET metin = ? WHERE id = ?', [temiz, id]));
 }
 
+/** Notu Giriş'e iğneler ya da iğnesini kaldırır. */
+export function notIgnele(kapi: Kapi, id: string, igneli: boolean): Promise<void> {
+  return kapi.yaz(['not'], (y) => y.calistir('UPDATE "not" SET igneli = ? WHERE id = ?', [igneli ? 1 : 0, id]));
+}
+
 export function notSil(kapi: Kapi, id: string): Promise<void> {
   return kapi.yaz(['not'], (y) => y.calistir('DELETE FROM "not" WHERE id = ?', [id]));
 }
@@ -100,7 +109,18 @@ export function notuAjandayaAl(
         await bloklariYazY(
           y,
           kart.id,
-          [{ id: 'ses', tur: 'dosya', ad: 'Sesli not', metin: '', birim: '', dakika: null, maddeler: [], dosya: not.sesYolu }],
+          [
+            {
+              id: 'ses',
+              tur: 'dosya',
+              ad: 'Sesli not',
+              metin: '',
+              birim: '',
+              dakika: null,
+              maddeler: [],
+              dosya: not.sesYolu,
+            },
+          ],
           idUret,
         );
       }

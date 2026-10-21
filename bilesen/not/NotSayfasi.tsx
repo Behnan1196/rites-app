@@ -1,10 +1,10 @@
-// Sarı not sayfası (N-3): düzenle, "Bugünün ajandasına al", "Notu sil".
+// Sarı not sayfası (N-3): düzenle, "Giriş'e iğnele" (pilot 21 Ekim), "Bugünün ajandasına al", "Notu sil".
 
 import { useCallback, useState } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
 
 import { yeniKimlik } from '@/veri/kimlik';
-import { notMetniniDegistir, notSil, notuAjandayaAl, type Not } from '@/veri/notlar';
+import { notIgnele, notMetniniDegistir, notSil, notuAjandayaAl, type Not } from '@/veri/notlar';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
@@ -89,6 +89,19 @@ function NotSayfasi({ not, gorunur, onKapat }: { not: Not; gorunur: boolean; onK
         multiline
         selectionColor={renk.ana}
         style={[stiller.metin, yazi('normal')]}
+      />
+      <Dugme
+        tur="ikincil"
+        yaziRengi={renk.ana}
+        etiket={not.igneli ? "Giriş'ten kaldır" : "Giriş'e iğnele"}
+        pasif={calisiyor}
+        onPress={() =>
+          void calistir(async () => {
+            await notIgnele(kapi, not.id, !not.igneli);
+            kisaMesaj(not.igneli ? "Giriş'ten kaldırıldı" : "Giriş'e iğnelendi");
+            onKapat();
+          })
+        }
       />
       <Dugme etiket="Bugünün ajandasına al" onPress={() => void ajandayaAl()} pasif={calisiyor} />
       <Yazi tur="ikincil">Not, bugünün ajandasında kart olur. Kartı açıp tarih, saat ya da blok ekleyebilirsin.</Yazi>

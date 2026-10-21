@@ -1,6 +1,7 @@
 // Devam edenler: en çok 3 uygulanan program (pilot 20 Ekim; eskiden planlar);
-// her satırda sol şerit, ad, sıradaki iş ve bugünkü ilerleme. "Tümü ›" Yaşam Tarzım'ı açar.
+// her satırda sol şerit, ad, sıradaki iş ve bugünkü ilerleme. Başlık hizasındaki yaprak simgesi Yaşam Tarzım'ı açar.
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -8,6 +9,7 @@ import { DEVAM_EN_COK, fazlaProgramMetni, PROGRAM_YOK_METNI } from '@/mantik/pro
 
 import { kaynakRenk, olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
+import { ModulDugmesi } from './ModulDugmesi';
 import { useProgramlar } from '../yasam/useProgramlar';
 
 export function DevamEdenler() {
@@ -23,17 +25,11 @@ export function DevamEdenler() {
         <Yazi tur="kutuBasligi" accessibilityRole="header">
           Devam edenler
         </Yazi>
-        <Pressable
+        <ModulDugmesi
+          etiket="Yaşam Tarzım'ı aç"
           onPress={() => router.navigate('/yasam')}
-          accessibilityRole="button"
-          accessibilityLabel="Bütün programlar: Yaşam Tarzım"
-          style={stiller.tumu}
-          hitSlop={6}
-        >
-          <Yazi kalinlik="kalin" renk={renk.ana}>
-            Tümü ›
-          </Yazi>
-        </Pressable>
+          simge={<Ionicons name="leaf-outline" size={24} color={renk.ana} />}
+        />
       </View>
 
       {etkinler.length === 0 ? (
@@ -87,7 +83,6 @@ const stiller = StyleSheet.create({
     gap: 4,
   },
   baslik: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44 },
-  tumu: { minHeight: 44, justifyContent: 'center' },
   satir: {
     flexDirection: 'row',
     alignItems: 'center',

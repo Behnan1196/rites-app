@@ -277,3 +277,9 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 ## Profil: avatar ve görünen ad (20 Ekim)
 
 - **Profil'de "Sana nasıl hitap edelim?" kutusu kalktı** (ad ilk açılışta soruluyor). Yerine adın yanında sağda **"Düzenle"**: profil fotoğrafı (seç, çek, kaldır; kare kırpılır) ve **görünen ad**. Ad Rites'ın hitabı ve kişilerin / grupların gördüğü ad; fotoğraf yalnız bu telefonda durur, sunucuya gitmez. Avatar fotoğraf varsa onu, yoksa baş harfi gösterir. — Ürün sahibi (fotoğrafın yalnız telefonda kalması: Öneri)
+
+## Giriş: kutularda modül simgesi; Giriş'te iğneli notlar (21 Ekim)
+
+- **Her Giriş kutusunun başlık hizasında sağda, kutunun modülünü açan simge:** Hızlı Not → yapışkan notlar simgesi (Notlar), Bugün sırada → takvim (Ajandam), Gelenler → gelen kutusu (Gelenler), Anımsatıcılar → zil (Anımsatıcılar), Devam edenler → yaprak (Yaşam Tarzım). Eski "›" okları ve "Tümü ›" bunların yerine kalktı; satıra dokunmak da eskisi gibi açar. — Ürün sahibi (P-25)
+- **Giriş'te yalnız iğnelenen notlar:** Notlar ekranında her notun sağında iğne; not sayfasında "Giriş'e iğnele / Giriş'ten kaldır". İğneli notlar Giriş'te hemen görünür (en çok 3, Notlar'daki sırayla; fazlası "N iğneli not daha ›"). "Göster / Gizle" ve en yeni iki not kalktı. İğneli not yoksa yazma kutusu kalır; not varsa "Bir notu burada görmek için Notlar'da iğnele." — Ürün sahibi (P-25; ipucu metni: Öneri)
+- Kaydedilen not için "Kaydedildi: …" satırı artık her zaman 4 saniye görünür (notlar listesi olmadığından). — Öneri

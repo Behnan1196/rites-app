@@ -135,3 +135,8 @@ Sonuç: Program ekranının sağ üstüne görünür "Düzenle" kondu. Menü yer
 Ne dedi: "Yaşam Tarzı'nda belirlediğimiz alanlarda öneri program veya kartlar var; onları kütüphanede hazır kaydedilmiş olarak kullanıcıya sunsak nasıl olur? Bu hiç bitmeyecek bir çalışma, uzmanlık ve deneyim de gerektirebilir; alanların, programların ve kartların ileride bir uzmanla yeniden belirlenmesi durumunda bunları indirilebilir hale getirebilir miyiz?"
 Nerede: Kütüphanem, Yaşam Tarzım
 Sonuç: → kararlar.md (Rites önerileri Kütüphanem'de; içerik kataloğu indirilebilir)
+
+### P-25 · 21 Ekim 2026 · Behnan
+Ne dedi: "Notlarda altında Göster düğmesi var ve 2 notu görebiliyoruz, daha fazlası için tümüne ulaşıyoruz. Girişteki widget'larda ilgili modüle gitmek için bir ikon bulunsun: notlarda sticky note gibi bir ikonla notlar açılabilsin, Bugün sırada ajanda ikonuyla ajandayı açabilsin. Son iki notu göstermek yerine iğnelenen notlar ana ekranda bulunabilir."
+Nerede: Giriş
+Sonuç: → kararlar.md (Giriş: kutularda modül simgesi; Giriş'te iğneli notlar)
