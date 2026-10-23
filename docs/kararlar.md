@@ -322,3 +322,10 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Duraklatılan zamanlayıcının** bildirimi ve alarmı kalkar; Devam kalan süreden yeniden kurar. Duraklatılmış zamanlayıcı kendiliğinden silinmez (kişi sürdürür ya da iptal eder). **+1 dk** duraklatılmışken de çalışır; halkanın toplamı da bir dakika büyür. — Öneri
 - Süre dolunca kutu eskisi gibi "Şimdi çalıyor · Durdur / Ertele" olur; artık saniyesi dolmadan (aynı dakikanın başında) "çalıyor"a geçmez. — Hata düzeltmesi (P-30: "hassas değil")
 - Tekerlek ve halka uygulamanın kendi parçaları (yeni yerel modül yok): **güncelleme olarak gider**, yeni derleme gerekmez. — Not
+
+## Zamanlayıcı: form yok, kutuda kurulur; yalnız alarm; ertele 1 dk (23 Ekim)
+
+- **"+ Zamanlayıcı" form açmaz:** kutunun içinde açılır (Giriş'teki Anımsatıcılar kutusu ve Anımsatıcılar ekranı): büyük rakamlarla süre, hazır süreler, saat / dakika / saniye tekerleği; **Vazgeç** ve **▶ Başlat**. Ad yok (satırda süre yazar: "5 dk"), ayar yok. Yukarıdaki (aynı gün) alttan sayfanın yerine geçer. — Ürün sahibi (P-31)
+- **Yalnız alarm:** zamanlayıcı her zaman alarm olarak çalar; Bildirim / ses seçimi yok. Telefon alarmı desteklemiyorsa (iOS 26 öncesi) bildirim olarak gelir. — Ürün sahibi (P-31; destek yoksa bildirim: Öneri)
+- **Bitiş saati yazılmaz** (duraklatıp sürdürünce yanıltıyordu); satırda yalnız geri sayım, duraklatılmışsa "Duraklatıldı". — Ürün sahibi (P-31)
+- **Ertele 1 dk**, alarmdaki düğmede de Giriş'te de ("1 dk ertele"). Ertele zamanlayıcıyı **saniyesiyle** 1 dakika sonrasına yeniden kurar; satır geri döner, geri sayım ve halka 01:00'dan başlar. — Ürün sahibi (P-31; yeniden kurulma: Öneri)

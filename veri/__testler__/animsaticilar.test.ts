@@ -13,6 +13,7 @@ import {
   ertele,
   gunDurumlari,
   zamanlayiciDevam,
+  zamanlayiciErtele,
   zamanlayiciDuraklat,
   zamanlayiciKur,
   zamanlayiciUzat,
@@ -123,7 +124,15 @@ describe('anımsatıcı sesi (pilot 19 Ekim)', () => {
     const b = await zamanlayiciKur(kapi, { id: 'z', ad: ' Çay ', ms: 5 * 60_000 + 30_000, alarm: true, ses: null }, t0);
     expect(b.bitis).toBe('2026-10-12T10:05:30.000Z');
     let z = (await animsaticilariOku(oku))[0]!;
-    expect(z).toMatchObject({ ad: 'Çay', bitis: b.bitis, toplamMs: 330_000, duraklama: null, gunler: [], alarm: true });
+    expect(z).toMatchObject({
+      ad: 'Çay',
+      bitis: b.bitis,
+      toplamMs: 330_000,
+      duraklama: null,
+      gunler: [],
+      alarm: true,
+      erteleDk: 1,
+    });
     expect(z.saatler).toEqual([b.saat]);
 
     await zamanlayiciDuraklat(kapi, 'z', t0 + 30_000);
@@ -147,5 +156,16 @@ describe('anımsatıcı sesi (pilot 19 Ekim)', () => {
     await zamanlayiciUzat(kapi, 'z', 60_000, t1 + 60_000);
     z = (await animsaticilariOku(oku))[0]!;
     expect(z).toMatchObject({ bitis: '2026-10-12T11:07:00.000Z', toplamMs: 450_000 });
+  });
+
+  it('zamanlayıcıda ertele saniyesiyle yeniden kurar, günün durumunu temizler', async () => {
+    const t0 = Date.parse('2026-10-12T10:00:00.000Z');
+    await zamanlayiciKur(kapi, { id: 'z', ad: '5 dk', ms: 300_000, alarm: true, ses: null }, t0);
+    const z0 = (await animsaticilariOku(oku))[0]!;
+    await ertele(kapi, 'z', BUGUN, z0.saatler[0]!, '23:59');
+    await zamanlayiciErtele(kapi, 'z', 1, t0 + 310_000);
+    const z = (await animsaticilariOku(oku))[0]!;
+    expect(z).toMatchObject({ bitis: '2026-10-12T10:06:10.000Z', toplamMs: 60_000, duraklama: null });
+    expect(await gunDurumlari(oku, BUGUN)).toEqual([]);
   });
 });

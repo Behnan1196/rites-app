@@ -21,7 +21,14 @@ import {
   basislariTemizle,
   bekleyenBasislar,
 } from '@/veri/alarmlar';
-import { animsaticilariOku, durdur, eskiGunleriSil, ertele, gunDurumlari } from '@/veri/animsaticilar';
+import {
+  animsaticilariOku,
+  durdur,
+  eskiGunleriSil,
+  ertele,
+  gunDurumlari,
+  zamanlayiciErtele,
+} from '@/veri/animsaticilar';
 import {
   BILDIRIME_DOKUNULDU,
   bildirimleriKur,
@@ -151,6 +158,9 @@ export function BildirimYoneticisi() {
       if (eylem === DURDUR) {
         await durdur(kapi, a.id, veri.gun, veri.saat);
         kisaMesajRef.current(`Durduruldu: ${a.ad}`);
+      } else if (eylem === ERTELE && a.bitis) {
+        await zamanlayiciErtele(kapi, a.id, a.erteleDk);
+        kisaMesajRef.current(`Ertelendi: ${a.erteleDk} dk · ${a.ad}`);
       } else if (eylem === ERTELE) {
         const d = (await gunDurumlari(oku, veri.gun)).find((g) => g.animsaticiId === a.id && g.saat === veri.saat);
         const yeni = erteleSaati(d?.ertelenenSaat ?? veri.saat, simdiSaat(), a.erteleDk);
@@ -207,6 +217,10 @@ export function BildirimYoneticisi() {
           if (b.tur === 'durdur') {
             await durdur(kapi, a.id, gun, saat);
             kisaMesajRef.current(`Durduruldu: ${a.ad}`);
+          } else if (a.bitis && erteleGecerliMi(b.zamanMs, Date.now())) {
+            // Zamanlayıcı saniyesiyle yeniden kurulur (P-31).
+            await zamanlayiciErtele(kapi, a.id, a.erteleDk);
+            kisaMesajRef.current(`Ertelendi: ${a.erteleDk} dk · ${a.ad}`);
           } else if (gun === bugunGun && erteleGecerliMi(b.zamanMs, Date.now())) {
             const d = (await gunDurumlari(oku, gun)).find((g) => g.animsaticiId === a.id && g.saat === saat);
             if (d?.durduruldu) continue;

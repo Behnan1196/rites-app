@@ -4,11 +4,12 @@
 // Pilot 23 Ekim: zamanlayıcılar üstte, geri sayan satırlarla; "+ Zamanlayıcı".
 
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useAnimsaticiFormu } from '@/bilesen/animsatici/AnimsaticiFormu';
 import { useAnimsatmalar } from '@/bilesen/animsatici/useAnimsatmalar';
-import { useZamanlayiciSayfasi } from '@/bilesen/animsatici/ZamanlayiciSayfasi';
+import { ZamanlayiciKurucu } from '@/bilesen/animsatici/ZamanlayiciKurucu';
 import { ZamanlayiciSatiri } from '@/bilesen/animsatici/ZamanlayiciSatiri';
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
@@ -26,7 +27,7 @@ import { useVeri } from '@/veri/VeriSaglayici';
 export default function Animsaticilar() {
   const form = useAnimsaticiFormu();
   const { yukleniyor, animsaticilar: hepsi } = useAnimsatmalar();
-  const zamanlayici = useZamanlayiciSayfasi();
+  const [kuruluyor, setKuruluyor] = useState(false);
   const { kapi } = useVeri();
   const simdiMs = useSaniye(hepsi.some((a) => a.bitis && !duraklatildiMi(a)));
   const kartSesi = useSorgu(['ayar'], async (o) => (await ayarOku(o, 'hatirlatma_sesi')) ?? null, []);
@@ -41,7 +42,13 @@ export default function Animsaticilar() {
             <ZamanlayiciSatiri a={a} simdiMs={simdiMs} />
           </View>
         ))}
-        <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Zamanlayıcı" onPress={zamanlayici.ac} />
+        {kuruluyor ? (
+          <View style={stiller.zamanlayici}>
+            <ZamanlayiciKurucu onKapat={() => setKuruluyor(false)} />
+          </View>
+        ) : (
+          <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Zamanlayıcı" onPress={() => setKuruluyor(true)} />
+        )}
         {!yukleniyor && animsaticilar.length === 0 && (
           <Yazi tur="ikincil">
             Henüz saatli anımsatıcın yok. İlaç, su, göz damlası gibi düzenli olanları ekleyebilirsin.
@@ -88,7 +95,6 @@ export default function Animsaticilar() {
       </EkranKabi>
 
       {form.oge}
-      {zamanlayici.oge}
     </>
   );
 }

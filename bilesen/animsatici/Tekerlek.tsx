@@ -87,6 +87,8 @@ export function Tekerlek({
         snapToInterval={SATIR}
         decelerationRate="fast"
         contentOffset={{ x: 0, y: deger * SATIR }}
+        // Web'de contentOffset işlemiyor; ilk yerleşimde seçili satıra gidilir.
+        onContentSizeChange={() => ref.current?.scrollTo({ y: sonBildirilen.current * SATIR, animated: false })}
         contentContainerStyle={stiller.icerik}
         onScroll={kaydirildi}
         onMomentumScrollEnd={(e) => yerles(e.nativeEvent.contentOffset.y)}

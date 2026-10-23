@@ -216,6 +216,19 @@ export function zamanlayiciUzat(kapi: Kapi, id: string, ms: number, simdiMs: num
   });
 }
 
+/**
+ * Zamanlayıcıda Ertele (P-31): saniyesiyle şimdiden `dk` dakika sonrasına yeniden
+ * kurulur; geri sayım ve halka o süreyle baştan başlar.
+ */
+export function zamanlayiciErtele(kapi: Kapi, id: string, dk: number, simdiMs: number = Date.now()): Promise<void> {
+  return kapi.yaz(['animsatici'], async (y) => {
+    const z = await zamanlayiciOku(y, id);
+    if (!z?.bitis) return;
+    await y.calistir('UPDATE animsatici SET toplam_ms = ? WHERE id = ?', [dk * 60_000, id]);
+    await bitisYaz(y, id, simdiMs, dk * 60_000);
+  });
+}
+
 export function animsaticiSil(kapi: Kapi, id: string): Promise<void> {
   return kapi.yaz(['animsatici'], (y) => y.calistir('DELETE FROM animsatici WHERE id = ?', [id]));
 }

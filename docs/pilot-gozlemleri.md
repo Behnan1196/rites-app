@@ -165,3 +165,8 @@ Sonuç: → kararlar.md (Kart görünümü: tek uzun kart, bloklar bölüm böl�
 Ne dedi: "Ana ekrandaki anımsatıcılarda 'Süre sonra' kısmı var. Onu daha hoş bir timer haline getirsek iyi olacak, şu an hassas da değil. Mesela widget'tan Timer Ekle desek ve bir tane oluşturup kurabilsek." Seçimler: hazır süreler + tekerlek; saniye saniye geri sayım ve dolan halka, Duraklat / Devam, +1 dk, İptal; adı "Zamanlayıcı".
 Nerede: Giriş, Anımsatıcılar
 Sonuç: → kararlar.md (Zamanlayıcı: "Süre sonra"nın yerine)
+
+### P-31 · 23 Ekim 2026 · Behnan
+Ne dedi: "Zamanlayıcı diğerlerinden farklı olabilir, bitiş saati yazmasın, zaten yanıltıcı; tek Alarm tipi olabilir. Şu an alarm çıkınca 1 dk erteleyebiliyoruz, oysa giriş ekranında 5 dk ertele var. Acaba hiç detay form çıkmadan, timer ekle dediğimizde doğrudan giriş ekranına çıkan şık bir zamanlayıcıyı set edebilsek." Seçimler: kutuda açılır, Başlat'la; ertele ikisinde de 1 dk.
+Nerede: Giriş, Anımsatıcılar
+Sonuç: → kararlar.md (Zamanlayıcı: form yok, kutuda kurulur; yalnız alarm; ertele 1 dk)

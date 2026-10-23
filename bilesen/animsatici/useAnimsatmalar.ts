@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { ertelemeAlarmKimligi, tekrarliAlarmKimligi } from '@/mantik/alarm';
 import { bugununAnimsatmalari, erteleSaati, type Animsatma } from '@/mantik/animsatici';
 import { alarmiSustur } from '@/veri/alarmlar';
-import { animsaticilariOku, durdur, ertele, gunDurumlari } from '@/veri/animsaticilar';
+import { animsaticilariOku, durdur, ertele, gunDurumlari, zamanlayiciErtele } from '@/veri/animsaticilar';
 import { useSorgu } from '@/veri/kancalar';
 import { useBugun } from '@/veri/useBugun';
 import { useSimdi } from '@/veri/useSimdi';
@@ -40,6 +40,8 @@ export function useAnimsatmalar() {
     },
     ertele: async (m: Animsatma) => {
       await sustur(m);
+      // Zamanlayıcı saniyesiyle yeniden kurulur (P-31).
+      if (m.animsatici.bitis) return zamanlayiciErtele(kapi, m.animsatici.id, m.animsatici.erteleDk);
       await ertele(kapi, m.animsatici.id, bugunGun, m.saat, erteleSaati(m.gosterilen, simdi, m.animsatici.erteleDk));
     },
   };

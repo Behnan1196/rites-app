@@ -1,9 +1,11 @@
 // Giriş'teki Anımsatıcılar kutusu (`05` §7): çalan varsa "Şimdi çalıyor" ve
 // Durdur / Ertele; yoksa sıradaki ve "bugün N kez daha".
 // Pilot 23 Ekim: kurulu zamanlayıcılar saniye saniye geri sayan satırlarla
-// (halka, Duraklat / Devam, +1 dk, İptal) ve "+ Zamanlayıcı" düğmesi.
+// (halka, Duraklat / Devam, +1 dk, İptal) ve "+ Zamanlayıcı" düğmesi; P-31:
+// zamanlayıcı form açılmadan kutunun içinde kurulur.
 
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { erteleMetni, girisOzeti, kalanMetni } from '@/mantik/animsatici';
@@ -11,7 +13,7 @@ import { duraklatildiMi, zamanlayiciSurerMi } from '@/mantik/zamanlayici';
 import { useSaniye } from '@/veri/useSimdi';
 
 import { useAnimsatmalar } from '../animsatici/useAnimsatmalar';
-import { useZamanlayiciSayfasi } from '../animsatici/ZamanlayiciSayfasi';
+import { ZamanlayiciKurucu } from '../animsatici/ZamanlayiciKurucu';
 import { ZamanlayiciSatiri } from '../animsatici/ZamanlayiciSatiri';
 import { Dugme } from '../Dugme';
 import { useKisaMesaj } from '../KisaMesaj';
@@ -24,7 +26,7 @@ const ac = () => router.push('/giris/animsaticilar');
 
 export function AnimsaticilarKutusu() {
   const kisaMesaj = useKisaMesaj();
-  const zamanlayici = useZamanlayiciSayfasi();
+  const [kuruluyor, setKuruluyor] = useState(false);
   const { yukleniyor, animsaticilar, animsatmalar, durdur, ertele } = useAnimsatmalar();
   // Çalışan (duraklatılmamış) zamanlayıcı varsa saniyede bir tazelenir.
   const sayanVar = animsaticilar.some((a) => a.bitis && !duraklatildiMi(a));
@@ -58,7 +60,6 @@ export function AnimsaticilarKutusu() {
             style={stiller.esnek}
           />
         </View>
-        {zamanlayici.oge}
       </View>
     );
   }
@@ -101,8 +102,13 @@ export function AnimsaticilarKutusu() {
           <ZamanlayiciSatiri a={a} simdiMs={simdiMs} />
         </View>
       ))}
-      <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Zamanlayıcı" onPress={zamanlayici.ac} />
-      {zamanlayici.oge}
+      {kuruluyor ? (
+        <View style={stiller.sureSatiri}>
+          <ZamanlayiciKurucu onKapat={() => setKuruluyor(false)} />
+        </View>
+      ) : (
+        <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Zamanlayıcı" onPress={() => setKuruluyor(true)} />
+      )}
     </View>
   );
 }

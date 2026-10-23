@@ -1,6 +1,7 @@
 // Kurulu bir zamanlayıcının satırı (Giriş'teki Anımsatıcılar kutusu ve
 // Anımsatıcılar ekranı; pilot 23 Ekim). Solda dolan halka; ortasına dokununca
-// Duraklat / Devam. Ad, saniye saniye geri sayım, bitiş saati; sağda +1 dk ve İptal.
+// Duraklat / Devam. Ad ve saniye saniye geri sayım; sağda +1 dk ve İptal.
+// P-31: bitiş saati yazılmaz (duraklatınca yanıltıyordu).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -56,7 +57,9 @@ export function ZamanlayiciSatiri({ a, simdiMs }: { a: Animsatici; simdiMs: numb
       <View
         style={stiller.esnek}
         accessible
-        accessibilityLabel={`${a.ad}, ${zamanlayiciSuresiMetni(kalan)} kaldı, ${zamanlayiciAltMetni(a, simdiMs)}`}
+        accessibilityLabel={[a.ad, `${zamanlayiciSuresiMetni(kalan)} kaldı`, zamanlayiciAltMetni(a, simdiMs)]
+          .filter(Boolean)
+          .join(', ')}
       >
         <Yazi kalinlik="kalin" numberOfLines={1}>
           {a.ad}
@@ -64,7 +67,7 @@ export function ZamanlayiciSatiri({ a, simdiMs }: { a: Animsatici; simdiMs: numb
         <Yazi kalinlik="kalin" renk={durdu ? renk.ikincil : renk.ana} style={stiller.sayac}>
           {geriSayimMetni(kalan)}
         </Yazi>
-        <Yazi tur="etiket">{zamanlayiciAltMetni(a, simdiMs)}</Yazi>
+        {!!zamanlayiciAltMetni(a, simdiMs) && <Yazi tur="etiket">{zamanlayiciAltMetni(a, simdiMs)}</Yazi>}
       </View>
       <View style={stiller.dugmeler}>
         <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+1 dk" onPress={uzat} style={stiller.kucuk} />

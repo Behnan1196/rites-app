@@ -16,8 +16,8 @@ export const VARSAYILAN_ZAMANLAYICI_MS = 5 * 60_000;
 export const EN_UZUN_ZAMANLAYICI_MS = (24 * 3600 - 1) * 1000;
 /** "+1 dk". */
 export const UZATMA_MS = 60_000;
-/** Zamanlayıcıda alarmın ertelemesi (dakika). */
-export const ZAMANLAYICI_ERTELEME = 5;
+/** Zamanlayıcıda ertele (dakika; alarmda ve Giriş'te aynı; P-31). */
+export const ZAMANLAYICI_ERTELEME = 1;
 
 export type ZamanlayiciAlanlari = Pick<Animsatici, 'bitis' | 'toplamMs' | 'duraklama'>;
 
@@ -89,9 +89,9 @@ export function bitisHesapla(simdiMs: number, kalan: number): { bitis: string; s
   return { bitis: d.toISOString(), saat: `${iki(d.getHours())}:${iki(d.getMinutes())}` };
 }
 
-/** "Bitiş 10:05" / "Duraklatıldı" / "Süre doldu". */
-export function zamanlayiciAltMetni(a: ZamanlayiciAlanlari & Pick<Animsatici, 'saatler'>, simdiMs: number): string {
+/** "Duraklatıldı" / "Süre doldu"; çalışırken boş (bitiş saati yazılmaz; P-31). */
+export function zamanlayiciAltMetni(a: ZamanlayiciAlanlari, simdiMs: number): string {
   if (duraklatildiMi(a)) return 'Duraklatıldı';
   if (kalanMs(a, simdiMs) <= 0) return 'Süre doldu';
-  return `Bitiş ${a.saatler[0] ?? ''}`;
+  return '';
 }

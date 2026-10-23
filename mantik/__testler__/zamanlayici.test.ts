@@ -61,7 +61,7 @@ describe('zamanlayıcı', () => {
     expect(zamanlayiciSurerMi(z, T0)).toBe(true);
     expect(zamanlayiciSurerMi(z, T0 + 300_000)).toBe(false);
     expect(zamanlayiciSurerMi({ ...z, duraklama: 5 }, T0 + 9e9)).toBe(true);
-    expect(zamanlayiciAltMetni(z, T0)).toBe('Bitiş 13:05');
+    expect(zamanlayiciAltMetni(z, T0)).toBe('');
     expect(zamanlayiciAltMetni({ ...z, duraklama: 5 }, T0)).toBe('Duraklatıldı');
     expect(zamanlayiciAltMetni(z, T0 + 300_000)).toBe('Süre doldu');
   });
