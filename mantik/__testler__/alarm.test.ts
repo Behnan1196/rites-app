@@ -212,9 +212,24 @@ describe('kart alarmı', () => {
         gun: '2026-10-13',
         ertelenebilir: false,
         erteleDk: 0,
+        ses: null,
         kaynak: { tur: 'kart', kartId: 'd', gun: '2026-10-13' },
       },
     ]);
+  });
+
+  it('alarm sesi plana ve imzaya girer; ses yoksa imza eskisi gibi (P-33)', () => {
+    const [p] = kartAlarmPlani([{ ...doktor, alarmSesi: 'can' }], new Set(), BUGUN, '08:00');
+    expect(p!.ses).toBe('can');
+    expect(kartAlarmPlani([{ ...doktor, alarmSesi: 'yok-boyle' }], new Set(), BUGUN, '08:00')[0]!.ses).toBeNull();
+    expect(alarmImzasi('09:00', [], 'Doktor', '2026-10-13')).toBe(
+      alarmImzasi('09:00', [], 'Doktor', '2026-10-13', null),
+    );
+    const eski = { id: p!.id, imza: alarmImzasi('09:00', [], 'Doktor', '2026-10-13') };
+    // Ses seçilince telefondaki (sessiz imzalı) alarm yeniden kurulur.
+    expect(alarmFarki([p!], [eski]).eklenecek).toHaveLength(1);
+    const yeni = { id: p!.id, imza: alarmImzasi('09:00', [], 'Doktor', '2026-10-13', 'can') };
+    expect(alarmFarki([p!], [yeni]).eklenecek).toHaveLength(0);
   });
 
   it('geçmiş saat ve bugün yapılan atlanır', () => {

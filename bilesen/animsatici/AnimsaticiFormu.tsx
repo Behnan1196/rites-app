@@ -269,12 +269,9 @@ function AnimsaticiFormu({
           )}
         </View>
         {alarm && <Yazi tur="ikincil">{ALARM_ACIKLAMASI}</Yazi>}
-        {!alarm && (
-          <>
-            <Yazi kalinlik="kalin">Ses</Yazi>
-            <SesSecici ses={form.ses} onDegis={(ses) => guncelle({ ses })} />
-          </>
-        )}
+        {/* P-33: alarmın da sesi seçilir (aynı alan: bildirimde bildirim, alarmda alarm sesi). */}
+        <Yazi kalinlik="kalin">{alarm ? 'Alarm sesi' : 'Ses'}</Yazi>
+        <SesSecici ses={form.ses} onDegis={(ses) => guncelle({ ses })} alarm={alarm} />
         {/* Pilot 19 Ekim: erteleme yalnız alarmda; bildirim tek ve düğmesiz. */}
         {alarm && (
           <>

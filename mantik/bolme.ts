@@ -16,6 +16,7 @@ import { gunEkle, gunFarki, uzunTarih, type Gun } from './tarih';
 export type KartTanimi = Pick<Kart, 'baslik' | 'kisa' | 'tarih' | 'saat' | 'hatirlatma' | 'tekrar'> & {
   tarihsiz?: boolean;
   alarm?: boolean;
+  alarmSesi?: string | null;
 };
 
 export type KayitAraligi =
@@ -101,7 +102,10 @@ export function duzenle(
 ): BolmeSonucu {
   if (!bolmeSorusuGerekirMi(kart, gun) || secim === null) {
     return {
-      islemler: [{ tur: 'kartGuncelle', kart: { ...kart, ...tanim } }, { tur: 'bloklariYaz', kartId: kart.id }],
+      islemler: [
+        { tur: 'kartGuncelle', kart: { ...kart, ...tanim } },
+        { tur: 'bloklariYaz', kartId: kart.id },
+      ],
       mesaj: null,
     };
   }

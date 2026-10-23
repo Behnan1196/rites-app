@@ -175,3 +175,8 @@ Sonuç: → kararlar.md (Zamanlayıcı: form yok, kutuda kurulur; yalnız alarm;
 Ne dedi: "Daha da iyi oldu ama hâlâ hayal ettiğim şey değil. Bir Timer ikonu var ve ona bastığımda 5 dk'ya ayarlı (ya da 0 dk) bir timer bloğu oluşuyor, Başlat tuşu içinde (şu andaki gibi daire içinde olabilir); tek çözülmesi gereken görsel olarak başka bir dakika ayarı vermek, timer en çok 1 saat ile sınırlandırılabilir. Keşke analog düğme gibi ayarlayabilsek." Tartışmadaki önerilerin hepsi kabul: 5 dk açılış, çalışırken çevirme yok, başlayanlar küçük satıra iner, simge başlık satırında, en çok 60 dk.
 Nerede: Giriş, Anımsatıcılar
 Sonuç: → kararlar.md (Zamanlayıcı kadranı: mutfak zamanlayıcısı gibi)
+
+### P-33 · 23 Ekim 2026 · Behnan
+Ne dedi: "Hatırlatma saati geldiğinde bir YT videosunu başlatmasını istesem… örneğin Pazar sabahı seçtiğim bir YT müziğiyle uyanmak, dokunmaya gerek kalmadan." (Olmayacağı konuşulunca:) "Gerek yok, Apple Saat uygulamasını kullanırım; ya da ileride ev otomasyonuna bağlarım. Ajanda kartlarından kurulacak bir alarmda alarm sesini seçme şansım nedir, kaç farklı alarm sesi kurulabilir?" Öneri kabul: alarmda ses seçimi (telefonun alarm sesi + 5 Rites sesi), önce telefonda denenecek.
+Nerede: Kart formu (Zamanlama), Anımsatıcı formu
+Sonuç: → kararlar.md (Alarmın sesi seçilir)

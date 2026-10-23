@@ -6,6 +6,7 @@ import type { KartIslemi, KayitAraligi } from '@/mantik/bolme';
 import { kayitAnahtarlariniEsle } from '@/mantik/bolme';
 import { bosKayit, hatirlatmaCoz, hatirlatmaYaz, type Blok, type BlokTuru, type Kart, type Kayit } from '@/mantik/kart';
 import { yeniKartSirasi } from '@/mantik/ajanda';
+import { gecerliSes } from '@/mantik/sesler';
 import type { Gun } from '@/mantik/tarih';
 
 import type { Kapi, Okuyucu, SqlDeger, Yazici } from './kapi';
@@ -32,6 +33,7 @@ interface KartSatiri {
   saat: string | null;
   hatirlatma: string | null;
   alarm: number | null;
+  alarm_sesi?: string | null;
   tekrar: string | null;
   bitis: string | null;
   atlanan: string;
@@ -94,6 +96,7 @@ export function kartSatirdan(s: KartSatiri): KartOzeti {
     saat: s.saat,
     hatirlatma: hatirlatmaCoz(s.hatirlatma),
     alarm: s.alarm === 1,
+    alarmSesi: gecerliSes(s.alarm_sesi),
     tekrar: json(s.tekrar, null),
     bitis: s.bitis,
     atlanan: json<Gun[]>(s.atlanan, []),
@@ -142,7 +145,7 @@ function kayitSatirdan(s: KayitSatiri): Kayit {
 }
 
 const KART_ALANLARI =
-  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag';
+  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag';
 
 function kartDegerleri(k: Kart): SqlDeger[] {
   return [
@@ -153,6 +156,7 @@ function kartDegerleri(k: Kart): SqlDeger[] {
     k.saat,
     hatirlatmaYaz(k.hatirlatma),
     k.alarm ? 1 : 0,
+    gecerliSes(k.alarmSesi),
     k.tekrar ? JSON.stringify(k.tekrar) : null,
     k.bitis,
     JSON.stringify(k.atlanan),

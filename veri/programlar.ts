@@ -27,6 +27,7 @@ import {
   type ProgramDurumu,
   type ProgramKarti,
 } from '@/mantik/program';
+import { gecerliSes } from '@/mantik/sesler';
 import { gunEkle, type Gun } from '@/mantik/tarih';
 
 import type { Kapi, Okuyucu, Yazici } from './kapi';
@@ -67,6 +68,7 @@ interface ProgramKartSatiri {
   saat: string | null;
   hatirlatma: string | null;
   alarm: number;
+  alarm_sesi?: string | null;
   tekrar: string | null;
   bloklar: string;
 }
@@ -100,6 +102,7 @@ function programKartSatirdan(s: ProgramKartSatiri): ProgramKarti {
     saat: s.saat,
     hatirlatma: hatirlatmaCoz(s.hatirlatma),
     alarm: s.alarm === 1,
+    alarmSesi: gecerliSes(s.alarm_sesi),
     tekrar: json(s.tekrar, null),
     bloklar: json<KutuphaneBlogu[]>(s.bloklar, []),
   };
@@ -278,8 +281,8 @@ export function ozelAlanSil(kapi: Kapi, anahtar: AlanAnahtari): Promise<void> {
 
 async function programKartiEkleY(y: Yazici, k: ProgramKarti) {
   await y.calistir(
-    `INSERT INTO program_kart (id, program_id, sira, gun, baslik, kisa, saat, hatirlatma, alarm, tekrar, bloklar)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO program_kart (id, program_id, sira, gun, baslik, kisa, saat, hatirlatma, alarm, alarm_sesi, tekrar, bloklar)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       k.id,
       k.programId,
@@ -290,6 +293,7 @@ async function programKartiEkleY(y: Yazici, k: ProgramKarti) {
       k.saat,
       hatirlatmaYaz(k.hatirlatma),
       k.alarm ? 1 : 0,
+      gecerliSes(k.alarmSesi),
       k.tekrar ? JSON.stringify(k.tekrar) : null,
       JSON.stringify(k.bloklar),
     ],
@@ -298,7 +302,7 @@ async function programKartiEkleY(y: Yazici, k: ProgramKarti) {
 
 async function programKartiGuncelleY(y: Yazici, k: ProgramKarti) {
   await y.calistir(
-    `UPDATE program_kart SET sira = ?, gun = ?, baslik = ?, kisa = ?, saat = ?, hatirlatma = ?, alarm = ?, tekrar = ?, bloklar = ?
+    `UPDATE program_kart SET sira = ?, gun = ?, baslik = ?, kisa = ?, saat = ?, hatirlatma = ?, alarm = ?, alarm_sesi = ?, tekrar = ?, bloklar = ?
      WHERE id = ?`,
     [
       k.sira,
@@ -308,6 +312,7 @@ async function programKartiGuncelleY(y: Yazici, k: ProgramKarti) {
       k.saat,
       hatirlatmaYaz(k.hatirlatma),
       k.alarm ? 1 : 0,
+      gecerliSes(k.alarmSesi),
       k.tekrar ? JSON.stringify(k.tekrar) : null,
       JSON.stringify(k.bloklar),
       k.id,

@@ -52,6 +52,8 @@ export interface ProgramKarti {
   saat: string | null;
   hatirlatma: Hatirlatma | null;
   alarm: boolean;
+  /** Alarmın sesi (P-33); yoksa telefonun alarm sesi. */
+  alarmSesi?: string | null;
   tekrar: Tekrar | null;
   bloklar: KutuphaneBlogu[];
 }
@@ -201,6 +203,7 @@ export function ajandaKarti(
       saat: pk.saat,
       hatirlatma: gecerliHatirlatma(pk.hatirlatma, pk.saat),
       alarm: pk.alarm && !!gecerliHatirlatma(pk.hatirlatma, pk.saat),
+      alarmSesi: pk.alarmSesi ?? null,
       tekrar: tekrarKopyasi(pk.tekrar),
       bitis: pk.tekrar ? bitis : null,
       planId: p.id,
@@ -227,7 +230,7 @@ export function blokKopyasi(b: BlokBenzeri): KutuphaneBlogu {
 
 /** Ajanda kartının program kartı karşılığı (içerik; gün programın başlangıcına göre). */
 export function karttanIcerik(
-  kart: Pick<Kart, 'baslik' | 'kisa' | 'saat' | 'hatirlatma' | 'alarm' | 'tekrar' | 'tarih'>,
+  kart: Pick<Kart, 'baslik' | 'kisa' | 'saat' | 'hatirlatma' | 'alarm' | 'alarmSesi' | 'tekrar' | 'tarih'>,
   bloklar: readonly BlokBenzeri[],
   baslangic: Gun | null,
 ): Omit<ProgramKarti, 'id' | 'programId' | 'sira'> {
@@ -238,6 +241,7 @@ export function karttanIcerik(
     saat: kart.saat,
     hatirlatma: kart.hatirlatma,
     alarm: kart.alarm,
+    alarmSesi: kart.alarmSesi ?? null,
     tekrar: tekrarKopyasi(kart.tekrar),
     bloklar: bloklar.map(blokKopyasi),
   };

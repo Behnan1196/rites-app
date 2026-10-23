@@ -18,6 +18,7 @@ import type {
 
 import { alarmFarki, alarmImzasi, saatParcalari, type PlanliAlarm } from '@/mantik/alarm';
 import { erteleMetni, saatMetni } from '@/mantik/animsatici';
+import { bildirimSesi } from '@/mantik/sesler';
 import { bugun } from '@/mantik/tarih';
 
 interface AlarmModulu {
@@ -90,13 +91,21 @@ function girdi(p: PlanliAlarm): AlarmScheduleInput {
       alertTitle: p.baslik,
       stopButtonTitle: 'Durdur',
       stopIntentBehavior: 'openApp',
+      // Rites'ın gömülü sesi (P-33); yoksa telefonun alarm sesi.
+      ...(p.ses ? { soundName: bildirimSesi(p.ses) } : {}),
       ...(p.ertelenebilir
         ? { secondaryButtonTitle: erteleMetni(p.erteleDk), secondaryButtonBehavior: 'openApp' as const }
         : { secondaryButtonBehavior: 'none' as const }),
       metadata:
         p.kaynak.tur === 'animsatici'
-          ? { tur: 'animsatici', animsaticiId: p.kaynak.animsaticiId, saat: p.kaynak.saat, gun: p.gun ?? '' }
-          : { tur: 'kart', kartId: p.kaynak.kartId, gun: p.kaynak.gun },
+          ? {
+              tur: 'animsatici',
+              animsaticiId: p.kaynak.animsaticiId,
+              saat: p.kaynak.saat,
+              gun: p.gun ?? '',
+              ses: p.ses ?? '',
+            }
+          : { tur: 'kart', kartId: p.kaynak.kartId, gun: p.kaynak.gun, ses: p.ses ?? '' },
     },
   };
 }
@@ -120,6 +129,7 @@ export function alarmPlaniniUygula(plan: readonly PlanliAlarm[], izinVar: boolea
           a.weekdays ?? [],
           a.title,
           (a.weekdays ?? []).length ? null : bugun(new Date(a.timestamp)),
+          typeof a.metadata?.ses === 'string' && a.metadata.ses ? a.metadata.ses : null,
         ),
       }));
       const { eklenecek, kaldirilacak } = alarmFarki(izinVar ? plan : [], telefondakiler);

@@ -338,3 +338,10 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Zamanlayıcı en çok 1 saat;** daha uzun işler saatli anımsatıcıyla kurulur. +1 dk ile 60'ın üstüne çıkılabilir. — Ürün sahibi (P-32; +1 dk ile aşma: Öneri)
 - **Başlayan zamanlayıcı** şimdiki gibi küçük halkalı satıra iner (birden çok zamanlayıcıda Giriş kalabalıklaşmasın). Halka artık **kalan süreyi** gösterir: mutfak zamanlayıcısı gibi küçülerek biter. Çalışan zamanlayıcının süresi kadranla değişmez (cepten çıkarırken yanlışlıkla değişmesin); +1 dk ve Duraklat var. — Ürün sahibi (P-32)
 - Çevirirken her dakikada hafif titreşim (gerçek düğme hissi) yeni bir yerel modül ister; bir sonraki derlemeye bırakıldı. — Not
+
+## Alarmın sesi seçilir (23 Ekim)
+
+- **YouTube'la uyanmak yok:** iPhone kilitliyken bir uygulama kendiliğinden açılıp video/müzik oynatamaz; alarm sesi telefonda duran bir dosya olmalı, YouTube sesi indirilemez. Bu senaryo için iPhone'un Saat uygulaması (Apple Music şarkısıyla alarm) kullanılacak; ev otomasyonu ileride düşünülebilir. — Ürün sahibi (P-33)
+- **Alarm sesi seçimi:** kartın alarmında ("Alarm olarak çalsın" açıkken) ve anımsatıcının alarmında **"Alarm sesi"**: Telefonun alarm sesi · Zil · Çan · Yumuşak · Kuş · Kısa bip (Rites'ın gömülü sesleri; dokununca bir kez çalar). Varsayılan telefonun alarm sesi. Her kart / anımsatıcı kendi sesini seçer; programın kartında seçilen ses ajandaya düşen karta geçer. — Ürün sahibi (P-33)
+- Anımsatıcıda bildirim sesi ile alarm sesi aynı alandır (hangisi seçiliyse onun sesi). Zamanlayıcı telefonun alarm sesiyle çalar. — Öneri
+- **Denenecek:** gömülü kısa seslerin alarmda tekrar tekrar mı yoksa bir kez mi çaldığı ve kilit ekranında gerçekten o sesin çıktığı. Sonuca göre "kendi sesin" (telefondaki bir dosya) ve kartın bildirim sesinin kart başına seçilmesi konuşulacak. — Not

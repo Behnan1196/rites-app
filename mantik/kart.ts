@@ -96,6 +96,8 @@ export interface Kart {
   hatirlatma: Hatirlatma | null;
   /** Hatırlatma alarm olarak çalar (iOS 26; pilot 16 Ekim). */
   alarm: boolean;
+  /** Alarmın sesi (`mantik/sesler`; P-33); yoksa ya da null: telefonun alarm sesi. */
+  alarmSesi?: string | null;
   /** null = tek seferlik. */
   tekrar: Tekrar | null;
   /** "Bu gün ve sonrası" bölmesinde eski dizinin son günü. */

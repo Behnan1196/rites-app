@@ -282,6 +282,12 @@ export const GOCLER: readonly Goc[] = [
     sql: `ALTER TABLE animsatici ADD COLUMN toplam_ms INTEGER;
           ALTER TABLE animsatici ADD COLUMN duraklama INTEGER;`,
   },
+  {
+    // Kartın alarm sesi (pilot 23 Ekim, P-33).
+    surum: 18,
+    sql: `ALTER TABLE kart ADD COLUMN alarm_sesi TEXT;
+          ALTER TABLE program_kart ADD COLUMN alarm_sesi TEXT;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

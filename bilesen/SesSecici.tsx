@@ -1,5 +1,6 @@
 // Bildirim sesi seçimi (pilot 19 Ekim): dokununca seçilir ve bir kez çalar
 // (dinleyip karar verilsin). "Telefonun sesi" çalmaz.
+// P-33: alarmda da kullanılır; `alarm` ile ilk seçenek "Telefonun alarm sesi".
 
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { useEffect, useRef } from 'react';
@@ -18,7 +19,15 @@ const DOSYALAR: Record<string, number> = {
   bip: require('../assets/sesler/bip.wav'),
 };
 
-export function SesSecici({ ses, onDegis }: { ses: string | null | undefined; onDegis: (ses: string | null) => void }) {
+export function SesSecici({
+  ses,
+  onDegis,
+  alarm = false,
+}: {
+  ses: string | null | undefined;
+  onDegis: (ses: string | null) => void;
+  alarm?: boolean;
+}) {
   const oynatici = useRef<AudioPlayer | null>(null);
   useEffect(
     () => () => {
@@ -46,18 +55,21 @@ export function SesSecici({ ses, onDegis }: { ses: string | null | undefined; on
   const secili = gecerliSes(ses);
   return (
     <View style={stiller.cipler}>
-      {SESLER.map((s) => (
-        <SecenekHapi
-          key={s.ad ?? 'telefon'}
-          etiket={s.etiket}
-          erisimEtiketi={`Ses: ${s.etiket}`}
-          secili={secili === s.ad}
-          onPress={() => {
-            onDegis(s.ad);
-            void dinlet(s.ad);
-          }}
-        />
-      ))}
+      {SESLER.map((s) => {
+        const etiket = alarm && s.ad === null ? 'Telefonun alarm sesi' : s.etiket;
+        return (
+          <SecenekHapi
+            key={s.ad ?? 'telefon'}
+            etiket={etiket}
+            erisimEtiketi={`${alarm ? 'Alarm sesi' : 'Ses'}: ${etiket}`}
+            secili={secili === s.ad}
+            onPress={() => {
+              onDegis(s.ad);
+              void dinlet(s.ad);
+            }}
+          />
+        );
+      })}
     </View>
   );
 }

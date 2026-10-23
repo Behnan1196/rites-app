@@ -21,6 +21,7 @@ import {
 import { GUN_KISA, gunEkle, gunFarki, uzunTarih, type Gun, type GunKisa } from '@/mantik/tarih';
 
 import { AyTakvimi } from '../AyTakvimi';
+import { SesSecici } from '../SesSecici';
 import { Dugme } from '../Dugme';
 import { AcKapa, ArtiEksi, Bolum, SecenekHapi } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
@@ -35,6 +36,8 @@ export interface Zamanlama {
   hatirlatma: Hatirlatma | null;
   /** Hatırlatma alarm olarak çalar (iOS 26). */
   alarm?: boolean;
+  /** Alarmın sesi (P-33); null: telefonun alarm sesi. */
+  alarmSesi?: string | null;
   tekrar: Tekrar | null;
 }
 
@@ -336,6 +339,16 @@ export function ZamanlamaPaneli({
                   />
                 </View>
                 <Yazi tur="ikincil">{KART_ALARM_ACIKLAMASI}</Yazi>
+                {!!deger.alarm && (
+                  <>
+                    <Yazi kalinlik="kalin">Alarm sesi</Yazi>
+                    <SesSecici
+                      ses={deger.alarmSesi ?? null}
+                      onDegis={(alarmSesi) => onDegis({ ...deger, alarmSesi })}
+                      alarm
+                    />
+                  </>
+                )}
               </>
             )}
           </>

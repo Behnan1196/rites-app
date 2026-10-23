@@ -109,6 +109,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
         saat: k?.saat ?? null,
         hatirlatma: k?.hatirlatma ?? null,
         alarm: k?.alarm ?? false,
+        alarmSesi: k?.alarmSesi ?? null,
         tekrar: k?.tekrar ?? null,
       },
       bloklar: (k?.bloklar ?? []).map((b) => formaBlok({ ...b, id: geciciKimlik(), kartId: '', sira: 0 })),
@@ -134,6 +135,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
       saat: kart.saat,
       hatirlatma: kart.hatirlatma,
       alarm: kart.alarm,
+      alarmSesi: kart.alarmSesi ?? null,
       tekrar: kart.tekrar,
     },
     bloklar: hedef.bloklar.map(formaBlok),
@@ -194,6 +196,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     saat: durum.zamanlama.saat,
     hatirlatma: gecerliHatirlatma(durum.zamanlama.hatirlatma, durum.zamanlama.saat),
     alarm: !!(gecerliHatirlatma(durum.zamanlama.hatirlatma, durum.zamanlama.saat) && durum.zamanlama.alarm),
+    alarmSesi: durum.zamanlama.alarm ? (durum.zamanlama.alarmSesi ?? null) : null,
     tekrar: durum.zamanlama.tekrar,
   });
 
@@ -238,6 +241,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           saat: t.saat,
           hatirlatma: t.hatirlatma,
           alarm: !!t.alarm,
+          alarmSesi: t.alarmSesi ?? null,
           tekrar: t.tekrar,
           bloklar: bloklar.map(blokKopyasi),
         };

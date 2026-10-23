@@ -19,6 +19,7 @@ import {
   type AnimsaticiGunu,
 } from './animsatici';
 import type { Kart } from './kart';
+import { gecerliSes } from './sesler';
 import { gunEkle, type Gun } from './tarih';
 
 /** Alarmdaki Ertele'ye basıldıktan bu kadar dakika sonra işlenen basış eskimiş sayılır. */
@@ -45,6 +46,8 @@ export interface PlanliAlarm {
   erteleDk: number;
   /** Tek seferlik alarmın saniyesiyle tam anı (ms; "Süre sonra"). */
   zamanMs?: number;
+  /** Alarm sesi (`mantik/sesler`; P-33); yoksa ya da null: telefonun alarm sesi. */
+  ses?: string | null;
   kaynak:
     | { tur: 'animsatici'; animsaticiId: string; /** Anımsatıcının kendi saati (kayıt anahtarı). */ saat: string }
     | { tur: 'kart'; kartId: string; /** Kartın görüldüğü gün. */ gun: Gun };
@@ -115,6 +118,7 @@ export function alarmPlani(
           ertelenebilir: true,
           erteleDk: a.erteleDk,
           zamanMs: new Date(a.bitis).getTime(),
+          ses: gecerliSes(a.ses),
           kaynak: { tur: 'animsatici', animsaticiId: a.id, saat },
         });
         continue;
@@ -130,6 +134,7 @@ export function alarmPlani(
           gun: null,
           ertelenebilir: true,
           erteleDk: a.erteleDk,
+          ses: gecerliSes(a.ses),
           kaynak: { tur: 'animsatici', animsaticiId: a.id, saat },
         });
       const d = bugunDurumlari.find((g) => g.animsaticiId === a.id && g.saat === saat);
@@ -143,6 +148,7 @@ export function alarmPlani(
         gun: bugunGun,
         ertelenebilir: true,
         erteleDk: a.erteleDk,
+        ses: gecerliSes(a.ses),
         kaynak: { tur: 'animsatici', animsaticiId: a.id, saat },
       });
     }
@@ -175,6 +181,7 @@ export function kartAlarmPlani(
       gun: an.gun,
       ertelenebilir: false,
       erteleDk: 0,
+      ses: gecerliSes(k.alarmSesi),
       kaynak: { tur: 'kart', kartId: k.id, gun },
     });
   }
@@ -201,12 +208,15 @@ export function alarmImzasi(
   haftaGunleri: readonly number[],
   baslik: string,
   gun: Gun | null = null,
+  ses: string | null = null,
 ): string {
-  return `${gun ?? ''}|${saat}|${[...haftaGunleri].sort((a, b) => a - b).join(',')}|${baslik}`;
+  // Ses yoksa imza eskisiyle aynı kalır (telefondaki eski alarmlar boşuna yeniden kurulmaz).
+  const temel = `${gun ?? ''}|${saat}|${[...haftaGunleri].sort((a, b) => a - b).join(',')}|${baslik}`;
+  return ses ? `${temel}|${ses}` : temel;
 }
 
 const planImzasi = (p: PlanliAlarm) =>
-  alarmImzasi(p.saat, p.haftaGunleri, p.baslik, p.haftaGunleri.length ? null : p.gun);
+  alarmImzasi(p.saat, p.haftaGunleri, p.baslik, p.haftaGunleri.length ? null : p.gun, p.ses ?? null);
 
 /**
  * Telefondaki alarmlarla plan arasındaki fark. Aynı kimlikli alarmın saati,

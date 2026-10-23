@@ -45,6 +45,7 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 15 | Planlar yerine **programlar**: pilottaki planlar, kartları ve kütüphanedeki plan kopyaları silinir; `plan` ve `soru_cevap` kalkar. Yeni: `program` (ad, alanlar JSON, neden, süre gün / null, durum `hazir\|uygulaniyor\|ara\|bitti`, son başlangıç, yıldız, değerlendirme, kaynak), `program_kart` (programın kartı: gün = başlangıçtan kaç gün sonra, saat, hatırlatma, alarm, tekrar, bloklar JSON). `alan_durumu`na `ad`, `aciklama`, `sira` (kişinin eklediği alan, anahtar `ozel-<id>`). `kart.plan_id` artık programı gösterir |
 | 16 | `not.igneli` (Giriş'te görünen notlar) |
 | 17 | Zamanlayıcı: `animsatici.toplam_ms` (halka için toplam süre, ms; +1 dk ile büyür), `animsatici.duraklama` (duraklatılmışsa kalan süre, ms; çalışırken NULL). Duraklatılmış zamanlayıcı hiçbir güne düşmez (bildirim / alarm planına girmez) ve eski "Süre sonra" temizliğinde silinmez |
+| 18 | `kart.alarm_sesi`, `program_kart.alarm_sesi` (alarmın sesi: `mantik/sesler` adı ya da NULL = telefonun alarm sesi). Alarm modülüne `soundName` (`zil.wav` …) olarak gider; ses alarm imzasına ve `metadata.ses`e girer, değişince alarm yeniden kurulur |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 
