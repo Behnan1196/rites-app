@@ -1,19 +1,18 @@
 // Giriş'teki Anımsatıcılar kutusu (`05` §7): çalan varsa "Şimdi çalıyor" ve
 // Durdur / Ertele; yoksa sıradaki ve "bugün N kez daha".
-// Pilot 17 Ekim: kurulu "Süre sonra"lar kalan süreleriyle (İptal) ve hızlı
-// kurmak için "Süre sonra" düğmesi.
+// Pilot 23 Ekim: kurulu zamanlayıcılar saniye saniye geri sayan satırlarla
+// (halka, Duraklat / Devam, +1 dk, İptal) ve "+ Zamanlayıcı" düğmesi.
 
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { erteleMetni, girisOzeti, kalanMetni, kalanSureMetni, type Animsatici } from '@/mantik/animsatici';
-import { animsaticiSil } from '@/veri/animsaticilar';
-import { useSimdiMs } from '@/veri/useSimdi';
-import { useVeri } from '@/veri/VeriSaglayici';
+import { erteleMetni, girisOzeti, kalanMetni } from '@/mantik/animsatici';
+import { duraklatildiMi, zamanlayiciSurerMi } from '@/mantik/zamanlayici';
+import { useSaniye } from '@/veri/useSimdi';
 
-import { useAnimsaticiFormu } from '../animsatici/AnimsaticiFormu';
 import { useAnimsatmalar } from '../animsatici/useAnimsatmalar';
+import { useZamanlayiciSayfasi } from '../animsatici/ZamanlayiciSayfasi';
+import { ZamanlayiciSatiri } from '../animsatici/ZamanlayiciSatiri';
 import { Dugme } from '../Dugme';
 import { useKisaMesaj } from '../KisaMesaj';
 import { olcu, renk } from '../tema';
@@ -25,19 +24,19 @@ const ac = () => router.push('/giris/animsaticilar');
 
 export function AnimsaticilarKutusu() {
   const kisaMesaj = useKisaMesaj();
-  const { kapi } = useVeri();
-  const simdiMs = useSimdiMs();
-  const form = useAnimsaticiFormu();
+  const zamanlayici = useZamanlayiciSayfasi();
   const { yukleniyor, animsaticilar, animsatmalar, durdur, ertele } = useAnimsatmalar();
+  // Çalışan (duraklatılmamış) zamanlayıcı varsa saniyede bir tazelenir.
+  const sayanVar = animsaticilar.some((a) => a.bitis && !duraklatildiMi(a));
+  const simdiMs = useSaniye(sayanVar);
   if (yukleniyor) return null;
-  const { calan } = girisOzeti(animsatmalar);
-  // Sıradaki / kalan yalnız "Saatinde"lerden; "Süre sonra"lar ayrı satırda.
+  // Saati gelmiş ama saniyesi dolmamış zamanlayıcı henüz "çalıyor" sayılmaz.
+  const { calan } = girisOzeti(
+    animsatmalar.filter((m) => !(m.animsatici.bitis && new Date(m.animsatici.bitis).getTime() > simdiMs)),
+  );
+  // Sıradaki / kalan yalnız "Saatinde"lerden; zamanlayıcılar ayrı satırda.
   const { siradaki, kalan } = girisOzeti(animsatmalar.filter((m) => !m.animsatici.bitis));
-  const sureler = animsaticilar.filter((a) => a.bitis && new Date(a.bitis).getTime() > simdiMs - 60_000);
-  const iptal = (a: Animsatici) =>
-    void animsaticiSil(kapi, a.id)
-      .then(() => kisaMesaj(`İptal edildi: ${a.ad}`))
-      .catch((e: unknown) => hata(e));
+  const sureler = animsaticilar.filter((a) => zamanlayiciSurerMi(a, simdiMs));
   const hata = (e: unknown) => {
     console.error('Anımsatıcı değişikliği kaydedilemedi', e);
     kisaMesaj('Kaydedilemedi. Yeniden dene.');
@@ -59,7 +58,7 @@ export function AnimsaticilarKutusu() {
             style={stiller.esnek}
           />
         </View>
-        {form.oge}
+        {zamanlayici.oge}
       </View>
     );
   }
@@ -99,18 +98,11 @@ export function AnimsaticilarKutusu() {
       </Pressable>
       {sureler.map((a) => (
         <View key={a.id} style={stiller.sureSatiri}>
-          <Ionicons name="timer-outline" size={22} color={renk.ana} />
-          <View style={stiller.esnek}>
-            <Yazi kalinlik="kalin" numberOfLines={1}>
-              {a.ad}
-            </Yazi>
-            <Yazi tur="ikincil">{`${a.saatler[0] ?? ''} · ${kalanSureMetni(a.bitis!, simdiMs)}`}</Yazi>
-          </View>
-          <Dugme tur="yazi" etiket="İptal" onPress={() => iptal(a)} />
+          <ZamanlayiciSatiri a={a} simdiMs={simdiMs} />
         </View>
       ))}
-      <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="⏱  Süre sonra" onPress={() => form.ac(null, 'sure')} />
-      {form.oge}
+      <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Zamanlayıcı" onPress={zamanlayici.ac} />
+      {zamanlayici.oge}
     </View>
   );
 }
@@ -126,9 +118,6 @@ const stiller = StyleSheet.create({
   sakin: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 76 },
   dikey: { gap: 10 },
   sureSatiri: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
     borderTopWidth: 1,
     borderTopColor: renk.satirCizgi,
     paddingTop: 8,

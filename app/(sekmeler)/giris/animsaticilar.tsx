@@ -1,66 +1,50 @@
 // Anımsatıcılar ekranı: eklenen anımsatıcıların listesi; dokununca düzenlenir
 // (silme de düzenleme sayfasında). Bugünün anımsatmaları Giriş'teki kutuda.
 // Pilot 14 Ekim: "Bugün" bölümü ve satırdaki Sil düğmesi kaldırıldı.
+// Pilot 23 Ekim: zamanlayıcılar üstte, geri sayan satırlarla; "+ Zamanlayıcı".
 
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useAnimsaticiFormu } from '@/bilesen/animsatici/AnimsaticiFormu';
 import { useAnimsatmalar } from '@/bilesen/animsatici/useAnimsatmalar';
+import { useZamanlayiciSayfasi } from '@/bilesen/animsatici/ZamanlayiciSayfasi';
+import { ZamanlayiciSatiri } from '@/bilesen/animsatici/ZamanlayiciSatiri';
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
-import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { olcu, renk } from '@/bilesen/tema';
 import { Bolum } from '@/bilesen/Secim';
 import { SesSecici } from '@/bilesen/SesSecici';
 import { Yazi } from '@/bilesen/Yazi';
-import { ANIMSATICI_GIZLILIK, animsaticiMeta, kalanSureMetni } from '@/mantik/animsatici';
-import { animsaticiSil } from '@/veri/animsaticilar';
+import { ANIMSATICI_GIZLILIK, animsaticiMeta } from '@/mantik/animsatici';
+import { duraklatildiMi, zamanlayiciSurerMi } from '@/mantik/zamanlayici';
 import { ayarOku, ayarYaz } from '@/veri/ayar';
 import { useSorgu } from '@/veri/kancalar';
-import { useSimdiMs } from '@/veri/useSimdi';
+import { useSaniye } from '@/veri/useSimdi';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 export default function Animsaticilar() {
   const form = useAnimsaticiFormu();
   const { yukleniyor, animsaticilar: hepsi } = useAnimsatmalar();
+  const zamanlayici = useZamanlayiciSayfasi();
   const { kapi } = useVeri();
-  const kisaMesaj = useKisaMesaj();
-  const simdiMs = useSimdiMs();
+  const simdiMs = useSaniye(hepsi.some((a) => a.bitis && !duraklatildiMi(a)));
   const kartSesi = useSorgu(['ayar'], async (o) => (await ayarOku(o, 'hatirlatma_sesi')) ?? null, []);
   const animsaticilar = hepsi.filter((a) => !a.bitis);
-  const sureler = hepsi.filter((a) => a.bitis);
+  const sureler = hepsi.filter((a) => zamanlayiciSurerMi(a, simdiMs));
 
   return (
     <>
       <EkranKabi geri="Giriş" baslik="Anımsatıcılar">
         {sureler.map((a) => (
-          <View key={a.id} style={stiller.kart}>
-            <View style={stiller.simge}>
-              <Ionicons name="timer-outline" size={20} color={renk.ana} />
-            </View>
-            <View style={stiller.esnek}>
-              <Yazi tur="kartBasligi">{a.ad}</Yazi>
-              <Yazi kalinlik="kalin" renk={renk.ana}>
-                {`${a.saatler[0] ?? ''} · ${kalanSureMetni(a.bitis!, simdiMs)}`}
-              </Yazi>
-              <Yazi tur="ikincil">{animsaticiMeta(a)}</Yazi>
-            </View>
-            <Dugme
-              tur="yazi"
-              etiket="İptal"
-              onPress={() =>
-                void animsaticiSil(kapi, a.id)
-                  .then(() => kisaMesaj(`İptal edildi: ${a.ad}`))
-                  .catch((e: unknown) => console.error('Anımsatıcı silinemedi', e))
-              }
-            />
+          <View key={a.id} style={stiller.zamanlayici}>
+            <ZamanlayiciSatiri a={a} simdiMs={simdiMs} />
           </View>
         ))}
+        <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Zamanlayıcı" onPress={zamanlayici.ac} />
         {!yukleniyor && animsaticilar.length === 0 && (
           <Yazi tur="ikincil">
-            Henüz saatli anımsatıcın yok. İlaç, su, göz damlası gibi düzenli olanlar ya da “Süre sonra” ile hızlı bir
-            zamanlayıcı ekleyebilirsin.
+            Henüz saatli anımsatıcın yok. İlaç, su, göz damlası gibi düzenli olanları ekleyebilirsin.
           </Yazi>
         )}
         {animsaticilar.map((a) => (
@@ -104,6 +88,7 @@ export default function Animsaticilar() {
       </EkranKabi>
 
       {form.oge}
+      {zamanlayici.oge}
     </>
   );
 }
@@ -119,6 +104,14 @@ const stiller = StyleSheet.create({
     borderRadius: olcu.kose.kart,
     paddingHorizontal: olcu.kartIci,
     paddingVertical: 14,
+  },
+  zamanlayici: {
+    backgroundColor: renk.yuzey,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: olcu.kose.kart,
+    paddingHorizontal: olcu.kartIci,
+    paddingVertical: 12,
   },
   basili: { opacity: 0.7 },
   simge: {

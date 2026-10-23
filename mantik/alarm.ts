@@ -96,6 +96,7 @@ export function alarmPlani(
   const plan: PlanliAlarm[] = [];
   for (const a of animsaticilar) {
     if (!a.alarm) continue;
+    if (a.duraklama !== null && a.duraklama !== undefined) continue; // duraklatılmış zamanlayıcı
     if (a.bitis) {
       // "Süre sonra": tek seferlik; ertelendiyse aşağıdaki erteleme alarmı çalar.
       const saat = a.saatler[0];

@@ -30,6 +30,10 @@ export interface Animsatici {
   bitis: string | null;
   /** Bildirim sesi (`mantik/sesler`); yoksa ya da null: telefonun sesi. */
   ses?: string | null;
+  /** Zamanlayıcı: halka için toplam süre (ms; "+1 dk" ile büyür). Eski kayıtlarda yok. */
+  toplamMs?: number | null;
+  /** Zamanlayıcı duraklatıldıysa kalan süre (ms); çalışıyorsa null. */
+  duraklama?: number | null;
 }
 
 /** Bugünkü bir saatin durumu (`animsatici_gun`). */
@@ -110,7 +114,9 @@ export function bitisSaati(bitis: string): string {
   return saatMetni(d.getHours() * 60 + d.getMinutes());
 }
 
-export function gunuKapsarMi(a: Pick<Animsatici, 'gunler' | 'bitis'>, gun: Gun): boolean {
+export function gunuKapsarMi(a: Pick<Animsatici, 'gunler' | 'bitis' | 'duraklama'>, gun: Gun): boolean {
+  // Duraklatılmış zamanlayıcı hiçbir güne düşmez: bildirimi, alarmı, "Şimdi çalıyor"u yok.
+  if (a.duraklama !== null && a.duraklama !== undefined) return false;
   if (a.bitis) return bitisGunu(a.bitis) === gun;
   return a.gunler.includes(haftaGunu(gun));
 }

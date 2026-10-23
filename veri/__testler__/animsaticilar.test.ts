@@ -12,6 +12,10 @@ import {
   eskiGunleriSil,
   ertele,
   gunDurumlari,
+  zamanlayiciDevam,
+  zamanlayiciDuraklat,
+  zamanlayiciKur,
+  zamanlayiciUzat,
 } from '../animsaticilar';
 import { gocleriUygula } from '../gocler';
 import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
@@ -113,5 +117,35 @@ describe('anımsatıcı sesi (pilot 19 Ekim)', () => {
     await animsaticiGuncelle(kapi, { ...goz, id: 's', ses: 'zil' });
     expect((await animsaticilariOku(oku)).find((a) => a.id === 's')?.ses).toBe('zil');
   });
-});
 
+  it('zamanlayıcı: kurulur, duraklatılır, uzatılır, sürdürülür', async () => {
+    const t0 = Date.parse('2026-10-12T10:00:00.000Z');
+    const b = await zamanlayiciKur(kapi, { id: 'z', ad: ' Çay ', ms: 5 * 60_000 + 30_000, alarm: true, ses: null }, t0);
+    expect(b.bitis).toBe('2026-10-12T10:05:30.000Z');
+    let z = (await animsaticilariOku(oku))[0]!;
+    expect(z).toMatchObject({ ad: 'Çay', bitis: b.bitis, toplamMs: 330_000, duraklama: null, gunler: [], alarm: true });
+    expect(z.saatler).toEqual([b.saat]);
+
+    await zamanlayiciDuraklat(kapi, 'z', t0 + 30_000);
+    z = (await animsaticilariOku(oku))[0]!;
+    expect(z.duraklama).toBe(300_000);
+
+    // Duraklatılmışken uzatma: kalan ve toplam büyür, duraklatılmış kalır.
+    await zamanlayiciUzat(kapi, 'z', 60_000, t0 + 90_000);
+    z = (await animsaticilariOku(oku))[0]!;
+    expect(z).toMatchObject({ duraklama: 360_000, toplamMs: 390_000 });
+
+    // Eski "Süre sonra" silme duraklatılmış olana dokunmaz.
+    await eskiGunleriSil(kapi, BUGUN, t0 + 3 * 3600_000);
+    expect(await animsaticilariOku(oku)).toHaveLength(1);
+
+    const t1 = Date.parse('2026-10-12T11:00:00.000Z');
+    await zamanlayiciDevam(kapi, 'z', t1);
+    z = (await animsaticilariOku(oku))[0]!;
+    expect(z).toMatchObject({ duraklama: null, bitis: '2026-10-12T11:06:00.000Z' });
+
+    await zamanlayiciUzat(kapi, 'z', 60_000, t1 + 60_000);
+    z = (await animsaticilariOku(oku))[0]!;
+    expect(z).toMatchObject({ bitis: '2026-10-12T11:07:00.000Z', toplamMs: 450_000 });
+  });
+});

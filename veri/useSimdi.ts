@@ -15,10 +15,13 @@ export function useSimdiMs(): number {
     let zamanlayici: ReturnType<typeof setTimeout>;
     const kur = () => {
       const d = new Date();
-      zamanlayici = setTimeout(() => {
-        setAn(Date.now());
-        kur();
-      }, (60 - d.getSeconds()) * 1000 + 50);
+      zamanlayici = setTimeout(
+        () => {
+          setAn(Date.now());
+          kur();
+        },
+        (60 - d.getSeconds()) * 1000 + 50,
+      );
     };
     kur();
     const abonelik = AppState.addEventListener('change', (durum) => {
@@ -34,4 +37,26 @@ export function useSimdiMs(): number {
 
 export function useSimdi(): string {
   return saatMetni(useSimdiMs());
+}
+
+/**
+ * Saniyede bir tazelenen an (ms; zamanlayıcının geri sayımı). `aktif` değilse
+ * durur ve son anı döndürür; ön plana dönünce de tazelenir.
+ */
+export function useSaniye(aktif: boolean): number {
+  const [an, setAn] = useState(() => Date.now());
+  useEffect(() => {
+    if (!aktif) return;
+    const ilk = setTimeout(() => setAn(Date.now()), 0);
+    const zamanlayici = setInterval(() => setAn(Date.now()), 1000);
+    const abonelik = AppState.addEventListener('change', (durum) => {
+      if (durum === 'active') setAn(Date.now());
+    });
+    return () => {
+      clearTimeout(ilk);
+      clearInterval(zamanlayici);
+      abonelik.remove();
+    };
+  }, [aktif]);
+  return an;
 }

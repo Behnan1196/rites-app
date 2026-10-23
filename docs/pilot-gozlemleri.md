@@ -160,3 +160,8 @@ Sonuç: → kararlar.md (Giriş ayarı ve Bugün sırada kartı)
 Ne dedi: "Karta bastığımızda açılan görünüm ekranının hiç stili yok; daha uzun bir kart görünümünde, sahip olduğu blokların belli olduğu bir yapıda olabilir mi? Kart görünümünde yapılabilecekleri testler sırasında ayrıca konuşuruz."
 Nerede: Kart görünümü
 Sonuç: → kararlar.md (Kart görünümü: tek uzun kart, bloklar bölüm bölüm)
+
+### P-30 · 23 Ekim 2026 · Behnan
+Ne dedi: "Ana ekrandaki anımsatıcılarda 'Süre sonra' kısmı var. Onu daha hoş bir timer haline getirsek iyi olacak, şu an hassas da değil. Mesela widget'tan Timer Ekle desek ve bir tane oluşturup kurabilsek." Seçimler: hazır süreler + tekerlek; saniye saniye geri sayım ve dolan halka, Duraklat / Devam, +1 dk, İptal; adı "Zamanlayıcı".
+Nerede: Giriş, Anımsatıcılar
+Sonuç: → kararlar.md (Zamanlayıcı: "Süre sonra"nın yerine)

@@ -276,6 +276,12 @@ export const GOCLER: readonly Goc[] = [
     surum: 16,
     sql: `ALTER TABLE "not" ADD COLUMN igneli INTEGER NOT NULL DEFAULT 0;`,
   },
+  {
+    // Zamanlayıcı (pilot 23 Ekim): halka için toplam süre, duraklatılınca kalan süre (ms).
+    surum: 17,
+    sql: `ALTER TABLE animsatici ADD COLUMN toplam_ms INTEGER;
+          ALTER TABLE animsatici ADD COLUMN duraklama INTEGER;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

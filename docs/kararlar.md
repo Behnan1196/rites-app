@@ -311,3 +311,14 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 ## Alanlardaki "Bu alanda ilerlemek istiyorum" kalktı (22 Ekim)
 
 - Düğmenin alan kutusunda "İlerlemek istiyorum" yazdırmaktan başka işlevi yoktu; alan ekranından ve alan kutusundan kalktı. Alan kutusu artık "N program uygulanıyor" · "N program" · "Program yok" yazar. Telefondaki eski değer silinmez, kullanılmaz. — Ürün sahibi
+
+## Zamanlayıcı: "Süre sonra"nın yerine (23 Ekim)
+
+- **Adı "Zamanlayıcı".** Giriş'teki Anımsatıcılar kutusunda ve Anımsatıcılar ekranında **"+ Zamanlayıcı"** düğmesi; "Anımsatıcı ekle" sayfasındaki "Süre sonra | Saatinde" seçimi kalktı (o sayfa yalnız saatli anımsatıcılar için). 17 Ekim kararının "Süre sonra" kısmının yerine geçer. — Ürün sahibi (P-30)
+- **Süre seçimi:** üstte seçilen süre büyük rakamlarla (05:00), altında "Çalacağı saat"; hazır süreler **1 · 3 · 5 · 10 · 15 · 30 dk** ve **saat / dakika / saniye tekerleği** (saniyesine kadar; en çok 23:59:59). Ad isteğe bağlı (boşsa "5 dk", "2 dk 30 sn"). — Ürün sahibi (P-30)
+- **Sayfa son kurulan süreyle açılır** (ilk seferde 5 dk). — Öneri
+- **Uyarı:** destekleniyorsa varsayılan Alarm, istenirse Bildirim (ses seçilir). Alarmda ertele **5 dk** (seçim yok, sayfa kısa kalsın). — Öneri
+- **Çalışırken:** her zamanlayıcı kendi satırında **saniye saniye geri sayar** (00:46), solunda **dolan halka**; halkanın ortasına dokununca **Duraklat / Devam** (duraklayınca halka griye döner, "Duraklatıldı"); sağda **+1 dk** ve **İptal**. Bitiş saati satırda ("Bitiş 11:42"). — Ürün sahibi (P-30; halkanın Duraklat düğmesi olması: Öneri)
+- **Duraklatılan zamanlayıcının** bildirimi ve alarmı kalkar; Devam kalan süreden yeniden kurar. Duraklatılmış zamanlayıcı kendiliğinden silinmez (kişi sürdürür ya da iptal eder). **+1 dk** duraklatılmışken de çalışır; halkanın toplamı da bir dakika büyür. — Öneri
+- Süre dolunca kutu eskisi gibi "Şimdi çalıyor · Durdur / Ertele" olur; artık saniyesi dolmadan (aynı dakikanın başında) "çalıyor"a geçmez. — Hata düzeltmesi (P-30: "hassas değil")
+- Tekerlek ve halka uygulamanın kendi parçaları (yeni yerel modül yok): **güncelleme olarak gider**, yeni derleme gerekmez. — Not
