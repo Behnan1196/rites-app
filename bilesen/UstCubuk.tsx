@@ -1,5 +1,6 @@
 // Ekranların üst satırı (pilot kararı, 14 Ekim): "Rites" yazısı yok. Solda ekran
-// başlığı ya da "‹ Geri", sağda ekranın simge düğmeleri ve avatar (→ Profil · Ayarlar menüsü).
+// başlığı ya da "‹ Geri", sağda ekranın simge düğmeleri. P-34 (23 Ekim): avatar
+// (→ Profil · Ayarlar menüsü) yalnız Giriş'te; öbür sekmelerde o köşe sekmenin işlerine.
 // Ayrı bir marka satırı kalmadığı için kartlara daha çok yer kalır.
 
 import type { ReactNode } from 'react';
@@ -11,7 +12,7 @@ import { Avatar } from './Avatar';
 import { useProfil } from './Profil';
 import { olcu } from './tema';
 
-export function UstCubuk({ sol, sag }: { sol?: ReactNode; sag?: ReactNode }) {
+export function UstCubuk({ sol, sag, avatar = false }: { sol?: ReactNode; sag?: ReactNode; avatar?: boolean }) {
   const { menuyuAc } = useProfil();
   const ad = useAyar('ad').veri ?? '';
 
@@ -20,15 +21,17 @@ export function UstCubuk({ sol, sag }: { sol?: ReactNode; sag?: ReactNode }) {
       <View style={stiller.sol}>{sol}</View>
       <View style={stiller.sag}>
         {sag}
-        <Pressable
-          onPress={menuyuAc}
-          accessibilityRole="button"
-          accessibilityLabel={`${ad}: Profil ve Ayarlar menüsü`}
-          hitSlop={8}
-          style={({ pressed }) => pressed && { opacity: 0.7 }}
-        >
-          <Avatar ad={ad} />
-        </Pressable>
+        {avatar && (
+          <Pressable
+            onPress={menuyuAc}
+            accessibilityRole="button"
+            accessibilityLabel={`${ad}: Profil ve Ayarlar menüsü`}
+            hitSlop={8}
+            style={({ pressed }) => pressed && { opacity: 0.7 }}
+          >
+            <Avatar ad={ad} />
+          </Pressable>
+        )}
       </View>
     </View>
   );

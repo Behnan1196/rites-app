@@ -1,7 +1,8 @@
-// Gruplar: Seni eklemek isteyenler, Seni gruba çağıranlar, Kişilerim, + Kişi ekle
-// (9. görev); Gruplarım (bana bekleyen yanıt sayısıyla), + Grup kur (10. görev);
-// yalnız eskiden kişilerle açılmış listeler (pilot 19 Ekim: listelerin yeri grup);
-// Kişilerim. Ücretsiz sınır göstergesi Ayarlar → Üyelik'te.
+// Gruplar: en üstte kapalı "Kişilerim" satırı (P-34: kişi sayısı, seni eklemek
+// isteyen varsa sayısı; dokununca Kişilerim ekranı), Seni gruba çağıranlar,
+// Gruplarım (bana bekleyen yanıt sayısıyla), + Grup kur (10. görev); yalnız eskiden
+// kişilerle açılmış listeler (pilot 19 Ekim: listelerin yeri grup). Sağ üstte
+// Kişilerim simgesi. Ücretsiz sınır göstergesi Ayarlar → Üyelik'te.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
@@ -10,34 +11,28 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
+import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
 import { GrupDavetleri } from '@/bilesen/gruplar/GrupDavetleri';
-import { KisiIstekleri } from '@/bilesen/gruplar/KisiIstekleri';
 import { GrupKurSayfasi } from '@/bilesen/gruplar/GrupKurSayfasi';
-import { KisiEkleSayfasi } from '@/bilesen/gruplar/KisiEkleSayfasi';
 import { useGrupBekleyenleri } from '@/bilesen/gruplar/useGrupBekleyenleri';
 import { useGruplar } from '@/bilesen/gruplar/useGruplar';
 import { useKisiler } from '@/bilesen/gruplar/useKisiler';
-import { Katman } from '@/bilesen/Katman';
 import { OrtakListeSatiri } from '@/bilesen/listeler/OrtakListeSatiri';
 import { useListeler } from '@/bilesen/listeler/useListeler';
-import { useKisaMesaj } from '@/bilesen/KisaMesaj';
-import { OnayKutusu } from '@/bilesen/OnayKutusu';
 import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
 import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { grupBasinaBekleyen } from '@/mantik/grupBekleyenler';
 import { grupSayiMetni } from '@/mantik/gruplar';
-import { BAGLANAMIYOR, DURUM_METNI, ekledigimSayi, kisiBasHarf, UCRETSIZ_SINIR, type Kisi } from '@/mantik/kisiler';
-import { baglantiyiSil, davetiSil } from '@/sunucu/kisiler';
+import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { useOturum } from '@/sunucu/oturum';
-import { kisiSil } from '@/veri/kisiler';
-import { useVeri } from '@/veri/VeriSaglayici';
+
+const kisileriAc = () => router.push('/gruplar/kisiler');
 
 export default function Gruplar() {
   const oturum = useOturum();
-  const { kapi } = useVeri();
-  const kisaMesaj = useKisaMesaj();
-  const { ben, kisiler, istekler, baglanamiyor, yenile } = useKisiler(oturum);
+  const { ben, kisiler, istekler, baglanamiyor } = useKisiler(oturum);
+  const istekMetni = istekler.length > 0 ? `${istekler.length} kişi seni eklemek istiyor` : '';
   const grup = useGruplar(oturum);
   const bekleyen = useGrupBekleyenleri();
   const bekleyenSayilari = grupBasinaBekleyen(bekleyen.bekleyenler);
@@ -47,33 +42,17 @@ export default function Gruplar() {
       void bekleyenYenile();
     }, [bekleyenYenile]),
   );
-  const [ekleAcik, setEkleAcik] = useState(0);
   const [grupKurAcik, setGrupKurAcik] = useState(0);
-  const [silinecek, setSilinecek] = useState<Kisi | null>(null);
   const liste = useListeler(oturum);
   // Pilot 19 Ekim: listelerin yeri grup; burada yalnız eskiden kişilerle açılmış (gruba açık olmayan) listeler.
   const kisiListeleri = liste.listeler.filter((l) => l.gruplar.length === 0);
-  const ekledigim = ekledigimSayi(kisiler);
-
-  const hata = (e: unknown) => {
-    console.warn(e);
-    kisaMesaj(BAGLANAMIYOR);
-  };
-
-  const sil = async (k: Kisi) => {
-    setSilinecek(null);
-    try {
-      if (ben && k.kullaniciId) await baglantiyiSil(ben, k.kullaniciId);
-      else if (k.durum === 'davet') await davetiSil(k.eposta);
-      await kisiSil(kapi, k.id);
-      kisaMesaj(`Silindi: ${k.ad}`);
-    } catch (e) {
-      hata(e);
-    }
-  };
 
   return (
-    <EkranKabi baslik="Gruplar" altBaslik="Kişilerin ve birlikte yürüttüğün gruplar.">
+    <EkranKabi
+      baslik="Gruplar"
+      altBaslik="Kişilerin ve birlikte yürüttüğün gruplar."
+      baslikSag={<SimgeDugmesi ikon="person-outline" etiket="Kişilerim" onPress={kisileriAc} />}
+    >
       {!ben ? (
         oturum.durum === 'yukleniyor' ? null : (
           <OturumGerekli
@@ -89,7 +68,29 @@ export default function Gruplar() {
             </Yazi>
           )}
 
-          <KisiIstekleri ben={ben} istekler={istekler} onYanit={() => void yenile()} />
+          <Pressable
+            onPress={kisileriAc}
+            accessibilityRole="button"
+            accessibilityLabel={[`Kişilerim, ${kisiler.length} kişi`, istekMetni].filter(Boolean).join('. ')}
+            style={({ pressed }) => [
+              stiller.grup,
+              istekler.length > 0 && stiller.istekli,
+              pressed && { opacity: 0.75 },
+            ]}
+          >
+            <View style={stiller.grupSimge}>
+              <Ionicons name="person-outline" size={22} color={renk.ana} />
+            </View>
+            <View style={stiller.esnek}>
+              <Yazi tur="kartBasligi">{`Kişilerim · ${kisiler.length} kişi`}</Yazi>
+              {!!istekMetni && (
+                <Yazi kalinlik="kalin" renk={renk.vurguYazi}>
+                  {istekMetni}
+                </Yazi>
+              )}
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
+          </Pressable>
 
           <GrupDavetleri
             davetler={grup.davetler}
@@ -147,56 +148,7 @@ export default function Gruplar() {
               onPress={() => router.push({ pathname: '/gruplar/liste/[id]', params: { id: l.id } })}
             />
           ))}
-
-          <View style={[stiller.baslikSatiri, stiller.bolumArasi]}>
-            <Yazi tur="bolumBasligi" accessibilityRole="header">
-              Kişilerim
-            </Yazi>
-            <Yazi tur="ikincil">{`${kisiler.length} kişi`}</Yazi>
-          </View>
-
-          {kisiler.length > 0 && (
-            <View style={stiller.liste}>
-              {kisiler.map((k, i) => (
-                <View key={k.id} style={[stiller.satir, stiller.kisi, i > 0 && stiller.cizgili]}>
-                  <View style={stiller.avatar}>
-                    <Yazi kalinlik="kalin" renk={renk.ana}>
-                      {kisiBasHarf(k.ad)}
-                    </Yazi>
-                  </View>
-                  <View style={stiller.esnek}>
-                    <Yazi tur="kartBasligi">{k.ad}</Yazi>
-                    <Yazi tur="ikincil">{k.eposta}</Yazi>
-                    <Yazi kalinlik="kalin" renk={k.durum === 'bagli' ? renk.ana : renk.vurguYazi}>
-                      {DURUM_METNI[k.durum]}
-                    </Yazi>
-                  </View>
-                  <Dugme tur="tehlike" etiket="Sil" onPress={() => setSilinecek(k)} />
-                </View>
-              ))}
-            </View>
-          )}
-
-          <Dugme
-            etiket="+ Kişi ekle"
-            onPress={() =>
-              ekledigim >= UCRETSIZ_SINIR
-                ? kisaMesaj(`Ücretsiz üyelikte en çok ${UCRETSIZ_SINIR} kişi ekleyebilirsin.`)
-                : setEkleAcik((n) => n + 1)
-            }
-          />
         </>
-      )}
-
-      {ekleAcik > 0 && (
-        <KisiEkleSayfasi
-          key={ekleAcik}
-          gorunur
-          onKapat={() => setEkleAcik(0)}
-          kisiler={kisiler}
-          ekledigim={ekledigim}
-          onEklendi={() => void yenile()}
-        />
       )}
 
       {grupKurAcik > 0 && (
@@ -206,19 +158,6 @@ export default function Gruplar() {
           kisiler={kisiler}
           onKuruldu={() => void grup.yenile()}
         />
-      )}
-
-      {silinecek && (
-        <Katman>
-          <OnayKutusu
-            baslik={`${silinecek.ad} silinsin mi?`}
-            aciklama="Bağlantınız iki tarafta da kopar."
-            secenekler={[
-              { etiket: 'Sil', tur: 'tehlike', onPress: () => void sil(silinecek) },
-              { etiket: 'Vazgeç', tur: 'yazi', onPress: () => setSilinecek(null) },
-            ]}
-          />
-        </Katman>
       )}
     </EkranKabi>
   );
@@ -268,6 +207,7 @@ const stiller = StyleSheet.create({
     paddingVertical: 12,
     minHeight: 72,
   },
+  istekli: { borderColor: renk.vurgu, borderWidth: 2 },
   grupSimge: {
     width: 44,
     height: 44,

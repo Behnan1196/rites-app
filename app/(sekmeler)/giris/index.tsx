@@ -31,7 +31,7 @@ export default function Giris() {
   const sira = useKutuSirasi();
   const { girisAyariniAc } = useGirisAyari();
   return (
-    <EkranKabi baslik="Rites" marka>
+    <EkranKabi baslik="Rites" marka avatar>
       {kutuSatirlari(
         hazirKutular(sira ?? [])
           .filter((a) => a.acik && KUTU_BILESENI[a.k])

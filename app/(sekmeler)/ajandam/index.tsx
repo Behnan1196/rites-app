@@ -1,5 +1,6 @@
 // Ajandam: Gün ve Hafta görünümü, takvim, arama, kaynağa göre süzme
-// (A-1 … A-8, PL-4, `05` §8).
+// (A-1 … A-8, PL-4, `05` §8). P-34: başlık "Ajandam"; sağda ara, takvim, Görünüm
+// (gün / hafta + kaynak süzgeci) ve ＋ (kart ekle); avatar yalnız Giriş'te.
 
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -14,6 +15,7 @@ import { SiraliKartlar, type SurukleIslemleri } from '@/bilesen/ajanda/SiraliKar
 import { KaynakSuzgeci } from '@/bilesen/ajanda/KaynakSuzgeci';
 import { TakvimSayfasi } from '@/bilesen/ajanda/TakvimSayfasi';
 import { Dugme } from '@/bilesen/Dugme';
+import { renk } from '@/bilesen/tema';
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
@@ -178,25 +180,23 @@ export default function Ajandam() {
   return (
     <EkranKabi
       kaydirilabilir={!surukleniyor}
+      baslik="Ajandam"
       baslikSag={
         <>
           <SimgeDugmesi ikon="search" etiket="Ajandada ara" onPress={() => setSorgu(sorgu ?? '')} />
-          <SimgeDugmesi
-            ikon={suzuldu ? 'funnel' : 'funnel-outline'}
-            etiket={suzuldu ? 'Süzgeç açık, kaynakları seç' : 'Kaynağa göre süz'}
-            secili={suzuldu}
-            onPress={() => setSuzgecAcik(true)}
-          />
-          <SimgeDugmesi
-            ikon={gorunum === 'gun' ? 'grid-outline' : 'reorder-four-outline'}
-            etiket={gorunum === 'gun' ? 'Hafta görünümüne geç' : 'Gün görünümüne geç'}
-            onPress={() => setGorunum(gorunum === 'gun' ? 'hafta' : 'gun')}
-          />
           <SimgeDugmesi
             ikon="calendar-outline"
             etiket="Takvimi aç"
             onPress={() => setTakvim((t) => ({ acik: true, acilis: t.acilis + 1 }))}
           />
+          {/* P-34: süzgeç ve gün / hafta tek "Görünüm" menüsünde; süzgeç açıksa dolu. */}
+          <SimgeDugmesi
+            ikon={suzuldu ? 'options' : 'options-outline'}
+            etiket={suzuldu ? 'Görünüm, süzgeç açık' : 'Görünüm: gün, hafta, kaynaklar'}
+            secili={suzuldu}
+            onPress={() => setSuzgecAcik(true)}
+          />
+          <SimgeDugmesi ikon="add" etiket="Kart ekle" dolu onPress={() => form.ac({ tur: 'yeni', gun: secili })} />
         </>
       }
     >
@@ -247,6 +247,12 @@ export default function Ajandam() {
               {gununKartlariListesi.length === 0 ? (
                 <View style={stiller.bos}>
                   <Yazi tur="ikincil">{bosGunMetni(secili, bugunGun, suzuldu)}</Yazi>
+                  <Dugme
+                    tur="ikincil"
+                    yaziRengi={renk.ana}
+                    etiket="+ Bu güne kart ekle"
+                    onPress={() => form.ac({ tur: 'yeni', gun: secili })}
+                  />
                 </View>
               ) : (
                 <View style={stiller.liste}>
@@ -267,8 +273,6 @@ export default function Ajandam() {
           {!veri.yukleniyor && gorunum === 'hafta' && (
             <HaftaGorunumu gunler={haftaGunleri} bugunGun={bugunGun} onGunuAc={gunuAc} onKartiAc={kartiAc} />
           )}
-
-          <Dugme tur="vurgu" etiket="+ Kart ekle" onPress={() => form.ac({ tur: 'yeni', gun: secili })} />
         </>
       )}
 
@@ -291,6 +295,8 @@ export default function Ajandam() {
           planAdlari={planAdlari}
           onDegis={setGizli}
           onKapat={() => setSuzgecAcik(false)}
+          gorunum={gorunum}
+          onGorunum={setGorunum}
         />
       )}
       {form.oge}
@@ -300,5 +306,5 @@ export default function Ajandam() {
 
 const stiller = StyleSheet.create({
   liste: { gap: 12 },
-  bos: { paddingVertical: 16, alignItems: 'center' },
+  bos: { paddingVertical: 16, alignItems: 'center', gap: 12 },
 });

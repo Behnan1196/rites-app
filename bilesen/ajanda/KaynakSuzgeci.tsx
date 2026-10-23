@@ -1,12 +1,14 @@
 // Kaynağa göre süzme (A-5, pilot kararıyla 14 Ekim): şerit yerine üst satırdaki
 // süzgeç simgesinden açılan küçük menü. Çoklu seçim: işareti kaldırılan kaynak
 // ajandada gizlenir. Süzgeç açıkken simge dolu görünür.
+// P-34 (23 Ekim): "Görünüm" menüsü oldu: üstte Gün | Hafta, altında kaynaklar.
 
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { kaynakAdi, type KaynakAnahtari } from '@/mantik/kaynak';
 
+import { BolumluDugme } from '../BolumluDugme';
 import { IsaretKutusu } from '../gruplar/parcalar';
 import { Katman } from '../Katman';
 import { olcu, renk } from '../tema';
@@ -19,12 +21,16 @@ export function KaynakSuzgeci({
   planAdlari,
   onDegis,
   onKapat,
+  gorunum,
+  onGorunum,
 }: {
   kaynaklar: readonly KaynakAnahtari[];
   gizli: ReadonlySet<KaynakAnahtari>;
   planAdlari: ReadonlyMap<string, string>;
   onDegis: (gizli: Set<KaynakAnahtari>) => void;
   onKapat: () => void;
+  gorunum: 'gun' | 'hafta';
+  onGorunum: (g: 'gun' | 'hafta') => void;
 }) {
   const kenar = useSafeAreaInsets();
   const degistir = (k: KaynakAnahtari) => {
@@ -37,8 +43,23 @@ export function KaynakSuzgeci({
 
   return (
     <Katman>
-      <Pressable style={StyleSheet.absoluteFill} onPress={onKapat} accessibilityLabel="Süzgeci kapat" />
+      <Pressable style={StyleSheet.absoluteFill} onPress={onKapat} accessibilityLabel="Görünüm menüsünü kapat" />
       <View style={[stiller.kutu, { top: kenar.top + 58 }]} accessibilityViewIsModal>
+        <Yazi kalinlik="kalin" style={stiller.baslik}>
+          Görünüm
+        </Yazi>
+        <BolumluDugme
+          erisimEtiketi="Gün ya da hafta"
+          secenekler={[
+            { deger: 'gun', etiket: 'Gün' },
+            { deger: 'hafta', etiket: 'Hafta' },
+          ]}
+          secili={gorunum}
+          onSec={(g) => {
+            onGorunum(g);
+            onKapat();
+          }}
+        />
         <Yazi kalinlik="kalin" style={stiller.baslik}>
           Ajandada göster
         </Yazi>
@@ -102,5 +123,11 @@ const stiller = StyleSheet.create({
   cizgili: { borderTopWidth: 1, borderTopColor: renk.satirCizgi },
   nokta: { width: 10, height: 10, borderRadius: 5 },
   esnek: { flex: 1 },
-  hepsi: { minHeight: 44, justifyContent: 'center', alignItems: 'center', borderTopWidth: 1, borderTopColor: renk.satirCizgi },
+  hepsi: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: renk.satirCizgi,
+  },
 });

@@ -180,3 +180,8 @@ Sonuç: → kararlar.md (Zamanlayıcı kadranı: mutfak zamanlayıcısı gibi)
 Ne dedi: "Hatırlatma saati geldiğinde bir YT videosunu başlatmasını istesem… örneğin Pazar sabahı seçtiğim bir YT müziğiyle uyanmak, dokunmaya gerek kalmadan." (Olmayacağı konuşulunca:) "Gerek yok, Apple Saat uygulamasını kullanırım; ya da ileride ev otomasyonuna bağlarım. Ajanda kartlarından kurulacak bir alarmda alarm sesini seçme şansım nedir, kaç farklı alarm sesi kurulabilir?" Öneri kabul: alarmda ses seçimi (telefonun alarm sesi + 5 Rites sesi), önce telefonda denenecek.
 Nerede: Kart formu (Zamanlama), Anımsatıcı formu
 Sonuç: → kararlar.md (Alarmın sesi seçilir)
+
+### P-34 · 23 Ekim 2026 · Behnan
+Ne dedi: "Gruplarda Kişiler bölümü var, bence mantıken üstte olması ancak hep açık olmaması, böylece rahatça gruplar yaratabilmeliyiz. Sağ üstteki avatar menüsüne mi geçirsek… bir yandan da avatar sadece Giriş sekmesindeyken olmalı, diğerlerinde o alan başka amaçlarla kullanılır ya da boş bırakılır. Ajandam'da başlık sığmadığı için kaldırmıştık; avatarı kaldırıp filtre, gün/hafta görünümü gibi tuşları toparlayan, kart ekleyi de üstte bir tuş olarak yerleştiren bir tasarıma gidebiliriz." Önerilerin hepsi kabul ("kullanımda bazı ayarlar yaparız").
+Nerede: Üst satır (bütün sekmeler), Ajandam, Gruplar, Yaşam Tarzım
+Sonuç: → kararlar.md (Üst satır düzeni ve Kişilerim)

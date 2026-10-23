@@ -345,3 +345,12 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Alarm sesi seçimi:** kartın alarmında ("Alarm olarak çalsın" açıkken) ve anımsatıcının alarmında **"Alarm sesi"**: Telefonun alarm sesi · Zil · Çan · Yumuşak · Kuş · Kısa bip (Rites'ın gömülü sesleri; dokununca bir kez çalar). Varsayılan telefonun alarm sesi. Her kart / anımsatıcı kendi sesini seçer; programın kartında seçilen ses ajandaya düşen karta geçer. — Ürün sahibi (P-33)
 - Anımsatıcıda bildirim sesi ile alarm sesi aynı alandır (hangisi seçiliyse onun sesi). Zamanlayıcı telefonun alarm sesiyle çalar. — Öneri
 - **Denendi (23 Ekim):** kilit ekranında seçilen ses (Çan) çaldı ve durdurulana kadar tekrar tekrar çalıyor; deneme yeterli. **Alarma özel (daha uzun) sesler ileride** eklenecek (yeni derleme ister). "Kendi sesin" ve kartın bildirim sesinin kart başına seçilmesi de o zaman konuşulur. — Ürün sahibi (P-33)
+
+## Üst satır düzeni ve Kişilerim (23 Ekim)
+
+Menü yerleşimi çalışmasının (P-23) ilk adımı; kullanımda ayar yapılabilir.
+
+- **Avatar (Profil · Ayarlar) yalnız Giriş'te.** Öbür sekmelerde sağ üst köşe sekmenin işlerine kalır. — Ürün sahibi (P-34)
+- **Ajandam:** solda başlık **"Ajandam"** geri geldi; sağda **ara · takvim · Görünüm · ＋**. Süzgeç ve Gün / Hafta tek **Görünüm** menüsünde (üstte Gün | Hafta, altında "Ajandada göster" kaynakları; süzgeç açıksa düğme dolu). **＋ (kart ekle)** üstte, ana renkte dolu; listenin altındaki "+ Kart ekle" kalktı. Boş günde listenin ortasında "+ Bu güne kart ekle". — Ürün sahibi (P-34)
+- **Gruplar:** en üstte kapalı **"Kişilerim · N kişi"** satırı; seni eklemek isteyen varsa altında "N kişi seni eklemek istiyor" (kehribar çerçeve). Dokununca **Kişilerim** ekranı: istekler, kişi listesi (Sil), + Kişi ekle. Sağ üstte de Kişilerim simgesi. Kişiler avatar menüsüne taşınmadı (gruplarla iç içe). — Ürün sahibi (P-34)
+- **Yaşam Tarzım:** sağ üstte **Kütüphanem** simgesi (sayfanın altındaki Kütüphanem satırı da duruyor). — Ürün sahibi (P-34)

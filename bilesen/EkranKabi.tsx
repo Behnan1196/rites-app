@@ -33,6 +33,8 @@ interface Ozellikler {
   kaydirilabilir?: boolean;
   /** Üst satırda avatarın solundaki simge düğmeleri (Ajandam: ara, süz, görünüm, takvim). */
   baslikSag?: ReactNode;
+  /** Sağ üstte avatar (Profil · Ayarlar); P-34: yalnız Giriş. */
+  avatar?: boolean;
   children?: ReactNode;
 }
 
@@ -44,6 +46,7 @@ export function EkranKabi({
   onGeri,
   kaydirilabilir = true,
   baslikSag,
+  avatar = false,
   children,
 }: Ozellikler) {
   const kenar = useSafeAreaInsets();
@@ -87,6 +90,7 @@ export function EkranKabi({
           ) : null
         }
         sag={baslikSag}
+        avatar={avatar}
       />
       <ScrollView
         ref={kaydirma}

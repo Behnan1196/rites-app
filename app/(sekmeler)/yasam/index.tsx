@@ -9,6 +9,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { AltSayfa } from '@/bilesen/AltSayfa';
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
+import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
 import { GirisAlani } from '@/bilesen/GirisAlani';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { AcKapa } from '@/bilesen/Secim';
@@ -59,7 +60,13 @@ export default function YasamTarzim() {
   };
 
   return (
-    <EkranKabi baslik="Yaşam Tarzım" altBaslik="Hayatının alanları ve denediğin programlar.">
+    <EkranKabi
+      baslik="Yaşam Tarzım"
+      altBaslik="Hayatının alanları ve denediğin programlar."
+      baslikSag={
+        <SimgeDugmesi ikon="library-outline" etiket="Kütüphanem" onPress={() => router.push('/yasam/kutuphane')} />
+      }
+    >
       <View style={stiller.basliklar}>
         <Yazi tur="bolumBasligi" accessibilityRole="header">
           Alanlarım
