@@ -170,3 +170,8 @@ Sonuç: → kararlar.md (Zamanlayıcı: "Süre sonra"nın yerine)
 Ne dedi: "Zamanlayıcı diğerlerinden farklı olabilir, bitiş saati yazmasın, zaten yanıltıcı; tek Alarm tipi olabilir. Şu an alarm çıkınca 1 dk erteleyebiliyoruz, oysa giriş ekranında 5 dk ertele var. Acaba hiç detay form çıkmadan, timer ekle dediğimizde doğrudan giriş ekranına çıkan şık bir zamanlayıcıyı set edebilsek." Seçimler: kutuda açılır, Başlat'la; ertele ikisinde de 1 dk.
 Nerede: Giriş, Anımsatıcılar
 Sonuç: → kararlar.md (Zamanlayıcı: form yok, kutuda kurulur; yalnız alarm; ertele 1 dk)
+
+### P-32 · 23 Ekim 2026 · Behnan
+Ne dedi: "Daha da iyi oldu ama hâlâ hayal ettiğim şey değil. Bir Timer ikonu var ve ona bastığımda 5 dk'ya ayarlı (ya da 0 dk) bir timer bloğu oluşuyor, Başlat tuşu içinde (şu andaki gibi daire içinde olabilir); tek çözülmesi gereken görsel olarak başka bir dakika ayarı vermek, timer en çok 1 saat ile sınırlandırılabilir. Keşke analog düğme gibi ayarlayabilsek." Tartışmadaki önerilerin hepsi kabul: 5 dk açılış, çalışırken çevirme yok, başlayanlar küçük satıra iner, simge başlık satırında, en çok 60 dk.
+Nerede: Giriş, Anımsatıcılar
+Sonuç: → kararlar.md (Zamanlayıcı kadranı: mutfak zamanlayıcısı gibi)

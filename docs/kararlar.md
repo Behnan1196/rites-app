@@ -329,3 +329,12 @@ Yeni kayıt en alta eklenir. Eski bir karar değişirse silinmez; yeni kayıt "�
 - **Yalnız alarm:** zamanlayıcı her zaman alarm olarak çalar; Bildirim / ses seçimi yok. Telefon alarmı desteklemiyorsa (iOS 26 öncesi) bildirim olarak gelir. — Ürün sahibi (P-31; destek yoksa bildirim: Öneri)
 - **Bitiş saati yazılmaz** (duraklatıp sürdürünce yanıltıyordu); satırda yalnız geri sayım, duraklatılmışsa "Duraklatıldı". — Ürün sahibi (P-31)
 - **Ertele 1 dk**, alarmdaki düğmede de Giriş'te de ("1 dk ertele"). Ertele zamanlayıcıyı **saniyesiyle** 1 dakika sonrasına yeniden kurar; satır geri döner, geri sayım ve halka 01:00'dan başlar. — Ürün sahibi (P-31; yeniden kurulma: Öneri)
+
+## Zamanlayıcı kadranı: mutfak zamanlayıcısı gibi (23 Ekim)
+
+- **Anımsatıcılar kutusunun başlık satırında sağda zamanlayıcı simgesi.** Basınca kutunun içinde **kadran** açılır, **5 dk'ya ayarlı**; yeniden basınca ya da sağ üstteki ✕ ile kapanır. Anımsatıcılar ekranında "+ Zamanlayıcı" düğmesi aynı kadranı açar. Aynı günün "kutuda kurulur" kararındaki hazır süreler ve tekerlek kalktı. — Ürün sahibi (P-32)
+- **Süre kadranla:** tutamak halkanın üstünde parmakla çevrilir; **bir tam tur 60 dk, adım 1 dk**, saniye yok. Renkli yay seçilen süredir (tepeden saat yönünde); kenarda her 5 dk'da çizgi, 0 · 15 · 30 · 45 yazar. Halkaya dokununca o dakikaya atlar; çevirirken tepeden geçince 60'ta (ya da 0'da) durur. Çevirirken ekran kaymaz. Ekran okuyucuda kadran ayarlanabilir öğedir (yukarı / aşağı: 1 dk). — Ürün sahibi (P-32; dokununca atlama, tepede durma: Öneri)
+- **Ortada süre (05:00) ve yuvarlak Başlat.** — Ürün sahibi (P-32)
+- **Zamanlayıcı en çok 1 saat;** daha uzun işler saatli anımsatıcıyla kurulur. +1 dk ile 60'ın üstüne çıkılabilir. — Ürün sahibi (P-32; +1 dk ile aşma: Öneri)
+- **Başlayan zamanlayıcı** şimdiki gibi küçük halkalı satıra iner (birden çok zamanlayıcıda Giriş kalabalıklaşmasın). Halka artık **kalan süreyi** gösterir: mutfak zamanlayıcısı gibi küçülerek biter. Çalışan zamanlayıcının süresi kadranla değişmez (cepten çıkarırken yanlışlıkla değişmesin); +1 dk ve Duraklat var. — Ürün sahibi (P-32)
+- Çevirirken her dakikada hafif titreşim (gerçek düğme hissi) yeni bir yerel modül ister; bir sonraki derlemeye bırakıldı. — Not

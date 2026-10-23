@@ -9,11 +9,10 @@
 
 import type { Animsatici } from './animsatici';
 
-/** Hazır süreler (dakika). */
-export const ZAMANLAYICI_SURELERI = [1, 3, 5, 10, 15, 30] as const;
-export const VARSAYILAN_ZAMANLAYICI_MS = 5 * 60_000;
-/** Tekerlekte en çok 23 sa 59 dk 59 sn. */
-export const EN_UZUN_ZAMANLAYICI_MS = (24 * 3600 - 1) * 1000;
+/** Kadran açılınca (P-32). */
+export const VARSAYILAN_ZAMANLAYICI_DK = 5;
+/** Kadranın bir tam turu (P-32: zamanlayıcı en çok 1 saat; uzun işler saatli anımsatıcıyla). */
+export const KADRAN_DK = 60;
 /** "+1 dk". */
 export const UZATMA_MS = 60_000;
 /** Zamanlayıcıda ertele (dakika; alarmda ve Giriş'te aynı; P-31). */
@@ -21,19 +20,31 @@ export const ZAMANLAYICI_ERTELEME = 1;
 
 export type ZamanlayiciAlanlari = Pick<Animsatici, 'bitis' | 'toplamMs' | 'duraklama'>;
 
-export interface SureParcalari {
-  sa: number;
-  dk: number;
-  sn: number;
+// ---- Kadran (P-32) -------------------------------------------------------------
+
+/**
+ * Kadranın merkezine göre dokunulan nokta → dakika (0…60, kesirli). Tepe 0,
+ * saat yönünde artar; ekran koordinatında y aşağı doğrudur.
+ */
+export function kadranAcisiDakika(dx: number, dy: number): number {
+  const derece = (Math.atan2(dx, -dy) * 180) / Math.PI;
+  return (((derece + 360) % 360) / 360) * KADRAN_DK;
 }
 
-export function sureParcala(ms: number): SureParcalari {
-  const t = Math.max(0, Math.round(ms / 1000));
-  return { sa: Math.floor(t / 3600), dk: Math.floor((t % 3600) / 60), sn: t % 60 };
+/**
+ * Çevirirken yeni değer (tam dakika). Tepeden geçerken sıçramaz: 60'tan sonra
+ * 60'ta, 0'dan geriye 0'da kalır.
+ */
+export function kadranDegeri(onceki: number, ham: number): number {
+  const ceyrek = KADRAN_DK / 4;
+  if (onceki >= KADRAN_DK - ceyrek && ham < ceyrek) return KADRAN_DK;
+  if (onceki <= ceyrek && ham > KADRAN_DK - ceyrek) return 0;
+  return Math.min(KADRAN_DK, Math.max(0, Math.round(ham)));
 }
 
-export function sureBirlestir({ sa, dk, sn }: SureParcalari): number {
-  return Math.min(EN_UZUN_ZAMANLAYICI_MS, ((sa * 60 + dk) * 60 + sn) * 1000);
+/** Halkaya dokununca (sürüklemeden): o dakikaya atlar; tepenin hemen solu 60. */
+export function kadranDokunusu(ham: number): number {
+  return Math.min(KADRAN_DK, Math.max(0, Math.round(ham)));
 }
 
 const iki = (n: number) => String(n).padStart(2, '0');
@@ -49,7 +60,10 @@ export function geriSayimMetni(ms: number): string {
 
 /** Ekran okuyucu ve varsayılan ad için: "5 dk", "1 sa 30 dk", "45 sn", "2 dk 30 sn". */
 export function zamanlayiciSuresiMetni(ms: number): string {
-  const { sa, dk, sn } = sureParcala(ms);
+  const t = Math.max(0, Math.round(ms / 1000));
+  const sa = Math.floor(t / 3600);
+  const dk = Math.floor((t % 3600) / 60);
+  const sn = t % 60;
   const parca: string[] = [];
   if (sa) parca.push(`${sa} sa`);
   if (dk) parca.push(`${dk} dk`);
@@ -68,7 +82,7 @@ export function kalanMs(a: ZamanlayiciAlanlari, simdiMs: number): number {
   return Math.max(0, new Date(a.bitis).getTime() - simdiMs);
 }
 
-/** Halkanın dolan kısmı (0…1); toplam süre bilinmiyorsa (eski kayıt) null. */
+/** Geçen kısım (0…1); toplam süre bilinmiyorsa (eski kayıt) null. Halka kalanı (1 − bu) gösterir. */
 export function ilerleme(a: ZamanlayiciAlanlari, simdiMs: number): number | null {
   if (!a.toplamMs || a.toplamMs <= 0) return null;
   return Math.min(1, Math.max(0, 1 - kalanMs(a, simdiMs) / a.toplamMs));

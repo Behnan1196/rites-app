@@ -1,9 +1,10 @@
 // Giriş'teki Anımsatıcılar kutusu (`05` §7): çalan varsa "Şimdi çalıyor" ve
 // Durdur / Ertele; yoksa sıradaki ve "bugün N kez daha".
 // Pilot 23 Ekim: kurulu zamanlayıcılar saniye saniye geri sayan satırlarla
-// (halka, Duraklat / Devam, +1 dk, İptal) ve "+ Zamanlayıcı" düğmesi; P-31:
-// zamanlayıcı form açılmadan kutunun içinde kurulur.
+// (halka, Duraklat / Devam, +1 dk, İptal). P-32: başlık satırının sağındaki
+// zamanlayıcı simgesi kutunun içinde kadranı açar (5 dk'ya ayarlı).
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -76,38 +77,53 @@ export function AnimsaticilarKutusu() {
 
   return (
     <View style={[stiller.kutu, stiller.dikey]}>
-      <Pressable
-        onPress={ac}
-        accessibilityRole="button"
-        accessibilityLabel={`${ust}. ${alt}`}
-        style={({ pressed }) => [stiller.sakin, pressed && { opacity: 0.75 }]}
-      >
-        <ModulDugmesi
-          etiket="Anımsatıcılar'ı aç"
+      <View style={stiller.ustSatir}>
+        <Pressable
           onPress={ac}
-          zemin={renk.vurguAcik}
-          simge={<KutuSimgesi k="animsatici" />}
-        />
-        <View style={stiller.esnek}>
-          <Yazi tur="kutuBasligi" renk={renk.vurguYazi}>
-            {ust}
-          </Yazi>
-          <Yazi kalinlik="kalin" style={stiller.alt}>
-            {alt}
-          </Yazi>
-        </View>
-      </Pressable>
+          accessibilityRole="button"
+          accessibilityLabel={`${ust}. ${alt}`}
+          style={({ pressed }) => [stiller.sakin, stiller.esnek, pressed && { opacity: 0.75 }]}
+        >
+          <ModulDugmesi
+            etiket="Anımsatıcılar'ı aç"
+            onPress={ac}
+            zemin={renk.vurguAcik}
+            simge={<KutuSimgesi k="animsatici" />}
+          />
+          <View style={stiller.esnek}>
+            <Yazi tur="kutuBasligi" renk={renk.vurguYazi}>
+              {ust}
+            </Yazi>
+            <Yazi kalinlik="kalin" style={stiller.alt}>
+              {alt}
+            </Yazi>
+          </View>
+        </Pressable>
+        {/* P-32: zamanlayıcı başlık satırındaki simgeden; basınca kadran açılır. */}
+        <Pressable
+          onPress={() => setKuruluyor((k) => !k)}
+          accessibilityRole="button"
+          accessibilityLabel={kuruluyor ? 'Zamanlayıcıyı kapat' : 'Zamanlayıcı kur'}
+          accessibilityState={{ expanded: kuruluyor }}
+          hitSlop={4}
+          style={({ pressed }) => [
+            stiller.zamanlayiciSimgesi,
+            kuruluyor && stiller.simgeAcik,
+            pressed && { opacity: 0.7 },
+          ]}
+        >
+          <Ionicons name="timer-outline" size={26} color={kuruluyor ? renk.yuzey : renk.ana} />
+        </Pressable>
+      </View>
       {sureler.map((a) => (
         <View key={a.id} style={stiller.sureSatiri}>
           <ZamanlayiciSatiri a={a} simdiMs={simdiMs} />
         </View>
       ))}
-      {kuruluyor ? (
+      {kuruluyor && (
         <View style={stiller.sureSatiri}>
           <ZamanlayiciKurucu onKapat={() => setKuruluyor(false)} />
         </View>
-      ) : (
-        <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Zamanlayıcı" onPress={() => setKuruluyor(true)} />
       )}
     </View>
   );
@@ -121,6 +137,16 @@ const stiller = StyleSheet.create({
     borderRadius: olcu.kose.kart,
     padding: olcu.kartIci,
   },
+  ustSatir: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  zamanlayiciSimgesi: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: renk.anaAcik,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  simgeAcik: { backgroundColor: renk.ana },
   sakin: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 76 },
   dikey: { gap: 10 },
   sureSatiri: {

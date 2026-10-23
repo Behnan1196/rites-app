@@ -1,5 +1,5 @@
 // Kurulu bir zamanlayıcının satırı (Giriş'teki Anımsatıcılar kutusu ve
-// Anımsatıcılar ekranı; pilot 23 Ekim). Solda dolan halka; ortasına dokununca
+// Anımsatıcılar ekranı; pilot 23 Ekim). Solda küçülen halka (kalan süre); ortasına dokununca
 // Duraklat / Devam. Ad ve saniye saniye geri sayım; sağda +1 dk ve İptal.
 // P-31: bitiş saati yazılmaz (duraklatınca yanıltıyordu).
 
@@ -30,6 +30,9 @@ export function ZamanlayiciSatiri({ a, simdiMs }: { a: Animsatici; simdiMs: numb
   const kisaMesaj = useKisaMesaj();
   const durdu = duraklatildiMi(a);
   const kalan = kalanMs(a, simdiMs);
+  // Halka kalan süreyi gösterir: mutfak zamanlayıcısı gibi küçülerek biter (P-32).
+  const gecen = ilerleme(a, simdiMs);
+  const kalanOrani = gecen === null ? null : 1 - gecen;
   const hata = (e: unknown) => {
     console.error('Zamanlayıcı değişikliği kaydedilemedi', e);
     kisaMesaj('Kaydedilemedi. Yeniden dene.');
@@ -50,7 +53,7 @@ export function ZamanlayiciSatiri({ a, simdiMs }: { a: Animsatici; simdiMs: numb
         hitSlop={4}
         style={({ pressed }) => pressed && { opacity: 0.7 }}
       >
-        <Halka oran={ilerleme(a, simdiMs)} dolu={durdu ? renk.soluk : renk.ana}>
+        <Halka oran={kalanOrani} dolu={durdu ? renk.soluk : renk.ana}>
           <Ionicons name={durdu ? 'play' : 'pause'} size={22} color={durdu ? renk.ikincil : renk.ana} />
         </Halka>
       </Pressable>

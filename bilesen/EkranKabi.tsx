@@ -5,13 +5,20 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect, useScrollToTop } from 'expo-router';
-import { useCallback, useRef, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { olcu, renk } from './tema';
 import { UstCubuk } from './UstCubuk';
 import { Yazi } from './Yazi';
+
+/**
+ * İçerikteki bir parça (ör. zamanlayıcı kadranı) parmakla çevrilirken ekranın
+ * kaymasını durdurur: `const kilitle = useKaydirmaKilidi(); kilitle(true)`.
+ */
+const KaydirmaKilidi = createContext<(kilitli: boolean) => void>(() => undefined);
+export const useKaydirmaKilidi = () => useContext(KaydirmaKilidi);
 
 interface Ozellikler {
   baslik?: string;
@@ -29,19 +36,25 @@ interface Ozellikler {
   children?: ReactNode;
 }
 
-export function EkranKabi({ baslik, marka = false, altBaslik, geri, onGeri, kaydirilabilir = true, baslikSag, children }: Ozellikler) {
+export function EkranKabi({
+  baslik,
+  marka = false,
+  altBaslik,
+  geri,
+  onGeri,
+  kaydirilabilir = true,
+  baslikSag,
+  children,
+}: Ozellikler) {
   const kenar = useSafeAreaInsets();
   const kaydirma = useRef<ScrollView>(null);
+  const [kilitli, setKilitli] = useState(false);
+  const kilitle = useMemo(() => (k: boolean) => setKilitli(k), []);
 
   useScrollToTop(kaydirma);
 
   // Ekrandan ayrılırken başa al; geri gelindiğinde en baştan görünsün.
-  useFocusEffect(
-    useCallback(
-      () => () => kaydirma.current?.scrollTo({ y: 0, animated: false }),
-      [],
-    ),
-  );
+  useFocusEffect(useCallback(() => () => kaydirma.current?.scrollTo({ y: 0, animated: false }), []));
 
   return (
     <View style={[stiller.kap, { paddingTop: kenar.top }]}>
@@ -77,7 +90,7 @@ export function EkranKabi({ baslik, marka = false, altBaslik, geri, onGeri, kayd
       />
       <ScrollView
         ref={kaydirma}
-        scrollEnabled={kaydirilabilir}
+        scrollEnabled={kaydirilabilir && !kilitli}
         contentContainerStyle={stiller.icerik}
         keyboardShouldPersistTaps="handled"
       >
@@ -91,7 +104,7 @@ export function EkranKabi({ baslik, marka = false, altBaslik, geri, onGeri, kayd
             {!!altBaslik && <Yazi tur="ikincil">{altBaslik}</Yazi>}
           </View>
         )}
-        {children}
+        <KaydirmaKilidi.Provider value={kilitle}>{children}</KaydirmaKilidi.Provider>
       </ScrollView>
     </View>
   );
@@ -106,6 +119,13 @@ const stiller = StyleSheet.create({
     gap: olcu.bolumArasi,
   },
   baslikAlani: { gap: 4, marginBottom: 4 },
-  geri: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', minHeight: 44, marginLeft: -4, maxWidth: '100%' },
+  geri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    minHeight: 44,
+    marginLeft: -4,
+    maxWidth: '100%',
+  },
   geriYazi: { fontSize: 18 },
 });

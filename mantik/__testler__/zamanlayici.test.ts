@@ -4,8 +4,9 @@ import {
   geriSayimMetni,
   ilerleme,
   kalanMs,
-  sureBirlestir,
-  sureParcala,
+  kadranAcisiDakika,
+  kadranDegeri,
+  kadranDokunusu,
   zamanlayiciAltMetni,
   zamanlayiciSuresiMetni,
   zamanlayiciSurerMi,
@@ -27,10 +28,20 @@ const z: Animsatici = {
 };
 
 describe('zamanlayıcı', () => {
-  it('süre parçalanır ve birleşir', () => {
-    expect(sureParcala(3_725_000)).toEqual({ sa: 1, dk: 2, sn: 5 });
-    expect(sureBirlestir({ sa: 1, dk: 2, sn: 5 })).toBe(3_725_000);
-    expect(sureBirlestir({ sa: 30, dk: 0, sn: 0 })).toBe((24 * 3600 - 1) * 1000);
+  it('kadran: açı dakikaya, tepeden geçerken sıçramaz', () => {
+    expect(kadranAcisiDakika(0, -10)).toBeCloseTo(0);
+    expect(kadranAcisiDakika(10, 0)).toBeCloseTo(15);
+    expect(kadranAcisiDakika(0, 10)).toBeCloseTo(30);
+    expect(kadranAcisiDakika(-10, 0)).toBeCloseTo(45);
+    expect(kadranDegeri(5, 7.4)).toBe(7);
+    expect(kadranDegeri(58, 1)).toBe(60);
+    expect(kadranDegeri(60, 2)).toBe(60);
+    expect(kadranDegeri(2, 59)).toBe(0);
+    expect(kadranDegeri(0, 58)).toBe(0);
+    expect(kadranDegeri(50, 44)).toBe(44);
+    expect(kadranDokunusu(12.2)).toBe(12);
+    expect(kadranDokunusu(59.8)).toBe(60);
+    expect(kadranDokunusu(0.3)).toBe(0);
   });
 
   it('geri sayım saniyeyi yukarı yuvarlar', () => {
