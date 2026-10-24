@@ -2,7 +2,7 @@
 
 Durum: **taslak, düşünme aşamasında** (24 Ekim 2026). Karar değil; kararlar `kararlar.md`ye yazılır.
 
-Uygulama sırası: **1. tek yerleşim, zamanlayıcı süreyi kaydeder (yapıldı, P-38)** · **2. yeni türler: Puan, Sayarak, Soru, Kronometre (yapıldı, P-39)** · 3. iki sorulu "Karta ekle" ve her kayıt için geçmiş · 4. haftalık gözden geçirme, danışmana geri bildirim.
+Uygulama sırası: **1. tek yerleşim, zamanlayıcı süreyi kaydeder (yapıldı, P-38)** · **2. yeni türler: Puan, Sayarak, Soru, Kronometre (yapıldı, P-39)** · **3. iki sorulu "Karta ekle" ve her kayıt için geçmiş (yapıldı, P-39 / P-40)** · 4. haftalık gözden geçirme, danışmana geri bildirim.
 Karar (24 Ekim): Yaptım'ı her zaman kişi işaretler, yalnız ajandadaki satırda; değer girmek kartı yapıldı saymaz. "Karta ekle" iki soru olarak yapıldı (P-39); 3. adımda kalan: her kayıt için geçmiş (süre, yazı).
 Amaç: kişinin kendine yazdığı kartlar, danışmanların (wellness, fitness, diyetisyen) kartları ve
 Rites önerileri aynı yapıya otursun; kullanıcı (çoğu 50+) için sade kalsın; danışmana gidecek veri belli olsun.
@@ -104,3 +104,32 @@ Gözlemler:
 2. Danışmana geri bildirim (program bazında açık onay, danışman paneli) hangi sürümde?
 3. Süre, Sayı (say), Puan, Soru ve haftalık gözden geçirme sürüm 1'e girsin mi?
 4. Bir kartta en çok kaç kayıt alanı olsun (sadelik için 2?).
+
+## 8. İsimli kart çeşitleri (pilot; tasarlanacak)
+
+Behnan (24 Ekim): bu işi tam çözmek için pilotta isimli kart çeşitleri tanımlanacak / tasarlanacak.
+
+**Çeşit nedir:** bir kalıp: ad, simge, kısa açıklama, parçalar (kartta ne görünsün / ne kaydedilsin, varsayılan değerleriyle), varsayılan zaman (tekrar, saat) ve alan. Öneri kartından farkı: öneri dolu bir karttır ("Kutu nefesi, 4 dk"), çeşit boş bir kalıptır ("Nefes kartı: talimat + zamanlayıcı → süre").
+
+**Kişiye nasıl görünür (öneri):** Yeni kartta ilk soru "Ne tür bir kart?": 6–9 büyük kutu; en başta "Basit kart" (yalnız başlık ve zaman). Seçince form o parçalarla açılır; gerisi bugünkü sade form. Biçim düğmeleri forma karışmaz (P-36'da kalkan hazır biçimlerin dersi).
+
+**Taslak liste (tartışmak için):**
+
+| Çeşit | Kartta görünen | Kaydedilen | Varsayılan zaman |
+|---|---|---|---|
+| Basit kart | — | — (Yaptım ajandada) | Bir kez |
+| Alışkanlık | (talimat) | — (Yaptım, seri) | Her gün |
+| Egzersiz | Video, hareket listesi | (ağırlık / tekrar: sayı) | Haftada 3 |
+| Nefes / meditasyon | Talimat, zamanlayıcı | Süre | Her gün |
+| Dayanma (plank) | Talimat, kronometre | Süre | Her gün |
+| Ölçüm | — | Sayı (kilo, bel, uyku…) | Haftada 1 / her gün |
+| Sayaç | — | Sayarak (su bardağı) | Her gün |
+| Günlük soru | — | Soru → cevap | Her akşam |
+| Nasılım? | — | Puan (+ not) | Her akşam |
+| Tarif | Malzeme listesi, talimat | — | Bir kez |
+| Proje | Proje adımları | — | Bir kez |
+
+**Açık sorular:**
+1. Kart çeşidini hatırlasın mı (`kart.cesit`)? Ajandada simgesi, danışman raporu ve haftalık gözden geçirme için yararlı.
+2. Çeşitler nerede tanımlansın: uygulamanın içinde mi (değişince güncelleme), sunucudaki içerik kataloğunda mı (uzman / ürün sahibi Supabase'den ekler, telefona iner)?
+3. Danışman kendi çeşidini tanımlayabilsin mi, yoksa çeşitler Rites'ın mı?

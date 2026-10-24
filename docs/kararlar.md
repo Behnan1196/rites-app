@@ -411,3 +411,11 @@ Kart modeli çalışmasının 2. adımı.
 - **"Karta ekle" iki soru:** "Kartta ne görünsün?" (talimat, video, liste, proje adımları, fotoğraf, dosya, zamanlayıcı, kronometre) · "Ne kaydedilsin?" (ölçüm, sayarak, puan, günün notu, gelişim fotoğrafı). — Ürün sahibi (P-39)
 - Hazır içerik: **Su** artık sayarak (hedef 8 bardak); **Şükran notu** ve **Haftanın değerlendirmesi** sorulu. `sunucu/icerik.sql` yeniden üretildi; Supabase'de çalıştırılınca sunucudaki katalog da güncellenir. — Öneri
 - Veritabanı değişmedi (yeni türler blok türü olarak; değerler kaydın değerlerinde). Eski sürümdeki telefona bu türlerle paylaşılan kart gelirse o parça görünmez. — Not
+
+## Süre ve cevapların geçmişi kartta (24 Ekim)
+
+Kart modeli çalışmasının 3. adımı (son kısmı).
+
+- **Zamanlayıcı ve kronometre:** altında "Son günler": son 7 günün süresi çubuklarla ("10 dk", "45 sn"; en az iki gün). — Ürün sahibi (P-40)
+- **Günün notu / soru:** cevap alanının altında önceki 3 cevap, tarihiyle (soldan ince çizgili). — Ürün sahibi (P-40; 3 cevap: Öneri)
+- Böylece bütün kayıt türlerinin geçmişi kartın içinde: ölçüm, sayarak, puan, süre (çubuk); cevap (liste). — Not

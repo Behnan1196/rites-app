@@ -52,6 +52,25 @@ export function olcumGecmisi(kayitlar: readonly Kayit[], blokId: string, gun: Gu
   return noktalar.sort((a, b) => a.tarih.localeCompare(b.tarih)).slice(-adet);
 }
 
+/** Kısa süre etiketi (çubuk üstü): 45 → "45 sn", 600 → "10 dk", 5400 → "90 dk". */
+export function kisaSure(saniye: number): string {
+  return saniye < 60 ? `${Math.round(saniye)} sn` : `${Math.round(saniye / 60)} dk`;
+}
+
+/** Günün notu / sorunun önceki cevapları (açılan günden önce), yeniden eskiye, en çok `adet`. */
+export function oncekiCevaplar(
+  kayitlar: readonly Kayit[],
+  blokId: string,
+  gun: Gun,
+  adet = 3,
+): { tarih: Gun; metin: string }[] {
+  return kayitlar
+    .filter((k) => k.tarih < gun && (k.degerler[blokId] ?? '').trim() !== '')
+    .sort((a, b) => b.tarih.localeCompare(a.tarih))
+    .slice(0, adet)
+    .map((k) => ({ tarih: k.tarih, metin: k.degerler[blokId]!.trim() }));
+}
+
 /** Çubuk yükseklikleri (0…1): en küçük değer de görünsün diye 0.15'ten başlar. */
 export function cubukOranlari(noktalar: readonly OlcumNoktasi[]): number[] {
   if (noktalar.length === 0) return [];

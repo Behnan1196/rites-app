@@ -12,7 +12,7 @@ import { oncekiDeger } from '@/mantik/ajanda';
 import { sesDosyasiMi } from '@/mantik/dosya';
 import type { Blok, Kayit } from '@/mantik/kart';
 import { youtubeVideosu } from '@/mantik/paylasimAl';
-import { cubukOranlari, olcumGecmisi, type OlcumNoktasi } from '@/mantik/karakter';
+import { cubukOranlari, kisaSure, olcumGecmisi, oncekiCevaplar, type OlcumNoktasi } from '@/mantik/karakter';
 import { gunKisa, kisaTarih, uzunTarih, type Gun } from '@/mantik/tarih';
 import { dosyayiSakla } from '@/veri/dosyalar';
 import { adimiIsaretle } from '@/veri/kartlar';
@@ -68,7 +68,7 @@ export function BlokUygulama(o: Ozellikler) {
 }
 
 /** P-39: kronometre (plank, "ne kadar dayandın?"): ileri sayar; "Dur" deyince süre o günün kaydına eklenir. */
-function Kronometre({ blok, kayit, onKayit }: Ozellikler) {
+function Kronometre({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
   const [gecen, setGecen] = useState(0);
   const [calisiyor, setCalisiyor] = useState(false);
   const basla = useRef(0);
@@ -110,6 +110,12 @@ function Kronometre({ blok, kayit, onKayit }: Ozellikler) {
         />
       </View>
       {kayitli > 0 && <Yazi tur="ikincil">{`Bugün: ${sureMetniSn(kayitli)}`}</Yazi>}
+      <OlcumGecmisi
+        noktalar={olcumGecmisi(kayitlar, blok.id, gun)}
+        birim=""
+        baslik="Son günler"
+        bicim={(n) => kisaSure(n.deger)}
+      />
     </View>
   );
 }
@@ -367,7 +373,7 @@ function saatMetni(saniye: number): string {
  * ya da bitince geçen süre o günün kaydına eklenir (saniye, `degerler[blok.id]`) ve
  * altında "Bugün: 10 dk" görünür. Kartı yapıldı saymaz; Yaptım'ı kişi işaretler.
  */
-function Zamanlayici({ blok, kayit, onKayit }: Ozellikler) {
+function Zamanlayici({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
   const toplam = (blok.dakika ?? 10) * 60;
   const [kalan, setKalan] = useState(toplam);
   const [calisiyor, setCalisiyor] = useState(false);
@@ -428,6 +434,12 @@ function Zamanlayici({ blok, kayit, onKayit }: Ozellikler) {
           {`Bugün: ${sureMetniSn(kayitli)}${bitti ? ' · Bitti. Yaptıysan ajandada işaretle.' : ''}`}
         </Yazi>
       )}
+      <OlcumGecmisi
+        noktalar={olcumGecmisi(kayitlar, blok.id, gun)}
+        birim=""
+        baslik="Son günler"
+        bicim={(n) => kisaSure(n.deger)}
+      />
     </View>
   );
 }
@@ -512,20 +524,32 @@ function OlcumBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
 }
 
 /** P-35: takip kartında ölçümün son 7 değeri (kartın içinde, küçük çubuklar). */
-function OlcumGecmisi({ noktalar, birim }: { noktalar: readonly OlcumNoktasi[]; birim: string }) {
+function OlcumGecmisi({
+  noktalar,
+  birim,
+  baslik = 'Son ölçümler',
+  bicim,
+}: {
+  noktalar: readonly OlcumNoktasi[];
+  birim: string;
+  baslik?: string;
+  /** Çubuğun üstündeki yazı (süre: "10 dk"); yoksa yazıldığı gibi. */
+  bicim?: (n: OlcumNoktasi) => string;
+}) {
   if (noktalar.length < 2) return null;
   const oranlar = cubukOranlari(noktalar);
-  const ozet = noktalar.map((n) => `${uzunTarih(n.tarih)}: ${n.metin}${birim ? ` ${birim}` : ''}`).join(', ');
+  const yaz = (n: OlcumNoktasi) => (bicim ? bicim(n) : n.metin);
+  const ozet = noktalar.map((n) => `${uzunTarih(n.tarih)}: ${yaz(n)}${birim ? ` ${birim}` : ''}`).join(', ');
   return (
     <View style={stiller.gecmis} accessible accessibilityLabel={`Son ölçümler. ${ozet}`}>
       <Yazi tur="etiket" kalinlik="kalin">
-        Son ölçümler
+        {baslik}
       </Yazi>
       <View style={stiller.cubuklar}>
         {noktalar.map((n, i) => (
           <View key={n.tarih} style={stiller.cubukSutun}>
             <Yazi tur="etiket" kalinlik="kalin" maxFontSizeMultiplier={1.2} numberOfLines={1}>
-              {n.metin}
+              {yaz(n)}
             </Yazi>
             <View style={stiller.cubukAlan}>
               <View
@@ -546,7 +570,7 @@ function OlcumGecmisi({ noktalar, birim }: { noktalar: readonly OlcumNoktasi[]; 
   );
 }
 
-function GununNotu({ blok, kayit, onKayit }: Ozellikler) {
+function GununNotu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
   const alan = useGecikmeliKayit(kayit.degerler[blok.id] ?? '', (d) =>
     onKayit((k) => ({ ...k, degerler: { ...k.degerler, [blok.id]: d } })),
   );
@@ -565,6 +589,17 @@ function GununNotu({ blok, kayit, onKayit }: Ozellikler) {
         multiline
         style={[stiller.not, yazi('normal')]}
       />
+      {/* P-40: önceki cevaplar (en çok 3), kartın içinde. */}
+      {oncekiCevaplar(kayitlar, blok.id, gun).map((c) => (
+        <View key={c.tarih} style={stiller.oncekiCevap}>
+          <Yazi tur="etiket" kalinlik="kalin">
+            {kisaTarih(c.tarih)}
+          </Yazi>
+          <Yazi tur="ikincil" numberOfLines={3}>
+            {c.metin}
+          </Yazi>
+        </View>
+      ))}
     </View>
   );
 }
@@ -680,6 +715,7 @@ const stiller = StyleSheet.create({
   puanYazi: { fontSize: 22 },
   olcumKap: { gap: 6 },
   gecmis: { gap: 6, marginTop: 6 },
+  oncekiCevap: { gap: 2, borderLeftWidth: 3, borderLeftColor: renk.vurguCizgi, paddingLeft: 10 },
   cubuklar: { flexDirection: 'row', gap: 6 },
   cubukSutun: { flex: 1, alignItems: 'center', gap: 4 },
   cubukAlan: { height: 64, width: '100%', justifyContent: 'flex-end', alignItems: 'center' },

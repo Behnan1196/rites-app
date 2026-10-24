@@ -1,6 +1,8 @@
 import type { Kayit } from '../kart';
 import {
   cubukOranlari,
+  kisaSure,
+  oncekiCevaplar,
   notKartTaslagi,
   olcumGecmisi,
   olcumSayisi,
@@ -90,5 +92,28 @@ describe('kartın karakteri', () => {
       sesYolu: 'file:///s.m4a',
       notId: 's',
     });
+  });
+
+  it('kısa süre ve önceki cevaplar', () => {
+    expect(kisaSure(45)).toBe('45 sn');
+    expect(kisaSure(600)).toBe('10 dk');
+    expect(kisaSure(5400)).toBe('90 dk');
+    const k = (tarih: string, d: string): Kayit => ({
+      kartId: 'k',
+      tarih,
+      yapildi: false,
+      degerler: { n: d },
+      isaretler: {},
+      fotolar: {},
+    });
+    const c = oncekiCevaplar(
+      [k('2026-10-20', 'a'), k('2026-10-22', ' b '), k('2026-10-21', ''), k('2026-10-24', 'bugün')],
+      'n',
+      '2026-10-24',
+    );
+    expect(c).toEqual([
+      { tarih: '2026-10-22', metin: 'b' },
+      { tarih: '2026-10-20', metin: 'a' },
+    ]);
   });
 });

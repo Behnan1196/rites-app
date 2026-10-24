@@ -210,3 +210,8 @@ Sonuç: → kararlar.md (Kartın tek yerleşimi; zamanlayıcı süreyi kaydeder;
 Ne dedi: "Devam edelim; 'kendi işaretlesin' derken ajandadaki küçük kartta işaretlesin sadece."
 Nerede: Kart görünümü, Karta ekle
 Sonuç: → kararlar.md (Yaptım yalnız ajandada; yeni kayıt türleri)
+
+### P-40 · 24 Ekim 2026 · Behnan
+Ne dedi: "Kalanları da tamamlayalım; ancak bu işi tam çözebilmek için pilot uygulamada isimli kart çeşitleri tanımlamayı / tasarlamayı düşünüyorum."
+Nerede: Kart görünümü; kart modeli
+Sonuç: → kararlar.md (Süre ve cevapların geçmişi kartta); kart-modeli.md §8 (isimli kart çeşitleri, taslak)
