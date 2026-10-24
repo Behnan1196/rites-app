@@ -4,6 +4,9 @@
 // günden açıldıysa o günün kaydını gösterir ve ona yazar.
 // Pilot 16 Ekim: alttaki "Yaptım" çubuğu kalktı (yapıldı işareti ajandadaki
 // satırda); Kütüphaneye kaydet · Paylaş · Sil sağ üstteki "⋯" menüsünde.
+// P-35 (24 Ekim): içerik ile yapı ayrı. "Düzenle" düğmesi kalktı: başlığa, zamana ya da
+// bir içerik bölümüne (✎) dokununca yalnız o kısım açılır; blok ekleme, kaldırma, sıra
+// "⋯ → Kartın yapısı"nda ve kartın altındaki "+ Blok ekle"de.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -15,7 +18,6 @@ import { AcilirMenu } from '@/bilesen/AcilirMenu';
 import { BlokUygulama } from '@/bilesen/kart/BlokUygulama';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { useKartSil } from '@/bilesen/kart/KartSil';
-import { Dugme } from '@/bilesen/Dugme';
 import { useKutuphaneyeKaydet } from '@/bilesen/kutuphane/KaydetSayfasi';
 import { usePaylas } from '@/bilesen/paylasim/PaylasSayfasi';
 import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
@@ -96,7 +98,12 @@ export default function KartGorunumu() {
   // Ajandadaki gibi: kendi kartında şerit yok; program, grup, gelen… kartında kaynağın rengi.
   const kaynak = kaynakTuru(kaynakAnahtari(kart));
   const serit = kaynak === 'kendim' ? null : kaynakRenk[kaynak].serit;
-  const meta = [kart.saat, kart.tekrar ? tekrarMetni(kart.tekrar) : null].filter(Boolean).join(' · ');
+  const meta = [kart.saat, kart.tekrar ? tekrarMetni(kart.tekrar) : kart.tarih ? uzunTarih(kart.tarih) : null]
+    .filter(Boolean)
+    .join(' · ');
+  const duzenlenir = !kart.kilitli;
+  const bolumuAc = (odak: string) => form.ac({ tur: 'duzenle', kart, bloklar, gun, kip: 'icerik', odak });
+  const yapiyiAc = (blokEkle = false) => form.ac({ tur: 'duzenle', kart, bloklar, gun, kip: 'yapi', blokEkle });
   const kayitDegis = (degistir: (k: Kayit) => Kayit) => void kayitDegistir(kapi, kart.id, gun, degistir);
 
   return (
@@ -115,9 +122,6 @@ export default function KartGorunumu() {
           </Yazi>
         </Pressable>
         <View style={stiller.ustSag}>
-          {!kart.kilitli && (
-            <Dugme tur="yazi" etiket="Düzenle" onPress={() => form.ac({ tur: 'duzenle', kart, bloklar, gun })} />
-          )}
           <SimgeDugmesi ikon="ellipsis-horizontal" etiket="Diğer işlemler" onPress={() => setMenuAcik(true)} />
         </View>
       </View>
@@ -126,14 +130,33 @@ export default function KartGorunumu() {
         <View style={stiller.kart}>
           {serit && <View style={[stiller.kaynakSeridi, { backgroundColor: serit }]} />}
           <View style={[stiller.bolum, stiller.baslikAlani]}>
-            <Yazi tur="ekranBasligi" accessibilityRole="header">
-              {kart.baslik}
-            </Yazi>
-            {!!meta && (
-              <View style={stiller.metaSatiri}>
+            <Pressable
+              onPress={() => bolumuAc('baslik')}
+              disabled={!duzenlenir}
+              accessibilityRole={duzenlenir ? 'button' : 'header'}
+              accessibilityLabel={duzenlenir ? `${kart.baslik}. Başlığı düzenle` : kart.baslik}
+              style={({ pressed }) => [stiller.dokunulur, pressed && { opacity: 0.7 }]}
+            >
+              <Yazi tur="ekranBasligi" style={stiller.esnek}>
+                {kart.baslik}
+              </Yazi>
+              {duzenlenir && <Kalem />}
+            </Pressable>
+            {(!!meta || duzenlenir) && (
+              <Pressable
+                onPress={() => bolumuAc('zaman')}
+                disabled={!duzenlenir}
+                accessibilityRole={duzenlenir ? 'button' : undefined}
+                accessibilityLabel={`${meta || 'Saat ve tekrar yok'}${duzenlenir ? '. Zamanı düzenle' : ''}`}
+                style={({ pressed }) => [stiller.metaSatiri, pressed && { opacity: 0.7 }]}
+                hitSlop={6}
+              >
                 <Ionicons name={kart.tekrar ? 'repeat-outline' : 'calendar-outline'} size={18} color={renk.ikincil} />
-                <Yazi tur="ikincil">{meta}</Yazi>
-              </View>
+                <Yazi tur="ikincil" style={stiller.esnek}>
+                  {meta || 'Saat ve tekrar ekle'}
+                </Yazi>
+                {duzenlenir && <Kalem kucuk />}
+              </Pressable>
             )}
             {!!program && (
               <Pressable
@@ -148,7 +171,16 @@ export default function KartGorunumu() {
                 </Yazi>
               </Pressable>
             )}
-            {!!kart.kisa && <Yazi style={stiller.kisa}>{kart.kisa}</Yazi>}
+            {!!kart.kisa && (
+              <Pressable
+                onPress={() => bolumuAc('baslik')}
+                disabled={!duzenlenir}
+                accessibilityRole={duzenlenir ? 'button' : undefined}
+                accessibilityLabel={`${kart.kisa}${duzenlenir ? '. Açıklamayı düzenle' : ''}`}
+              >
+                <Yazi style={stiller.kisa}>{kart.kisa}</Yazi>
+              </Pressable>
+            )}
           </View>
 
           {kart.tekrar && (
@@ -163,24 +195,40 @@ export default function KartGorunumu() {
             const r = tur.kayit ? renk.vurguYazi : renk.ana;
             return (
               <View key={`${b.id}-${gun}`} style={[stiller.bolum, stiller.cizgili]}>
-                <View style={stiller.blokBasligi} accessibilityRole="header">
+                <Pressable
+                  onPress={() => bolumuAc(b.id)}
+                  disabled={!duzenlenir || tur.kayit}
+                  accessibilityRole={duzenlenir && !tur.kayit ? 'button' : 'header'}
+                  accessibilityLabel={duzenlenir && !tur.kayit ? `${ad}: düzenle` : ad}
+                  style={({ pressed }) => [stiller.blokBasligi, pressed && { opacity: 0.7 }]}
+                >
                   <View style={[stiller.blokSimgesi, { backgroundColor: tur.kayit ? renk.vurguAcik : renk.anaAcik }]}>
                     <Ionicons name={tur.ikon} size={18} color={r} />
                   </View>
                   <Yazi tur="etiket" kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
                     {ad.toLocaleUpperCase('tr')}
                   </Yazi>
-                </View>
+                  {duzenlenir && !tur.kayit && <Kalem kucuk />}
+                </Pressable>
                 <BlokUygulama blok={b} gun={gun} kayit={kayit} kayitlar={kayitlar} onKayit={kayitDegis} />
               </View>
             );
           })}
 
-          {bloklar.length === 0 && !kart.kilitli && (
+          {duzenlenir && (
             <View style={[stiller.bolum, stiller.cizgili]}>
-              <Yazi tur="ikincil">
-                {'Bu kartta blok yok. "Düzenle"den talimat, liste, video, ölçüm… ekleyebilirsin.'}
-              </Yazi>
+              {bloklar.length === 0 && (
+                <Yazi tur="ikincil">Bu kartta blok yok. Talimat, liste, video, ölçüm… ekleyebilirsin.</Yazi>
+              )}
+              <Pressable
+                onPress={() => yapiyiAc(true)}
+                accessibilityRole="button"
+                style={({ pressed }) => [stiller.blokEkle, pressed && { opacity: 0.7 }]}
+              >
+                <Yazi kalinlik="kalin" renk={renk.ana}>
+                  + Blok ekle
+                </Yazi>
+              </Pressable>
             </View>
           )}
         </View>
@@ -195,6 +243,9 @@ export default function KartGorunumu() {
           ust={kenar.top + 52}
           onKapat={() => setMenuAcik(false)}
           ogeler={[
+            ...(duzenlenir
+              ? [{ etiket: 'Kartın yapısı', ikon: 'construct-outline' as const, onPress: () => yapiyiAc() }]
+              : []),
             {
               etiket: 'Kütüphaneye kaydet',
               ikon: 'bookmark-outline',
@@ -238,6 +289,11 @@ export default function KartGorunumu() {
       )}
     </View>
   );
+}
+
+/** Düzenlenebilir bölümün işareti (✎). */
+function Kalem({ kucuk = false }: { kucuk?: boolean }) {
+  return <Ionicons name="pencil" size={kucuk ? 16 : 20} color={renk.soluk} importantForAccessibility="no" />;
 }
 
 function SeriKutusu({
@@ -343,6 +399,17 @@ const stiller = StyleSheet.create({
   blokBasligi: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   blokSimgesi: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   blokAdi: { flex: 1, letterSpacing: 0.5 },
+  dokunulur: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  esnek: { flex: 1 },
+  blokEkle: {
+    minHeight: 52,
+    borderRadius: olcu.kose.kart,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: renk.cizgi,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   seri: { gap: 10 },
   serit: { flexDirection: 'row', justifyContent: 'space-between' },
   hucre: { alignItems: 'center', gap: 4, flex: 1 },

@@ -354,3 +354,12 @@ Menü yerleşimi çalışmasının (P-23) ilk adımı; kullanımda ayar yapılab
 - **Ajandam:** solda başlık **"Ajandam"** geri geldi; sağda **ara · takvim · Görünüm · ＋**. Süzgeç ve Gün / Hafta tek **Görünüm** menüsünde (üstte Gün | Hafta, altında "Ajandada göster" kaynakları; süzgeç açıksa düğme dolu). **＋ (kart ekle)** üstte, ana renkte dolu; listenin altındaki "+ Kart ekle" kalktı. Boş günde listenin ortasında "+ Bu güne kart ekle". — Ürün sahibi (P-34)
 - **Gruplar:** en üstte kapalı **"Kişilerim · N kişi"** satırı; seni eklemek isteyen varsa altında "N kişi seni eklemek istiyor" (kehribar çerçeve). Dokununca **Kişilerim** ekranı: istekler, kişi listesi (Sil), + Kişi ekle. Sağ üstte de Kişilerim simgesi. Kişiler avatar menüsüne taşınmadı (gruplarla iç içe). — Ürün sahibi (P-34)
 - **Yaşam Tarzım:** sağ üstte **Kütüphanem** simgesi (sayfanın altındaki Kütüphanem satırı da duruyor). — Ürün sahibi (P-34)
+
+## Kart: içerik ile yapı ayrıldı (24 Ekim)
+
+Kart yapısı çalışmasının 1. adımı (sıra: 1 içerik / yapı ayrımı · 2 seri anahtarı ve takip kartında geçmiş · 3 yeni kartta "hazır biçimle başla" · 4 notta "Karta çevir").
+
+- **Kart görünümünde "Düzenle" düğmesi kalktı.** Kartın üstünde dokunulan kısım tek başına açılır (✎ işaretli): **başlık ve kısa açıklama**, **zaman** satırı (tarih, saat, hatırlatma, tekrar; saat yoksa "Saat ve tekrar ekle"), **içerik bölümleri** (talimat metni, video bağlantısı, liste maddeleri, proje adımları, fotoğraf, dosya). Kayıt bölümlerinin (ölçüm, zamanlayıcı, günün notu, gelişim fotoğrafı) içeriği yok; yapıdan değişir. Tekrarlı kartta "yalnız bu gün / bu gün ve sonrası" sorusu eskisi gibi. — Ürün sahibi (P-35; küçük sayfa olarak açılması: Öneri)
+- **"Kartın yapısı"** (⋯ menüsünde en üstte): blok ekle, kaldır, sırala; liste adı, proje adı, ölçümün adı ve birimi, zamanlayıcının süresi. Kartın altında "+ Blok ekle" de yapıyı açar (blok seçici hazır). — Ürün sahibi (P-35)
+- Yeni kart ve programın kartı formu şimdilik eskisi gibi tek formda (3. adımda değişecek). — Not
+- **Karakter kuralı (2. adımda):** tekrarlı kartta "Seriyi say" anahtarı açık gelir; liste ya da ölçüm varsa kapalı gelir, kişi değiştirir. Ölçüm / sayaç varsa kartın içinde geçmiş görünür. Notlar kart olmaz; "Karta çevir" eklenir. — Ürün sahibi (P-35)

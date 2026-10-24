@@ -185,3 +185,8 @@ Sonuç: → kararlar.md (Alarmın sesi seçilir)
 Ne dedi: "Gruplarda Kişiler bölümü var, bence mantıken üstte olması ancak hep açık olmaması, böylece rahatça gruplar yaratabilmeliyiz. Sağ üstteki avatar menüsüne mi geçirsek… bir yandan da avatar sadece Giriş sekmesindeyken olmalı, diğerlerinde o alan başka amaçlarla kullanılır ya da boş bırakılır. Ajandam'da başlık sığmadığı için kaldırmıştık; avatarı kaldırıp filtre, gün/hafta görünümü gibi tuşları toparlayan, kart ekleyi de üstte bir tuş olarak yerleştiren bir tasarıma gidebiliriz." Önerilerin hepsi kabul ("kullanımda bazı ayarlar yaparız").
 Nerede: Üst satır (bütün sekmeler), Ajandam, Gruplar, Yaşam Tarzım
 Sonuç: → kararlar.md (Üst satır düzeni ve Kişilerim)
+
+### P-35 · 24 Ekim 2026 · Behnan
+Ne dedi: "Kart yapımıza ve kullanımına odaklanalım. Beni ilk rahatsız eden Düzenle ekranı; orada hem içeriği düzenliyoruz hem yapıyı. Kart tasarımı da yapıyoruz orada; kartlara isim (şablon) belirlemek bir alternatif ama onun da eksileri var. Notlar, sesli not da önceden biçimlendirilmiş kartlar gibi. Ne zaman streak olacağı, veri alanlarının ne zaman toplanacağı gibi sorunlar da var." Cevaplar: en çok içerikle yapının bir arada olması rahatsız ediyor; geçmiş şimdilik kartın içinde; notlar için "Karta çevir" yeterli; karakter kuralı ve sıra kabul ("deneyelim").
+Nerede: Kart görünümü, kart formu
+Sonuç: → kararlar.md (Kart: içerik ile yapı ayrıldı)

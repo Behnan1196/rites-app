@@ -32,12 +32,28 @@ import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 import { BlokDuzenleyici } from './BlokDuzenleyici';
 import { BlokSecici } from './BlokSecici';
+import { BLOK_TURLERI } from './blokTurleri';
 import { ZamanlamaCubugu, ZamanlamaPaneli, type ProgramGunu, type Zamanlama, type ZamanlamaBolmesi } from './Zamanlama';
 
 export type KartFormuHedefi =
   /** `taslak`: başka uygulamadan paylaşılan videodan dolu gelen yeni kart. */
   | { tur: 'yeni'; gun: Gun; taslak?: { baslik: string; videoAdresi: string } }
-  | { tur: 'duzenle'; kart: Kart; bloklar: readonly Blok[]; gun: Gun }
+  | {
+      tur: 'duzenle';
+      kart: Kart;
+      bloklar: readonly Blok[];
+      gun: Gun;
+      /**
+       * P-35 (24 Ekim): içerik ile yapı ayrı. `icerik`: kart görünümünde dokunulan
+       * bölüm (`odak`: başlık, zaman ya da bir bloğun kimliği) tek başına açılır.
+       * `yapi`: "Kartın yapısı" (bloklar: ekle, kaldır, sırala, adları ve birimleri).
+       * Verilmezse `tam`: her şey bir arada (eski form).
+       */
+      kip?: 'tam' | 'icerik' | 'yapi';
+      odak?: 'baslik' | 'zaman' | string;
+      /** `yapi` kipinde blok seçici hemen açılsın (kartın altındaki "+ Blok ekle"). */
+      blokEkle?: boolean;
+    }
   /** Programın kartı; `kart` null ise yeni. */
   | { tur: 'sablon'; program: Program; kart: ProgramKarti | null; bugunGun: Gun };
 
@@ -160,7 +176,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const [durum, setDurum] = useState<FormDurumu>(ilk);
   const [hata, setHata] = useState<string | null>(null);
   const [altSayfa, setAltSayfa] = useState<ZamanlamaBolmesi | null>(null);
-  const [blokSeciciAcik, setBlokSeciciAcik] = useState(false);
+  const [blokSeciciAcik, setBlokSeciciAcik] = useState(hedef.tur === 'duzenle' && !!hedef.blokEkle);
   /** Çubuktaki bölme: klavye kapanır, ayarı çubuğun altında açılır; aynı bölme yeniden kapatır. */
   const bolmeAc = (b: ZamanlamaBolmesi | null) => {
     Keyboard.dismiss();
@@ -176,6 +192,28 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const duzenleme = hedef.tur === 'duzenle' ? hedef : null;
   const sablon = hedef.tur === 'sablon' ? hedef : null;
   const programGunu: ProgramGunu | null = sablon ? { ref: SABLON_REF, sure: sablon.program.sure } : null;
+  const kip = duzenleme?.kip ?? 'tam';
+  const odak = kip === 'icerik' ? duzenleme?.odak : undefined;
+  const odakBlok = odak && odak !== 'baslik' && odak !== 'zaman' ? odak : null;
+  const baslikGorunur = kip === 'tam' || odak === 'baslik';
+  const zamanGorunur = kip === 'tam' || odak === 'zaman';
+  const bloklarGorunur = kip === 'tam' || kip === 'yapi';
+  const odakTuru = odakBlok ? durum.bloklar.find((b) => b.id === odakBlok)?.tur : undefined;
+  const sayfaBasligi = sablon
+    ? sablon.kart
+      ? 'Programın kartı'
+      : 'Programa yeni kart'
+    : !duzenleme
+      ? 'Yeni kart'
+      : kip === 'yapi'
+        ? 'Kartın yapısı'
+        : odak === 'baslik'
+          ? 'Başlık'
+          : odak === 'zaman'
+            ? 'Zaman'
+            : odakTuru
+              ? BLOK_TURLERI[odakTuru].ad
+              : 'Kartı düzenle';
 
   const guncelle = (alanlar: Partial<FormDurumu>) => setDurum((d) => ({ ...d, ...alanlar }));
   const blokDegis = (i: number, b: BlokTaslagi) =>
@@ -289,85 +327,117 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       <AltSayfa
         gorunur={gorunur}
         onKapat={onKapat}
-        baslik={
-          sablon ? (sablon.kart ? 'Programın kartı' : 'Programa yeni kart') : duzenleme ? 'Kartı düzenle' : 'Yeni kart'
-        }
+        baslik={sayfaBasligi}
         solVazgec
         degisti={degisti}
         onay={onay}
         sagEylem={{ etiket: 'Kaydet', onPress: () => void kaydet(), pasif: calisiyor }}
         altAlan={
-          <View style={stiller.alt}>
-            <ZamanlamaCubugu
-              deger={durum.zamanlama}
-              bugunGun={bugunGun}
-              onAc={bolmeAc}
-              tarihYok={durum.tarihsiz}
-              acik={altSayfa}
-              programGunu={programGunu}
-            />
-            <ZamanlamaPaneli
-              acik={altSayfa}
-              deger={durum.zamanlama}
-              bugunGun={bugunGun}
-              tarihYok={durum.tarihsiz}
-              programGunu={programGunu}
-              onDegis={(zamanlama) =>
-                guncelle({
-                  zamanlama,
-                  tarihsiz: durum.tarihsiz && altSayfa !== 'tarih' && zamanlama.tekrar === null,
-                })
-              }
-              onAc={setAltSayfa}
-            />
-          </View>
+          zamanGorunur ? (
+            <View style={stiller.alt}>
+              <ZamanlamaCubugu
+                deger={durum.zamanlama}
+                bugunGun={bugunGun}
+                onAc={bolmeAc}
+                tarihYok={durum.tarihsiz}
+                acik={altSayfa}
+                programGunu={programGunu}
+              />
+              <ZamanlamaPaneli
+                acik={altSayfa}
+                deger={durum.zamanlama}
+                bugunGun={bugunGun}
+                tarihYok={durum.tarihsiz}
+                programGunu={programGunu}
+                onDegis={(zamanlama) =>
+                  guncelle({
+                    zamanlama,
+                    tarihsiz: durum.tarihsiz && altSayfa !== 'tarih' && zamanlama.tekrar === null,
+                  })
+                }
+                onAc={setAltSayfa}
+              />
+            </View>
+          ) : undefined
         }
       >
-        <GirisAlani
-          etiket="Başlık"
-          value={durum.baslik}
-          onChangeText={(baslik) => {
-            guncelle({ baslik });
-            if (hata) setHata(null);
-          }}
-          placeholder="Ne yapacaksın?"
-          hata={hata}
-          returnKeyType="done"
-          autoFocus={!duzenleme && !sablon?.kart}
-        />
-        <GirisAlani
-          etiket="Kısa açıklama"
-          etiketGizli
-          value={durum.kisa}
-          onChangeText={(kisa) => guncelle({ kisa })}
-          placeholder="Kısa açıklama (isteğe bağlı)"
-          returnKeyType="done"
-        />
+        {kip === 'icerik' && odak === 'zaman' && (
+          <Yazi tur="ikincil">Tarih, saat, hatırlatma ve tekrarı aşağıdan seç.</Yazi>
+        )}
+        {baslikGorunur && (
+          <>
+            <GirisAlani
+              etiket="Başlık"
+              value={durum.baslik}
+              onChangeText={(baslik) => {
+                guncelle({ baslik });
+                if (hata) setHata(null);
+              }}
+              placeholder="Ne yapacaksın?"
+              hata={hata}
+              returnKeyType="done"
+              autoFocus={(!duzenleme && !sablon?.kart) || odak === 'baslik'}
+            />
+            <GirisAlani
+              etiket="Kısa açıklama"
+              etiketGizli
+              value={durum.kisa}
+              onChangeText={(kisa) => guncelle({ kisa })}
+              placeholder="Kısa açıklama (isteğe bağlı)"
+              returnKeyType="done"
+            />
+          </>
+        )}
 
-        {durum.bloklar.map((b, i) => (
-          <BlokDuzenleyici
-            key={b.id}
-            blok={b}
-            ilkMi={i === 0}
-            onDegis={(yeni) => blokDegis(i, yeni)}
-            onYukari={() => blokYukari(i)}
-            onKaldir={() => blokKaldir(i)}
-          />
-        ))}
+        {odakBlok &&
+          durum.bloklar.map((b, i) =>
+            b.id === odakBlok ? (
+              <BlokDuzenleyici
+                key={b.id}
+                blok={b}
+                ilkMi
+                kip="icerik"
+                onDegis={(yeni) => blokDegis(i, yeni)}
+                onYukari={() => undefined}
+                onKaldir={() => undefined}
+              />
+            ) : null,
+          )}
 
-        <Pressable
-          onPress={() => {
-            Keyboard.dismiss();
-            setAltSayfa(null);
-            setBlokSeciciAcik(true);
-          }}
-          accessibilityRole="button"
-          style={({ pressed }) => [stiller.blokEkle, pressed && { opacity: 0.7 }]}
-        >
-          <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.blokEkleYazi}>
-            + Blok ekle
+        {kip === 'yapi' && (
+          <Yazi tur="ikincil">
+            Kartın blokları: ekle, kaldır, sırasını değiştir. İçeriğini kartın üstünde, bölüme dokunarak da
+            düzenleyebilirsin.
           </Yazi>
-        </Pressable>
+        )}
+
+        {bloklarGorunur &&
+          durum.bloklar.map((b, i) => (
+            <BlokDuzenleyici
+              key={b.id}
+              blok={b}
+              ilkMi={i === 0}
+              onDegis={(yeni) => blokDegis(i, yeni)}
+              onYukari={() => blokYukari(i)}
+              onKaldir={() => blokKaldir(i)}
+            />
+          ))}
+
+        {bloklarGorunur && (
+          <Pressable
+            onPress={() => {
+              Keyboard.dismiss();
+              setAltSayfa(null);
+              setBlokSeciciAcik(true);
+            }}
+            accessibilityRole="button"
+            style={({ pressed }) => [stiller.blokEkle, pressed && { opacity: 0.7 }]}
+          >
+            <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.blokEkleYazi}>
+              + Blok ekle
+            </Yazi>
+          </Pressable>
+        )}
 
         {sablon?.kart && (
           <Dugme
