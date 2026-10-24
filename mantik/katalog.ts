@@ -25,7 +25,8 @@ export function turTahmini(bloklar: readonly { tur: BlokTuru }[]): EtiketTuru {
   const t = bloklar.map((b) => b.tur);
   if (t.includes('liste') && t.includes('talimat')) return 'Tarif';
   if (t.includes('video')) return 'Egzersiz';
-  if (t.length && t.every((x) => x === 'olcum' || x === 'talimat')) return t.includes('olcum') ? 'Ölçüm' : 'Bilgi';
+  const olcumcu = (x: BlokTuru) => x === 'olcum' || x === 'adet' || x === 'puan';
+  if (t.length && t.every((x) => olcumcu(x) || x === 'talimat')) return t.some(olcumcu) ? 'Ölçüm' : 'Bilgi';
   return 'Diğer';
 }
 
@@ -214,7 +215,9 @@ function etkinlikBloklari(b: EtkinlikBlogu): KatalogBlogu[] {
     case 'talimat':
       return [{ ...bos('talimat'), metin: b.metin }];
     case 'gunnot':
-      return [bos('gunnot')];
+      return [{ ...bos('gunnot'), metin: b.soru ?? '' }];
+    case 'adet':
+      return [{ ...bos('adet'), ad: b.ad, birim: b.birim, dakika: b.hedef ?? null }];
   }
 }
 

@@ -205,3 +205,8 @@ Sonuç: → kararlar.md (Kart formunda zaman: soru satırları)
 Ne dedi: (Kart modeli konuşması) "Zamanlayıcı aynı zamanda ölçüm kaydı da olabilir… Peki bunu kartımıza nasıl uygulayacağız?" Tek yerleşim ve adım sırası kabul; "Yapıldı'yı kendi işaretlesin."
 Nerede: Kart görünümü
 Sonuç: → kararlar.md (Kartın tek yerleşimi; zamanlayıcı süreyi kaydeder; Yaptım kartta); kart-modeli.md
+
+### P-39 · 24 Ekim 2026 · Behnan
+Ne dedi: "Devam edelim; 'kendi işaretlesin' derken ajandadaki küçük kartta işaretlesin sadece."
+Nerede: Kart görünümü, Karta ekle
+Sonuç: → kararlar.md (Yaptım yalnız ajandada; yeni kayıt türleri)

@@ -123,7 +123,14 @@ export interface Kart {
 }
 
 export const ICERIK_BLOKLARI = ['talimat', 'video', 'liste', 'adimlar', 'foto', 'dosya'] as const;
-export const KAYIT_BLOKLARI = ['sayac', 'olcum', 'gunnot', 'gelfoto'] as const;
+export const KAYIT_BLOKLARI = ['sayac', 'kronometre', 'olcum', 'adet', 'puan', 'gunnot', 'gelfoto'] as const;
+/**
+ * Kayıt üreten ama kartta "Ne yapacaksın" bölümünde duran araçlar (P-38): zamanlayıcı ve
+ * kronometre süreyi kaydeder. Öbür kayıt blokları "Bugün" bölümündedir.
+ * P-39 (24 Ekim): kronometre (ileri sayar, süre), adet (sayarak, +1), puan (1–5);
+ * günün notunda `metin` danışmanın sorusudur.
+ */
+export const ARAC_BLOKLARI: readonly BlokTuru[] = ['sayac', 'kronometre'];
 export type BlokTuru = (typeof ICERIK_BLOKLARI)[number] | (typeof KAYIT_BLOKLARI)[number];
 
 export interface Blok {

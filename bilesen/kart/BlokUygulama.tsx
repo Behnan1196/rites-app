@@ -58,7 +58,142 @@ export function BlokUygulama(o: Ozellikler) {
       return <GununNotu {...o} />;
     case 'gelfoto':
       return <GelisimFotografi {...o} />;
+    case 'kronometre':
+      return <Kronometre {...o} />;
+    case 'adet':
+      return <AdetBlogu {...o} />;
+    case 'puan':
+      return <PuanBlogu {...o} />;
   }
+}
+
+/** P-39: kronometre (plank, "ne kadar dayandın?"): ileri sayar; "Dur" deyince süre o günün kaydına eklenir. */
+function Kronometre({ blok, kayit, onKayit }: Ozellikler) {
+  const [gecen, setGecen] = useState(0);
+  const [calisiyor, setCalisiyor] = useState(false);
+  const basla = useRef(0);
+  const kayitli = Number(kayit.degerler[blok.id] ?? 0) || 0;
+  useEffect(() => {
+    if (!calisiyor) return;
+    const z = setInterval(() => setGecen(Math.round((Date.now() - basla.current) / 1000)), 250);
+    return () => clearInterval(z);
+  }, [calisiyor]);
+  const dugmeye = () => {
+    if (calisiyor) {
+      const sn = Math.max(0, Math.round((Date.now() - basla.current) / 1000));
+      setCalisiyor(false);
+      setGecen(sn);
+      if (sn > 0)
+        onKayit((k) => ({
+          ...k,
+          degerler: { ...k.degerler, [blok.id]: String((Number(k.degerler[blok.id] ?? 0) || 0) + sn) },
+        }));
+      return;
+    }
+    basla.current = Date.now();
+    setGecen(0);
+    setCalisiyor(true);
+  };
+  return (
+    <View style={stiller.zamanlayiciKap}>
+      <View style={stiller.satir}>
+        <View style={stiller.esnek}>
+          <Yazi kalinlik="kalin">{blok.ad || 'Süre'}</Yazi>
+          <Yazi kalinlik="kalin" style={stiller.saat} accessibilityLiveRegion="polite">
+            {saatMetni(gecen)}
+          </Yazi>
+        </View>
+        <Dugme
+          etiket={calisiyor ? 'Dur' : gecen > 0 ? 'Yeniden' : 'Başlat'}
+          onPress={dugmeye}
+          style={[stiller.zamanlayiciDugme, calisiyor && { backgroundColor: renk.hata }]}
+        />
+      </View>
+      {kayitli > 0 && <Yazi tur="ikincil">{`Bugün: ${sureMetniSn(kayitli)}`}</Yazi>}
+    </View>
+  );
+}
+
+/** P-39: sayarak (su bardağı): büyük − ve +; isteğe bağlı günlük hedef (`dakika` alanında). */
+function AdetBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
+  const sayi = Number(kayit.degerler[blok.id] ?? 0) || 0;
+  const hedef = blok.dakika && blok.dakika > 0 ? blok.dakika : null;
+  // Art arda dokunuşlar kaybolmasın: değer kaydın son hâlinden hesaplanır.
+  const ekle = (fark: number) =>
+    onKayit((k) => ({
+      ...k,
+      degerler: { ...k.degerler, [blok.id]: String(Math.max(0, (Number(k.degerler[blok.id] ?? 0) || 0) + fark)) },
+    }));
+  const ad = blok.ad || 'Sayı';
+  return (
+    <View style={stiller.olcumKap}>
+      <Yazi kalinlik="kalin">{ad}</Yazi>
+      <View style={stiller.adetSatiri}>
+        <Pressable
+          onPress={() => ekle(-1)}
+          disabled={sayi === 0}
+          accessibilityRole="button"
+          accessibilityLabel={`${ad}: bir azalt`}
+          style={({ pressed }) => [stiller.adetDugme, sayi === 0 && { opacity: 0.4 }, pressed && { opacity: 0.7 }]}
+        >
+          <Ionicons name="remove" size={30} color={renk.ana} />
+        </Pressable>
+        <View style={stiller.adetOrta} accessible accessibilityLiveRegion="polite">
+          <Yazi kalinlik="kalin" style={stiller.adetSayi}>
+            {hedef ? `${sayi} / ${hedef}` : String(sayi)}
+          </Yazi>
+          {!!blok.birim && <Yazi tur="ikincil">{blok.birim}</Yazi>}
+        </View>
+        <Pressable
+          onPress={() => ekle(1)}
+          accessibilityRole="button"
+          accessibilityLabel={`${ad}: bir ekle`}
+          style={({ pressed }) => [stiller.adetDugme, stiller.adetArti, pressed && { opacity: 0.7 }]}
+        >
+          <Ionicons name="add" size={30} color={renk.yuzey} />
+        </Pressable>
+      </View>
+      <OlcumGecmisi noktalar={olcumGecmisi(kayitlar, blok.id, gun)} birim={blok.birim} />
+    </View>
+  );
+}
+
+const PUAN_ETIKETI = ['Çok kötü', 'Kötü', 'Orta', 'İyi', 'Çok iyi'];
+
+/** P-39: puan (1–5): enerjim, stresim, uyku kalitem. Seçili puana yeniden dokununca silinir. */
+function PuanBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
+  const secili = Number(kayit.degerler[blok.id] ?? 0) || 0;
+  const ad = blok.ad || 'Puan';
+  const sec = (n: number) =>
+    onKayit((k) => {
+      const degerler = { ...k.degerler };
+      if (n === secili) delete degerler[blok.id];
+      else degerler[blok.id] = String(n);
+      return { ...k, degerler };
+    });
+  return (
+    <View style={stiller.olcumKap}>
+      <Yazi kalinlik="kalin">{ad}</Yazi>
+      <View style={stiller.puanSatiri} accessibilityRole="radiogroup" accessibilityLabel={ad}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <Pressable
+            key={n}
+            onPress={() => sec(n)}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: secili === n }}
+            accessibilityLabel={`${n}, ${PUAN_ETIKETI[n - 1]}`}
+            style={({ pressed }) => [stiller.puanDaire, n <= secili && stiller.puanDolu, pressed && { opacity: 0.7 }]}
+          >
+            <Yazi kalinlik="kalin" renk={n <= secili ? renk.yuzey : renk.yazi} style={stiller.puanYazi}>
+              {String(n)}
+            </Yazi>
+          </Pressable>
+        ))}
+      </View>
+      {secili > 0 && <Yazi tur="ikincil">{PUAN_ETIKETI[secili - 1]}</Yazi>}
+      <OlcumGecmisi noktalar={olcumGecmisi(kayitlar, blok.id, gun)} birim="" />
+    </View>
+  );
 }
 
 function VideoBlogu({ blok }: { blok: Blok }) {
@@ -290,7 +425,7 @@ function Zamanlayici({ blok, kayit, onKayit }: Ozellikler) {
       </View>
       {kayitli > 0 && (
         <Yazi tur="ikincil" accessibilityLiveRegion="polite">
-          {`Bugün: ${sureMetniSn(kayitli)}${bitti ? ' · Bitti. Yaptıysan aşağıdan işaretle.' : ''}`}
+          {`Bugün: ${sureMetniSn(kayitli)}${bitti ? ' · Bitti. Yaptıysan ajandada işaretle.' : ''}`}
         </Yazi>
       )}
     </View>
@@ -417,13 +552,14 @@ function GununNotu({ blok, kayit, onKayit }: Ozellikler) {
   );
   return (
     <View style={stiller.ic}>
-      <Yazi kalinlik="kalin">Günün notu</Yazi>
+      {/* P-39: danışmanın sorusu varsa başlık odur. */}
+      <Yazi kalinlik="kalin">{blok.metin.trim() || 'Günün notu'}</Yazi>
       <TextInput
-        accessibilityLabel="Günün notu"
+        accessibilityLabel={blok.metin.trim() || 'Günün notu'}
         value={alan.deger}
         onChangeText={alan.degis}
         onBlur={alan.birak}
-        placeholder="Bugün nasıl geçti?"
+        placeholder={blok.metin.trim() ? 'Cevabını yaz' : 'Bugün nasıl geçti?'}
         placeholderTextColor={renk.soluk}
         selectionColor={renk.ana}
         multiline
@@ -446,6 +582,7 @@ function GelisimFotografi({ blok, kayit, onKayit }: Ozellikler) {
   };
   return (
     <View style={stiller.gelisim}>
+      <Yazi kalinlik="kalin">Gelişim fotoğrafı</Yazi>
       {foto && <BuyutulebilirFoto uri={foto} style={stiller.foto} etiket="Bugünün fotoğrafı" />}
       <Pressable
         onPress={() => void cek()}
@@ -515,6 +652,32 @@ const stiller = StyleSheet.create({
   saat: { fontSize: 30, lineHeight: 38 },
   zamanlayiciDugme: { minWidth: 120 },
   zamanlayiciKap: { gap: 6 },
+  adetSatiri: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  adetDugme: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: renk.ana,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  adetArti: { backgroundColor: renk.ana },
+  adetOrta: { flex: 1, alignItems: 'center' },
+  adetSayi: { fontSize: 34, lineHeight: 40, fontVariant: ['tabular-nums'] },
+  puanSatiri: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
+  puanDaire: {
+    flex: 1,
+    aspectRatio: 1,
+    maxWidth: 60,
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: renk.vurgu,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  puanDolu: { backgroundColor: renk.vurgu },
+  puanYazi: { fontSize: 22 },
   olcumKap: { gap: 6 },
   gecmis: { gap: 6, marginTop: 6 },
   cubuklar: { flexDirection: 'row', gap: 6 },

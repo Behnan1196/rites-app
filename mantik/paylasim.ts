@@ -51,7 +51,10 @@ const BLOK_ADI: Record<BlokTuru, string> = {
   foto: 'Fotoğraf',
   dosya: 'Dosya',
   sayac: 'Zamanlayıcı',
+  kronometre: 'Kronometre',
   olcum: 'Ölçüm',
+  adet: 'Sayarak',
+  puan: 'Puan',
   gunnot: 'Günün notu',
   gelfoto: 'Gelişim fotoğrafı',
 };

@@ -2,8 +2,8 @@
 
 Durum: **taslak, düşünme aşamasında** (24 Ekim 2026). Karar değil; kararlar `kararlar.md`ye yazılır.
 
-Uygulama sırası: **1. tek yerleşim, kartta Yaptım, zamanlayıcı süreyi kaydeder (yapıldı, P-38)** · 2. yeni türler: Puan, Sayarak, Soru, Kronometre · 3. iki sorulu "Karta ekle" ve her kayıt için geçmiş · 4. haftalık gözden geçirme, danışmana geri bildirim.
-Karar (24 Ekim): Yaptım'ı her zaman kişi işaretler; değer girmek kartı yapıldı saymaz.
+Uygulama sırası: **1. tek yerleşim, zamanlayıcı süreyi kaydeder (yapıldı, P-38)** · **2. yeni türler: Puan, Sayarak, Soru, Kronometre (yapıldı, P-39)** · 3. iki sorulu "Karta ekle" ve her kayıt için geçmiş · 4. haftalık gözden geçirme, danışmana geri bildirim.
+Karar (24 Ekim): Yaptım'ı her zaman kişi işaretler, yalnız ajandadaki satırda; değer girmek kartı yapıldı saymaz. "Karta ekle" iki soru olarak yapıldı (P-39); 3. adımda kalan: her kayıt için geçmiş (süre, yazı).
 Amaç: kişinin kendine yazdığı kartlar, danışmanların (wellness, fitness, diyetisyen) kartları ve
 Rites önerileri aynı yapıya otursun; kullanıcı (çoğu 50+) için sade kalsın; danışmana gidecek veri belli olsun.
 

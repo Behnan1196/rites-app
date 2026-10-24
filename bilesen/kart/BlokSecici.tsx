@@ -1,10 +1,11 @@
-// "+ Karta ekle" ızgarası (K-6). P-36 (sade): "Blok", "İçerik / Kayıt" sözcükleri yerine
-// "Kartta dursun" (okunan, bakılan) ve "Her seferinde doldur" (yazılan, çekilen).
+// "+ Karta ekle" ızgarası (K-6). P-36 (sade) / P-39: iki soru: "Kartta ne görünsün?"
+// (talimat, video, liste…, zamanlayıcı, kronometre) ve "Ne kaydedilsin?" (ölçüm, sayarak,
+// puan, günün notu / soru, gelişim fotoğrafı).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ICERIK_BLOKLARI, KAYIT_BLOKLARI, type BlokTuru } from '@/mantik/kart';
+import { ARAC_BLOKLARI, ICERIK_BLOKLARI, KAYIT_BLOKLARI, type BlokTuru } from '@/mantik/kart';
 
 import { AltSayfa } from '../AltSayfa';
 import { renk } from '../tema';
@@ -22,8 +23,12 @@ export function BlokSecici({
 }) {
   return (
     <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Karta ekle" sagKapat="Kapat">
-      <Izgara baslik="Kartta dursun" turler={ICERIK_BLOKLARI} onSec={onSec} />
-      <Izgara baslik="Her seferinde doldur" turler={KAYIT_BLOKLARI} onSec={onSec} />
+      <Izgara baslik="Kartta ne görünsün?" turler={[...ICERIK_BLOKLARI, ...ARAC_BLOKLARI]} onSec={onSec} />
+      <Izgara
+        baslik="Ne kaydedilsin?"
+        turler={KAYIT_BLOKLARI.filter((t) => !ARAC_BLOKLARI.includes(t))}
+        onSec={onSec}
+      />
     </AltSayfa>
   );
 }
@@ -83,4 +88,3 @@ const stiller = StyleSheet.create({
   kayitKutusu: { backgroundColor: renk.vurguAcik2, borderColor: renk.vurguCizgi },
   ad: { fontSize: 15, lineHeight: 19, textAlign: 'center' },
 });
-

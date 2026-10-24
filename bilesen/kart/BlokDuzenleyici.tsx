@@ -151,7 +151,57 @@ export function BlokDuzenleyici({ blok, onDegis, onKaldir }: Ozellikler) {
           </View>
         </View>
       )}
-      {blok.tur === 'gunnot' && <Yazi tur="ikincil">Kartı uygularken o günle ilgili kısa bir not yazacaksın.</Yazi>}
+      {blok.tur === 'gunnot' && (
+        <>
+          <Alan
+            etiket="Soru"
+            deger={blok.metin}
+            onDegis={(metin) => degis({ metin })}
+            ipucu="Soru (isteğe bağlı): Bugün neye minnettarsın?"
+          />
+          <Yazi tur="ikincil">{'Her seferinde bu soruya kısa bir cevap yazılır. Soru yoksa "Günün notu".'}</Yazi>
+        </>
+      )}
+      {blok.tur === 'kronometre' && (
+        <>
+          <Alan etiket="Adı" deger={blok.ad} onDegis={(ad) => degis({ ad })} ipucu="Adı (isteğe bağlı): Plank" />
+          <Yazi tur="ikincil">{'İleri sayar; "Dur" deyince süre o günün kaydına yazılır.'}</Yazi>
+        </>
+      )}
+      {blok.tur === 'adet' && (
+        <>
+          <View style={stiller.yanYana}>
+            <View style={stiller.esit}>
+              <Alan etiket="Ne sayılacak" deger={blok.ad} onDegis={(ad) => degis({ ad })} ipucu="Ne? (Su)" />
+            </View>
+            <View style={stiller.birim}>
+              <Alan etiket="Birim" deger={blok.birim} onDegis={(birim) => degis({ birim })} ipucu="Birim (bardak)" />
+            </View>
+          </View>
+          <View style={stiller.satir}>
+            <Yazi>Günlük hedef</Yazi>
+            <ArtiEksi
+              deger={blok.dakika ? String(blok.dakika) : 'Yok'}
+              bos={!blok.dakika}
+              onEksi={() => degis({ dakika: blok.dakika && blok.dakika > 1 ? blok.dakika - 1 : null })}
+              onArti={() => degis({ dakika: (blok.dakika ?? 0) + 1 })}
+              eksiEtiket="Hedefi azalt"
+              artiEtiket="Hedefi artır"
+            />
+          </View>
+        </>
+      )}
+      {blok.tur === 'puan' && (
+        <>
+          <Alan
+            etiket="Ne puanlanacak"
+            deger={blok.ad}
+            onDegis={(ad) => degis({ ad })}
+            ipucu="Ne? (Enerjim, uyku kalitem)"
+          />
+          <Yazi tur="ikincil">{"Her seferinde 1'den 5'e bir puan verilir."}</Yazi>
+        </>
+      )}
       {blok.tur === 'gelfoto' && <Yazi tur="ikincil">Kartı uygularken fotoğraf çekip gelişimini kaydedeceksin.</Yazi>}
       <Pressable
         onPress={onKaldir}

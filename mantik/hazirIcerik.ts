@@ -12,7 +12,9 @@ export type EtkinlikBlogu =
   | { tur: 'video' }
   | { tur: 'olcum'; ad: string; birim: string }
   | { tur: 'talimat'; metin: string }
-  | { tur: 'gunnot' };
+  | { tur: 'gunnot'; soru?: string }
+  /** P-39: sayarak (+1), isteğe bağlı günlük hedef. */
+  | { tur: 'adet'; ad: string; birim: string; hedef?: number };
 
 export interface Etkinlik {
   id: string;
@@ -102,7 +104,7 @@ export const ALANLAR: readonly HazirAlan[] = [
     ad: 'Beslenme',
     aciklama: 'Öğün düzeni, su',
     etkinlikler: [
-      e('b1', 'Su', herGun, '09:00', { tur: 'olcum', ad: 'İçilen su', birim: 'bardak' }),
+      e('b1', 'Su', herGun, '09:00', { tur: 'adet', ad: 'İçilen su', birim: 'bardak', hedef: 8 }),
       e('b2', 'Öğlene bir tabak sebze', herGun, '13:00', {
         tur: 'talimat',
         metin: 'Öğle yemeğinde tabağın yarısı sebze olsun.',
@@ -162,8 +164,11 @@ export const ALANLAR: readonly HazirAlan[] = [
     ad: 'Anlam',
     aciklama: 'Değerler, şükran',
     etkinlikler: [
-      e('a1', 'Şükran notu', herGun, '21:30', { tur: 'gunnot' }),
-      e('a2', 'Haftanın değerlendirmesi', gunler('Paz'), '20:00', { tur: 'gunnot' }),
+      e('a1', 'Şükran notu', herGun, '21:30', { tur: 'gunnot', soru: 'Bugün neye şükrediyorsun?' }),
+      e('a2', 'Haftanın değerlendirmesi', gunler('Paz'), '20:00', {
+        tur: 'gunnot',
+        soru: 'Bu hafta sana iyi gelen neydi, neyi değiştirmek istersin?',
+      }),
     ],
     paketler: [
       {

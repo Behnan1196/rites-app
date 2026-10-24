@@ -397,3 +397,17 @@ Kart modeli çalışmasının (`kart-modeli.md`) 1. adımı.
 - **Yaptım'ı kişi işaretler:** değer girmek ya da zamanlayıcıyı bitirmek kartı yapıldı saymaz. Yaptım kartın altında büyük düğme; işaretliyken "Yapıldı" (açık renkli), yeniden dokununca geri alınır. — Ürün sahibi (P-38)
 - **Zamanlayıcı süreyi kaydeder:** durdurulunca ya da bitince geçen süre o günün kaydına eklenir; altında "Bugün: 10 dk". Bitince "Bitti. Yaptıysan aşağıdan işaretle." Düğme Başlat · Durdur · Devam · Yeniden. — Ürün sahibi (P-38; düğme adları: Öneri)
 - Veritabanı değişmedi (süre, kaydın değerlerinde saniye olarak). — Not
+
+## Yaptım yalnız ajandada; yeni kayıt türleri (24 Ekim)
+
+Kart modeli çalışmasının 2. adımı.
+
+- **Yaptım yalnız ajandadaki küçük kartta** (satırda) işaretlenir; kart görünümündeki büyük Yaptım düğmesi kalktı. Değer girmek ya da zamanlayıcıyı bitirmek kartı yapıldı saymaz. — Ürün sahibi (P-39)
+- **Kronometre** ("Kartta ne görünsün?"): ileri sayar; "Dur" deyince süre o günün kaydına eklenir ("Bugün: 45 sn"). Plank gibi "ne kadar dayandın?" kartları için. — Ürün sahibi (P-39)
+- **Sayarak** ("Ne kaydedilsin?"): büyük − ve + düğmeleri, ortada "3 / 8 bardak"; isteğe bağlı günlük hedef. Yazmaktan kolay (su, sigara…). — Ürün sahibi (P-39)
+- **Puan**: 1'den 5'e büyük daireler, altında "Çok kötü … Çok iyi"; seçili puana yeniden dokununca silinir (enerjim, stresim, uyku kalitem). — Ürün sahibi (P-39; etiketler: Öneri)
+- **Soru:** günün notuna isteğe bağlı soru yazılır ("Bugün neye şükrediyorsun?"); kartta başlık soru olur, altında cevap alanı. — Ürün sahibi (P-39)
+- Sayarak ve puanın da son değerleri ölçüm gibi çubuklarla görünür (en az iki gün). Kayıt parçalarında tür başlığı (ÖLÇÜM, PUAN…) gösterilmez; kendi adları ("Su", "Enerjim", soru) yeter. — Öneri
+- **"Karta ekle" iki soru:** "Kartta ne görünsün?" (talimat, video, liste, proje adımları, fotoğraf, dosya, zamanlayıcı, kronometre) · "Ne kaydedilsin?" (ölçüm, sayarak, puan, günün notu, gelişim fotoğrafı). — Ürün sahibi (P-39)
+- Hazır içerik: **Su** artık sayarak (hedef 8 bardak); **Şükran notu** ve **Haftanın değerlendirmesi** sorulu. `sunucu/icerik.sql` yeniden üretildi; Supabase'de çalıştırılınca sunucudaki katalog da güncellenir. — Öneri
+- Veritabanı değişmedi (yeni türler blok türü olarak; değerler kaydın değerlerinde). Eski sürümdeki telefona bu türlerle paylaşılan kart gelirse o parça görünmez. — Not

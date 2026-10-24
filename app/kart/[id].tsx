@@ -4,8 +4,8 @@
 // günden açıldıysa o günün kaydını gösterir ve ona yazar.
 // Pilot 16 Ekim: alttaki "Yaptım" çubuğu kalktı (yapıldı işareti ajandadaki
 // satırda); Kütüphaneye kaydet · Paylaş · Sil sağ üstteki "⋯" menüsünde.
-// P-38 (24 Ekim): tek yerleşim: "Ne yapacaksın" (içerik ve zamanlayıcı), o günün kaydı
-// ("Bugün"), en altta büyük Yaptım (kişi işaretler).
+// P-38 (24 Ekim): tek yerleşim: "Ne yapacaksın" (içerik, zamanlayıcı, kronometre) ve o
+// günün kaydı ("Bugün"). Yaptım yalnız ajandadaki satırda; kişi kendisi işaretler.
 // P-36 (24 Ekim, 50+ kullanıcı için sade): yine tek bir yazılı "Düzenle"; kalemler ve
 // "Kartın yapısı" kalktı. Boş kartta "+ Karta bir şey ekle". Seri istisnası seri satırının
 // altındaki "Seriyi gösterme / göster"den.
@@ -31,10 +31,10 @@ import { Yazi } from '@/bilesen/Yazi';
 import { gunBasligi, yapilanGunler } from '@/mantik/ajanda';
 import { seri, seriMetni, son7Gun, tekrarMetni, type SeritGunu } from '@/mantik/gorunurluk';
 import { seriSayilirMi, sonYediGunMetni } from '@/mantik/karakter';
-import { bosKayit, type Kart, type Kayit } from '@/mantik/kart';
+import { ARAC_BLOKLARI, bosKayit, type Kart, type Kayit } from '@/mantik/kart';
 import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
-import { isaretle, kartAyrinti, kartKayitlari, kartSeriSayYaz, kayitDegistir } from '@/veri/kartlar';
+import { kartAyrinti, kartKayitlari, kartSeriSayYaz, kayitDegistir } from '@/veri/kartlar';
 import { karttanProgramaEkle, programOku } from '@/veri/programlar';
 import { ProgramSecSayfasi } from '@/bilesen/yasam/ProgramSayfalari';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
@@ -110,8 +110,8 @@ export default function KartGorunumu() {
   const seriDegis = (seriSay: boolean) =>
     void kartSeriSayYaz(kapi, kart.id, seriSay).catch((e: unknown) => console.error('Kaydedilemedi', e));
   // P-38: tek yerleşim: önce "Ne yapacaksın" (talimat, video, liste, zamanlayıcı…), sonra o günün kaydı.
-  const yapilacaklar = bloklar.filter((b) => !BLOK_TURLERI[b.tur].kayit || b.tur === 'sayac');
-  const kaydedilecekler = bloklar.filter((b) => BLOK_TURLERI[b.tur].kayit && b.tur !== 'sayac');
+  const yapilacaklar = bloklar.filter((b) => !BLOK_TURLERI[b.tur].kayit || ARAC_BLOKLARI.includes(b.tur));
+  const kaydedilecekler = bloklar.filter((b) => BLOK_TURLERI[b.tur].kayit && !ARAC_BLOKLARI.includes(b.tur));
   const kayitDegis = (degistir: (k: Kayit) => Kayit) => void kayitDegistir(kapi, kart.id, gun, degistir);
 
   return (
@@ -193,19 +193,22 @@ export default function KartGorunumu() {
                     const r = tur.kayit ? renk.vurguYazi : renk.ana;
                     return (
                       <View key={`${b.id}-${gun}`} style={stiller.parca}>
-                        <View style={stiller.blokBasligi}>
-                          <View
-                            style={[
-                              stiller.blokSimgesi,
-                              { backgroundColor: tur.kayit ? renk.vurguAcik : renk.anaAcik },
-                            ]}
-                          >
-                            <Ionicons name={tur.ikon} size={18} color={r} />
+                        {/* Kayıt parçalarının kendi adı var ("Su", "Enerjim", soru); tür başlığı tekrar olmasın. */}
+                        {!tur.kayit && (
+                          <View style={stiller.blokBasligi}>
+                            <View
+                              style={[
+                                stiller.blokSimgesi,
+                                { backgroundColor: tur.kayit ? renk.vurguAcik : renk.anaAcik },
+                              ]}
+                            >
+                              <Ionicons name={tur.ikon} size={18} color={r} />
+                            </View>
+                            <Yazi kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
+                              {ad}
+                            </Yazi>
                           </View>
-                          <Yazi kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
-                            {ad}
-                          </Yazi>
-                        </View>
+                        )}
                         <BlokUygulama blok={b} gun={gun} kayit={kayit} kayitlar={kayitlar} onKayit={kayitDegis} />
                       </View>
                     );
@@ -213,35 +216,6 @@ export default function KartGorunumu() {
                 </View>
               ),
           )}
-
-          {/* P-38: Yaptım kartın üstünde; kişi kendisi işaretler (değer girmek ya da zamanlayıcı yetmez). */}
-          <View style={[stiller.bolum, stiller.cizgili]}>
-            <Pressable
-              onPress={() =>
-                void isaretle(kapi, kart.id, gun, !kayit.yapildi).catch((e: unknown) =>
-                  console.error('Kaydedilemedi', e),
-                )
-              }
-              accessibilityRole="button"
-              accessibilityState={{ checked: kayit.yapildi }}
-              accessibilityLabel={kayit.yapildi ? 'Yapıldı. Geri almak için dokun' : 'Yaptım'}
-              style={({ pressed }) => [stiller.yaptim, kayit.yapildi && stiller.yapildi, pressed && { opacity: 0.8 }]}
-            >
-              <Ionicons
-                name={kayit.yapildi ? 'checkmark-circle' : 'checkmark'}
-                size={26}
-                color={kayit.yapildi ? renk.ana : renk.yuzey}
-              />
-              <Yazi kalinlik="kalin" renk={kayit.yapildi ? renk.ana : renk.yuzey} style={stiller.yaptimYazi}>
-                {kayit.yapildi ? 'Yapıldı' : 'Yaptım'}
-              </Yazi>
-            </Pressable>
-            {kayit.yapildi && (
-              <Yazi tur="etiket" style={stiller.ortali}>
-                Yanlışlıkla mı? Geri almak için yeniden dokun.
-              </Yazi>
-            )}
-          </View>
 
           {duzenlenir && bloklar.length === 0 && (
             <View style={[stiller.bolum, stiller.cizgili]}>
@@ -434,18 +408,6 @@ const stiller = StyleSheet.create({
   blokAdi: { flex: 1 },
   anaBolum: { gap: 16 },
   parca: { gap: 10 },
-  yaptim: {
-    minHeight: 60,
-    borderRadius: olcu.kose.dugme,
-    backgroundColor: renk.ana,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  yapildi: { backgroundColor: renk.anaAcik, borderWidth: 2, borderColor: renk.ana },
-  yaptimYazi: { fontSize: 20 },
-  ortali: { textAlign: 'center' },
   seriAnahtari: { alignSelf: 'flex-start', minHeight: 36, justifyContent: 'center' },
   seri: { gap: 10 },
   serit: { flexDirection: 'row', justifyContent: 'space-between' },
