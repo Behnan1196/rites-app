@@ -12,7 +12,8 @@ import { oncekiDeger } from '@/mantik/ajanda';
 import { sesDosyasiMi } from '@/mantik/dosya';
 import type { Blok, Kayit } from '@/mantik/kart';
 import { youtubeVideosu } from '@/mantik/paylasimAl';
-import { kisaTarih, uzunTarih, type Gun } from '@/mantik/tarih';
+import { cubukOranlari, olcumGecmisi, type OlcumNoktasi } from '@/mantik/karakter';
+import { gunKisa, kisaTarih, uzunTarih, type Gun } from '@/mantik/tarih';
 import { dosyayiSakla } from '@/veri/dosyalar';
 import { adimiIsaretle } from '@/veri/kartlar';
 import { useVeri } from '@/veri/VeriSaglayici';
@@ -329,6 +330,42 @@ function OlcumBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
           {`Önceki: ${onceki.deger}${blok.birim ? ` ${blok.birim}` : ''} · ${uzunTarih(onceki.tarih)}`}
         </Yazi>
       )}
+      <OlcumGecmisi noktalar={olcumGecmisi(kayitlar, blok.id, gun)} birim={blok.birim} />
+    </View>
+  );
+}
+
+/** P-35: takip kartında ölçümün son 7 değeri (kartın içinde, küçük çubuklar). */
+function OlcumGecmisi({ noktalar, birim }: { noktalar: readonly OlcumNoktasi[]; birim: string }) {
+  if (noktalar.length < 2) return null;
+  const oranlar = cubukOranlari(noktalar);
+  const ozet = noktalar.map((n) => `${uzunTarih(n.tarih)}: ${n.metin}${birim ? ` ${birim}` : ''}`).join(', ');
+  return (
+    <View style={stiller.gecmis} accessible accessibilityLabel={`Son ölçümler. ${ozet}`}>
+      <Yazi tur="etiket" kalinlik="kalin">
+        Son ölçümler
+      </Yazi>
+      <View style={stiller.cubuklar}>
+        {noktalar.map((n, i) => (
+          <View key={n.tarih} style={stiller.cubukSutun}>
+            <Yazi tur="etiket" kalinlik="kalin" maxFontSizeMultiplier={1.2} numberOfLines={1}>
+              {n.metin}
+            </Yazi>
+            <View style={stiller.cubukAlan}>
+              <View
+                style={[
+                  stiller.olcumCubugu,
+                  { height: `${Math.round((oranlar[i] ?? 0) * 100)}%` },
+                  i === noktalar.length - 1 && stiller.cubukSon,
+                ]}
+              />
+            </View>
+            <Yazi tur="etiket" maxFontSizeMultiplier={1.2} numberOfLines={1}>
+              {gunKisa(n.tarih)}
+            </Yazi>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -437,6 +474,12 @@ const stiller = StyleSheet.create({
   saat: { fontSize: 30, lineHeight: 38 },
   zamanlayiciDugme: { minWidth: 120 },
   olcumKap: { gap: 6 },
+  gecmis: { gap: 6, marginTop: 6 },
+  cubuklar: { flexDirection: 'row', gap: 6 },
+  cubukSutun: { flex: 1, alignItems: 'center', gap: 4 },
+  cubukAlan: { height: 64, width: '100%', justifyContent: 'flex-end', alignItems: 'center' },
+  olcumCubugu: { width: '70%', borderRadius: 6, backgroundColor: renk.vurguCizgi },
+  cubukSon: { backgroundColor: renk.vurgu },
   olcum: {
     width: 110,
     minHeight: 56,

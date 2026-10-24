@@ -288,6 +288,11 @@ export const GOCLER: readonly Goc[] = [
     sql: `ALTER TABLE kart ADD COLUMN alarm_sesi TEXT;
           ALTER TABLE program_kart ADD COLUMN alarm_sesi TEXT;`,
   },
+  {
+    // Tekrarlı kartta seri sayılsın mı (pilot 24 Ekim, P-35): 1 / 0; NULL: kural.
+    surum: 19,
+    sql: `ALTER TABLE kart ADD COLUMN seri_say INTEGER;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

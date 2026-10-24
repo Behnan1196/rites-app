@@ -17,6 +17,7 @@ export type KartTanimi = Pick<Kart, 'baslik' | 'kisa' | 'tarih' | 'saat' | 'hati
   tarihsiz?: boolean;
   alarm?: boolean;
   alarmSesi?: string | null;
+  seriSay?: boolean | null;
 };
 
 export type KayitAraligi =

@@ -363,3 +363,12 @@ Kart yapısı çalışmasının 1. adımı (sıra: 1 içerik / yapı ayrımı ·
 - **"Kartın yapısı"** (⋯ menüsünde en üstte): blok ekle, kaldır, sırala; liste adı, proje adı, ölçümün adı ve birimi, zamanlayıcının süresi. Kartın altında "+ Blok ekle" de yapıyı açar (blok seçici hazır). — Ürün sahibi (P-35)
 - Yeni kart ve programın kartı formu şimdilik eskisi gibi tek formda (3. adımda değişecek). — Not
 - **Karakter kuralı (2. adımda):** tekrarlı kartta "Seriyi say" anahtarı açık gelir; liste ya da ölçüm varsa kapalı gelir, kişi değiştirir. Ölçüm / sayaç varsa kartın içinde geçmiş görünür. Notlar kart olmaz; "Karta çevir" eklenir. — Ürün sahibi (P-35)
+
+## Kart: seri anahtarı, ölçüm geçmişi, hazır biçimler, notu karta çevir (24 Ekim)
+
+Kart yapısı çalışmasının 2–4. adımları. Kullanımda görünüş ayrıca düzeltilecek ("pek hoş görünmüyor"). — Not (P-35)
+
+- **Seriyi say:** tekrarlı kartta zamanlamada "Seriyi say" anahtarı. Kural: açık gelir; kartta liste ya da ölçüm varsa kapalı gelir. Kişinin seçimi kartta saklanır. Seri sayılmayan tekrarlı kartta 7 günlük şeridin altında seri yerine "Son 7 günde N kez". — Ürün sahibi (P-35)
+- **Ölçüm geçmişi kartın içinde:** ölçüm bölümünde, en az iki değer varsa "Son ölçümler": son 7 değer küçük çubuklarla (değer üstte, gün altta; en sonuncusu koyu). Yalnız sayı olan değerler ("72,5"); "120/80" gibi değerler çubuğa girmez. — Ürün sahibi (P-35; çubuk görünümü: Öneri)
+- **Yeni kartta hazır biçim:** üstte Boş kart · Alışkanlık · Ölçüm takibi · Liste · Video / talimat. Biçim kartı o yapıyla açar (Alışkanlık: her gün; Ölçüm takibi: her gün + ölçüm; Liste: liste; Video / talimat: video + talimat), sonra kart tamamen kişinin; şablona bağlı kalmaz. "Kütüphanemden" şimdilik Yaşam Tarzım → Kütüphanem'den. — Ürün sahibi (P-35; Kütüphanemden'in yeri: Öneri)
+- **Notu karta çevir:** not sayfasındaki "Bugünün ajandasına al" yerine "Karta çevir": kart formu dolu açılır (ilk satır başlık, en çok 60 harf; birden çok satır ya da uzun metin talimat; sesli notun kaydı dosya bloğu), gün, saat, tekrar seçilir; kart kaydedilince not silinir. — Ürün sahibi (P-35)

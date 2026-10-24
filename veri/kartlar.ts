@@ -34,6 +34,7 @@ interface KartSatiri {
   hatirlatma: string | null;
   alarm: number | null;
   alarm_sesi?: string | null;
+  seri_say?: number | null;
   tekrar: string | null;
   bitis: string | null;
   atlanan: string;
@@ -97,6 +98,7 @@ export function kartSatirdan(s: KartSatiri): KartOzeti {
     hatirlatma: hatirlatmaCoz(s.hatirlatma),
     alarm: s.alarm === 1,
     alarmSesi: gecerliSes(s.alarm_sesi),
+    seriSay: s.seri_say === null || s.seri_say === undefined ? null : s.seri_say === 1,
     tekrar: json(s.tekrar, null),
     bitis: s.bitis,
     atlanan: json<Gun[]>(s.atlanan, []),
@@ -145,7 +147,7 @@ function kayitSatirdan(s: KayitSatiri): Kayit {
 }
 
 const KART_ALANLARI =
-  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag';
+  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, seri_say, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag';
 
 function kartDegerleri(k: Kart): SqlDeger[] {
   return [
@@ -157,6 +159,7 @@ function kartDegerleri(k: Kart): SqlDeger[] {
     hatirlatmaYaz(k.hatirlatma),
     k.alarm ? 1 : 0,
     gecerliSes(k.alarmSesi),
+    k.seriSay === null || k.seriSay === undefined ? null : k.seriSay ? 1 : 0,
     k.tekrar ? JSON.stringify(k.tekrar) : null,
     k.bitis,
     JSON.stringify(k.atlanan),

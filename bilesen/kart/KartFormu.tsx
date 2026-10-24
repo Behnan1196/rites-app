@@ -7,7 +7,7 @@ import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 
 import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
 import { adimDurumu, adimlariEsle } from '@/mantik/adimlar';
-import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Kart } from '@/mantik/kart';
+import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Kart, type Tekrar } from '@/mantik/kart';
 import {
   blokKopyasi,
   kacinciGun,
@@ -16,9 +16,11 @@ import {
   type Program,
   type ProgramKarti,
 } from '@/mantik/program';
+import { seriVarsayilani, type KartTaslagi } from '@/mantik/karakter';
 import { gunEkle, gunFarki, type Gun } from '@/mantik/tarih';
 import { islemleriUygula, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
+import { notSil } from '@/veri/notlar';
 import { programaYansit, programKartiEkle, programKartiSil, programKartiYaz } from '@/veri/programlar';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
@@ -33,11 +35,16 @@ import { Yazi } from '../Yazi';
 import { BlokDuzenleyici } from './BlokDuzenleyici';
 import { BlokSecici } from './BlokSecici';
 import { BLOK_TURLERI } from './blokTurleri';
+import { AcKapa, SecenekHapi } from '../Secim';
 import { ZamanlamaCubugu, ZamanlamaPaneli, type ProgramGunu, type Zamanlama, type ZamanlamaBolmesi } from './Zamanlama';
 
 export type KartFormuHedefi =
-  /** `taslak`: başka uygulamadan paylaşılan videodan dolu gelen yeni kart. */
-  | { tur: 'yeni'; gun: Gun; taslak?: { baslik: string; videoAdresi: string } }
+  /**
+   * `taslak`: dolu gelen yeni kart: başka uygulamadan paylaşılan video ya da
+   * "Karta çevir" denen not (P-35: metni talimat, sesi dosya bloğu olur; kart
+   * kaydedilince not silinir).
+   */
+  | { tur: 'yeni'; gun: Gun; taslak?: KartTaslagi }
   | {
       tur: 'duzenle';
       kart: Kart;
@@ -57,6 +64,19 @@ export type KartFormuHedefi =
   /** Programın kartı; `kart` null ise yeni. */
   | { tur: 'sablon'; program: Program; kart: ProgramKarti | null; bugunGun: Gun };
 
+export type { KartTaslagi };
+
+/** P-35 (3. adım): yeni kartta "hazır biçimle başla"; şablon değil, başlangıç (kopya). */
+type Bicim = 'bos' | 'aliskanlik' | 'takip' | 'liste' | 'video';
+const BICIMLER: readonly { deger: Bicim; etiket: string }[] = [
+  { deger: 'bos', etiket: 'Boş kart' },
+  { deger: 'aliskanlik', etiket: 'Alışkanlık' },
+  { deger: 'takip', etiket: 'Ölçüm takibi' },
+  { deger: 'liste', etiket: 'Liste' },
+  { deger: 'video', etiket: 'Video / talimat' },
+];
+const HER_GUN: Tekrar = { gunSayisi: null, gunler: null, desen: 'hergun' };
+
 /** Programın kartında "1. gün" sayılan sabit gün (yalnız formun içinde; Pazartesi). */
 const SABLON_REF: Gun = '2001-01-01';
 
@@ -74,6 +94,8 @@ interface FormDurumu {
   tarihsiz: boolean;
   zamanlama: Zamanlama;
   bloklar: BlokTaslagi[];
+  /** Tekrarlı kartta seri sayılsın mı; null: kural (P-35). */
+  seriSay: boolean | null;
 }
 
 let geciciNo = 0;
@@ -110,6 +132,22 @@ function bosBlok(tur: BlokTuru): BlokTaslagi {
   };
 }
 
+function taslakBloklari(t: KartTaslagi | undefined): BlokTaslagi[] {
+  if (!t) return [];
+  const b: BlokTaslagi[] = [];
+  if (t.videoAdresi) b.push({ ...bosBlok('video'), metin: t.videoAdresi });
+  if (t.metin) b.push({ ...bosBlok('talimat'), metin: t.metin });
+  if (t.sesYolu) b.push({ ...bosBlok('dosya'), ad: 'Sesli not', dosya: t.sesYolu });
+  return b;
+}
+
+function bicimBloklari(b: Bicim): BlokTaslagi[] {
+  if (b === 'takip') return [bosBlok('olcum')];
+  if (b === 'liste') return [bosBlok('liste')];
+  if (b === 'video') return [bosBlok('video'), bosBlok('talimat')];
+  return [];
+}
+
 function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
   if (hedef.tur === 'sablon') {
     const k = hedef.kart;
@@ -129,6 +167,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
         tekrar: k?.tekrar ?? null,
       },
       bloklar: (k?.bloklar ?? []).map((b) => formaBlok({ ...b, id: geciciKimlik(), kartId: '', sira: 0 })),
+      seriSay: null,
     };
   }
   if (hedef.tur === 'yeni') {
@@ -137,7 +176,8 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
       kisa: '',
       tarihsiz: false,
       zamanlama: { tarih: hedef.gun, saat: null, hatirlatma: null, alarm: false, tekrar: null },
-      bloklar: hedef.taslak ? [{ ...bosBlok('video'), metin: hedef.taslak.videoAdresi }] : [],
+      bloklar: taslakBloklari(hedef.taslak),
+      seriSay: null,
       ...(hedef.taslak ? { baslik: hedef.taslak.baslik } : {}),
     };
   }
@@ -155,6 +195,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
       tekrar: kart.tekrar,
     },
     bloklar: hedef.bloklar.map(formaBlok),
+    seriSay: kart.seriSay ?? null,
   };
 }
 
@@ -177,6 +218,16 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const [hata, setHata] = useState<string | null>(null);
   const [altSayfa, setAltSayfa] = useState<ZamanlamaBolmesi | null>(null);
   const [blokSeciciAcik, setBlokSeciciAcik] = useState(hedef.tur === 'duzenle' && !!hedef.blokEkle);
+  const [bicim, setBicim] = useState<Bicim>('bos');
+  const bicimSecilir = hedef.tur === 'yeni' && !hedef.taslak;
+  const bicimSec = (b: Bicim) => {
+    setBicim(b);
+    setDurum((d) => ({
+      ...d,
+      bloklar: bicimBloklari(b),
+      zamanlama: { ...d.zamanlama, tekrar: b === 'aliskanlik' || b === 'takip' ? HER_GUN : d.zamanlama.tekrar },
+    }));
+  };
   /** Çubuktaki bölme: klavye kapanır, ayarı çubuğun altında açılır; aynı bölme yeniden kapatır. */
   const bolmeAc = (b: ZamanlamaBolmesi | null) => {
     Keyboard.dismiss();
@@ -236,6 +287,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     alarm: !!(gecerliHatirlatma(durum.zamanlama.hatirlatma, durum.zamanlama.saat) && durum.zamanlama.alarm),
     alarmSesi: durum.zamanlama.alarm ? (durum.zamanlama.alarmSesi ?? null) : null,
     tekrar: durum.zamanlama.tekrar,
+    seriSay: durum.zamanlama.tekrar ? durum.seriSay : null,
   });
 
   const calistir = useCallback(
@@ -289,6 +341,11 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       } else if (!duzenleme) {
         const kart = yeniKart(yeniKimlik(), { ...tanim(), sira: 0 });
         await yeniKartKaydet(kapi, kart, bloklar, yeniKimlik);
+        const notId = hedef.tur === 'yeni' ? hedef.taslak?.notId : undefined;
+        if (notId) {
+          await notSil(kapi, notId);
+          kisaMesaj('Not karta çevrildi');
+        }
         onSonuc?.({});
       } else {
         const sonuc = duzenle(duzenleme.kart, duzenleme.gun, tanim(), secim, yeniKimlik);
@@ -364,6 +421,29 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         {kip === 'icerik' && odak === 'zaman' && (
           <Yazi tur="ikincil">Tarih, saat, hatırlatma ve tekrarı aşağıdan seç.</Yazi>
         )}
+        {bicimSecilir && (
+          <View style={stiller.bicimler} accessibilityLabel="Nasıl başlasın?">
+            {BICIMLER.map((b) => (
+              <SecenekHapi
+                key={b.deger}
+                etiket={b.etiket}
+                secili={bicim === b.deger}
+                onPress={() => bicimSec(b.deger)}
+              />
+            ))}
+          </View>
+        )}
+        {bicimSecilir && bicim !== 'bos' && (
+          <Yazi tur="ikincil">
+            {bicim === 'aliskanlik'
+              ? 'Her gün tekrarlar; yaptığın günler seri olur.'
+              : bicim === 'takip'
+                ? 'Her gün bir değer yazarsın (kilo, adım…); kartta son ölçümler görünür. Ölçümün adını ve birimini aşağıya yaz.'
+                : bicim === 'liste'
+                  ? 'Maddeleri aşağıya, her satıra bir tane yaz.'
+                  : 'Videonun bağlantısını ve istersen talimatı aşağıya yaz.'}
+          </Yazi>
+        )}
         {baslikGorunur && (
           <>
             <GirisAlani
@@ -387,6 +467,20 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               returnKeyType="done"
             />
           </>
+        )}
+
+        {zamanGorunur && !sablon && !!durum.zamanlama.tekrar && (
+          <View style={stiller.seriSatiri}>
+            <View style={stiller.esnek}>
+              <Yazi kalinlik="kalin">Seriyi say</Yazi>
+              <Yazi tur="ikincil">Üst üste yaptığın günler sayılır. Market listesi gibi kartlarda kapalı kalsın.</Yazi>
+            </View>
+            <AcKapa
+              acik={durum.seriSay ?? seriVarsayilani(durum.bloklar)}
+              etiket="Seriyi say"
+              onDegis={(seriSay) => guncelle({ seriSay })}
+            />
+          </View>
         )}
 
         {odakBlok &&
@@ -485,6 +579,9 @@ export function useKartFormu(onSonuc?: (sonuc: KartFormuSonucu) => void) {
 
 const stiller = StyleSheet.create({
   alt: { gap: 12 },
+  seriSatiri: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  bicimler: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  esnek: { flex: 1 },
   blokEkle: {
     minHeight: 60,
     borderRadius: olcu.kose.kart,

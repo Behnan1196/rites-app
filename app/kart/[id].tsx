@@ -27,6 +27,7 @@ import { kaynakAnahtari, kaynakTuru } from '@/mantik/kaynak';
 import { Yazi } from '@/bilesen/Yazi';
 import { gunBasligi, yapilanGunler } from '@/mantik/ajanda';
 import { seri, seriMetni, son7Gun, tekrarMetni, type SeritGunu } from '@/mantik/gorunurluk';
+import { seriSayilirMi, sonYediGunMetni } from '@/mantik/karakter';
 import { bosKayit, type Kart, type Kayit } from '@/mantik/kart';
 import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
@@ -185,7 +186,13 @@ export default function KartGorunumu() {
 
           {kart.tekrar && (
             <View style={[stiller.bolum, stiller.cizgili]}>
-              <SeriKutusu kart={kart} gun={gun} bugunGun={bugunGun} kayitlar={kayitlar} />
+              <SeriKutusu
+                kart={kart}
+                gun={gun}
+                bugunGun={bugunGun}
+                kayitlar={kayitlar}
+                seriVar={seriSayilirMi(kart, bloklar)}
+              />
             </View>
           )}
 
@@ -301,11 +308,14 @@ function SeriKutusu({
   gun,
   bugunGun,
   kayitlar,
+  seriVar,
 }: {
   kart: Kart;
   gun: Gun;
   bugunGun: Gun;
   kayitlar: readonly Kayit[];
+  /** P-35: seri sayılmayan kartta seri yerine "Son 7 günde N kez". */
+  seriVar: boolean;
 }) {
   const yapilan = yapilanGunler(kayitlar);
   const serit = son7Gun(kart, gun, yapilan, bugunGun);
@@ -318,7 +328,7 @@ function SeriKutusu({
         ))}
       </View>
       <Yazi kalinlik="kalin" renk={renk.ana}>
-        {seriMetni(seri(kart, yapilan, bugunGun))}
+        {seriVar ? seriMetni(seri(kart, yapilan, bugunGun)) : sonYediGunMetni(serit)}
       </Yazi>
     </View>
   );
