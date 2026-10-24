@@ -4,6 +4,8 @@
 // günden açıldıysa o günün kaydını gösterir ve ona yazar.
 // Pilot 16 Ekim: alttaki "Yaptım" çubuğu kalktı (yapıldı işareti ajandadaki
 // satırda); Kütüphaneye kaydet · Paylaş · Sil sağ üstteki "⋯" menüsünde.
+// P-38 (24 Ekim): tek yerleşim: "Ne yapacaksın" (içerik ve zamanlayıcı), o günün kaydı
+// ("Bugün"), en altta büyük Yaptım (kişi işaretler).
 // P-36 (24 Ekim, 50+ kullanıcı için sade): yine tek bir yazılı "Düzenle"; kalemler ve
 // "Kartın yapısı" kalktı. Boş kartta "+ Karta bir şey ekle". Seri istisnası seri satırının
 // altındaki "Seriyi gösterme / göster"den.
@@ -32,7 +34,7 @@ import { seriSayilirMi, sonYediGunMetni } from '@/mantik/karakter';
 import { bosKayit, type Kart, type Kayit } from '@/mantik/kart';
 import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
-import { kartAyrinti, kartKayitlari, kartSeriSayYaz, kayitDegistir } from '@/veri/kartlar';
+import { isaretle, kartAyrinti, kartKayitlari, kartSeriSayYaz, kayitDegistir } from '@/veri/kartlar';
 import { karttanProgramaEkle, programOku } from '@/veri/programlar';
 import { ProgramSecSayfasi } from '@/bilesen/yasam/ProgramSayfalari';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
@@ -107,6 +109,9 @@ export default function KartGorunumu() {
   const duzenleAc = (blokEkle = false) => form.ac({ tur: 'duzenle', kart, bloklar, gun, blokEkle });
   const seriDegis = (seriSay: boolean) =>
     void kartSeriSayYaz(kapi, kart.id, seriSay).catch((e: unknown) => console.error('Kaydedilemedi', e));
+  // P-38: tek yerleşim: önce "Ne yapacaksın" (talimat, video, liste, zamanlayıcı…), sonra o günün kaydı.
+  const yapilacaklar = bloklar.filter((b) => !BLOK_TURLERI[b.tur].kayit || b.tur === 'sayac');
+  const kaydedilecekler = bloklar.filter((b) => BLOK_TURLERI[b.tur].kayit && b.tur !== 'sayac');
   const kayitDegis = (degistir: (k: Kayit) => Kayit) => void kayitDegistir(kapi, kart.id, gun, degistir);
 
   return (
@@ -172,24 +177,71 @@ export default function KartGorunumu() {
             </View>
           )}
 
-          {bloklar.map((b) => {
-            const tur = BLOK_TURLERI[b.tur];
-            const ad = (b.tur === 'liste' || b.tur === 'adimlar') && b.ad ? `${tur.ad} · ${b.ad}` : tur.ad;
-            const r = tur.kayit ? renk.vurguYazi : renk.ana;
-            return (
-              <View key={`${b.id}-${gun}`} style={[stiller.bolum, stiller.cizgili]}>
-                <View style={stiller.blokBasligi} accessibilityRole="header">
-                  <View style={[stiller.blokSimgesi, { backgroundColor: tur.kayit ? renk.vurguAcik : renk.anaAcik }]}>
-                    <Ionicons name={tur.ikon} size={18} color={r} />
-                  </View>
-                  <Yazi tur="etiket" kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
-                    {ad.toLocaleUpperCase('tr')}
+          {[
+            { baslik: 'Ne yapacaksın', liste: yapilacaklar },
+            { baslik: gun === bugunGun ? 'Bugün' : gunBasligi(gun, bugunGun), liste: kaydedilecekler },
+          ].map(
+            (bolum) =>
+              bolum.liste.length > 0 && (
+                <View key={bolum.baslik} style={[stiller.bolum, stiller.cizgili, stiller.anaBolum]}>
+                  <Yazi tur="kutuBasligi" accessibilityRole="header">
+                    {bolum.baslik}
                   </Yazi>
+                  {bolum.liste.map((b) => {
+                    const tur = BLOK_TURLERI[b.tur];
+                    const ad = (b.tur === 'liste' || b.tur === 'adimlar') && b.ad ? `${tur.ad} · ${b.ad}` : tur.ad;
+                    const r = tur.kayit ? renk.vurguYazi : renk.ana;
+                    return (
+                      <View key={`${b.id}-${gun}`} style={stiller.parca}>
+                        <View style={stiller.blokBasligi}>
+                          <View
+                            style={[
+                              stiller.blokSimgesi,
+                              { backgroundColor: tur.kayit ? renk.vurguAcik : renk.anaAcik },
+                            ]}
+                          >
+                            <Ionicons name={tur.ikon} size={18} color={r} />
+                          </View>
+                          <Yazi kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
+                            {ad}
+                          </Yazi>
+                        </View>
+                        <BlokUygulama blok={b} gun={gun} kayit={kayit} kayitlar={kayitlar} onKayit={kayitDegis} />
+                      </View>
+                    );
+                  })}
                 </View>
-                <BlokUygulama blok={b} gun={gun} kayit={kayit} kayitlar={kayitlar} onKayit={kayitDegis} />
-              </View>
-            );
-          })}
+              ),
+          )}
+
+          {/* P-38: Yaptım kartın üstünde; kişi kendisi işaretler (değer girmek ya da zamanlayıcı yetmez). */}
+          <View style={[stiller.bolum, stiller.cizgili]}>
+            <Pressable
+              onPress={() =>
+                void isaretle(kapi, kart.id, gun, !kayit.yapildi).catch((e: unknown) =>
+                  console.error('Kaydedilemedi', e),
+                )
+              }
+              accessibilityRole="button"
+              accessibilityState={{ checked: kayit.yapildi }}
+              accessibilityLabel={kayit.yapildi ? 'Yapıldı. Geri almak için dokun' : 'Yaptım'}
+              style={({ pressed }) => [stiller.yaptim, kayit.yapildi && stiller.yapildi, pressed && { opacity: 0.8 }]}
+            >
+              <Ionicons
+                name={kayit.yapildi ? 'checkmark-circle' : 'checkmark'}
+                size={26}
+                color={kayit.yapildi ? renk.ana : renk.yuzey}
+              />
+              <Yazi kalinlik="kalin" renk={kayit.yapildi ? renk.ana : renk.yuzey} style={stiller.yaptimYazi}>
+                {kayit.yapildi ? 'Yapıldı' : 'Yaptım'}
+              </Yazi>
+            </Pressable>
+            {kayit.yapildi && (
+              <Yazi tur="etiket" style={stiller.ortali}>
+                Yanlışlıkla mı? Geri almak için yeniden dokun.
+              </Yazi>
+            )}
+          </View>
 
           {duzenlenir && bloklar.length === 0 && (
             <View style={[stiller.bolum, stiller.cizgili]}>
@@ -379,7 +431,21 @@ const stiller = StyleSheet.create({
   kisa: { marginTop: 4 },
   blokBasligi: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   blokSimgesi: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  blokAdi: { flex: 1, letterSpacing: 0.5 },
+  blokAdi: { flex: 1 },
+  anaBolum: { gap: 16 },
+  parca: { gap: 10 },
+  yaptim: {
+    minHeight: 60,
+    borderRadius: olcu.kose.dugme,
+    backgroundColor: renk.ana,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  yapildi: { backgroundColor: renk.anaAcik, borderWidth: 2, borderColor: renk.ana },
+  yaptimYazi: { fontSize: 20 },
+  ortali: { textAlign: 'center' },
   seriAnahtari: { alignSelf: 'flex-start', minHeight: 36, justifyContent: 'center' },
   seri: { gap: 10 },
   serit: { flexDirection: 'row', justifyContent: 'space-between' },

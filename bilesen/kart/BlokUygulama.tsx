@@ -51,7 +51,7 @@ export function BlokUygulama(o: Ozellikler) {
     case 'dosya':
       return <DosyaBlogu blok={o.blok} />;
     case 'sayac':
-      return <Zamanlayici blok={o.blok} />;
+      return <Zamanlayici {...o} />;
     case 'olcum':
       return <OlcumBlogu {...o} />;
     case 'gunnot':
@@ -227,10 +227,24 @@ function saatMetni(saniye: number): string {
   return `${String(Math.floor(saniye / 60)).padStart(2, '0')}:${String(saniye % 60).padStart(2, '0')}`;
 }
 
-function Zamanlayici({ blok }: { blok: Blok }) {
+/**
+ * Kartın zamanlayıcısı. P-38 (24 Ekim): zamanlayıcı aynı zamanda kayıttır: durdurulunca
+ * ya da bitince geçen süre o günün kaydına eklenir (saniye, `degerler[blok.id]`) ve
+ * altında "Bugün: 10 dk" görünür. Kartı yapıldı saymaz; Yaptım'ı kişi işaretler.
+ */
+function Zamanlayici({ blok, kayit, onKayit }: Ozellikler) {
   const toplam = (blok.dakika ?? 10) * 60;
   const [kalan, setKalan] = useState(toplam);
   const [calisiyor, setCalisiyor] = useState(false);
+  const baslangicKalan = useRef(toplam);
+  const kayitli = Number(kayit.degerler[blok.id] ?? 0) || 0;
+  const sureyiYaz = (gecen: number) => {
+    if (gecen <= 0) return;
+    onKayit((k) => ({
+      ...k,
+      degerler: { ...k.degerler, [blok.id]: String((Number(k.degerler[blok.id] ?? 0) || 0) + gecen) },
+    }));
+  };
 
   useEffect(() => {
     if (!calisiyor) return;
@@ -238,7 +252,10 @@ function Zamanlayici({ blok }: { blok: Blok }) {
     const z = setInterval(() => {
       const yeni = Math.max(0, Math.round((bitis - Date.now()) / 1000));
       setKalan(yeni);
-      if (yeni === 0) setCalisiyor(false);
+      if (yeni === 0) {
+        setCalisiyor(false);
+        sureyiYaz(baslangicKalan.current);
+      }
     }, 250);
     return () => clearInterval(z);
     // Yalnız başlat/durdur ile kurulur.
@@ -247,21 +264,45 @@ function Zamanlayici({ blok }: { blok: Blok }) {
 
   const bitti = kalan === 0;
   return (
-    <View style={stiller.satir}>
-      <View style={stiller.esnek}>
-        <Yazi kalinlik="kalin">{blok.ad || 'Süre'}</Yazi>
-        <Yazi kalinlik="kalin" style={stiller.saat} accessibilityLiveRegion="polite">
-          {saatMetni(kalan)}
-        </Yazi>
+    <View style={stiller.zamanlayiciKap}>
+      <View style={stiller.satir}>
+        <View style={stiller.esnek}>
+          <Yazi kalinlik="kalin">{blok.ad || 'Süre'}</Yazi>
+          <Yazi kalinlik="kalin" style={stiller.saat} accessibilityLiveRegion="polite">
+            {saatMetni(kalan)}
+          </Yazi>
+        </View>
+        <Dugme
+          etiket={calisiyor ? 'Durdur' : bitti ? 'Yeniden' : kalan < toplam ? 'Devam' : 'Başlat'}
+          onPress={() => {
+            if (calisiyor) {
+              setCalisiyor(false);
+              sureyiYaz(baslangicKalan.current - kalan);
+              return;
+            }
+            const k = bitti ? toplam : kalan;
+            if (bitti) setKalan(toplam);
+            baslangicKalan.current = k;
+            setCalisiyor(true);
+          }}
+          style={[stiller.zamanlayiciDugme, calisiyor && { backgroundColor: renk.hata }]}
+        />
       </View>
-      <Dugme
-        etiket={calisiyor ? 'Durdur' : bitti ? 'Bitti' : 'Başlat'}
-        onPress={() => setCalisiyor(!calisiyor)}
-        pasif={bitti && !calisiyor}
-        style={[stiller.zamanlayiciDugme, calisiyor && { backgroundColor: renk.hata }]}
-      />
+      {kayitli > 0 && (
+        <Yazi tur="ikincil" accessibilityLiveRegion="polite">
+          {`Bugün: ${sureMetniSn(kayitli)}${bitti ? ' · Bitti. Yaptıysan aşağıdan işaretle.' : ''}`}
+        </Yazi>
+      )}
     </View>
   );
+}
+
+/** Kaydedilen süre: "10 dk", "1 dk 30 sn", "45 sn". */
+function sureMetniSn(sn: number): string {
+  const dk = Math.floor(sn / 60);
+  const s = sn % 60;
+  if (dk === 0) return `${s} sn`;
+  return s === 0 ? `${dk} dk` : `${dk} dk ${s} sn`;
 }
 
 /** Yazdıkça kısa bir gecikmeyle ve alandan çıkınca kaydeden yazı alanı. */
@@ -473,6 +514,7 @@ const stiller = StyleSheet.create({
   },
   saat: { fontSize: 30, lineHeight: 38 },
   zamanlayiciDugme: { minWidth: 120 },
+  zamanlayiciKap: { gap: 6 },
   olcumKap: { gap: 6 },
   gecmis: { gap: 6, marginTop: 6 },
   cubuklar: { flexDirection: 'row', gap: 6 },

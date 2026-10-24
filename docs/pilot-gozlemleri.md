@@ -200,3 +200,8 @@ Sonuç: → kararlar.md (Kart: 50+ kullanıcı için sade düzen)
 Ne dedi: "Daha güzel oldu, zaman şeridini de basitleştirebilsek iyi olur, aynı yaklaşımla."
 Nerede: Kart formu (zaman)
 Sonuç: → kararlar.md (Kart formunda zaman: soru satırları)
+
+### P-38 · 24 Ekim 2026 · Behnan
+Ne dedi: (Kart modeli konuşması) "Zamanlayıcı aynı zamanda ölçüm kaydı da olabilir… Peki bunu kartımıza nasıl uygulayacağız?" Tek yerleşim ve adım sırası kabul; "Yapıldı'yı kendi işaretlesin."
+Nerede: Kart görünümü
+Sonuç: → kararlar.md (Kartın tek yerleşimi; zamanlayıcı süreyi kaydeder; Yaptım kartta); kart-modeli.md

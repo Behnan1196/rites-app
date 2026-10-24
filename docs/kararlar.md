@@ -388,3 +388,12 @@ Aynı günün "içerik ile yapı ayrıldı" ve "hazır biçimler" kararlarının
 
 - **Alttaki dört düğmeli zaman çubuğu kalktı.** Formda "Ne yapacaksın?"tan sonra **"Ne zaman?"** başlığı ve alt alta satırlar: **Hangi gün?** (tekrarlıda "Hangi gün başlasın?"; programda "Programın kaçıncı günü?") · **Saat kaçta?** · **Tekrar etsin mi?** · **Hatırlatsın mı?** (saat seçilince ya da hatırlatma kuruluysa görünür). Sağda seçili değer (Bugün · 08:00 · Her gün · Hayır), dokununca ayarı satırın hemen altında açılır, "Tamam" kapatır. — Ürün sahibi (P-37)
 - **Tekrar sadeleşti:** "Tekrar etsin" anahtarı ve "Kaç gün sürecek?" yerine **"Ne sıklıkla?"** (Bir kez · Her gün · Hafta içi · Hafta sonu · Seçtiğim günler → gün düğmeleri) ve **"Ne kadar sürsün?"** (Bitişi yok · Belli bir süre → kaç gün). Tekrar açılınca artık **bitişsiz** gelir (eskiden 30 gün). Satırda "Her gün", "Hafta içi, 30 gün", "Pzt Çar Cum". — Ürün sahibi (P-37; bitişsiz varsayılan: Öneri)
+
+## Kartın tek yerleşimi; zamanlayıcı süreyi kaydeder; Yaptım kartta (24 Ekim)
+
+Kart modeli çalışmasının (`kart-modeli.md`) 1. adımı.
+
+- **Kart görünümü üç bölüm:** üstte başlık, zaman, seri; **"Ne yapacaksın"** (talimat, video, liste, proje adımları, fotoğraf, dosya, zamanlayıcı); **"Bugün"** (açılan gün başkaysa o günün adı: ölçüm, günün notu, gelişim fotoğrafı); en altta büyük **Yaptım**. Parçalar eklenme sırasına değil türüne göre yerleşir. Kartı kim yazdıysa (kişi, danışman, Rites) aynı görünür. — Ürün sahibi (P-38)
+- **Yaptım'ı kişi işaretler:** değer girmek ya da zamanlayıcıyı bitirmek kartı yapıldı saymaz. Yaptım kartın altında büyük düğme; işaretliyken "Yapıldı" (açık renkli), yeniden dokununca geri alınır. — Ürün sahibi (P-38)
+- **Zamanlayıcı süreyi kaydeder:** durdurulunca ya da bitince geçen süre o günün kaydına eklenir; altında "Bugün: 10 dk". Bitince "Bitti. Yaptıysan aşağıdan işaretle." Düğme Başlat · Durdur · Devam · Yeniden. — Ürün sahibi (P-38; düğme adları: Öneri)
+- Veritabanı değişmedi (süre, kaydın değerlerinde saniye olarak). — Not
