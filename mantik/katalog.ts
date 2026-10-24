@@ -7,7 +7,7 @@
 // Uzman için yazım kuralları `docs/icerik.md`de. Katalogdaki her öğe burada
 // denetlenir; bozuk öğe atlanır, geri kalanı kullanılır.
 
-import { ALANLAR, type EtkinlikBlogu } from './hazirIcerik';
+import { ALANLAR, HAZIR_CESITLER, type EtkinlikBlogu } from './hazirIcerik';
 import { ICERIK_BLOKLARI, KAYIT_BLOKLARI, type BlokTuru, type Tekrar } from './kart';
 import { GUN_KISA, type GunKisa } from './tarih';
 
@@ -76,10 +76,35 @@ export interface KatalogProgram {
   kartlar: { kart: string; gun: number }[];
 }
 
+/**
+ * İsimli kart çeşidi (pilot 24 Ekim, P-41): boş bir kalıp. Kişi "Ne tür bir kart?"
+ * sorusunda seçer; kart formu bu parçalar ve zamanla açılır, kişi içini doldurur.
+ * Çeşitler alan alan tasarlanır (ilk: Beslenme); tasarımcı Ayarlar → Kart
+ * çeşitleri'nden yayınlar, sunucudaki katalogdan herkese iner.
+ */
+export interface KartCesidi {
+  id: string;
+  /** Alanın anahtarı (beslenme…). */
+  alan: string;
+  ad: string;
+  ikon: string | null;
+  /** Seçim ekranında adın altında. */
+  aciklama: string;
+  /** Kartın ilk başlığı; boşsa kişi yazar. */
+  baslik: string;
+  /** Başlık boşken alanın ipucu ("Örneğin: Mercimek çorbası"). */
+  baslikIpucu: string;
+  saat: string | null;
+  /** null = tek seferlik. */
+  tekrar: Tekrar | null;
+  bloklar: KatalogBlogu[];
+}
+
 export interface Katalog {
   alanlar: KatalogAlan[];
   kartlar: KatalogKart[];
   programlar: KatalogProgram[];
+  cesitler: KartCesidi[];
 }
 
 // ---- Denetim ---------------------------------------------------------------------------
@@ -122,6 +147,28 @@ export function blokCoz(x: unknown): KatalogBlogu | null {
     dakika: sayiMi(b.dakika) && b.dakika > 0 ? Math.round(b.dakika) : tur === 'sayac' ? 10 : null,
     maddeler: metinler(b.maddeler),
     dosya: null,
+  };
+}
+
+/** Tek bir çeşit satırı (sunucu ya da telefon biçimi); bozuksa null. */
+export function cesitCoz(x: unknown): KartCesidi | null {
+  const c = nesne(x);
+  if (!c) return null;
+  const id = metin(c.id);
+  const ad = metin(c.ad);
+  const alan = metin(c.alan);
+  if (!id || !ad || !alan) return null;
+  return {
+    id,
+    alan,
+    ad,
+    ikon: metin(c.ikon) || null,
+    aciklama: metin(c.aciklama),
+    baslik: metin(c.baslik),
+    baslikIpucu: metin(c.baslik_ipucu ?? c.baslikIpucu),
+    saat: saatCoz(c.saat),
+    tekrar: c.tekrar === null || c.tekrar === undefined ? null : tekrarCoz(c.tekrar),
+    bloklar: (Array.isArray(c.bloklar) ? c.bloklar : []).map(blokCoz).filter((b): b is KatalogBlogu => !!b),
   };
 }
 
@@ -189,7 +236,15 @@ export function katalogCoz(ham: unknown): Katalog | null {
       kartlar: pk,
     });
   }
-  return { alanlar, kartlar, programlar };
+  // Çeşitler sonradan geldi (P-41): eski katalogda ya da sunucuda tablo yoksa uygulamayla gelenler.
+  const cesitler: KartCesidi[] = [];
+  if (Array.isArray(k.cesitler)) {
+    for (const x of dizi(k.cesitler)) {
+      const c = cesitCoz(x);
+      if (c && !cesitler.some((y) => y.id === c.id)) cesitler.push(c);
+    }
+  } else cesitler.push(...gomuluKatalog().cesitler);
+  return { alanlar, kartlar, programlar, cesitler };
 }
 
 // ---- Uygulamayla gelen katalog ------------------------------------------------------------
@@ -261,6 +316,11 @@ export function gomuluKatalog(): Katalog {
         kartlar: p.etkinlikler.map((kart) => ({ kart, gun: 0 })),
       })),
     ),
+    cesitler: HAZIR_CESITLER.map((c) => ({
+      ...c,
+      tekrar: c.tekrar ? { ...c.tekrar, gunler: c.tekrar.gunler ? [...c.tekrar.gunler] : null } : null,
+      bloklar: c.bloklar.map((b) => ({ ...b, maddeler: [...b.maddeler] })),
+    })),
   };
   return gomulu;
 }

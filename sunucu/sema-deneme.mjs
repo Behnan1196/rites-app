@@ -357,5 +357,20 @@ await ex('reset role');
 await hataBekle('oturumlu içerik değiştiremez', () => olarak(ali, () => q(`update icerik_kart set baslik = 'x'`)), 'permission denied');
 esit('güncelleme zamanı yenilenir', (await q(`select guncelleme > (select guncelleme from icerik_alan limit 1) - interval '1 day' ok from icerik_kart where id = 'b1'`)).rows[0].ok, true);
 await hataBekle('özel alan anahtarı katalogda olamaz', () => q(`insert into icerik_alan (anahtar, ad) values ('ozel-1', 'X')`), 'check');
+// Kart çeşitleri (P-41): herkes yayındakini okur; yalnız tasarımcı yazar ve pasifi görür.
+esit('çeşitler yüklü', (await q('select count(*)::int n from icerik_cesit')).rows[0].n, 5);
+const yeniCesit = `insert into icerik_cesit (id, alan, ad) values ('deneme', 'beslenme', 'Deneme')`;
+esit('tasarımcı değilim', (await olarak(ali, () => q('select tasarimci_miyim() t'))).rows[0].t, false);
+await hataBekle('tasarımcı olmayan çeşit yazamaz', () => olarak(ali, () => q(yeniCesit)), 'row-level security');
+await ex('set role anon'); await hataBekle('oturumsuz tasarımcı soramaz', () => q('select tasarimci_miyim()'), 'permission denied'); await ex('reset role');
+await q('insert into tasarimci values ($1)', [ali]);
+esit('tasarımcıyım', (await olarak(ali, () => q('select tasarimci_miyim() t'))).rows[0].t, true);
+await olarak(ali, () => q(yeniCesit));
+await olarak(ali, () => q(`update icerik_cesit set aktif = false where id = 'deneme'`));
+esit('tasarımcı pasifi görür', (await olarak(ali, () => q(`select count(*)::int n from icerik_cesit where id = 'deneme'`))).rows[0].n, 1);
+await ex('set role anon');
+esit('herkes pasifi görmez', (await q(`select count(*)::int n from icerik_cesit where id = 'deneme'`)).rows[0].n, 0);
+await ex('reset role');
+await hataBekle('tasarımcı da çeşit silemez', () => olarak(ali, () => q(`delete from icerik_cesit where id = 'deneme'`)), 'permission denied');
 
 console.log(hatalar ? `${hatalar} HATA` : 'HEPSİ TAMAM');

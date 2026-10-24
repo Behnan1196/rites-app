@@ -419,3 +419,15 @@ Kart modeli çalışmasının 3. adımı (son kısmı).
 - **Zamanlayıcı ve kronometre:** altında "Son günler": son 7 günün süresi çubuklarla ("10 dk", "45 sn"; en az iki gün). — Ürün sahibi (P-40)
 - **Günün notu / soru:** cevap alanının altında önceki 3 cevap, tarihiyle (soldan ince çizgili). — Ürün sahibi (P-40; 3 cevap: Öneri)
 - Böylece bütün kayıt türlerinin geçmişi kartın içinde: ölçüm, sayarak, puan, süre (çubuk); cevap (liste). — Not
+
+## İsimli kart çeşitleri: Beslenme (24 Ekim)
+
+Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta ilk alan Beslenme.
+
+- **Çeşit** boş bir kalıptır: ad, simge, kısa açıklama, alan, kartın ilk başlığı (ya da ipucu), parçalar (kartta ne görünsün / ne kaydedilsin), saat ve tekrar. Öneri kartından farkı: öneri dolu bir karttır, çeşit kalıptır. — Ürün sahibi (P-41)
+- **Beslenme'nin beş çeşidi:** Öğün listesi (öğün planı listesi + "Plandan farklı ne yedin, ne kadar?"), Yemek tarifi (malzemeler + yapılışı; öğünden ayrı, başka işe de yarar), Tartı (kilo, bel; haftada bir, Pzt 08:00), Tabağım (tek fotoğraf; gerekirse öğünler ayrı kart), Su (sayarak, hedef 8 bardak). — Ürün sahibi (P-41); ayrıntılar (saatler, açıklamalar): Öneri
+- **Öğün listesi** hem değişmeyen bir plan hem kayıttır: plan liste olarak durur, her gün işaretlenir; farklı yenen şey ve miktarı serbestçe yazılır ("o kadar hassas olmaya gerek yok"). — Ürün sahibi (P-41)
+- **Kişiye nasıl görünür:** yeni kartın ilk adımı "Ne tür bir kart?": en başta "Basit kart", sonra alan alan çeşitler. Paylaşımdan ya da nottan gelen kartta sorulmaz. Yaşam Tarzım → alan ekranında "Beslenme kartları" sırası; dokununca kart o kalıpla açılır. — Öneri (P-41'de onaylandı)
+- Kart hangi çeşitten açıldığını **hatırlar** (`kart.cesit`); ileride ajandada simge, haftalık gözden geçirme ve danışman raporu için. — Öneri
+- **Tasarım yeri:** Ayarlar → Kart çeşitleri, **yalnız tasarımcı** hesaplarda (sunucuda `tasarimci` tablosu; Supabase'den elle eklenir). Tasarım bugünkü kart formuyla yapılır (çeşidin adı, alanı, simgesi; zamanda yalnız saat ve tekrar); "Yayınla" sunucudaki kataloğa yazar, herkesin telefonuna iner. Çeşit silinmez, "Yayında" kapatılarak gizlenir. Tasarımda telefondaki fotoğraf / dosya eklenemez. — Ürün sahibi (P-41: Ayarlar); ayrıntılar: Öneri
+- Danışman kendi çeşidini tanımlayabilsin mi: açık (şimdilik çeşitler Rites'ın, tasarımcı hesaplarla). — Not

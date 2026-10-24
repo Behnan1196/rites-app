@@ -1540,3 +1540,54 @@ begin
   end loop;
 end $$;
 revoke execute on function public.icerik_guncelleme() from anon, authenticated, public;
+
+-- ---- Kart çeşitleri (pilot 24 Ekim, P-41) ---------------------------------------
+-- İsimli kart çeşitleri (Öğün listesi, Tartı, Su…): katalogla herkese iner.
+-- Yalnız tasarımcılar (tasarimci tablosu; Supabase'den elle eklenir) yazar ve
+-- yayında olmayanları görür. Silinmez; "aktif = false" ile yayından kalkar.
+
+create table if not exists public.tasarimci (
+  kullanici uuid primary key references auth.users(id) on delete cascade
+);
+alter table public.tasarimci enable row level security;
+revoke all on public.tasarimci from anon, authenticated;
+
+create or replace function public.tasarimci_miyim() returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.tasarimci where kullanici = auth.uid());
+$$;
+revoke execute on function public.tasarimci_miyim() from public, anon;
+grant execute on function public.tasarimci_miyim() to authenticated;
+
+create table if not exists public.icerik_cesit (
+  id           text primary key,
+  alan         text not null,
+  ad           text not null,
+  ikon         text,
+  aciklama     text not null default '',
+  baslik       text not null default '',
+  baslik_ipucu text not null default '',
+  saat         text,
+  tekrar       jsonb,
+  bloklar      jsonb not null default '[]',
+  sira         integer not null default 0,
+  aktif        boolean not null default true,
+  yazan        uuid default auth.uid(),
+  guncelleme   timestamptz not null default now()
+);
+alter table public.icerik_cesit enable row level security;
+drop policy if exists icerik_oku on public.icerik_cesit;
+create policy icerik_oku on public.icerik_cesit for select to anon, authenticated using (aktif);
+drop policy if exists cesit_tasarim_oku on public.icerik_cesit;
+create policy cesit_tasarim_oku on public.icerik_cesit for select to authenticated using (public.tasarimci_miyim());
+drop policy if exists cesit_tasarim_ekle on public.icerik_cesit;
+create policy cesit_tasarim_ekle on public.icerik_cesit for insert to authenticated with check (public.tasarimci_miyim());
+drop policy if exists cesit_tasarim_degistir on public.icerik_cesit;
+create policy cesit_tasarim_degistir on public.icerik_cesit for update to authenticated
+  using (public.tasarimci_miyim()) with check (public.tasarimci_miyim());
+revoke insert, update, delete, truncate on public.icerik_cesit from anon;
+revoke delete, truncate on public.icerik_cesit from authenticated;
+grant select on public.icerik_cesit to anon, authenticated;
+grant insert, update on public.icerik_cesit to authenticated;
+drop trigger if exists guncelleme on public.icerik_cesit;
+create trigger guncelleme before update on public.icerik_cesit for each row execute function public.icerik_guncelleme();

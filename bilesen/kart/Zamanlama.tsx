@@ -154,6 +154,7 @@ export function ZamanSatirlari({
   onDegis,
   tarihYok = false,
   programGunu = null,
+  kalip = false,
 }: {
   deger: Zamanlama;
   bugunGun: Gun;
@@ -162,6 +163,8 @@ export function ZamanSatirlari({
   onDegis: (z: Zamanlama) => void;
   tarihYok?: boolean;
   programGunu?: ProgramGunu | null;
+  /** Kart çeşidi tasarımı (P-41): yalnız saat ve tekrar; gün ve hatırlatma kişinin. */
+  kalip?: boolean;
 }) {
   const hatirlatmaDegeri = !deger.hatirlatma
     ? 'Hayır'
@@ -193,8 +196,9 @@ export function ZamanSatirlari({
       ayarli: deger.tekrar !== null,
     },
   ];
+  if (kalip) satirlar.shift();
   // Hatırlatma saat seçilince (ya da zaten kuruluysa) sorulur.
-  if (deger.saat !== null || deger.hatirlatma !== null)
+  else if (deger.saat !== null || deger.hatirlatma !== null)
     satirlar.push({ k: 'hatirlatma', soru: 'Hatırlatsın mı?', deger: hatirlatmaDegeri, ayarli: !!deger.hatirlatma });
 
   return (

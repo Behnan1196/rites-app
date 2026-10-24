@@ -8,8 +8,19 @@ import { AppState } from 'react-native';
 import { ayniKatalog, katalog, katalogCoz, katalogDenensinMi } from '@/mantik/katalog';
 import { katalogIndir } from '@/sunucu/katalog';
 import { ayarOku } from '@/veri/ayar';
+import type { Kapi } from '@/veri/kapi';
 import { katalogDenendi, katalogKaydet } from '@/veri/katalog';
 import { useVeri } from '@/veri/VeriSaglayici';
+
+/**
+ * Kataloğu şimdi indirir (tasarımcı yayınlayınca, P-41; 6 saati beklemez).
+ * Bağlanamazsa hata fırlatır.
+ */
+export async function katalogYenile(kapi: Kapi): Promise<void> {
+  const yeni = katalogCoz(await katalogIndir());
+  if (yeni && !ayniKatalog(yeni, katalog())) await katalogKaydet(kapi, yeni);
+  else await katalogDenendi(kapi);
+}
 
 export function KatalogGuncelleyici() {
   const { kapi, oku } = useVeri();
@@ -20,10 +31,7 @@ export function KatalogGuncelleyici() {
       calisiyor = true;
       try {
         if (!katalogDenensinMi(await ayarOku(oku, 'katalog_denendi'))) return;
-        const ham = await katalogIndir();
-        const yeni = katalogCoz(ham);
-        if (yeni && !ayniKatalog(yeni, katalog())) await katalogKaydet(kapi, yeni);
-        else await katalogDenendi(kapi);
+        await katalogYenile(kapi);
       } catch (e) {
         console.warn('Katalog indirilemedi', e);
       } finally {

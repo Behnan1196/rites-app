@@ -293,6 +293,11 @@ export const GOCLER: readonly Goc[] = [
     surum: 19,
     sql: `ALTER TABLE kart ADD COLUMN seri_say INTEGER;`,
   },
+  {
+    // Kartın isimli çeşidi (pilot 24 Ekim, P-41): `KartCesidi.id`; NULL: çeşitsiz.
+    surum: 20,
+    sql: `ALTER TABLE kart ADD COLUMN cesit TEXT;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

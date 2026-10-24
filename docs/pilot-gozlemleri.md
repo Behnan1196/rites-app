@@ -215,3 +215,8 @@ Sonuç: → kararlar.md (Yaptım yalnız ajandada; yeni kayıt türleri)
 Ne dedi: "Kalanları da tamamlayalım; ancak bu işi tam çözebilmek için pilot uygulamada isimli kart çeşitleri tanımlamayı / tasarlamayı düşünüyorum."
 Nerede: Kart görünümü; kart modeli
 Sonuç: → kararlar.md (Süre ve cevapların geçmişi kartta); kart-modeli.md §8 (isimli kart çeşitleri, taslak)
+
+### P-41 · 24 Ekim 2026 · Behnan
+Ne dedi: "İsimli kartlar için düşündüğüm, belirli alanlara göre tasarlamak, örneğin beslenme… öğün listesi, yemek tarifi (… farklı olsun, başka işe de yarar), tartı, tabağım, su gibi. Bunun tasarlanacağı ayrı bir yer olabilir." Sorulara: Ayarlar → Kart çeşitleri; Tabağım tek fotoğraf ("gerekirse öğünleri ayrı hazırlarız"); öğün listesi "hem bir plan değişmeyen, ama altında farklıysa ne yedi ve miktarı… serbestçe girsin"; Beslenme ile başlansın.
+Nerede: Yeni kart, Yaşam Tarzım → alan, Ayarlar
+Sonuç: → kararlar.md (İsimli kart çeşitleri: Beslenme); kart-modeli.md §8

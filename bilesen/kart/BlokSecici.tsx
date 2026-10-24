@@ -16,17 +16,25 @@ export function BlokSecici({
   gorunur,
   onKapat,
   onSec,
+  haric = [],
 }: {
   gorunur: boolean;
   onKapat: () => void;
   onSec: (tur: BlokTuru) => void;
+  /** Gösterilmeyecek türler (çeşit tasarımında telefondaki fotoğraf / dosya; P-41). */
+  haric?: readonly BlokTuru[];
 }) {
+  const goster = (t: BlokTuru) => !haric.includes(t);
   return (
     <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Karta ekle" sagKapat="Kapat">
-      <Izgara baslik="Kartta ne görünsün?" turler={[...ICERIK_BLOKLARI, ...ARAC_BLOKLARI]} onSec={onSec} />
+      <Izgara
+        baslik="Kartta ne görünsün?"
+        turler={[...ICERIK_BLOKLARI, ...ARAC_BLOKLARI].filter(goster)}
+        onSec={onSec}
+      />
       <Izgara
         baslik="Ne kaydedilsin?"
-        turler={KAYIT_BLOKLARI.filter((t) => !ARAC_BLOKLARI.includes(t))}
+        turler={KAYIT_BLOKLARI.filter((t) => !ARAC_BLOKLARI.includes(t) && goster(t))}
         onSec={onSec}
       />
     </AltSayfa>
@@ -85,6 +93,9 @@ const stiller = StyleSheet.create({
     gap: 6,
     padding: 6,
   },
-  kayitKutusu: { backgroundColor: renk.vurguAcik2, borderColor: renk.vurguCizgi },
+  kayitKutusu: {
+    backgroundColor: renk.vurguAcik2,
+    borderColor: renk.vurguCizgi,
+  },
   ad: { fontSize: 15, lineHeight: 19, textAlign: 'center' },
 });

@@ -4,6 +4,8 @@
 
 import { sunucu } from './istemci';
 
+export const CESIT_SUTUNLARI = 'id, alan, ad, ikon, aciklama, baslik, baslik_ipucu, saat, tekrar, bloklar, sira, aktif';
+
 export async function katalogIndir(): Promise<unknown | null> {
   const s = sunucu;
   if (!s) return null;
@@ -14,5 +16,12 @@ export async function katalogIndir(): Promise<unknown | null> {
   ]);
   const hata = alanlar.error ?? kartlar.error ?? programlar.error;
   if (hata) throw new Error(hata.message);
-  return { alanlar: alanlar.data, kartlar: kartlar.data, programlar: programlar.data };
+  // Çeşitler (P-41): tablo henüz kurulmadıysa katalog yine iner, çeşitler uygulamayla gelenlerdir.
+  const cesitler = await s.from('icerik_cesit').select(CESIT_SUTUNLARI);
+  return {
+    alanlar: alanlar.data,
+    kartlar: kartlar.data,
+    programlar: programlar.data,
+    ...(cesitler.error ? {} : { cesitler: cesitler.data }),
+  };
 }

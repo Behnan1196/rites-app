@@ -66,8 +66,29 @@ Kaldırılan alan, onu etiket olarak kullanan kişide adıyla görünmeye devam 
 
 Programın kartları `icerik_kart`ta tanımlı olmalı; bilinmeyen kart atlanır, hiç kartı kalmayan program görünmez. Tekrarlı kart programın son gününde kendiliğinden durur.
 
+## `icerik_cesit` — isimli kart çeşitleri (P-41)
+
+Boş kart kalıpları (Öğün listesi, Tartı, Su…). Uygulamadan **Ayarlar → Kart çeşitleri**'nde (yalnız tasarımcı hesaplar) kart formuyla yazılır; Table Editor'de de düzenlenebilir.
+
+| Sütun | Ne | Örnek |
+|---|---|---|
+| `id` | Değişmez kimlik | `beslenme-tarti` |
+| `alan` | Alanın anahtarı | `beslenme` |
+| `ad` | Seçim listesindeki adı | `Tartı` |
+| `ikon` | Ionicons simge adı | `scale-outline` |
+| `aciklama` | Adın altında kısa açıklama | `Haftada bir kilo ve bel` |
+| `baslik` | Kartın ilk başlığı; boşsa kişi yazar | `Tartı` |
+| `baslik_ipucu` | Başlık boşken ipucu | `Örneğin: Mercimek çorbası` |
+| `saat` | "SS:dd" ya da boş | `08:00` |
+| `tekrar` | `icerik_kart`taki gibi; boş = bir kez | `{"gunler":["Pzt"]}` |
+| `bloklar` | Parçalar, `icerik_kart`taki gibi | `[{"tur":"olcum","ad":"Kilo","birim":"kg"}]` |
+| `aktif` | Kapalıysa herkese görünmez (silmek yerine) | `true` |
+
+Tasarımcı eklemek (SQL Editor): `insert into public.tasarimci (kullanici) select id from auth.users where email = '<e-posta>';`
+
 ## Kişi ne görür?
 
-- **Yaşam Tarzım → alan ekranı:** o alana etiketli öneri programları ve kartlar.
+- **Yaşam Tarzım → alan ekranı:** alanın kart çeşitleri ("Beslenme kartları"), o alana etiketli öneri programları ve kartlar.
+- **Yeni kart:** ilk adım "Ne tür bir kart?": Basit kart ve alan alan çeşitler.
 - **Kütüphanem:** programlar ve kartlar listesinde, kişinin kendi kayıtlarının arasında "Öneri" etiketiyle. Kişi istemediğini "Önerilerden gizle" der.
 - Öneri programında "Programlarıma ekle" → kişinin kendi kopyası (değiştirebilir, başlatır). Öneri kartında "Bugün Ajandama ekle" ya da "Programa ekle".

@@ -2,7 +2,7 @@
 
 Durum: **taslak, düşünme aşamasında** (24 Ekim 2026). Karar değil; kararlar `kararlar.md`ye yazılır.
 
-Uygulama sırası: **1. tek yerleşim, zamanlayıcı süreyi kaydeder (yapıldı, P-38)** · **2. yeni türler: Puan, Sayarak, Soru, Kronometre (yapıldı, P-39)** · **3. iki sorulu "Karta ekle" ve her kayıt için geçmiş (yapıldı, P-39 / P-40)** · 4. haftalık gözden geçirme, danışmana geri bildirim.
+Uygulama sırası: **1. tek yerleşim, zamanlayıcı süreyi kaydeder (yapıldı, P-38)** · **2. yeni türler: Puan, Sayarak, Soru, Kronometre (yapıldı, P-39)** · **3. iki sorulu "Karta ekle" ve her kayıt için geçmiş (yapıldı, P-39 / P-40)** · **isimli kart çeşitleri: Beslenme (yapıldı, P-41)** · 4. haftalık gözden geçirme, danışmana geri bildirim.
 Karar (24 Ekim): Yaptım'ı her zaman kişi işaretler, yalnız ajandadaki satırda; değer girmek kartı yapıldı saymaz. "Karta ekle" iki soru olarak yapıldı (P-39); 3. adımda kalan: her kayıt için geçmiş (süre, yazı).
 Amaç: kişinin kendine yazdığı kartlar, danışmanların (wellness, fitness, diyetisyen) kartları ve
 Rites önerileri aynı yapıya otursun; kullanıcı (çoğu 50+) için sade kalsın; danışmana gidecek veri belli olsun.
@@ -105,31 +105,39 @@ Gözlemler:
 3. Süre, Sayı (say), Puan, Soru ve haftalık gözden geçirme sürüm 1'e girsin mi?
 4. Bir kartta en çok kaç kayıt alanı olsun (sadelik için 2?).
 
-## 8. İsimli kart çeşitleri (pilot; tasarlanacak)
+## 8. İsimli kart çeşitleri (pilot; Beslenme yapıldı, P-41)
 
-Behnan (24 Ekim): bu işi tam çözmek için pilotta isimli kart çeşitleri tanımlanacak / tasarlanacak.
+Behnan (24 Ekim): bu işi tam çözmek için pilotta isimli kart çeşitleri; **alan alan** tasarlanır, her alanda kullanılacak 3–5 kart. İlk alan Beslenme.
 
-**Çeşit nedir:** bir kalıp: ad, simge, kısa açıklama, parçalar (kartta ne görünsün / ne kaydedilsin, varsayılan değerleriyle), varsayılan zaman (tekrar, saat) ve alan. Öneri kartından farkı: öneri dolu bir karttır ("Kutu nefesi, 4 dk"), çeşit boş bir kalıptır ("Nefes kartı: talimat + zamanlayıcı → süre").
+**Çeşit nedir:** boş bir kalıp: ad, simge, kısa açıklama, alan, kartın ilk başlığı (ya da ipucu), parçalar (kartta ne görünsün / ne kaydedilsin), saat ve tekrar. Öneri kartından farkı: öneri dolu bir karttır ("Kutu nefesi, 4 dk"), çeşit boş bir kalıptır ("Tartı: kilo + bel, haftada bir").
 
-**Kişiye nasıl görünür (öneri):** Yeni kartta ilk soru "Ne tür bir kart?": 6–9 büyük kutu; en başta "Basit kart" (yalnız başlık ve zaman). Seçince form o parçalarla açılır; gerisi bugünkü sade form. Biçim düğmeleri forma karışmaz (P-36'da kalkan hazır biçimlerin dersi).
+**Beslenme (yapıldı):**
 
-**Taslak liste (tartışmak için):**
-
-| Çeşit | Kartta görünen | Kaydedilen | Varsayılan zaman |
+| Çeşit | Kartta görünen | Kaydedilen | Zaman |
 |---|---|---|---|
-| Basit kart | — | — (Yaptım ajandada) | Bir kez |
-| Alışkanlık | (talimat) | — (Yaptım, seri) | Her gün |
-| Egzersiz | Video, hareket listesi | (ağırlık / tekrar: sayı) | Haftada 3 |
-| Nefes / meditasyon | Talimat, zamanlayıcı | Süre | Her gün |
-| Dayanma (plank) | Talimat, kronometre | Süre | Her gün |
-| Ölçüm | — | Sayı (kilo, bel, uyku…) | Haftada 1 / her gün |
-| Sayaç | — | Sayarak (su bardağı) | Her gün |
-| Günlük soru | — | Soru → cevap | Her akşam |
-| Nasılım? | — | Puan (+ not) | Her akşam |
-| Tarif | Malzeme listesi, talimat | — | Bir kez |
-| Proje | Proje adımları | — | Bir kez |
+| Öğün listesi | Liste: Kahvaltı · Öğle · Akşam · Ara öğün (plan; kişi içini yazar) | Liste işaretleri; "Plandan farklı ne yedin, ne kadar?" (serbest yazı) | Her gün |
+| Yemek tarifi | Malzemeler (liste), yapılışı (talimat) | — | Bir kez |
+| Tartı | — | Kilo (kg), bel (cm) | Pzt 08:00 |
+| Tabağım | Talimat: "Yemeğe başlamadan tabağının fotoğrafını çek." | Fotoğraf (günde bir; gerekirse öğünler ayrı kart) | Her gün |
+| Su | — | Sayarak: bardak, hedef 8 | Her gün |
+
+**Kişiye nasıl görünür:**
+- Yeni kartın ilk adımı "Ne tür bir kart?": en başta "Basit kart", sonra alan alan çeşitler. Seçince form o parçalar ve zamanla açılır; gerisi bugünkü sade form. Paylaşımdan / nottan gelen kartta sorulmaz.
+- Yaşam Tarzım → alan ekranında "Beslenme kartları"; dokununca kart o kalıpla açılır, kaydedince ajandaya girer.
+- Kart çeşidini hatırlar (`kart.cesit`).
+
+**Tasarım:** Ayarlar → Kart çeşitleri, yalnız tasarımcı hesaplar. Bugünkü kart formu: çeşidin adı, açıklaması, alanı, simgesi; kartın başlığı / ipucu; saat ve tekrar; parçalar. "Yayınla" sunucuya (`icerik_cesit`) yazar, katalogla herkese iner. Silme yok; "Yayında" kapatılır.
+
+**Sıradaki alanlar (taslak, tartışmak için):**
+
+| Alan | Olası çeşitler |
+|---|---|
+| Hareket | Egzersiz (video, hareket listesi; ağırlık / tekrar), Yürüyüş (zamanlayıcı → süre), Dayanma (kronometre), Esneme (zamanlayıcı) |
+| Uyku | Uyku düzeni (yattığı saat; uyku kalitesi puanı), Ekran kapatma |
+| Zihin | Nefes (talimat, zamanlayıcı → süre), Okuma (sayfa) |
+| Anlam | Günlük soru (soru → cevap), Nasılım? (puan + not), Haftanın değerlendirmesi |
 
 **Açık sorular:**
-1. Kart çeşidini hatırlasın mı (`kart.cesit`)? Ajandada simgesi, danışman raporu ve haftalık gözden geçirme için yararlı.
-2. Çeşitler nerede tanımlansın: uygulamanın içinde mi (değişince güncelleme), sunucudaki içerik kataloğunda mı (uzman / ürün sahibi Supabase'den ekler, telefona iner)?
-3. Danışman kendi çeşidini tanımlayabilsin mi, yoksa çeşitler Rites'ın mı?
+1. Ajandada çeşidin simgesi görünsün mü?
+2. Danışman kendi çeşidini tanımlayabilsin mi, yoksa çeşitler Rites'ın mı (bugün: Rites'ın tasarımcı hesapları)?
+3. Haftalık gözden geçirme çeşide göre mi özetlesin ("bu hafta 6 gün su hedefi, 1 tartı")?

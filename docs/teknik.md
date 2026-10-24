@@ -47,10 +47,11 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 17 | Zamanlayıcı: `animsatici.toplam_ms` (halka için toplam süre, ms; +1 dk ile büyür), `animsatici.duraklama` (duraklatılmışsa kalan süre, ms; çalışırken NULL). Duraklatılmış zamanlayıcı hiçbir güne düşmez (bildirim / alarm planına girmez) ve eski "Süre sonra" temizliğinde silinmez |
 | 18 | `kart.alarm_sesi`, `program_kart.alarm_sesi` (alarmın sesi: `mantik/sesler` adı ya da NULL = telefonun alarm sesi). Alarm modülüne `soundName` (`zil.wav` …) olarak gider; ses alarm imzasına ve `metadata.ses`e girer, değişince alarm yeniden kurulur |
 | 19 | `kart.seri_say` (tekrarlı kartta seri sayılsın mı: 1 / 0; NULL: kural, `mantik/karakter.ts`) |
+| 20 | `kart.cesit` (kartın açıldığı isimli çeşit, `KartCesidi.id`; NULL: çeşitsiz). Bölmede yeni karta geçer |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 
-**Sunucu (Supabase, `sunucu/sema.sql`):** `kullanici`, `baglanti`, `davet`, `gelen` (gönderilen kart, alınınca silinir), `grup`, `grup_uye`, `liste`, `liste_erisim`, `madde`. Bütün tablolarda satır düzeyi yetki; yazmaların çoğu işlevlerle (`kisi_ekle`, `grup_kur`, `liste_olustur`…). `npm run sunucu-denemesi` şemayı yerelde gerçek Postgres (PGlite) üzerinde dener.
+**Sunucu (Supabase, `sunucu/sema.sql`):** `kullanici`, `baglanti`, `davet`, `gelen` (gönderilen kart, alınınca silinir), `grup`, `grup_uye`, `liste`, `liste_erisim`, `madde`. İçerik kataloğu: `icerik_alan`, `icerik_kart`, `icerik_program`, `icerik_cesit` (isimli kart çeşitleri, P-41) herkese yalnız okunur; `icerik_cesit`e yalnız `tasarimci` tablosundaki hesaplar yazar (`tasarimci_miyim()`), yayında olmayanı da onlar görür. Bütün tablolarda satır düzeyi yetki; yazmaların çoğu işlevlerle (`kisi_ekle`, `grup_kur`, `liste_olustur`…). `npm run sunucu-denemesi` şemayı yerelde gerçek Postgres (PGlite) üzerinde dener.
 
 ## Yedek dosyası biçimi
 

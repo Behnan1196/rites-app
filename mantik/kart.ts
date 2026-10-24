@@ -102,6 +102,8 @@ export interface Kart {
   tekrar: Tekrar | null;
   /** Tekrarlı kartta seri sayılsın mı (P-35); null / yok: kural (`mantik/karakter`). */
   seriSay?: boolean | null;
+  /** Hangi isimli çeşitten açıldı (P-41; `KartCesidi.id`); yoksa null. */
+  cesit?: string | null;
   /** "Bu gün ve sonrası" bölmesinde eski dizinin son günü. */
   bitis: Gun | null;
   /** "Yalnız bu gün" ile diziden çıkarılan günler. */

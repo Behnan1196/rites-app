@@ -110,3 +110,12 @@ Alanlar, öneri kartları ve öneri programları artık sunucudan indirilebilir.
 3. İçeriği **Table Editor**'de düzenle. Yazım kuralları ve örnekler: `docs/icerik.md`.
 
 Tablolar herkese yalnız okunur; uygulamadan kimse yazamaz. Panelden yaptığın değişiklik telefonlara en geç 6 saat içinde (ya da uygulama yeniden açılınca, 6 saat geçtiyse) gelir.
+
+## 7. Kart çeşitleri (24 Ekim, P-41)
+
+İsimli kart çeşitleri (Öğün listesi, Tartı, Su…) katalogla telefonlara iner; tasarımcı hesaplar uygulamadan (Ayarlar → Kart çeşitleri) yazar. Bu adım yapılmasa da uygulama çalışır: telefonlar uygulamayla gelen beş Beslenme çeşidini kullanır.
+
+1. Güncel `sema.sql`'i SQL Editor'de çalıştır (`icerik_cesit`, `tasarimci`, `tasarimci_miyim()`; yeniden çalıştırmak güvenlidir).
+2. Güncel `icerik.sql`'i çalıştır (beş Beslenme çeşidi; var olan satırlara dokunmaz).
+3. Kendini tasarımcı yap: `insert into public.tasarimci (kullanici) select id from auth.users where email = '<e-postan>';`
+4. Uygulamada Ayarlar'ı kapatıp aç: "Kart çeşitleri" bölümü görünür.

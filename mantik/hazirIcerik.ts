@@ -3,6 +3,7 @@
 // kataloğu yoksa ya da indirilemezse bu kullanılır (`katalog.ts`); sunucudaki
 // kataloğun ilk içeriği de buradan üretilir (`sunucu/icerik-uret.ts`).
 
+import type { KartCesidi, KatalogBlogu } from './katalog';
 import type { Tekrar } from './kart';
 import type { GunKisa } from './tarih';
 
@@ -264,5 +265,85 @@ export const ALANLAR: readonly HazirAlan[] = [
         etkinlikler: ['g1'],
       },
     ],
+  },
+];
+
+// ---- İsimli kart çeşitleri (pilot 24 Ekim, P-41) --------------------------------
+// İlk alan Beslenme. Sunucudaki kataloğun ilk çeşitleri de buradan üretilir.
+
+const parca = (tur: KatalogBlogu['tur'], alanlar: Partial<KatalogBlogu> = {}): KatalogBlogu => ({
+  tur,
+  ad: '',
+  metin: '',
+  birim: '',
+  dakika: null,
+  maddeler: [],
+  dosya: null,
+  ...alanlar,
+});
+
+export const HAZIR_CESITLER: readonly KartCesidi[] = [
+  {
+    id: 'beslenme-ogun',
+    alan: 'beslenme',
+    ad: 'Öğün listesi',
+    ikon: 'restaurant-outline',
+    aciklama: 'Öğün planın; farklı yediğini kısaca yazarsın',
+    baslik: 'Öğünlerim',
+    baslikIpucu: '',
+    saat: null,
+    tekrar: herGun,
+    bloklar: [
+      parca('liste', { ad: 'Öğünler', maddeler: ['Kahvaltı', 'Öğle', 'Akşam', 'Ara öğün'] }),
+      parca('gunnot', { metin: 'Plandan farklı ne yedin, ne kadar?' }),
+    ],
+  },
+  {
+    id: 'beslenme-tarif',
+    alan: 'beslenme',
+    ad: 'Yemek tarifi',
+    ikon: 'book-outline',
+    aciklama: 'Malzemeler ve yapılışı',
+    baslik: '',
+    baslikIpucu: 'Örneğin: Mercimek çorbası',
+    saat: null,
+    tekrar: null,
+    bloklar: [parca('liste', { ad: 'Malzemeler' }), parca('talimat')],
+  },
+  {
+    id: 'beslenme-tarti',
+    alan: 'beslenme',
+    ad: 'Tartı',
+    ikon: 'scale-outline',
+    aciklama: 'Haftada bir kilo ve bel',
+    baslik: 'Tartı',
+    baslikIpucu: '',
+    saat: '08:00',
+    tekrar: gunler('Pzt'),
+    bloklar: [parca('olcum', { ad: 'Kilo', birim: 'kg' }), parca('olcum', { ad: 'Bel', birim: 'cm' })],
+  },
+  {
+    id: 'beslenme-tabak',
+    alan: 'beslenme',
+    ad: 'Tabağım',
+    ikon: 'camera-outline',
+    aciklama: 'Tabağının fotoğrafı',
+    baslik: 'Tabağım',
+    baslikIpucu: '',
+    saat: null,
+    tekrar: herGun,
+    bloklar: [parca('talimat', { metin: 'Yemeğe başlamadan tabağının fotoğrafını çek.' }), parca('gelfoto')],
+  },
+  {
+    id: 'beslenme-su',
+    alan: 'beslenme',
+    ad: 'Su',
+    ikon: 'water-outline',
+    aciklama: 'İçtiğin bardakları say',
+    baslik: 'Su',
+    baslikIpucu: '',
+    saat: null,
+    tekrar: herGun,
+    bloklar: [parca('adet', { ad: 'İçilen su', birim: 'bardak', dakika: 8 })],
   },
 ];

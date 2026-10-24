@@ -6,7 +6,8 @@
 //   Arayüzde "hesap" sözcüğü yalnız "Hesabımı sil"de geçer.
 // - Ayarlar: Giriş ekranı (G-7), Yedekleme (PR-2), Üyelik (ücretsiz sınır göstergesi, GR-3).
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
 import { Keyboard, Platform, Pressable, StyleSheet, View } from 'react-native';
@@ -17,6 +18,7 @@ import { sonYedekMetni, YEDEK_ACIKLAMASI, type YedekDosyasi } from '@/mantik/yed
 import { adKaydet, ayarSil, ayarYaz } from '@/veri/ayar';
 import { dosyayiSakla } from '@/veri/dosyalar';
 import { BAGLANAMIYOR, ekledigimSayi } from '@/mantik/kisiler';
+import { tasarimciMiyim } from '@/sunucu/cesit';
 import { adiGuncelle, cikisYap, hesabimiSil, useOturum } from '@/sunucu/oturum';
 import { useAyar, useSorgu } from '@/veri/kancalar';
 import { kisileriOku, kisileriTemizle } from '@/veri/kisiler';
@@ -39,9 +41,11 @@ import { Yazi } from './Yazi';
 
 type Acik = 'menu' | 'profil' | 'ayarlar' | null;
 
-const ProfilBaglami = createContext<{ profiliAc: () => void; ayarlariAc: () => void; menuyuAc: () => void } | null>(
-  null,
-);
+const ProfilBaglami = createContext<{
+  profiliAc: () => void;
+  ayarlariAc: () => void;
+  menuyuAc: () => void;
+} | null>(null);
 
 export function ProfilSaglayici({ children }: { children: ReactNode }) {
   const [acik, setAcik] = useState<Acik>(null);
@@ -53,7 +57,11 @@ export function ProfilSaglayici({ children }: { children: ReactNode }) {
     setAcik(s);
   }, []);
   const deger = useMemo(
-    () => ({ profiliAc: () => ac('profil'), ayarlariAc: () => ac('ayarlar'), menuyuAc: () => setAcik('menu') }),
+    () => ({
+      profiliAc: () => ac('profil'),
+      ayarlariAc: () => ac('ayarlar'),
+      menuyuAc: () => setAcik('menu'),
+    }),
     [ac],
   );
   const kapat = () => setAcik(null);
@@ -71,7 +79,11 @@ export function ProfilSaglayici({ children }: { children: ReactNode }) {
 function AvatarMenusu({ ad, onSec, onKapat }: { ad: string; onSec: (s: Acik) => void; onKapat: () => void }) {
   const kenar = useSafeAreaInsets();
   const oturum = useOturum();
-  const secenekler: { s: Acik; etiket: string; ikon: 'person-outline' | 'settings-outline' }[] = [
+  const secenekler: {
+    s: Acik;
+    etiket: string;
+    ikon: 'person-outline' | 'settings-outline';
+  }[] = [
     { s: 'profil', etiket: 'Profil', ikon: 'person-outline' },
     { s: 'ayarlar', etiket: 'Ayarlar', ikon: 'settings-outline' },
   ];
@@ -208,9 +220,21 @@ function ProfilSayfasi({ ad, gorunur, onKapat }: { ad: string; gorunur: boolean;
               aciklama:
                 'Kişilerinle bağlantıların ve sana gelenler sunucudan silinir; bu geri alınamaz. Telefondaki ajandan, notların ve programların da silinsin mi?',
               secenekler: [
-                { etiket: 'Sil, telefondakiler kalsın', tur: 'tehlike', onPress: () => void hesabiSil(false) },
-                { etiket: 'Sil, telefondakiler de silinsin', tur: 'tehlike', onPress: () => void hesabiSil(true) },
-                { etiket: 'Vazgeç', tur: 'yazi', onPress: () => setSilSorusu(false) },
+                {
+                  etiket: 'Sil, telefondakiler kalsın',
+                  tur: 'tehlike',
+                  onPress: () => void hesabiSil(false),
+                },
+                {
+                  etiket: 'Sil, telefondakiler de silinsin',
+                  tur: 'tehlike',
+                  onPress: () => void hesabiSil(true),
+                },
+                {
+                  etiket: 'Vazgeç',
+                  tur: 'yazi',
+                  onPress: () => setSilSorusu(false),
+                },
               ],
             }
           : null
@@ -293,6 +317,19 @@ function AyarlarSayfasi({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =>
   const [yedekHatasi, setYedekHatasi] = useState<string | null>(null);
   const [geriYuklenecek, setGeriYuklenecek] = useState<YedekDosyasi | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
+  // P-41: Kart çeşitleri yalnız tasarımcıya görünür (sunucuda `tasarimci`).
+  const [tasarimci, setTasarimci] = useState(false);
+  const oturumVar = oturum.durum === 'var';
+  useEffect(() => {
+    if (!gorunur || !oturumVar) return;
+    let gecerli = true;
+    void tasarimciMiyim()
+      .then((t) => gecerli && setTasarimci(t))
+      .catch(() => undefined);
+    return () => {
+      gecerli = false;
+    };
+  }, [gorunur, oturumVar]);
 
   const calistir = async (is: () => Promise<void>, hataMetni: string) => {
     if (calisiyor) return;
@@ -336,8 +373,16 @@ function AyarlarSayfasi({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =>
               baslik: 'Yedekten geri yüklensin mi?',
               aciklama: `Bu telefondaki şu anki verilerin yerine yedektekiler gelir: ${yedekOzeti(geriYuklenecek)}.`,
               secenekler: [
-                { etiket: 'Geri yükle', tur: 'tehlike', onPress: () => void geriYukle(geriYuklenecek) },
-                { etiket: 'Vazgeç', tur: 'yazi', onPress: () => setGeriYuklenecek(null) },
+                {
+                  etiket: 'Geri yükle',
+                  tur: 'tehlike',
+                  onPress: () => void geriYukle(geriYuklenecek),
+                },
+                {
+                  etiket: 'Vazgeç',
+                  tur: 'yazi',
+                  onPress: () => setGeriYuklenecek(null),
+                },
               ],
             }
           : null
@@ -373,6 +418,26 @@ function AyarlarSayfasi({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =>
         )}
       </View>
 
+      {oturumVar && tasarimci && (
+        <View style={stiller.kart}>
+          <Yazi tur="bolumBasligi" accessibilityRole="header">
+            Kart çeşitleri
+          </Yazi>
+          <Yazi tur="ikincil">
+            Öğün listesi, Tartı, Su gibi kalıplar. Yayınladığın çeşit herkesin &quot;Ne tür bir kart?&quot; listesine
+            iner. Bu bölümü yalnız tasarımcılar görür.
+          </Yazi>
+          <Dugme
+            tur="ikincil"
+            etiket="Kart çeşitlerini tasarla"
+            onPress={() => {
+              onKapat();
+              router.push('/giris/cesitler');
+            }}
+          />
+        </View>
+      )}
+
       {oturum.durum === 'var' && (
         <View style={stiller.kart}>
           <View style={stiller.baslikSatiri}>
@@ -391,12 +456,21 @@ function AyarlarSayfasi({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =>
 }
 
 const stiller = StyleSheet.create({
-  kimlik: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingVertical: 8 },
+  kimlik: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    paddingVertical: 8,
+  },
   ortala: { alignItems: 'center' },
   fotoDugmeleri: { gap: 8 },
   ikili: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   ad: { flex: 1, gap: 2 },
-  baslikSatiri: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  baslikSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   menu: {
     position: 'absolute',
     right: olcu.ekranKenari,
@@ -419,7 +493,13 @@ const stiller = StyleSheet.create({
     borderBottomColor: renk.satirCizgi,
     gap: 2,
   },
-  menuSatiri: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 50, paddingHorizontal: 16 },
+  menuSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 50,
+    paddingHorizontal: 16,
+  },
   esnek: { flex: 1 },
   kart: {
     backgroundColor: renk.yuzey,

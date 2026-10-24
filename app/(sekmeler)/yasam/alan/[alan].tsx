@@ -1,6 +1,7 @@
 // Alan ekranı (pilot 20 Ekim): puan (kişinin kendi değerlendirmesi; programlardan
 // bağımsız), bu alana etiketli programlar, + Yeni program,
 // Rites önerileri. Kişinin eklediği alan yeniden adlandırılır ya da silinir.
+// P-41: alanın kart çeşitleri ("Beslenme kartları"): dokununca kart o kalıpla açılır.
 
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -16,13 +17,17 @@ import { OnayKutusu } from '@/bilesen/OnayKutusu';
 import { Bolum } from '@/bilesen/Secim';
 import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
+import { Kutu } from '@/bilesen/kart/CesitSecici';
+import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { AlanSimgesi, ProgramSatiri } from '@/bilesen/yasam/parcalar';
 import { useProgramFormu } from '@/bilesen/yasam/ProgramFormu';
 import { useProgramlar } from '@/bilesen/yasam/useProgramlar';
+import { CESIT_SIMGELERI, cesitler } from '@/mantik/cesit';
 import { alanAdiHatasi, ozelMi, PUAN_SOZLERI, type Alan } from '@/mantik/alanlar';
 import { oneriAnahtari, oneriKartlari, oneriler as tumOneriler, sureMetni, yildizMetni } from '@/mantik/program';
 import { icerikMetaMetni } from '@/mantik/kutuphane';
 import { useSorgu } from '@/veri/kancalar';
+import { useBugun } from '@/veri/useBugun';
 import { gizliOneriler } from '@/veri/katalog';
 import { alanDurumuYaz, ozelAlanSil, ozelAlanYaz, varsayilanAlanDurumu } from '@/veri/programlar';
 import { useVeri } from '@/veri/VeriSaglayici';
@@ -54,6 +59,9 @@ function AlanIcerigi({ alan, p }: { alan: Alan; p: ReturnType<typeof usePrograml
   const oneriKartlar = oneriKartlari().filter(
     (c) => c.alanlar.includes(alan.anahtar) && !gizli.has(oneriAnahtari('kart', c.id)),
   );
+  const bugunGun = useBugun();
+  const alanCesitleri = cesitler(alan.anahtar);
+  const kartFormu = useKartFormu(() => kisaMesaj('Kart ajandana eklendi'));
   const programFormu = useProgramFormu((id) => router.push({ pathname: '/yasam/program/[id]', params: { id } }));
   const ozel = ozelMi(alan.anahtar);
   const [duzenle, setDuzenle] = useState<{ ad: string; aciklama: string } | null>(null);
@@ -146,6 +154,28 @@ function AlanIcerigi({ alan, p }: { alan: Alan; p: ReturnType<typeof usePrograml
         <Yazi tur="ikincil">Puan senin değerlendirmen; program uygulamadan da verebilirsin.</Yazi>
       </Bolum>
 
+      {alanCesitleri.length > 0 && (
+        <>
+          <View style={stiller.paketBasligi}>
+            <Yazi tur="bolumBasligi" accessibilityRole="header">
+              {`${alan.ad} kartları`}
+            </Yazi>
+            <Yazi tur="ikincil">Birini seç; kart hazır parçalarıyla açılır, içini sen doldurursun.</Yazi>
+          </View>
+          <View style={stiller.liste}>
+            {alanCesitleri.map((c) => (
+              <Kutu
+                key={c.id}
+                ikon={(c.ikon as (typeof CESIT_SIMGELERI)[number] | null) ?? 'leaf-outline'}
+                ad={c.ad}
+                aciklama={c.aciklama}
+                onPress={() => kartFormu.ac({ tur: 'yeni', gun: bugunGun, cesit: c })}
+              />
+            ))}
+          </View>
+        </>
+      )}
+
       {programlar.length > 0 && (
         <>
           <Yazi tur="bolumBasligi" accessibilityRole="header">
@@ -220,6 +250,7 @@ function AlanIcerigi({ alan, p }: { alan: Alan; p: ReturnType<typeof usePrograml
       )}
 
       {programFormu.oge}
+      {kartFormu.oge}
 
       <AltSayfa
         gorunur={duzenle !== null}
