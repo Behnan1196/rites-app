@@ -3,11 +3,12 @@
 // uygulanan programın ajandadaki kartı düzenlenince programdaki karşılığı da değişir.
 // P-36 (24 Ekim, 50+ kullanıcı için sade): tek sayfa: "Ne yapacaksın?", açıklama,
 // zaman (alttaki düğmeler), "Kartın içinde" (liste, video, ölçüm…; her birinin altında
-// "Bunu kaldır") ve "+ Karta ekle". Yeni kartta ekler kapalı gelir. Seri anahtarı
+// "Bunu kaldır") ve "+ Karta ekle". P-37: zaman alttaki çubukta değil, "Ne zaman?"
+// başlığı altında soru satırlarında ("Hangi gün?", "Saat kaçta?", "Tekrar etsin mi?"). Yeni kartta ekler kapalı gelir. Seri anahtarı
 // formda yok: kural işler, istisna kart görünümünden.
 
 import { useCallback, useMemo, useState } from 'react';
-import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet } from 'react-native';
 
 import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
 import { adimDurumu, adimlariEsle } from '@/mantik/adimlar';
@@ -38,7 +39,7 @@ import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 import { BlokDuzenleyici } from './BlokDuzenleyici';
 import { BlokSecici } from './BlokSecici';
-import { ZamanlamaCubugu, ZamanlamaPaneli, type ProgramGunu, type Zamanlama, type ZamanlamaBolmesi } from './Zamanlama';
+import { ZamanSatirlari, type ProgramGunu, type Zamanlama, type ZamanlamaBolmesi } from './Zamanlama';
 
 export type KartFormuHedefi =
   /**
@@ -336,32 +337,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         degisti={degisti}
         onay={onay}
         sagEylem={{ etiket: 'Kaydet', onPress: () => void kaydet(), pasif: calisiyor }}
-        altAlan={
-          <View style={stiller.alt}>
-            <ZamanlamaCubugu
-              deger={durum.zamanlama}
-              bugunGun={bugunGun}
-              onAc={bolmeAc}
-              tarihYok={durum.tarihsiz}
-              acik={altSayfa}
-              programGunu={programGunu}
-            />
-            <ZamanlamaPaneli
-              acik={altSayfa}
-              deger={durum.zamanlama}
-              bugunGun={bugunGun}
-              tarihYok={durum.tarihsiz}
-              programGunu={programGunu}
-              onDegis={(zamanlama) =>
-                guncelle({
-                  zamanlama,
-                  tarihsiz: durum.tarihsiz && altSayfa !== 'tarih' && zamanlama.tekrar === null,
-                })
-              }
-              onAc={setAltSayfa}
-            />
-          </View>
-        }
       >
         <GirisAlani
           etiket="Ne yapacaksın?"
@@ -383,7 +358,23 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           placeholder="Açıklama (isteğe bağlı)"
           returnKeyType="done"
         />
-        <Yazi tur="ikincil">Ne zaman yapacağını aşağıdaki düğmelerden seç.</Yazi>
+        <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumBasligi}>
+          Ne zaman?
+        </Yazi>
+        <ZamanSatirlari
+          deger={durum.zamanlama}
+          bugunGun={bugunGun}
+          acik={altSayfa}
+          onAc={bolmeAc}
+          tarihYok={durum.tarihsiz}
+          programGunu={programGunu}
+          onDegis={(zamanlama) =>
+            guncelle({
+              zamanlama,
+              tarihsiz: durum.tarihsiz && altSayfa !== 'tarih' && zamanlama.tekrar === null,
+            })
+          }
+        />
 
         {!eklerAcik ? (
           <Pressable
@@ -472,7 +463,6 @@ export function useKartFormu(onSonuc?: (sonuc: KartFormuSonucu) => void) {
 }
 
 const stiller = StyleSheet.create({
-  alt: { gap: 12 },
   ekleSatiri: {
     minHeight: 60,
     borderRadius: olcu.kose.kart,

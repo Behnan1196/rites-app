@@ -195,3 +195,8 @@ Sonuç: → kararlar.md (Kart: içerik ile yapı ayrıldı)
 Ne dedi: (Kartın içerik / yapı ayrımı ve hazır biçimler için) "Pek hoş görünmüyor… kullanıcı dostu olmamasını kastettim; çoğu kullanıcı 50+ olduğu için sade bir tasarım gerekiyor." Önerilen yön (tek "Düzenle", tek sayfa form, teknik sözcük yok, seri anahtarı formdan çıksın) kabul.
 Nerede: Kart görünümü, kart formu
 Sonuç: → kararlar.md (Kart: 50+ kullanıcı için sade düzen)
+
+### P-37 · 24 Ekim 2026 · Behnan
+Ne dedi: "Daha güzel oldu, zaman şeridini de basitleştirebilsek iyi olur, aynı yaklaşımla."
+Nerede: Kart formu (zaman)
+Sonuç: → kararlar.md (Kart formunda zaman: soru satırları)

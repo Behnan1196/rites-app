@@ -383,3 +383,8 @@ Aynı günün "içerik ile yapı ayrıldı" ve "hazır biçimler" kararlarının
 - **"Karta ekle" seçicisi:** başlık "Karta ekle"; gruplar "Kartta dursun" (talimat, video, liste, proje adımları, fotoğraf, dosya) ve "Her seferinde doldur" (zamanlayıcı, ölçüm, günün notu, gelişim fotoğrafı). "Blok" sözcüğü arayüzden kalktı. — Öneri
 - Zaman seçimi şimdilik alttaki yazılı dört düğmeyle (Bugün · Saat · Hatırlat · Tekrar); üç satırlık düzen kullanıcı denemesinden sonra düşünülecek. — Not
 - **Deneme:** pilotta 50 yaş üstü 1–2 kişiye küçük görevler ("bir alışkanlık kartı ekle, sonra içine liste koy"); takıldıkları yer not edilecek. — Öneri
+
+## Kart formunda zaman: soru satırları (24 Ekim)
+
+- **Alttaki dört düğmeli zaman çubuğu kalktı.** Formda "Ne yapacaksın?"tan sonra **"Ne zaman?"** başlığı ve alt alta satırlar: **Hangi gün?** (tekrarlıda "Hangi gün başlasın?"; programda "Programın kaçıncı günü?") · **Saat kaçta?** · **Tekrar etsin mi?** · **Hatırlatsın mı?** (saat seçilince ya da hatırlatma kuruluysa görünür). Sağda seçili değer (Bugün · 08:00 · Her gün · Hayır), dokununca ayarı satırın hemen altında açılır, "Tamam" kapatır. — Ürün sahibi (P-37)
+- **Tekrar sadeleşti:** "Tekrar etsin" anahtarı ve "Kaç gün sürecek?" yerine **"Ne sıklıkla?"** (Bir kez · Her gün · Hafta içi · Hafta sonu · Seçtiğim günler → gün düğmeleri) ve **"Ne kadar sürsün?"** (Bitişi yok · Belli bir süre → kaç gün). Tekrar açılınca artık **bitişsiz** gelir (eskiden 30 gün). Satırda "Her gün", "Hafta içi, 30 gün", "Pzt Çar Cum". — Ürün sahibi (P-37; bitişsiz varsayılan: Öneri)
