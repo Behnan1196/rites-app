@@ -372,3 +372,14 @@ Kart yapısı çalışmasının 2–4. adımları. Kullanımda görünüş ayrı
 - **Ölçüm geçmişi kartın içinde:** ölçüm bölümünde, en az iki değer varsa "Son ölçümler": son 7 değer küçük çubuklarla (değer üstte, gün altta; en sonuncusu koyu). Yalnız sayı olan değerler ("72,5"); "120/80" gibi değerler çubuğa girmez. — Ürün sahibi (P-35; çubuk görünümü: Öneri)
 - **Yeni kartta hazır biçim:** üstte Boş kart · Alışkanlık · Ölçüm takibi · Liste · Video / talimat. Biçim kartı o yapıyla açar (Alışkanlık: her gün; Ölçüm takibi: her gün + ölçüm; Liste: liste; Video / talimat: video + talimat), sonra kart tamamen kişinin; şablona bağlı kalmaz. "Kütüphanemden" şimdilik Yaşam Tarzım → Kütüphanem'den. — Ürün sahibi (P-35; Kütüphanemden'in yeri: Öneri)
 - **Notu karta çevir:** not sayfasındaki "Bugünün ajandasına al" yerine "Karta çevir": kart formu dolu açılır (ilk satır başlık, en çok 60 harf; birden çok satır ya da uzun metin talimat; sesli notun kaydı dosya bloğu), gün, saat, tekrar seçilir; kart kaydedilince not silinir. — Ürün sahibi (P-35)
+
+## Kart: 50+ kullanıcı için sade düzen (24 Ekim)
+
+Aynı günün "içerik ile yapı ayrıldı" ve "hazır biçimler" kararlarının görünen yüzünün yerine geçer; arka plan (seri kuralı, ölçüm geçmişi, notu karta çevir) kalır. İlke: az seçenek, yazılı düğme, tek yol, teknik sözcük yok. — Ürün sahibi (P-36)
+
+- **Kart görünümünde tek bir yazılı "Düzenle"** (sağ üstte, ⋯'nin solunda); ✎ kalemler ve "⋯ → Kartın yapısı" kalktı. ⋯'de Kütüphaneye kaydet · Programa ekle · Paylaş · Sil. Boş kartta "+ Karta bir şey ekle". — Ürün sahibi (P-36)
+- **Kart formu tek sayfa:** "Ne yapacaksın?" (başlık), açıklama, "Ne zaman yapacağını aşağıdaki düğmelerden seç" (alttaki Bugün · Saat · Hatırlat · Tekrar), **"Kartın içinde"** (her parça adıyla; "Kayıt / İçerik" etiketi ve sıralama okları yok; altında küçük kırmızı "Bunu kaldır") ve **"+ Karta ekle"**. Yeni kartta bu kısım kapalı gelir: "Karta bir şey ekle (isteğe bağlı) · Liste, video, ölçüm…". — Ürün sahibi (P-36; sıralamanın kalkması: Öneri)
+- **Hazır biçim düğmeleri ve formdaki "Seriyi say" anahtarı kalktı.** Kural kendiliğinden işler; istisna kart görünümünde seri satırının altındaki küçük "Seriyi gösterme" / "Seriyi göster" ile. — Ürün sahibi (P-36)
+- **"Karta ekle" seçicisi:** başlık "Karta ekle"; gruplar "Kartta dursun" (talimat, video, liste, proje adımları, fotoğraf, dosya) ve "Her seferinde doldur" (zamanlayıcı, ölçüm, günün notu, gelişim fotoğrafı). "Blok" sözcüğü arayüzden kalktı. — Öneri
+- Zaman seçimi şimdilik alttaki yazılı dört düğmeyle (Bugün · Saat · Hatırlat · Tekrar); üç satırlık düzen kullanıcı denemesinden sonra düşünülecek. — Not
+- **Deneme:** pilotta 50 yaş üstü 1–2 kişiye küçük görevler ("bir alışkanlık kartı ekle, sonra içine liste koy"); takıldıkları yer not edilecek. — Öneri

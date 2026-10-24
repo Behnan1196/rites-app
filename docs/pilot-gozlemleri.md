@@ -190,3 +190,8 @@ Sonuç: → kararlar.md (Üst satır düzeni ve Kişilerim)
 Ne dedi: "Kart yapımıza ve kullanımına odaklanalım. Beni ilk rahatsız eden Düzenle ekranı; orada hem içeriği düzenliyoruz hem yapıyı. Kart tasarımı da yapıyoruz orada; kartlara isim (şablon) belirlemek bir alternatif ama onun da eksileri var. Notlar, sesli not da önceden biçimlendirilmiş kartlar gibi. Ne zaman streak olacağı, veri alanlarının ne zaman toplanacağı gibi sorunlar da var." Cevaplar: en çok içerikle yapının bir arada olması rahatsız ediyor; geçmiş şimdilik kartın içinde; notlar için "Karta çevir" yeterli; karakter kuralı ve sıra kabul ("deneyelim").
 Nerede: Kart görünümü, kart formu
 Sonuç: → kararlar.md (Kart: içerik ile yapı ayrıldı)
+
+### P-36 · 24 Ekim 2026 · Behnan
+Ne dedi: (Kartın içerik / yapı ayrımı ve hazır biçimler için) "Pek hoş görünmüyor… kullanıcı dostu olmamasını kastettim; çoğu kullanıcı 50+ olduğu için sade bir tasarım gerekiyor." Önerilen yön (tek "Düzenle", tek sayfa form, teknik sözcük yok, seri anahtarı formdan çıksın) kabul.
+Nerede: Kart görünümü, kart formu
+Sonuç: → kararlar.md (Kart: 50+ kullanıcı için sade düzen)

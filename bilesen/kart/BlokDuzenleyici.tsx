@@ -1,7 +1,6 @@
-// Kart formunda tek bir bloğun düzenleme kutusu (K-6): türü, "Yukarı taşı", "Kaldır"
-// ve türüne göre alanlar. P-35 (24 Ekim): `icerik` kipinde (kart görünümünde bir
-// bölüme dokununca) yalnız içerik alanları: tür satırı, taşı / kaldır ve yapı
-// alanları (liste adı, proje adı) "Kartın yapısı"nda kalır.
+// Kart formunda kartın içindeki bir parçanın kutusu (K-6): adı ve türüne göre
+// alanlar; en altta küçük "Bunu kaldır". P-36 (24 Ekim, sade): "Kayıt / İçerik"
+// etiketi ve sıralama okları kalktı.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
@@ -19,15 +18,11 @@ import { BLOK_TURLERI } from './blokTurleri';
 
 interface Ozellikler {
   blok: BlokTaslagi;
-  ilkMi: boolean;
   onDegis: (blok: BlokTaslagi) => void;
-  onYukari: () => void;
   onKaldir: () => void;
-  kip?: 'tam' | 'icerik';
 }
 
-export function BlokDuzenleyici({ blok, ilkMi, onDegis, onYukari, onKaldir, kip = 'tam' }: Ozellikler) {
-  const tam = kip === 'tam';
+export function BlokDuzenleyici({ blok, onDegis, onKaldir }: Ozellikler) {
   const tur = BLOK_TURLERI[blok.tur];
   const degis = (alanlar: Partial<BlokTaslagi>) => onDegis({ ...blok, ...alanlar });
 
@@ -51,28 +46,10 @@ export function BlokDuzenleyici({ blok, ilkMi, onDegis, onYukari, onKaldir, kip 
 
   return (
     <Bolum>
-      {tam && (
-        <View style={stiller.ust}>
-          <View style={stiller.ad}>
-            <Ionicons name={tur.ikon} size={22} color={tur.kayit ? renk.vurguYazi : renk.ana} />
-            <Yazi kalinlik="kalin">{tur.ad}</Yazi>
-            <Yazi tur="etiket">{tur.kayit ? 'Kayıt' : 'İçerik'}</Yazi>
-          </View>
-          <View style={stiller.eylemler}>
-            {!ilkMi && (
-              <Pressable
-                onPress={onYukari}
-                accessibilityRole="button"
-                accessibilityLabel={`${tur.ad}: yukarı taşı`}
-                style={stiller.ok}
-              >
-                <Ionicons name="arrow-up" size={22} color={renk.ana} />
-              </Pressable>
-            )}
-            <Dugme tur="tehlike" etiket="Kaldır" onPress={onKaldir} />
-          </View>
-        </View>
-      )}
+      <View style={stiller.ad} accessibilityRole="header">
+        <Ionicons name={tur.ikon} size={22} color={tur.kayit ? renk.vurguYazi : renk.ana} />
+        <Yazi kalinlik="kalin">{tur.ad}</Yazi>
+      </View>
 
       {blok.tur === 'talimat' && (
         <Alan
@@ -94,14 +71,12 @@ export function BlokDuzenleyici({ blok, ilkMi, onDegis, onYukari, onKaldir, kip 
       )}
       {blok.tur === 'liste' && (
         <>
-          {tam && (
-            <Alan
-              etiket="Liste adı"
-              deger={blok.ad}
-              onDegis={(ad) => degis({ ad })}
-              ipucu="Liste adı (örneğin Malzemeler)"
-            />
-          )}
+          <Alan
+            etiket="Liste adı"
+            deger={blok.ad}
+            onDegis={(ad) => degis({ ad })}
+            ipucu="Liste adı (örneğin Malzemeler)"
+          />
           <Alan
             etiket="Maddeler"
             deger={blok.metin}
@@ -113,9 +88,7 @@ export function BlokDuzenleyici({ blok, ilkMi, onDegis, onYukari, onKaldir, kip 
       )}
       {blok.tur === 'adimlar' && (
         <>
-          {tam && (
-            <Alan etiket="Proje adı" deger={blok.ad} onDegis={(ad) => degis({ ad })} ipucu="Kısa ad (isteğe bağlı)" />
-          )}
+          <Alan etiket="Proje adı" deger={blok.ad} onDegis={(ad) => degis({ ad })} ipucu="Kısa ad (isteğe bağlı)" />
           <Alan
             etiket="Adımlar"
             deger={blok.metin}
@@ -123,12 +96,10 @@ export function BlokDuzenleyici({ blok, ilkMi, onDegis, onYukari, onKaldir, kip 
             ipucu="Her satıra bir adım"
             cokSatir
           />
-          {tam && (
-            <Yazi tur="ikincil">
-              Liste her gün sıfırlanır; proje adımları sıfırlanmaz, kaldığın yerden sürer. Hepsi bitince kart yapıldı
-              sayılır.
-            </Yazi>
-          )}
+          <Yazi tur="ikincil">
+            Liste her gün sıfırlanır; proje adımları sıfırlanmaz, kaldığın yerden sürer. Hepsi bitince kart yapıldı
+            sayılır.
+          </Yazi>
         </>
       )}
       {blok.tur === 'foto' && (
@@ -182,6 +153,17 @@ export function BlokDuzenleyici({ blok, ilkMi, onDegis, onYukari, onKaldir, kip 
       )}
       {blok.tur === 'gunnot' && <Yazi tur="ikincil">Kartı uygularken o günle ilgili kısa bir not yazacaksın.</Yazi>}
       {blok.tur === 'gelfoto' && <Yazi tur="ikincil">Kartı uygularken fotoğraf çekip gelişimini kaydedeceksin.</Yazi>}
+      <Pressable
+        onPress={onKaldir}
+        accessibilityRole="button"
+        accessibilityLabel={`${tur.ad}: bunu karttan kaldır`}
+        hitSlop={8}
+        style={({ pressed }) => [stiller.kaldir, pressed && { opacity: 0.6 }]}
+      >
+        <Yazi tur="etiket" renk={renk.hata}>
+          Bunu kaldır
+        </Yazi>
+      </Pressable>
     </Bolum>
   );
 }
@@ -222,7 +204,7 @@ const stiller = StyleSheet.create({
   ust: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   ad: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
   eylemler: { flexDirection: 'row', alignItems: 'center' },
-  ok: { width: olcu.enAzDokunma, height: olcu.enAzDokunma, alignItems: 'center', justifyContent: 'center' },
+  kaldir: { alignSelf: 'flex-end', minHeight: olcu.enAzDokunma, justifyContent: 'center' },
   alan: {
     minHeight: 52,
     borderWidth: 2,

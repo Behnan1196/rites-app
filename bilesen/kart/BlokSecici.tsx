@@ -1,4 +1,5 @@
-// "+ Blok ekle" ızgarası (K-6): İÇERİK ve KAYIT blokları.
+// "+ Karta ekle" ızgarası (K-6). P-36 (sade): "Blok", "İçerik / Kayıt" sözcükleri yerine
+// "Kartta dursun" (okunan, bakılan) ve "Her seferinde doldur" (yazılan, çekilen).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -20,9 +21,9 @@ export function BlokSecici({
   onSec: (tur: BlokTuru) => void;
 }) {
   return (
-    <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Blok ekle" sagKapat="Kapat">
-      <Izgara baslik="İçerik" turler={ICERIK_BLOKLARI} onSec={onSec} />
-      <Izgara baslik="Kayıt" turler={KAYIT_BLOKLARI} onSec={onSec} />
+    <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Karta ekle" sagKapat="Kapat">
+      <Izgara baslik="Kartta dursun" turler={ICERIK_BLOKLARI} onSec={onSec} />
+      <Izgara baslik="Her seferinde doldur" turler={KAYIT_BLOKLARI} onSec={onSec} />
     </AltSayfa>
   );
 }

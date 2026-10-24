@@ -524,3 +524,8 @@ export async function isKartlari(oku: Okuyucu): Promise<{ id: string; bag: strin
   );
   return satirlar.map((s) => ({ ...s, yapildi: s.yapildi === 1 }));
 }
+
+/** P-36: tekrarlı kartta seri sayılsın mı (kart görünümündeki "Seriyi gösterme / göster"). */
+export function kartSeriSayYaz(kapi: Kapi, kartId: string, seriSay: boolean): Promise<void> {
+  return kapi.yaz(['kart'], (y) => y.calistir('UPDATE kart SET seri_say = ? WHERE id = ?', [seriSay ? 1 : 0, kartId]));
+}
