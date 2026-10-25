@@ -240,3 +240,8 @@ Sonuç: → kararlar.md (Giriş'te tek zamanlayıcı: Ayarla düğmesi)
 Ne dedi: "Yaşam tarzında Beslenme alanına girdiğimde kartları görüyorum, yeni program oluştur diyorum beslenme alanındayken ve kart ekleyeceğim, ama beslenme kartlarından seçme şansım yok sanırım." Ayrıca zamanlayıcı: "bir ara Başlat, Ayarla düğmeleri ile ayar ikonunu daha düzgün (kompakt) yerleştiririz."
 Nerede: Yaşam Tarzım → program → + Yeni kart
 Sonuç: → kararlar.md (Programa kart eklerken de çeşitler); zamanlayıcı yerleşimi sonraya
+
+### P-46 · 25 Ekim 2026 · Behnan
+Ne dedi: "Kartlarda ne zaman soruları bence çok yer kaplıyor ve dikkati dağıtıyor, bir de karttan vazgeç ile çıkmaya çalıştığımda sorduğu Devam et, Sil ve Kapat seçenekleri beni rahatsız ediyor, özellikle Sil sözü." Sorulara: Kaydet / Kaydetmeden çık; tek satır özet.
+Nerede: Kart formu; bütün alttan sayfalar
+Sonuç: → kararlar.md (Kart formu: zaman özeti ve Vazgeç sorusu)

@@ -4,7 +4,7 @@
 // P-36 (24 Ekim, 50+ kullanıcı için sade): tek sayfa: "Ne yapacaksın?", açıklama,
 // zaman (alttaki düğmeler), "Kartın içinde" (liste, video, ölçüm…; her birinin altında
 // "Bunu kaldır") ve "+ Karta ekle". P-37: zaman alttaki çubukta değil, "Ne zaman?"
-// başlığı altında soru satırlarında ("Hangi gün?", "Saat kaçta?", "Tekrar etsin mi?"). Yeni kartta ekler kapalı gelir. Seri anahtarı
+// başlığı altında soru satırlarında (P-46: kapalı gelir, tek özet satırı; başlık kalktı) ("Hangi gün?", "Saat kaçta?", "Tekrar etsin mi?"). Yeni kartta ekler kapalı gelir. Seri anahtarı
 // formda yok: kural işler, istisna kart görünümünden.
 // P-45: programa yeni kart eklerken de ("Programa yeni kart"); programın alanları önce.
 // P-41: yeni kartın ilk adımı "Ne tür bir kart?" (isimli çeşitler); seçilen çeşidin
@@ -584,9 +584,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 returnKeyType="done"
               />
             )}
-            <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumBasligi}>
-              Ne zaman?
-            </Yazi>
             <ZamanSatirlari
               kalip={!!tasarim}
               deger={durum.zamanlama}

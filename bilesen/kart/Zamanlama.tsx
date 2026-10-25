@@ -3,10 +3,12 @@
 // P-37 (24 Ekim, 50+ için sade): kart formunda çubuk yerine `ZamanSatirlari`: alt
 // alta, soru gibi yazılmış satırlar ("Hangi gün?", "Saat kaçta?", "Tekrar etsin
 // mi?", "Hatırlatsın mı?"); dokunulan satırın ayarı hemen altında açılır.
+// P-46: satırlar kapalı gelir; yerine tek özet satırı ("Bugün · 09:00 · Her gün").
+// Dokununca sorular açılır, özet satırına yeniden dokununca kapanır.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import type { ComponentProps } from 'react';
+import { useState, type ComponentProps } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { kisaGoreliTarih } from '@/mantik/ajanda';
@@ -196,13 +198,41 @@ export function ZamanSatirlari({
       ayarli: deger.tekrar !== null,
     },
   ];
+  const [genis, setGenis] = useState(false);
   if (kalip) satirlar.shift();
   // Hatırlatma saat seçilince (ya da zaten kuruluysa) sorulur.
   else if (deger.saat !== null || deger.hatirlatma !== null)
     satirlar.push({ k: 'hatirlatma', soru: 'Hatırlatsın mı?', deger: hatirlatmaDegeri, ayarli: !!deger.hatirlatma });
 
+  const ozet =
+    satirlar
+      .filter((x) => x.k === 'tarih' || x.ayarli)
+      // "Pzt Per" → "Her Pzt Per" (özette tekrar olduğu anlaşılsın).
+      .map((x) => (x.k === 'tekrar' && /^(Pzt|Sal|Çar|Per|Cum|Cmt|Paz)/.test(x.deger) ? `Her ${x.deger}` : x.deger))
+      .join(' · ') || 'Zaman seçilmedi';
+  const ozetSatiri = (
+    <Pressable
+      onPress={() => {
+        if (genis) onAc(null);
+        setGenis(!genis);
+      }}
+      accessibilityRole="button"
+      accessibilityLabel={`Ne zaman: ${ozet}`}
+      accessibilityState={{ expanded: genis }}
+      style={({ pressed }) => [stiller.zamanSatiri, stiller.zamanSatiriUst, pressed && { opacity: 0.7 }]}
+    >
+      <Ionicons name="calendar-outline" size={22} color={renk.ana} />
+      <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.esnek}>
+        {ozet}
+      </Yazi>
+      <Ionicons name={genis ? 'chevron-up' : 'chevron-forward'} size={20} color={renk.soluk} />
+    </Pressable>
+  );
+  if (!genis) return ozetSatiri;
+
   return (
     <View style={stiller.satirlar}>
+      {ozetSatiri}
       {satirlar.map((s) => (
         <View key={s.k} style={[stiller.zamanSatiri, acik === s.k && stiller.zamanSatiriAcik]}>
           <Pressable

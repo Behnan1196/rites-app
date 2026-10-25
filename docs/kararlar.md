@@ -448,3 +448,8 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 
 - Programın "+ Yeni kart"ında da ilk adım "Ne tür bir kart?"; programın alanlarının çeşitleri önce gelir. Seçilen çeşit programın kartında saklanır, program başlayınca ajandaya geçen karta da geçer (ajandadan programa da). — Ürün sahibi (P-45); sıralama: Öneri
 - Kütüphanemden ya da öneriden eklenen kartta çeşit sorulmaz (içerik zaten hazır). — Not
+
+## Kart formu: zaman özeti ve Vazgeç sorusu (25 Ekim)
+
+- **"Ne zaman?" tek satır özet:** soru satırları kapalı gelir; yerine takvim simgeli tek satır ("Bugün · 08:00 · Her Pzt"). Dokununca sorular açılır, özete yeniden dokununca kapanır. "Ne zaman?" başlığı kalktı. — Ürün sahibi (P-46)
+- **Vazgeç sorusu (bütün alttan sayfalarda):** "Değişiklikler kaydedilsin mi?" — **Kaydet** (sayfanın sağ üstteki eylemi; çeşit tasarımında "Yayınla") · **Kaydetmeden çık** · **Düzenlemeye dön**. "Sil" sözü kalktı. Sağ üstte kaydetme eylemi olmayan sayfada "Kaydetmeden çıkılsın mı?" ve son iki seçenek. — Ürün sahibi (P-46)
