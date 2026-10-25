@@ -2,12 +2,10 @@
 // Durdur / Ertele; yoksa sıradaki ve "bugün N kez daha".
 // Pilot 23 Ekim: kurulu zamanlayıcılar saniye saniye geri sayan satırlarla
 // (halka, Duraklat / Devam, İptal). P-32: başlık satırının sağındaki
-// zamanlayıcı simgesi kutunun içinde kadranı açar. P-42: tek zamanlayıcı: biri
-// çalışırken simge görünmez, kutuda yalnız onun satırı durur; +1 dk yok.
+// zamanlayıcı simgesi kutunun içinde kadranı açar. P-42: tek zamanlayıcı, +1 dk yok.
+// P-43: zamanlayıcı her zaman görünür (simge yok): `ZamanlayiciPaneli`.
 
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { erteleMetni, girisOzeti, kalanMetni } from '@/mantik/animsatici';
@@ -15,8 +13,7 @@ import { duraklatildiMi, zamanlayiciSurerMi } from '@/mantik/zamanlayici';
 import { useSaniye } from '@/veri/useSimdi';
 
 import { useAnimsatmalar } from '../animsatici/useAnimsatmalar';
-import { ZamanlayiciKurucu } from '../animsatici/ZamanlayiciKurucu';
-import { ZamanlayiciSatiri } from '../animsatici/ZamanlayiciSatiri';
+import { ZamanlayiciPaneli } from '../animsatici/ZamanlayiciPaneli';
 import { Dugme } from '../Dugme';
 import { useKisaMesaj } from '../KisaMesaj';
 import { olcu, renk } from '../tema';
@@ -28,7 +25,6 @@ const ac = () => router.push('/giris/animsaticilar');
 
 export function AnimsaticilarKutusu() {
   const kisaMesaj = useKisaMesaj();
-  const [kuruluyor, setKuruluyor] = useState(false);
   const { yukleniyor, animsaticilar, animsatmalar, durdur, ertele } = useAnimsatmalar();
   // Çalışan (duraklatılmamış) zamanlayıcı varsa saniyede bir tazelenir.
   const sayanVar = animsaticilar.some((a) => a.bitis && !duraklatildiMi(a));
@@ -100,34 +96,11 @@ export function AnimsaticilarKutusu() {
             </Yazi>
           </View>
         </Pressable>
-        {/* P-32: zamanlayıcı başlık satırındaki simgeden; basınca kadran açılır. P-42: tek zamanlayıcı. */}
-        {sureler.length === 0 && (
-          <Pressable
-            onPress={() => setKuruluyor((k) => !k)}
-            accessibilityRole="button"
-            accessibilityLabel={kuruluyor ? 'Zamanlayıcıyı kapat' : 'Zamanlayıcı kur'}
-            accessibilityState={{ expanded: kuruluyor }}
-            hitSlop={4}
-            style={({ pressed }) => [
-              stiller.zamanlayiciSimgesi,
-              kuruluyor && stiller.simgeAcik,
-              pressed && { opacity: 0.7 },
-            ]}
-          >
-            <Ionicons name="timer-outline" size={26} color={kuruluyor ? renk.yuzey : renk.ana} />
-          </Pressable>
-        )}
       </View>
-      {sureler.map((a) => (
-        <View key={a.id} style={stiller.sureSatiri}>
-          <ZamanlayiciSatiri a={a} simdiMs={simdiMs} />
-        </View>
-      ))}
-      {kuruluyor && sureler.length === 0 && (
-        <View style={stiller.sureSatiri}>
-          <ZamanlayiciKurucu onKapat={() => setKuruluyor(false)} />
-        </View>
-      )}
+      {/* P-43: tek zamanlayıcı her zaman görünür. */}
+      <View style={stiller.sureSatiri}>
+        <ZamanlayiciPaneli sure={sureler[0] ?? null} simdiMs={simdiMs} />
+      </View>
     </View>
   );
 }
@@ -141,15 +114,6 @@ const stiller = StyleSheet.create({
     padding: olcu.kartIci,
   },
   ustSatir: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  zamanlayiciSimgesi: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: renk.anaAcik,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  simgeAcik: { backgroundColor: renk.ana },
   sakin: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 76 },
   dikey: { gap: 10 },
   sureSatiri: {

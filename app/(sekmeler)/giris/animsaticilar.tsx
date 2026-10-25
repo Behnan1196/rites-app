@@ -1,16 +1,14 @@
 // Anımsatıcılar ekranı: eklenen anımsatıcıların listesi; dokununca düzenlenir
 // (silme de düzenleme sayfasında). Bugünün anımsatmaları Giriş'teki kutuda.
 // Pilot 14 Ekim: "Bugün" bölümü ve satırdaki Sil düğmesi kaldırıldı.
-// Pilot 23 Ekim: zamanlayıcı üstte, geri sayan satırla; P-42: tek zamanlayıcı ("Zamanlayıcı").
+// Pilot 23 Ekim: zamanlayıcı üstte, geri sayan satırla; P-42 / P-43: tek zamanlayıcı, her zaman görünür.
 
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useAnimsaticiFormu } from '@/bilesen/animsatici/AnimsaticiFormu';
 import { useAnimsatmalar } from '@/bilesen/animsatici/useAnimsatmalar';
-import { ZamanlayiciKurucu } from '@/bilesen/animsatici/ZamanlayiciKurucu';
-import { ZamanlayiciSatiri } from '@/bilesen/animsatici/ZamanlayiciSatiri';
+import { ZamanlayiciPaneli } from '@/bilesen/animsatici/ZamanlayiciPaneli';
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { olcu, renk } from '@/bilesen/tema';
@@ -27,7 +25,6 @@ import { useVeri } from '@/veri/VeriSaglayici';
 export default function Animsaticilar() {
   const form = useAnimsaticiFormu();
   const { yukleniyor, animsaticilar: hepsi } = useAnimsatmalar();
-  const [kuruluyor, setKuruluyor] = useState(false);
   const { kapi } = useVeri();
   const simdiMs = useSaniye(hepsi.some((a) => a.bitis && !duraklatildiMi(a)));
   const kartSesi = useSorgu(['ayar'], async (o) => (await ayarOku(o, 'hatirlatma_sesi')) ?? null, []);
@@ -37,21 +34,10 @@ export default function Animsaticilar() {
   return (
     <>
       <EkranKabi geri="Giriş" baslik="Anımsatıcılar">
-        {sureler.map((a) => (
-          <View key={a.id} style={stiller.zamanlayici}>
-            <ZamanlayiciSatiri a={a} simdiMs={simdiMs} />
-          </View>
-        ))}
-        {/* P-42: tek zamanlayıcı; biri çalışırken yenisi kurulmaz. */}
-        {sureler.length === 0 &&
-          (kuruluyor ? (
-            <View style={stiller.zamanlayici}>
-              <ZamanlayiciKurucu onKapat={() => setKuruluyor(false)} />
-              <Dugme tur="yazi" etiket="Kapat" onPress={() => setKuruluyor(false)} />
-            </View>
-          ) : (
-            <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Zamanlayıcı" onPress={() => setKuruluyor(true)} />
-          ))}
+        {/* P-43: tek zamanlayıcı her zaman görünür. */}
+        <View style={stiller.zamanlayici}>
+          <ZamanlayiciPaneli sure={sureler[0] ?? null} simdiMs={simdiMs} />
+        </View>
         {!yukleniyor && animsaticilar.length === 0 && (
           <Yazi tur="ikincil">
             Henüz saatli anımsatıcın yok. İlaç, su, göz damlası gibi düzenli olanları ekleyebilirsin.

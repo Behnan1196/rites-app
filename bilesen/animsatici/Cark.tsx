@@ -1,4 +1,4 @@
-// Dijital zamanlayıcının çarkı (P-42): telefonun saat uygulamasındaki gibi yukarı /
+// Dijital zamanlayıcının çarkı (P-42; P-43: ayrı form yok, çark göstergenin kendisi): telefonun saat uygulamasındaki gibi yukarı /
 // aşağı kaydırılan sayılar; ortadaki bant seçili değer. Bir sayıya dokunmak da onu
 // seçer. Yeni yerel modül yok: ScrollView'un adım adım durmasıyla (snapToInterval).
 // Ekran okuyucuda "ayarlanabilir" öğedir (yukarı / aşağı kaydırınca bir artar / azalır).
@@ -16,7 +16,8 @@ import {
 import { renk } from '../tema';
 import { Yazi } from '../Yazi';
 
-const SATIR = 52;
+/** Bir sayının yüksekliği; 3 sayı görünür. */
+const SATIR = 40;
 
 const iki = (n: number) => String(n).padStart(2, '0');
 
@@ -100,7 +101,7 @@ export function Cark({
 }
 
 const stiller = StyleSheet.create({
-  kap: { height: SATIR * 3, width: 92 },
+  kap: { height: SATIR * 3, width: 76 },
   ic: { paddingVertical: SATIR },
   bant: {
     position: 'absolute',
@@ -108,10 +109,10 @@ const stiller = StyleSheet.create({
     right: 0,
     top: SATIR,
     height: SATIR,
-    borderRadius: 12,
+    borderRadius: 10,
     backgroundColor: renk.anaAcik,
   },
   satir: { height: SATIR, alignItems: 'center', justifyContent: 'center' },
-  rakam: { fontSize: 38, lineHeight: 46, color: renk.yazi, fontVariant: ['tabular-nums'] },
-  soluk: { color: renk.soluk, fontSize: 30, lineHeight: 38 },
+  rakam: { fontSize: 34, lineHeight: 40, color: renk.yazi, fontVariant: ['tabular-nums'] },
+  soluk: { color: renk.soluk, fontSize: 22, lineHeight: 28 },
 });

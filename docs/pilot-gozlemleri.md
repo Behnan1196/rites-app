@@ -225,3 +225,8 @@ Sonuç: → kararlar.md (İsimli kart çeşitleri: Beslenme); kart-modeli.md §8
 Ne dedi: "Ana sayfadaki timer için düşündüğüm, tek bir timer olsun, yani ekle demeyelim. Bu timer default olarak alarm çalsın, +1 dk da olmasın. Kompakt bir panel, sadece bir ayar düğmesi, oradan ses ve bildirim tipi gibi ayarları yaparız. Hatta ayarlardan bunu dijital bir timer'a değiştirmek olsa çok da hoş olur." Sorulara: Anımsatıcılar kutusunda; dijitalde dakika ve saniye çarkı; en son kurulan süre gelsin.
 Nerede: Giriş → Anımsatıcılar kutusu
 Sonuç: → kararlar.md (Giriş'te tek zamanlayıcı)
+
+### P-43 · 25 Ekim 2026 · Behnan
+Ne dedi: "Timer'ın her zaman görünür olmasını istemiştim, bir de dijital olanın kurulması için ayrı bir form olması gerekmeyebilir."
+Nerede: Giriş → Anımsatıcılar kutusu
+Sonuç: → kararlar.md (Giriş'te tek zamanlayıcı: her zaman görünür)

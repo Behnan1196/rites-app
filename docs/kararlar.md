@@ -441,3 +441,4 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Dijital görünüm:** dakika ve saniye çarkı (telefonun saat uygulamasındaki gibi); en çok 60:00. Bir sayıya dokunmak da onu seçer. — Ürün sahibi (P-42)
 - Açılınca **en son kurulan süre** gelir (ilk seferde 5 dk). Kadranda tam dakikaya yuvarlanır. — Ürün sahibi (P-42)
 - Ayar telefonda (`ayar.zamanlayici`); veritabanı değişmedi. — Not
+- **Zamanlayıcı her zaman görünür** (açıp kapatma simgesi kalktı): Anımsatıcılar kutusunun altında tek satır. Kadranda: süre, Başlat, ⚙; süreye dokununca kadran açılır. Dijitalde ayrı form yok: göstergenin rakamları çarktır (dakika : saniye), yanında Başlat ve ⚙. Çalışırken aynı yerde geri sayım, Duraklat / Devam, İptal. Anımsatıcılar ekranında da aynı. — Ürün sahibi (P-43); kadranın satırdan açılması: Öneri
