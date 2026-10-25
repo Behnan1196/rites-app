@@ -1,7 +1,7 @@
 // Anımsatıcılar ekranı: eklenen anımsatıcıların listesi; dokununca düzenlenir
 // (silme de düzenleme sayfasında). Bugünün anımsatmaları Giriş'teki kutuda.
 // Pilot 14 Ekim: "Bugün" bölümü ve satırdaki Sil düğmesi kaldırıldı.
-// Pilot 23 Ekim: zamanlayıcılar üstte, geri sayan satırlarla; "+ Zamanlayıcı".
+// Pilot 23 Ekim: zamanlayıcı üstte, geri sayan satırla; P-42: tek zamanlayıcı ("Zamanlayıcı").
 
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -42,13 +42,16 @@ export default function Animsaticilar() {
             <ZamanlayiciSatiri a={a} simdiMs={simdiMs} />
           </View>
         ))}
-        {kuruluyor ? (
-          <View style={stiller.zamanlayici}>
-            <ZamanlayiciKurucu onKapat={() => setKuruluyor(false)} />
-          </View>
-        ) : (
-          <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Zamanlayıcı" onPress={() => setKuruluyor(true)} />
-        )}
+        {/* P-42: tek zamanlayıcı; biri çalışırken yenisi kurulmaz. */}
+        {sureler.length === 0 &&
+          (kuruluyor ? (
+            <View style={stiller.zamanlayici}>
+              <ZamanlayiciKurucu onKapat={() => setKuruluyor(false)} />
+              <Dugme tur="yazi" etiket="Kapat" onPress={() => setKuruluyor(false)} />
+            </View>
+          ) : (
+            <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Zamanlayıcı" onPress={() => setKuruluyor(true)} />
+          ))}
         {!yukleniyor && animsaticilar.length === 0 && (
           <Yazi tur="ikincil">
             Henüz saatli anımsatıcın yok. İlaç, su, göz damlası gibi düzenli olanları ekleyebilirsin.

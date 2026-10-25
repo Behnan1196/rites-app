@@ -1,6 +1,6 @@
 // Kurulu bir zamanlayıcının satırı (Giriş'teki Anımsatıcılar kutusu ve
 // Anımsatıcılar ekranı; pilot 23 Ekim). Solda küçülen halka (kalan süre); ortasına dokununca
-// Duraklat / Devam. Ad ve saniye saniye geri sayım; sağda +1 dk ve İptal.
+// Duraklat / Devam. Ad ve saniye saniye geri sayım; sağda İptal (P-42: +1 dk kalktı).
 // P-31: bitiş saati yazılmaz (duraklatınca yanıltıyordu).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -12,11 +12,10 @@ import {
   geriSayimMetni,
   ilerleme,
   kalanMs,
-  UZATMA_MS,
   zamanlayiciAltMetni,
   zamanlayiciSuresiMetni,
 } from '@/mantik/zamanlayici';
-import { animsaticiSil, zamanlayiciDevam, zamanlayiciDuraklat, zamanlayiciUzat } from '@/veri/animsaticilar';
+import { animsaticiSil, zamanlayiciDevam, zamanlayiciDuraklat } from '@/veri/animsaticilar';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { Dugme } from '../Dugme';
@@ -38,7 +37,6 @@ export function ZamanlayiciSatiri({ a, simdiMs }: { a: Animsatici; simdiMs: numb
     kisaMesaj('Kaydedilemedi. Yeniden dene.');
   };
   const duraklatDevam = () => void (durdu ? zamanlayiciDevam(kapi, a.id) : zamanlayiciDuraklat(kapi, a.id)).catch(hata);
-  const uzat = () => void zamanlayiciUzat(kapi, a.id, UZATMA_MS).catch(hata);
   const iptal = () =>
     void animsaticiSil(kapi, a.id)
       .then(() => kisaMesaj(`İptal edildi: ${a.ad}`))
@@ -72,10 +70,7 @@ export function ZamanlayiciSatiri({ a, simdiMs }: { a: Animsatici; simdiMs: numb
         </Yazi>
         {!!zamanlayiciAltMetni(a, simdiMs) && <Yazi tur="etiket">{zamanlayiciAltMetni(a, simdiMs)}</Yazi>}
       </View>
-      <View style={stiller.dugmeler}>
-        <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+1 dk" onPress={uzat} style={stiller.kucuk} />
-        <Dugme tur="yazi" etiket="İptal" onPress={iptal} />
-      </View>
+      <Dugme tur="yazi" etiket="İptal" onPress={iptal} />
     </View>
   );
 }
@@ -84,6 +79,4 @@ const stiller = StyleSheet.create({
   satir: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   esnek: { flex: 1, minWidth: 0 },
   sayac: { fontSize: 28, lineHeight: 34, fontVariant: ['tabular-nums'] },
-  dugmeler: { alignItems: 'flex-end', gap: 2 },
-  kucuk: { minHeight: 44, paddingHorizontal: 12 },
 });

@@ -1,13 +1,18 @@
 import { alarmPlani } from '../alarm';
 import { bildirimPlani, bugununAnimsatmalari, type Animsatici } from '../animsatici';
 import {
+  carkDegeri,
+  carkMs,
   geriSayimMetni,
   ilerleme,
   kalanMs,
   kadranAcisiDakika,
   kadranDegeri,
+  kadranDakikasi,
   kadranDokunusu,
+  VARSAYILAN_ZAMANLAYICI,
   zamanlayiciAltMetni,
+  zamanlayiciAyariCoz,
   zamanlayiciSuresiMetni,
   zamanlayiciSurerMi,
 } from '../zamanlayici';
@@ -93,5 +98,31 @@ describe('zamanlayıcı', () => {
         simdiMs: T0,
       }),
     ).toEqual([]);
+  });
+});
+
+describe('Giriş zamanlayıcısının ayarı (P-42)', () => {
+  it('varsayılan: kadran, alarm, telefonun sesi, 5 dk', () => {
+    expect(zamanlayiciAyariCoz(null)).toEqual(VARSAYILAN_ZAMANLAYICI);
+    expect(VARSAYILAN_ZAMANLAYICI).toEqual({ gorunum: 'kadran', cal: 'alarm', ses: null, sonMs: 300_000 });
+  });
+
+  it('bozuk alanlar varsayılana döner; son süre en çok 60 dk', () => {
+    expect(zamanlayiciAyariCoz({ gorunum: 'x', cal: 'bildirim', ses: 'can', sonMs: 4_000_000 })).toEqual({
+      gorunum: 'kadran',
+      cal: 'bildirim',
+      ses: 'can',
+      sonMs: 300_000,
+    });
+    expect(zamanlayiciAyariCoz({ gorunum: 'dijital', sonMs: 90_400 }).sonMs).toBe(90_000);
+  });
+
+  it('kadran tam dakika (en az 1), çark dakika ve saniye', () => {
+    expect(kadranDakikasi(90_000)).toBe(2);
+    expect(kadranDakikasi(10_000)).toBe(1);
+    expect(carkMs(2, 30)).toBe(150_000);
+    expect(carkMs(60, 30)).toBe(3_600_000);
+    expect(carkDegeri(150_000)).toEqual({ dk: 2, sn: 30 });
+    expect(carkDegeri(3_600_000)).toEqual({ dk: 60, sn: 0 });
   });
 });

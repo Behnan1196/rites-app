@@ -431,3 +431,13 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - Kart hangi çeşitten açıldığını **hatırlar** (`kart.cesit`); ileride ajandada simge, haftalık gözden geçirme ve danışman raporu için. — Öneri
 - **Tasarım yeri:** Ayarlar → Kart çeşitleri, **yalnız tasarımcı** hesaplarda (sunucuda `tasarimci` tablosu; Supabase'den elle eklenir). Tasarım bugünkü kart formuyla yapılır (çeşidin adı, alanı, simgesi; zamanda yalnız saat ve tekrar); "Yayınla" sunucudaki kataloğa yazar, herkesin telefonuna iner. Çeşit silinmez, "Yayında" kapatılarak gizlenir. Tasarımda telefondaki fotoğraf / dosya eklenemez. — Ürün sahibi (P-41: Ayarlar); ayrıntılar: Öneri
 - Danışman kendi çeşidini tanımlayabilsin mi: açık (şimdilik çeşitler Rites'ın, tasarımcı hesaplarla). — Not
+
+## Giriş'te tek zamanlayıcı (25 Ekim)
+
+- **Tek zamanlayıcı:** "ekle" yok. Biri çalışırken Anımsatıcılar kutusunda yalnız onun satırı durur, zamanlayıcı simgesi gizlenir; Anımsatıcılar ekranında da yenisi kurulmaz. — Ürün sahibi (P-42)
+- **+1 dk kalktı.** Çalan zamanlayıcıda 1 dk ertele kalır (P-31). — Ürün sahibi (P-42)
+- Yer: bugünkü gibi Anımsatıcılar kutusunun içinde. — Ürün sahibi (P-42)
+- **Tek ayar düğmesi (⚙)**, kurulum panelinin sağ üstünde (eski ✕'in yerinde; panel başlıktaki simgeyle kapanır): görünüm (Kadran / Dijital), süre dolunca (Alarm, varsayılan / Bildirim), ses. Telefon alarmı desteklemiyorsa alarm bildirim olarak çalar ve ayarda bu yazar. — Ürün sahibi (P-42); yerleşim: Öneri
+- **Dijital görünüm:** dakika ve saniye çarkı (telefonun saat uygulamasındaki gibi); en çok 60:00. Bir sayıya dokunmak da onu seçer. — Ürün sahibi (P-42)
+- Açılınca **en son kurulan süre** gelir (ilk seferde 5 dk). Kadranda tam dakikaya yuvarlanır. — Ürün sahibi (P-42)
+- Ayar telefonda (`ayar.zamanlayici`); veritabanı değişmedi. — Not

@@ -32,6 +32,8 @@ export interface Ayarlar {
   gizli_oneriler: string[];
   /** Profil fotoğrafının telefondaki yolu (yalnız bu telefonda; sunucuya gitmez). */
   avatar: string | null;
+  /** Giriş'teki zamanlayıcının ayarı (`mantik/zamanlayici`; P-42); okurken `zamanlayiciAyariCoz`. */
+  zamanlayici: unknown;
 }
 
 export type AyarAnahtari = keyof Ayarlar;

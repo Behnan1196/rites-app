@@ -1,8 +1,9 @@
 // Giriş'teki Anımsatıcılar kutusu (`05` §7): çalan varsa "Şimdi çalıyor" ve
 // Durdur / Ertele; yoksa sıradaki ve "bugün N kez daha".
 // Pilot 23 Ekim: kurulu zamanlayıcılar saniye saniye geri sayan satırlarla
-// (halka, Duraklat / Devam, +1 dk, İptal). P-32: başlık satırının sağındaki
-// zamanlayıcı simgesi kutunun içinde kadranı açar (5 dk'ya ayarlı).
+// (halka, Duraklat / Devam, İptal). P-32: başlık satırının sağındaki
+// zamanlayıcı simgesi kutunun içinde kadranı açar. P-42: tek zamanlayıcı: biri
+// çalışırken simge görünmez, kutuda yalnız onun satırı durur; +1 dk yok.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
@@ -99,28 +100,30 @@ export function AnimsaticilarKutusu() {
             </Yazi>
           </View>
         </Pressable>
-        {/* P-32: zamanlayıcı başlık satırındaki simgeden; basınca kadran açılır. */}
-        <Pressable
-          onPress={() => setKuruluyor((k) => !k)}
-          accessibilityRole="button"
-          accessibilityLabel={kuruluyor ? 'Zamanlayıcıyı kapat' : 'Zamanlayıcı kur'}
-          accessibilityState={{ expanded: kuruluyor }}
-          hitSlop={4}
-          style={({ pressed }) => [
-            stiller.zamanlayiciSimgesi,
-            kuruluyor && stiller.simgeAcik,
-            pressed && { opacity: 0.7 },
-          ]}
-        >
-          <Ionicons name="timer-outline" size={26} color={kuruluyor ? renk.yuzey : renk.ana} />
-        </Pressable>
+        {/* P-32: zamanlayıcı başlık satırındaki simgeden; basınca kadran açılır. P-42: tek zamanlayıcı. */}
+        {sureler.length === 0 && (
+          <Pressable
+            onPress={() => setKuruluyor((k) => !k)}
+            accessibilityRole="button"
+            accessibilityLabel={kuruluyor ? 'Zamanlayıcıyı kapat' : 'Zamanlayıcı kur'}
+            accessibilityState={{ expanded: kuruluyor }}
+            hitSlop={4}
+            style={({ pressed }) => [
+              stiller.zamanlayiciSimgesi,
+              kuruluyor && stiller.simgeAcik,
+              pressed && { opacity: 0.7 },
+            ]}
+          >
+            <Ionicons name="timer-outline" size={26} color={kuruluyor ? renk.yuzey : renk.ana} />
+          </Pressable>
+        )}
       </View>
       {sureler.map((a) => (
         <View key={a.id} style={stiller.sureSatiri}>
           <ZamanlayiciSatiri a={a} simdiMs={simdiMs} />
         </View>
       ))}
-      {kuruluyor && (
+      {kuruluyor && sureler.length === 0 && (
         <View style={stiller.sureSatiri}>
           <ZamanlayiciKurucu onKapat={() => setKuruluyor(false)} />
         </View>

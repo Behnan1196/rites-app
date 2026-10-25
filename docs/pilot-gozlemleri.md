@@ -220,3 +220,8 @@ Sonuç: → kararlar.md (Süre ve cevapların geçmişi kartta); kart-modeli.md 
 Ne dedi: "İsimli kartlar için düşündüğüm, belirli alanlara göre tasarlamak, örneğin beslenme… öğün listesi, yemek tarifi (… farklı olsun, başka işe de yarar), tartı, tabağım, su gibi. Bunun tasarlanacağı ayrı bir yer olabilir." Sorulara: Ayarlar → Kart çeşitleri; Tabağım tek fotoğraf ("gerekirse öğünleri ayrı hazırlarız"); öğün listesi "hem bir plan değişmeyen, ama altında farklıysa ne yedi ve miktarı… serbestçe girsin"; Beslenme ile başlansın.
 Nerede: Yeni kart, Yaşam Tarzım → alan, Ayarlar
 Sonuç: → kararlar.md (İsimli kart çeşitleri: Beslenme); kart-modeli.md §8
+
+### P-42 · 25 Ekim 2026 · Behnan
+Ne dedi: "Ana sayfadaki timer için düşündüğüm, tek bir timer olsun, yani ekle demeyelim. Bu timer default olarak alarm çalsın, +1 dk da olmasın. Kompakt bir panel, sadece bir ayar düğmesi, oradan ses ve bildirim tipi gibi ayarları yaparız. Hatta ayarlardan bunu dijital bir timer'a değiştirmek olsa çok da hoş olur." Sorulara: Anımsatıcılar kutusunda; dijitalde dakika ve saniye çarkı; en son kurulan süre gelsin.
+Nerede: Giriş → Anımsatıcılar kutusu
+Sonuç: → kararlar.md (Giriş'te tek zamanlayıcı)

@@ -13,8 +13,6 @@ import type { Animsatici } from './animsatici';
 export const VARSAYILAN_ZAMANLAYICI_DK = 5;
 /** Kadranın bir tam turu (P-32: zamanlayıcı en çok 1 saat; uzun işler saatli anımsatıcıyla). */
 export const KADRAN_DK = 60;
-/** "+1 dk". */
-export const UZATMA_MS = 60_000;
 /** Zamanlayıcıda ertele (dakika; alarmda ve Giriş'te aynı; P-31). */
 export const ZAMANLAYICI_ERTELEME = 1;
 
@@ -108,4 +106,57 @@ export function zamanlayiciAltMetni(a: ZamanlayiciAlanlari, simdiMs: number): st
   if (duraklatildiMi(a)) return 'Duraklatıldı';
   if (kalanMs(a, simdiMs) <= 0) return 'Süre doldu';
   return '';
+}
+
+// ---- Giriş'teki tek zamanlayıcının ayarı (P-42) ------------------------------------
+
+/**
+ * Giriş'te tek zamanlayıcı vardır; ayarları ⚙'den: görünüm (kadran / dijital çark),
+ * nasıl çalsın (alarm / bildirim), ses. Son kurulan süre hatırlanır.
+ */
+export interface ZamanlayiciAyari {
+  gorunum: 'kadran' | 'dijital';
+  cal: 'alarm' | 'bildirim';
+  /** `mantik/sesler` adı; null: telefonun sesi. */
+  ses: string | null;
+  /** Son kurulan süre (ms); açılınca bu gelir. */
+  sonMs: number;
+}
+
+export const ZAMANLAYICI_EN_COK_MS = KADRAN_DK * 60_000;
+
+export const VARSAYILAN_ZAMANLAYICI: ZamanlayiciAyari = {
+  gorunum: 'kadran',
+  cal: 'alarm',
+  ses: null,
+  sonMs: VARSAYILAN_ZAMANLAYICI_DK * 60_000,
+};
+
+/** Saklı ayar → geçerli ayar (eksik / bozuk alan varsayılana döner). */
+export function zamanlayiciAyariCoz(x: unknown): ZamanlayiciAyari {
+  const a = (x && typeof x === 'object' ? x : {}) as Partial<Record<keyof ZamanlayiciAyari, unknown>>;
+  const v = VARSAYILAN_ZAMANLAYICI;
+  const ms = typeof a.sonMs === 'number' && Number.isFinite(a.sonMs) ? Math.round(a.sonMs / 1000) * 1000 : v.sonMs;
+  return {
+    gorunum: a.gorunum === 'dijital' ? 'dijital' : 'kadran',
+    cal: a.cal === 'bildirim' ? 'bildirim' : 'alarm',
+    ses: typeof a.ses === 'string' && a.ses ? a.ses : null,
+    sonMs: ms >= 1000 && ms <= ZAMANLAYICI_EN_COK_MS ? ms : v.sonMs,
+  };
+}
+
+/** Kadran tam dakika gösterir: süre en yakın dakikaya (en az 1). */
+export function kadranDakikasi(ms: number): number {
+  return Math.min(KADRAN_DK, Math.max(1, Math.round(ms / 60_000)));
+}
+
+/** Dijital çarkın dakika ve saniyesi → ms (en çok 60:00). */
+export function carkMs(dk: number, sn: number): number {
+  return Math.min(ZAMANLAYICI_EN_COK_MS, Math.max(0, dk) * 60_000 + Math.max(0, sn) * 1000);
+}
+
+/** ms → çarkın dakika ve saniyesi. */
+export function carkDegeri(ms: number): { dk: number; sn: number } {
+  const t = Math.max(0, Math.min(ZAMANLAYICI_EN_COK_MS, Math.round(ms / 1000) * 1000)) / 1000;
+  return { dk: Math.floor(t / 60), sn: t % 60 };
 }
