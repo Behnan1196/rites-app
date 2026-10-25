@@ -151,6 +151,12 @@ describe('programın kartları', () => {
     expect(karttanIcerik(k, [], '2026-10-12')).toMatchObject({ gun: 3, baslik: 'Arkadaşını ara', saat: '19:00', tekrar: herGun });
     expect(karttanIcerik(k, [], null).gun).toBe(0);
   });
+  it('kart çeşidi programdan ajandaya, ajandadan programa geçer (P-45)', () => {
+    const p = program({ baslangic: '2026-10-12' });
+    expect(ajandaKarti(pkart({ cesit: 'beslenme-su' }), p, BUGUN, kimlik)!.kart.cesit).toBe('beslenme-su');
+    expect(ajandaKarti(pkart(), p, BUGUN, kimlik)!.kart.cesit).toBeNull();
+    expect(karttanIcerik(yeniKart('a', { baslik: 'Su', cesit: 'beslenme-su' }), [], null).cesit).toBe('beslenme-su');
+  });
   it('ara ver: başlamış dizi dün biter, gelecektekiler ve yapılmamışlar silinir', () => {
     const kartlar = [
       yeniKart('eski', { baslik: 'a', tarih: '2026-10-12', tekrar: herGun, bitis: '2026-11-01' }),

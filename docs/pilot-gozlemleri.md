@@ -235,3 +235,8 @@ Sonuç: → kararlar.md (Giriş'te tek zamanlayıcı: her zaman görünür)
 Ne dedi: "Kullanışlı ve hoş görünümlü olsun. Şu an dijital olan daha iyi durumda, ama sanırım bir set düğmesi olmalı ve ona basınca ayarlanmalı, kadran içinde bir set düğmesi olabilir, yalnız kadranı set ederken başlat düğmesi olmasın… Ayrıca kadran modunda duraklat dediğimizde Duraklat yazısı eklendiği için yüksekliği büyüyor, baştan o yüksekliğe sahip olabilir."
 Nerede: Giriş → Anımsatıcılar kutusu → zamanlayıcı
 Sonuç: → kararlar.md (Giriş'te tek zamanlayıcı: Ayarla düğmesi)
+
+### P-45 · 25 Ekim 2026 · Behnan
+Ne dedi: "Yaşam tarzında Beslenme alanına girdiğimde kartları görüyorum, yeni program oluştur diyorum beslenme alanındayken ve kart ekleyeceğim, ama beslenme kartlarından seçme şansım yok sanırım." Ayrıca zamanlayıcı: "bir ara Başlat, Ayarla düğmeleri ile ayar ikonunu daha düzgün (kompakt) yerleştiririz."
+Nerede: Yaşam Tarzım → program → + Yeni kart
+Sonuç: → kararlar.md (Programa kart eklerken de çeşitler); zamanlayıcı yerleşimi sonraya

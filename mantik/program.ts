@@ -56,6 +56,8 @@ export interface ProgramKarti {
   alarmSesi?: string | null;
   tekrar: Tekrar | null;
   bloklar: KutuphaneBlogu[];
+  /** İsimli kart çeşidi (P-45; `KartCesidi.id`); ajandaya geçen karta da geçer. */
+  cesit?: string | null;
 }
 
 export const KENDIM = 'Kendim';
@@ -204,6 +206,7 @@ export function ajandaKarti(
       hatirlatma: gecerliHatirlatma(pk.hatirlatma, pk.saat),
       alarm: pk.alarm && !!gecerliHatirlatma(pk.hatirlatma, pk.saat),
       alarmSesi: pk.alarmSesi ?? null,
+      cesit: pk.cesit ?? null,
       tekrar: tekrarKopyasi(pk.tekrar),
       bitis: pk.tekrar ? bitis : null,
       planId: p.id,
@@ -230,7 +233,7 @@ export function blokKopyasi(b: BlokBenzeri): KutuphaneBlogu {
 
 /** Ajanda kartının program kartı karşılığı (içerik; gün programın başlangıcına göre). */
 export function karttanIcerik(
-  kart: Pick<Kart, 'baslik' | 'kisa' | 'saat' | 'hatirlatma' | 'alarm' | 'alarmSesi' | 'tekrar' | 'tarih'>,
+  kart: Pick<Kart, 'baslik' | 'kisa' | 'saat' | 'hatirlatma' | 'alarm' | 'alarmSesi' | 'tekrar' | 'tarih' | 'cesit'>,
   bloklar: readonly BlokBenzeri[],
   baslangic: Gun | null,
 ): Omit<ProgramKarti, 'id' | 'programId' | 'sira'> {
@@ -244,6 +247,7 @@ export function karttanIcerik(
     alarmSesi: kart.alarmSesi ?? null,
     tekrar: tekrarKopyasi(kart.tekrar),
     bloklar: bloklar.map(blokKopyasi),
+    cesit: kart.cesit ?? null,
   };
 }
 

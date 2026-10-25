@@ -48,6 +48,7 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 18 | `kart.alarm_sesi`, `program_kart.alarm_sesi` (alarmın sesi: `mantik/sesler` adı ya da NULL = telefonun alarm sesi). Alarm modülüne `soundName` (`zil.wav` …) olarak gider; ses alarm imzasına ve `metadata.ses`e girer, değişince alarm yeniden kurulur |
 | 19 | `kart.seri_say` (tekrarlı kartta seri sayılsın mı: 1 / 0; NULL: kural, `mantik/karakter.ts`) |
 | 20 | `kart.cesit` (kartın açıldığı isimli çeşit, `KartCesidi.id`; NULL: çeşitsiz). Bölmede yeni karta geçer |
+| 21 | `program_kart.cesit` (programın kartının çeşidi; ajandaya geçen karta geçer) |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 

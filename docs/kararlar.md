@@ -443,3 +443,8 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - Ayar telefonda (`ayar.zamanlayici`); veritabanı değişmedi. — Not
 - **Zamanlayıcı her zaman görünür** (açıp kapatma simgesi kalktı): Anımsatıcılar kutusunun altında tek satır. Kadranda: süre, Başlat, ⚙; süreye dokununca kadran açılır. Dijitalde ayrı form yok: göstergenin rakamları çarktır (dakika : saniye), yanında Başlat ve ⚙. Çalışırken aynı yerde geri sayım, Duraklat / Devam, İptal. Anımsatıcılar ekranında da aynı. — Ürün sahibi (P-43); kadranın satırdan açılması: Öneri
 - **Ayarla düğmesi (P-44):** zamanlayıcı iki satır: üstte süre (kadranda küçük halkayla) ve alt yazı, sağda ⚙; altta **Ayarla · Başlat**. "Ayarla" dijitalde rakamları çarka çevirir, kadranda kadranı açar; ikisinde de yalnız **Tamam** var, başlatmak Tamam'dan sonra Başlat'la. Çalışırken alt satır **Duraklat / Devam · İptal**; alt yazının yeri hep ayrılır, "Duraklatıldı" gelince yükseklik değişmez. — Ürün sahibi (P-44); iki satırlı yerleşim: Öneri
+
+## Programa kart eklerken de çeşitler (25 Ekim)
+
+- Programın "+ Yeni kart"ında da ilk adım "Ne tür bir kart?"; programın alanlarının çeşitleri önce gelir. Seçilen çeşit programın kartında saklanır, program başlayınca ajandaya geçen karta da geçer (ajandadan programa da). — Ürün sahibi (P-45); sıralama: Öneri
+- Kütüphanemden ya da öneriden eklenen kartta çeşit sorulmaz (içerik zaten hazır). — Not

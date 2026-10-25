@@ -69,6 +69,7 @@ interface ProgramKartSatiri {
   hatirlatma: string | null;
   alarm: number;
   alarm_sesi?: string | null;
+  cesit?: string | null;
   tekrar: string | null;
   bloklar: string;
 }
@@ -105,6 +106,7 @@ function programKartSatirdan(s: ProgramKartSatiri): ProgramKarti {
     alarmSesi: gecerliSes(s.alarm_sesi),
     tekrar: json(s.tekrar, null),
     bloklar: json<KutuphaneBlogu[]>(s.bloklar, []),
+    cesit: s.cesit ?? null,
   };
 }
 
@@ -281,8 +283,8 @@ export function ozelAlanSil(kapi: Kapi, anahtar: AlanAnahtari): Promise<void> {
 
 async function programKartiEkleY(y: Yazici, k: ProgramKarti) {
   await y.calistir(
-    `INSERT INTO program_kart (id, program_id, sira, gun, baslik, kisa, saat, hatirlatma, alarm, alarm_sesi, tekrar, bloklar)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO program_kart (id, program_id, sira, gun, baslik, kisa, saat, hatirlatma, alarm, alarm_sesi, tekrar, bloklar, cesit)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       k.id,
       k.programId,
@@ -296,13 +298,14 @@ async function programKartiEkleY(y: Yazici, k: ProgramKarti) {
       gecerliSes(k.alarmSesi),
       k.tekrar ? JSON.stringify(k.tekrar) : null,
       JSON.stringify(k.bloklar),
+      k.cesit ?? null,
     ],
   );
 }
 
 async function programKartiGuncelleY(y: Yazici, k: ProgramKarti) {
   await y.calistir(
-    `UPDATE program_kart SET sira = ?, gun = ?, baslik = ?, kisa = ?, saat = ?, hatirlatma = ?, alarm = ?, alarm_sesi = ?, tekrar = ?, bloklar = ?
+    `UPDATE program_kart SET sira = ?, gun = ?, baslik = ?, kisa = ?, saat = ?, hatirlatma = ?, alarm = ?, alarm_sesi = ?, tekrar = ?, bloklar = ?, cesit = ?
      WHERE id = ?`,
     [
       k.sira,
@@ -315,6 +318,7 @@ async function programKartiGuncelleY(y: Yazici, k: ProgramKarti) {
       gecerliSes(k.alarmSesi),
       k.tekrar ? JSON.stringify(k.tekrar) : null,
       JSON.stringify(k.bloklar),
+      k.cesit ?? null,
       k.id,
     ],
   );

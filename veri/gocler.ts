@@ -298,6 +298,11 @@ export const GOCLER: readonly Goc[] = [
     surum: 20,
     sql: `ALTER TABLE kart ADD COLUMN cesit TEXT;`,
   },
+  {
+    // Programın kartının isimli çeşidi (pilot 25 Ekim, P-45); ajandaya geçen karta da geçer.
+    surum: 21,
+    sql: `ALTER TABLE program_kart ADD COLUMN cesit TEXT;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

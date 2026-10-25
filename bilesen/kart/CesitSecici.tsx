@@ -16,12 +16,19 @@ type IonAdi = React.ComponentProps<typeof Ionicons>['name'];
 export function CesitSecici({
   cesitler,
   onSec,
+  oncelikli = [],
 }: {
   cesitler: readonly KartCesidi[];
+  /** Önce gösterilecek alanlar (programın alanları; P-45). */
+  oncelikli?: readonly string[];
   /** null: Basit kart. */
   onSec: (c: KartCesidi | null) => void;
 }) {
-  const gruplar = cesitGruplari(cesitler, katalog().alanlar);
+  const alanlar = katalog().alanlar;
+  const gruplar = cesitGruplari(cesitler, [
+    ...alanlar.filter((a) => oncelikli.includes(a.anahtar)),
+    ...alanlar.filter((a) => !oncelikli.includes(a.anahtar)),
+  ]);
   return (
     <View style={stiller.kap}>
       <Yazi tur="bolumBasligi" accessibilityRole="header">

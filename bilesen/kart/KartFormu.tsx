@@ -6,6 +6,7 @@
 // "Bunu kaldır") ve "+ Karta ekle". P-37: zaman alttaki çubukta değil, "Ne zaman?"
 // başlığı altında soru satırlarında ("Hangi gün?", "Saat kaçta?", "Tekrar etsin mi?"). Yeni kartta ekler kapalı gelir. Seri anahtarı
 // formda yok: kural işler, istisna kart görünümünden.
+// P-45: programa yeni kart eklerken de ("Programa yeni kart"); programın alanları önce.
 // P-41: yeni kartın ilk adımı "Ne tür bir kart?" (isimli çeşitler); seçilen çeşidin
 // parçaları ve zamanı gelir, kart çeşidini hatırlar. Tasarımcı aynı formla çeşit
 // yazar (`cesit` hedefi): çeşidin adı, alanı, simgesi; zamanda yalnız saat ve tekrar.
@@ -240,6 +241,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
       bloklar: (k?.bloklar ?? []).map((b) => formaBlok({ ...b, id: geciciKimlik(), kartId: '', sira: 0 })),
       seriSay: null,
       ...ekAlanlar,
+      cesit: k?.cesit ?? null,
     };
   }
   if (hedef.tur === 'yeni') {
@@ -311,7 +313,9 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const [ilk, setIlk] = useState(() => ilkDurum(hedef));
   // P-41: yeni kartta önce "Ne tür bir kart?" (paylaşımdan / nottan gelen ve çeşidi belli olanda sorulmaz).
   const [cesitSorusu, setCesitSorusu] = useState(
-    () => hedef.tur === 'yeni' && !hedef.taslak && !hedef.cesit && tumCesitler().length > 0,
+    () =>
+      tumCesitler().length > 0 &&
+      ((hedef.tur === 'yeni' && !hedef.taslak && !hedef.cesit) || (hedef.tur === 'sablon' && !hedef.kart)),
   );
   const [durum, setDurum] = useState<FormDurumu>(ilk);
   const [hata, setHata] = useState<string | null>(null);
@@ -353,8 +357,9 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     setDurum((d) => (d.tasarim ? { ...d, tasarim: { ...d.tasarim, ...alanlar } } : d));
 
   const cesitSec = (c: KartCesidi | null) => {
-    if (c && hedef.tur === 'yeni') {
-      const yeni = cesittenDurum(c, hedef.gun);
+    if (c && (hedef.tur === 'yeni' || hedef.tur === 'sablon')) {
+      // Gün aynı kalır (programda "N. gün").
+      const yeni = cesittenDurum(c, durum.zamanlama.tarih);
       setDurum(yeni);
       setIlk(yeni);
       setEklerAcik(true);
@@ -450,6 +455,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           alarmSesi: t.alarmSesi ?? null,
           tekrar: t.tekrar,
           bloklar: bloklar.map(blokKopyasi),
+          cesit: durum.cesit,
         };
         if (sablon.kart) await programKartiYaz(kapi, { ...sablon.kart, ...icerik });
         else await programKartiEkle(kapi, sablon.program.id, icerik, sablon.bugunGun, yeniKimlik);
@@ -533,7 +539,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         }
       >
         {cesitSorusu ? (
-          <CesitSecici cesitler={tumCesitler()} onSec={cesitSec} />
+          <CesitSecici cesitler={tumCesitler()} onSec={cesitSec} oncelikli={sablon?.program.alanlar} />
         ) : (
           <>
             {tasarim && (
