@@ -230,3 +230,8 @@ Sonuç: → kararlar.md (Giriş'te tek zamanlayıcı)
 Ne dedi: "Timer'ın her zaman görünür olmasını istemiştim, bir de dijital olanın kurulması için ayrı bir form olması gerekmeyebilir."
 Nerede: Giriş → Anımsatıcılar kutusu
 Sonuç: → kararlar.md (Giriş'te tek zamanlayıcı: her zaman görünür)
+
+### P-44 · 25 Ekim 2026 · Behnan
+Ne dedi: "Kullanışlı ve hoş görünümlü olsun. Şu an dijital olan daha iyi durumda, ama sanırım bir set düğmesi olmalı ve ona basınca ayarlanmalı, kadran içinde bir set düğmesi olabilir, yalnız kadranı set ederken başlat düğmesi olmasın… Ayrıca kadran modunda duraklat dediğimizde Duraklat yazısı eklendiği için yüksekliği büyüyor, baştan o yüksekliğe sahip olabilir."
+Nerede: Giriş → Anımsatıcılar kutusu → zamanlayıcı
+Sonuç: → kararlar.md (Giriş'te tek zamanlayıcı: Ayarla düğmesi)

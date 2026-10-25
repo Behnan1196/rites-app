@@ -1,7 +1,7 @@
 // Zamanlayıcı kadranı (pilot 23 Ekim, P-32): eski mutfak zamanlayıcısı gibi.
 // Tutamak halkanın üstünde parmakla çevrilir; bir tam tur 60 dk, adım 1 dk.
 // Renkli yay seçilen süredir (tepeden saat yönünde). Kenarda her 5 dk'da çizgi,
-// 0 · 15 · 30 · 45 yazar. Ortada süre ve Başlat.
+// 0 · 15 · 30 · 45 yazar. Ortada süre ve düğme (P-44: kurarken "Tamam"; başlatmak satırdaki Başlat'la).
 //
 // Yeni yerel modül yok: dokunuş View'un dokunma olaylarıyla, çizim View'larla. Çevirirken
 // ekran kaymasın diye EkranKabi'nin kaydırması kilitlenir. Ekran okuyucuda
@@ -37,12 +37,12 @@ const konum = (r: number, dk: number, boyut: number) => {
 export function Kadran({
   dk,
   onDegis,
-  onBaslat,
+  onTamam,
   pasif,
 }: {
   dk: number;
   onDegis: (dk: number) => void;
-  onBaslat: () => void;
+  onTamam: () => void;
   pasif?: boolean;
 }) {
   const kilitle = useKaydirmaKilidi();
@@ -145,16 +145,16 @@ export function Kadran({
           {`${String(dk).padStart(2, '0')}:00`}
         </Yazi>
         <Pressable
-          onPress={onBaslat}
+          onPress={onTamam}
           disabled={pasif}
           accessibilityRole="button"
-          accessibilityLabel={`Başlat, ${dk} dakika`}
+          accessibilityLabel={`Tamam, ${dk} dakika`}
           accessibilityState={{ disabled: !!pasif }}
           style={({ pressed }) => [stiller.baslat, pasif && { opacity: 0.4 }, pressed && { opacity: 0.75 }]}
         >
-          <Ionicons name="play" size={26} color={renk.yuzey} style={stiller.oynat} />
+          <Ionicons name="checkmark" size={28} color={renk.yuzey} />
           <Yazi tur="etiket" kalinlik="kalin" renk={renk.yuzey}>
-            Başlat
+            Tamam
           </Yazi>
         </Pressable>
       </View>
@@ -201,5 +201,4 @@ const stiller = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  oynat: { marginLeft: 3 },
 });
