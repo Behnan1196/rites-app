@@ -260,3 +260,8 @@ Sonuç: → kararlar.md (Zaman sayfasında soru yok)
 Ne dedi: "Üstte ne yapacaksın diye soruyoruz, biz bilgi kartı da düzenliyoruz, o başlığa gerek yok. Tekrar varsa her zaman seri mi olmalı (streak)? Örneğin beslenmede öğünler bir seri değil bence, başka örneklerde de olacak. Bir de önce tekrar günlerini soruyoruz sonra süreyi; bence tekrar demek yerine süre desek, bir günden fazla ise başka soruları sorarız."
 Nerede: Kart formu → Ne zaman?; seri
 Sonuç: → kararlar.md (Kart formu: başlık, süre ve seri)
+
+### P-50 · 26 Ekim 2026 · Behnan
+Ne dedi: "Talimat bir textbox, liste ve proje adımları birer checklist, bir de açıklama alanımız var, o da textbox. Daha önce web'de uygulamıştım, stilli textbox için kütüphaneler var: bold, bullet, numaralı, checklist gibi, onlardan kullansak iyi olacak." Sorulara: Enriched; liste ve adımlar aynı editörde onay kutulu.
+Nerede: Kart formu (talimat, açıklama, liste, proje adımları)
+Sonuç: → kararlar.md (Biçimli metin); sürüm 1.5.0

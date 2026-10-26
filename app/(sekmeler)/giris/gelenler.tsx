@@ -26,6 +26,7 @@ import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
 import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
 import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
+import { ZenginMetin } from '@/bilesen/ZenginMetin';
 import { alanAdi } from '@/mantik/alanlar';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { blokOzeti, GELEN_UYARISI, gelenKarti } from '@/mantik/paylasim';
@@ -161,7 +162,7 @@ export default function Gelenler() {
             <View key={g.id} style={stiller.kart}>
               <Yazi tur="ikincil">{`${g.kimdenAd} gönderdi · ${neZaman(g.gonderim, bugunGun)}`}</Yazi>
               <Yazi tur="kartBasligi">{g.paket.baslik}</Yazi>
-              {!!g.paket.kisa && <Yazi>{g.paket.kisa}</Yazi>}
+              <ZenginMetin metin={g.paket.kisa} />
               {(!!g.paket.alanlar?.length || !!g.paket.etiketTur) && (
                 <Yazi tur="ikincil">
                   {[...(g.paket.alanlar ?? []).map(alanAdi), g.paket.etiketTur].filter(Boolean).join(' · ')}

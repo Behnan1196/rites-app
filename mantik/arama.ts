@@ -3,6 +3,7 @@
 import { gorunurMu, tekrarMetni } from './gorunurluk';
 import type { Kart } from './kart';
 import { trKucuk } from './metin';
+import { htmldenDuz } from './zenginMetin';
 import { AY_ADLARI, goreliTarih, gunEkle, uzunTarih, type Gun } from './tarih';
 
 export const ARAMA_EN_AZ = 2;
@@ -11,7 +12,9 @@ const ILERI_BAKIS = 366;
 
 /** Aranacak metin: başlık, kısa açıklama, tekrar metni ve blokların içi. */
 export function aramaMetni(kart: Kart, blokMetni: string): string {
-  return trKucuk([kart.baslik, kart.kisa, kart.tekrar ? tekrarMetni(kart.tekrar) : '', blokMetni].join(' '));
+  return trKucuk(
+    [kart.baslik, htmldenDuz(kart.kisa), kart.tekrar ? tekrarMetni(kart.tekrar) : '', blokMetni].join(' '),
+  );
 }
 
 /** Tekrarlı kartın bugünden itibaren ilk görünür günü; bulunamazsa başlangıcı. */

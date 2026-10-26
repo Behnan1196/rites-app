@@ -30,6 +30,7 @@ import {
 } from '@/mantik/program';
 import { seriVarsayilani, type KartTaslagi } from '@/mantik/karakter';
 import { gunEkle, gunFarki, type Gun } from '@/mantik/tarih';
+import { htmlMaddeleri, maddelerdenHtml } from '@/mantik/zenginMetin';
 import type { TasarimCesidi } from '@/sunucu/cesit';
 import { islemleriUygula, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
@@ -40,6 +41,7 @@ import { useVeri } from '@/veri/VeriSaglayici';
 
 import { AltSayfa } from '../AltSayfa';
 import { GirisAlani } from '../GirisAlani';
+import { ZenginMetinAlani } from '../ZenginMetin';
 import { Dugme } from '../Dugme';
 import { AcKapa, SecenekHapi } from '../Secim';
 import { useKisaMesaj } from '../KisaMesaj';
@@ -130,15 +132,13 @@ const geciciKimlik = () => `yeni-${++geciciNo}`;
 /** Formda liste maddeleri `metin` içinde, her satırda bir madde olarak düzenlenir. */
 function formaBlok(b: Blok): BlokTaslagi {
   const { kartId: _k, sira: _s, ...taslak } = b;
-  return b.tur === 'liste' || b.tur === 'adimlar' ? { ...taslak, metin: b.maddeler.join('\n') } : taslak;
+  // P-50: liste maddeleri editörde onay kutulu liste (HTML).
+  return b.tur === 'liste' || b.tur === 'adimlar' ? { ...taslak, metin: maddelerdenHtml(b.maddeler) } : taslak;
 }
 
 function kaydaBlok(b: BlokTaslagi): BlokTaslagi {
   if (b.tur !== 'liste' && b.tur !== 'adimlar') return b;
-  const maddeler = b.metin
-    .split('\n')
-    .map((m) => m.trim())
-    .filter((m) => m !== '');
+  const maddeler = htmlMaddeleri(b.metin);
   if (b.tur === 'liste') return { ...b, maddeler, metin: '' };
   // Proje adımları: yapılmış adımlar metnine göre yapılmış kalır.
   const eski = adimDurumu(b.durum, b.maddeler.length);
@@ -614,13 +614,12 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 />
               )
             ) : (
-              <GirisAlani
+              <ZenginMetinAlani
                 etiket="Açıklama"
-                etiketGizli
-                value={durum.kisa}
-                onChangeText={(kisa) => guncelle({ kisa })}
-                placeholder="Açıklama (isteğe bağlı)"
-                returnKeyType="done"
+                deger={durum.kisa}
+                onDegis={(kisa) => guncelle({ kisa })}
+                ipucu="Açıklama (isteğe bağlı)"
+                kisa
               />
             )}
 

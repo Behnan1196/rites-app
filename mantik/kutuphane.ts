@@ -2,6 +2,7 @@
 // (alanlar, tür) saklanır; bulunur, bugüne yeniden eklenir, paylaşılır, bir programa
 // eklenir. Programlar kendi tablolarında durur ve Kütüphanem'de de görünür (pilot 20 Ekim).
 
+import { htmldenDuz } from './zenginMetin';
 import { alanAdi, type AlanAnahtari } from './alanlar';
 import { TURLER, type EtiketTuru, type KatalogBlogu } from './katalog';
 import { tekrarMetni } from './gorunurluk';
@@ -106,7 +107,11 @@ function aranan(k: KutuphaneKaydi): string {
   const parcalar = [
     k.baslik,
     etiketMetni(k),
-    ...kartlar.flatMap((c) => [c.baslik, c.kisa, ...c.bloklar.flatMap((b) => [b.ad, b.metin, ...b.maddeler])]),
+    ...kartlar.flatMap((c) => [
+      c.baslik,
+      htmldenDuz(c.kisa),
+      ...c.bloklar.flatMap((b) => [b.ad, htmldenDuz(b.metin), ...b.maddeler]),
+    ]),
   ];
   return trKucuk(parcalar.join(' '));
 }

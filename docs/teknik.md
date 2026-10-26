@@ -182,3 +182,11 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 
 - `expo-speech-recognition` (~57.1, SDK 57 çizgisi; `app.json` eklentisi: mikrofon ve konuşma tanıma izin metinleri). `bilesen/giris/useDikte.ts`: `tr-TR`, ara sonuçlar, sürekli, noktalama; `supportsOnDeviceRecognition()` doğruysa önce telefonun içinde (`requiresOnDeviceRecognition`), `language-not-supported` / `service-not-allowed` gelirse bir kez ağ tanımasıyla. Yazılan, dinleme başladığında kutuda olan metnin sonuna eklenir. iOS 18'de her duraklamada parça `isFinal` gelir ve sonraki parça baştan başlar: kesin parça birikene eklenir; kesin işareti gelmeden metin baştan başlarsa (`mantik/dikte.ts` `baslangicTutar`) önceki parça da korunur.
 - Ses kaydı `useSesKaydi` (`expo-audio`, m4a); `iptal()` kaydı saklamadan durdurur. Paylaşım `veri/dosyalar.ts` `sesliNotuPaylas` (geçici klasöre okunur adla kopya, `expo-sharing`, `audio/mp4`).
+
+## Biçimli metin (sürüm 1.5.0)
+
+- Kütüphane: `react-native-enriched-html` (yeni mimari; iOS, Android, web). Editör `EnrichedTextInput` (denetimsiz; `onChangeHtml`), görünüm `EnrichedText`. Bileşenler: `bilesen/ZenginMetin.tsx` (`ZenginMetinAlani`, `ZenginMetin`).
+- Saklanan değer editörün HTML'i: `<html><p>…</p><ul><li>…</li></ul><ol>…</ol><ul data-type="checkbox"><li checked>…</li></ul></html>`. `<html>` ile başlamayan metin düz metindir (eski kartlar). Yardımcılar `mantik/zenginMetin.ts`: `metniHtml`, `htmldenDuz` (arama, kısa gösterim), `htmlMaddeleri` / `maddelerdenHtml` (liste editörü ↔ `blok.maddeler`).
+- Alanlar: `kart.kisa`, `program_kart.kisa`, talimat bloğunun `metin`i. Veritabanı değişmedi. Liste ve proje adımlarında `maddeler` düz metin kalır.
+- Editör açılışta kendi biçimine çevirirken `onChangeHtml` gönderebilir; kişi alana dokunmadan gelen değişiklik yok sayılır (form "değişti" sanmasın).
+

@@ -462,3 +462,11 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Önce Süre, sonra Günler:** "Ne zaman?" sayfasında Süre: Bir gün · 7 · 21 · 30 gün · Süresiz (− / + ile gün sayısı; programda Bir gün · Program boyunca). Bir günden fazlaysa **Günler** (yedi gün düğmesi, en az biri; "Her gün"). "Tekrar" sözü kalktı. — Ürün sahibi (P-49)
 - **Seri her tekrarda değil:** kural sürer (liste ya da ölçüm varsa seri yok; kişi kartta "Seriyi göster / gösterme" der). Ek olarak **çeşit seriyi belirler** (`seri`: evet / hayır / kural); Beslenme'nin beş çeşidinde seri yok. Tasarımcı "Seri sayılsın" anahtarıyla değiştirir. Programdan gelen kart da çeşidin ayarını alır. — Ürün sahibi (P-49: "öğünler bir seri değil"); çeşit ayarı: Öneri
 - Sunucu: `icerik_cesit.seri` (sema.sql'in son bölümü; icerik.sql var olan Beslenme çeşitlerinde boşsa `false` yapar). — Not
+
+## Biçimli metin (26 Ekim, sürüm 1.5.0)
+
+- **Talimat ve Açıklama biçimli metin:** küçük araç çubuğu: **K** (kalın) · *İ* (italik) · madde işaretli liste · numaralı liste · onay kutulu liste. Kütüphane: react-native-enriched-html (Software Mansion, yerel editör; Expo belgelerinin ilk önerisi). — Ürün sahibi (P-50)
+- **Liste ve Proje adımları** aynı editörde onay kutulu liste olarak yazılır; maddeler ayrı tutulur (günlük işaret ve proje ilerlemesi bugünkü gibi). Araç çubuğu yok; her satır bir madde. — Ürün sahibi (P-50)
+- Talimat ve açıklamadaki onay kutuları yalnız biçimdir (işaret kaydedilmez); işaretlenecek şeyler Liste ile. — Not
+- Saklama HTML; eski kartların düz metni olduğu gibi gösterilir. Arama ve kısa gösterimlerde düz metne çevrilir. Biçimli metin sistem yazı tipiyle çizilir (kalın / italik güvenle çıksın diye). — Öneri
+- Yerel modül eklendiği için **yeni derleme** (1.5.0); bu sürümden sonraki güncellemeler yalnız 1.5.0'a gider. — Not

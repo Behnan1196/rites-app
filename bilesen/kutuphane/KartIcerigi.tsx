@@ -9,6 +9,7 @@ import { BuyutulebilirFoto } from '../kart/BuyutulebilirFoto';
 import { Bolum } from '../Secim';
 import { renk } from '../tema';
 import { Yazi } from '../Yazi';
+import { ZenginMetin } from '../ZenginMetin';
 
 /** Kartın içeriği, salt okunur: meta, kısa açıklama, bloklar. */
 export function KartIcerigiGorunumu({ c }: { c: KartIcerigi }) {
@@ -16,7 +17,7 @@ export function KartIcerigiGorunumu({ c }: { c: KartIcerigi }) {
   return (
     <>
       {!!meta && <Yazi tur="ikincil">{meta}</Yazi>}
-      {!!c.kisa && <Yazi>{c.kisa}</Yazi>}
+      <ZenginMetin metin={c.kisa} />
       {c.bloklar.map((b, i) => (
         <BlokGorunumu key={i} b={b} />
       ))}
@@ -27,7 +28,7 @@ export function KartIcerigiGorunumu({ c }: { c: KartIcerigi }) {
 function BlokGorunumu({ b }: { b: KutuphaneBlogu }) {
   switch (b.tur) {
     case 'talimat':
-      return b.metin ? <Yazi>{b.metin}</Yazi> : null;
+      return <ZenginMetin metin={b.metin} />;
     case 'liste':
     case 'adimlar':
       return (

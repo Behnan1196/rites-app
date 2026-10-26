@@ -1,6 +1,7 @@
 // Kartlar, bloklar ve günlük kayıtlar: okuma ve (yazma kapısı üzerinden) yazma.
 // Kimlik üretici dışarıdan verilir (uygulamada `yeniKimlik`, testte sıralı).
 
+import { htmldenDuz } from '@/mantik/zenginMetin';
 import { adimDurumu, adimiDegistir, ilerleme } from '@/mantik/adimlar';
 import type { KartIslemi, KayitAraligi } from '@/mantik/bolme';
 import { kayitAnahtarlariniEsle } from '@/mantik/bolme';
@@ -200,7 +201,7 @@ export async function blokMetinleri(oku: Okuyucu): Promise<Map<string, string>> 
   );
   const sonuc = new Map<string, string>();
   for (const s of satirlar) {
-    const parca = [s.ad, s.metin, ...json<string[]>(s.maddeler, [])].filter(Boolean).join(' ');
+    const parca = [s.ad, htmldenDuz(s.metin), ...json<string[]>(s.maddeler, [])].filter(Boolean).join(' ');
     const onceki = sonuc.get(s.kart_id);
     sonuc.set(s.kart_id, onceki ? `${onceki} ${parca}` : parca);
   }

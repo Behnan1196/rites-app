@@ -13,6 +13,7 @@
 // - Alan puanı programlardan bağımsızdır (kişinin kendi değerlendirmesi).
 
 import { cesitBul } from './cesit';
+import { htmldenDuz } from './zenginMetin';
 import { alanAdi, type AlanAnahtari } from './alanlar';
 import { katalog, type KatalogKart, type KatalogProgram } from './katalog';
 import { gorunurMu, tekrarMetni } from './gorunurluk';
@@ -483,7 +484,11 @@ export function programMetni(
       p.neden,
       p.degerlendirme,
       alanlarMetni(p.alanlar),
-      ...kartlar.flatMap((k) => [k.baslik, k.kisa, ...k.bloklar.flatMap((b) => [b.ad, b.metin, ...b.maddeler])]),
+      ...kartlar.flatMap((k) => [
+        k.baslik,
+        htmldenDuz(k.kisa),
+        ...k.bloklar.flatMap((b) => [b.ad, htmldenDuz(b.metin), ...b.maddeler]),
+      ]),
     ].join(' '),
   );
 }

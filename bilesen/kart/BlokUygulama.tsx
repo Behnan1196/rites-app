@@ -23,6 +23,7 @@ import { useKisaMesaj } from '../KisaMesaj';
 import { SesOynatici } from '../not/SesOynatici';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
+import { ZenginMetin } from '../ZenginMetin';
 
 import { BuyutulebilirFoto } from './BuyutulebilirFoto';
 import { gomuluOynatmaVar, YoutubeOynatici } from './YoutubeOynatici';
@@ -39,7 +40,7 @@ interface Ozellikler {
 export function BlokUygulama(o: Ozellikler) {
   switch (o.blok.tur) {
     case 'talimat':
-      return o.blok.metin ? <Yazi>{o.blok.metin}</Yazi> : null;
+      return <ZenginMetin metin={o.blok.metin} />;
     case 'video':
       return <VideoBlogu blok={o.blok} />;
     case 'liste':

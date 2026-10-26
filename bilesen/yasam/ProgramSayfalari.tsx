@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { kutuphaneSuz, type KutuphaneKaydi } from '@/mantik/kutuphane';
+import { htmldenDuz } from '@/mantik/zenginMetin';
 import { durumMetni, KENDIM, programBitisi, programFormuHatasi, YILDIZ_SOZLERI, type Program } from '@/mantik/program';
 import { gunEkle, haftaGunu, kisaTarih, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
@@ -162,7 +163,11 @@ export function KutuphanedenSecSayfasi({
             >
               <View style={stiller.esnek}>
                 <Yazi kalinlik="kalin">{k.baslik}</Yazi>
-                {!!k.icerik.kisa && <Yazi tur="ikincil">{k.icerik.kisa}</Yazi>}
+                {!!k.icerik.kisa && (
+                  <Yazi tur="ikincil" numberOfLines={2}>
+                    {htmldenDuz(k.icerik.kisa)}
+                  </Yazi>
+                )}
               </View>
               <Ionicons name="add-circle-outline" size={26} color={renk.ana} />
             </Pressable>

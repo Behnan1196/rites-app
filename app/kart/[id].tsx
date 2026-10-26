@@ -28,6 +28,7 @@ import { BLOK_TURLERI } from '@/bilesen/kart/blokTurleri';
 import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { kaynakAnahtari, kaynakTuru } from '@/mantik/kaynak';
 import { Yazi } from '@/bilesen/Yazi';
+import { ZenginMetin } from '@/bilesen/ZenginMetin';
 import { gunBasligi, yapilanGunler } from '@/mantik/ajanda';
 import { seri, seriMetni, son7Gun, tekrarMetni, type SeritGunu } from '@/mantik/gorunurluk';
 import { seriSayilirMi, sonYediGunMetni } from '@/mantik/karakter';
@@ -161,7 +162,7 @@ export default function KartGorunumu() {
                 </Yazi>
               </Pressable>
             )}
-            {!!kart.kisa && <Yazi style={stiller.kisa}>{kart.kisa}</Yazi>}
+            <ZenginMetin metin={kart.kisa} />
           </View>
 
           {kart.tekrar && (

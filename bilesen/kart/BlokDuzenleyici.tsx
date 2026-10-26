@@ -1,6 +1,7 @@
 // Kart formunda kartın içindeki bir parçanın kutusu (K-6): adı ve türüne göre
 // alanlar; en altta küçük "Bunu kaldır". P-36 (24 Ekim, sade): "Kayıt / İçerik"
-// etiketi ve sıralama okları kalktı.
+// etiketi ve sıralama okları kalktı. P-50: talimat biçimli metin; liste ve proje adımları
+// onay kutulu editörde (her satır bir madde).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
@@ -11,6 +12,7 @@ import { dosyayiSakla } from '@/veri/dosyalar';
 import type { BlokTaslagi } from '@/veri/kartlar';
 
 import { Dugme } from '../Dugme';
+import { ZenginMetinAlani } from '../ZenginMetin';
 import { ArtiEksi, Bolum } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
@@ -52,12 +54,11 @@ export function BlokDuzenleyici({ blok, onDegis, onKaldir }: Ozellikler) {
       </View>
 
       {blok.tur === 'talimat' && (
-        <Alan
+        <ZenginMetinAlani
           etiket="Talimat"
           deger={blok.metin}
           onDegis={(metin) => degis({ metin })}
           ipucu="Adımları, ayrıntıları yaz"
-          cokSatir
         />
       )}
       {blok.tur === 'video' && (
@@ -77,24 +78,24 @@ export function BlokDuzenleyici({ blok, onDegis, onKaldir }: Ozellikler) {
             onDegis={(ad) => degis({ ad })}
             ipucu="Liste adı (örneğin Malzemeler)"
           />
-          <Alan
+          <ZenginMetinAlani
             etiket="Maddeler"
             deger={blok.metin}
             onDegis={(metin) => degis({ metin })}
             ipucu="Her satıra bir madde"
-            cokSatir
+            liste
           />
         </>
       )}
       {blok.tur === 'adimlar' && (
         <>
           <Alan etiket="Proje adı" deger={blok.ad} onDegis={(ad) => degis({ ad })} ipucu="Kısa ad (isteğe bağlı)" />
-          <Alan
+          <ZenginMetinAlani
             etiket="Adımlar"
             deger={blok.metin}
             onDegis={(metin) => degis({ metin })}
             ipucu="Her satıra bir adım"
-            cokSatir
+            liste
           />
           <Yazi tur="ikincil">
             Liste her gün sıfırlanır; proje adımları sıfırlanmaz, kaldığın yerden sürer. Hepsi bitince kart yapıldı
