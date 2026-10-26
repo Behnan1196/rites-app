@@ -250,3 +250,8 @@ Sonuç: → kararlar.md (Kart formu: zaman özeti ve Vazgeç sorusu)
 Ne dedi: "Zamanlama ile ilgili sorular tam oturmadı. Görünümde zaman bilgisini en tepede özetliyoruz; düzenleme modunda tarih ve saat kartın sağ üstünde yer alabilir, yeni kartta zaten bugünün tarihi, saat her zaman kullanılmıyor ancak set edilecek yeri belirtmek için ..:.. konulabilir. Buradan açılacak takvimle tarih ve istenirse saat set edilebilir, aynı zamanda kartı taşımak için de kullanılmış olur." Soruya: Tekrar ve Hatırlatma aynı takvim sayfasında.
 Nerede: Kart formu
 Sonuç: → kararlar.md (Zaman sağ üstte)
+
+### P-48 · 26 Ekim 2026 · Behnan
+Ne dedi: "Bence sadece saat kaçta gibi sorulara gerek yok, saat seçim alanı olması yeterli. Tekrar etsin mi demek yerine de süre ve hangi günler olacağını seçsin."
+Nerede: Kart formu → Ne zaman? sayfası
+Sonuç: → kararlar.md (Zaman sayfasında soru yok)
