@@ -70,17 +70,30 @@ const pkart = (d: Partial<ProgramKarti> = {}): ProgramKarti => ({
 describe('alanlar', () => {
   it('dokuz hazır alan; her paketin etkinlikleri alanda var', () => {
     expect(ALANLAR.map((a) => a.ad)).toEqual([
-      'Hareket', 'Beslenme', 'Uyku', 'Zihin', 'Anlam', 'Sosyal bağlar', 'Öğrenme', 'İş', 'Uğraşlar',
+      'Hareket',
+      'Beslenme',
+      'Uyku',
+      'Zihin',
+      'Anlam',
+      'Sosyal bağlar',
+      'Öğrenme',
+      'İş',
+      'Uğraşlar',
     ]);
     for (const a of ALANLAR)
-      for (const p of a.paketler) for (const id of p.etkinlikler) expect(a.etkinlikler.some((e) => e.id === id)).toBe(true);
+      for (const p of a.paketler)
+        for (const id of p.etkinlikler) expect(a.etkinlikler.some((e) => e.id === id)).toBe(true);
     expect(varsayilanAcikMi('ogrenme')).toBe(false);
   });
   it('kişinin eklediği alan da bulunur', () => {
     ozelAlanlariAyarla([{ anahtar: 'ozel-1', ad: 'Bahçe', aciklama: '' }]);
     expect(alanAdi('ozel-1')).toBe('Bahçe');
     expect(alanBul('ozel-1')?.ikon).toBeNull();
-    expect(tumAlanlar().map((a) => a.ad).at(-1)).toBe('Bahçe');
+    expect(
+      tumAlanlar()
+        .map((a) => a.ad)
+        .at(-1),
+    ).toBe('Bahçe');
     expect(alanAdiHatasi(' ', tumAlanlar())).toBe('Alana bir ad ver.');
     expect(alanAdiHatasi('bahçe', tumAlanlar())).toBe('Bu adla bir alan var.');
     expect(alanAdiHatasi('Müzik', tumAlanlar())).toBeNull();
@@ -129,14 +142,31 @@ describe('programın kartları', () => {
     expect(kartZamanMetni(pkart({ gun: 7, tekrar: { gunSayisi: null, gunler: ['Pzt', 'Per'], desen: null } }))).toBe(
       'Pzt Per · 8. günden',
     );
-    expect(kartSirasi([pkart({ id: 'b', gun: 3 }), pkart({ id: 'a', gun: 0, sira: 2 }), pkart({ id: 'c', gun: 0, sira: 1 })]).map((k) => k.id)).toEqual(['c', 'a', 'b']);
+    expect(
+      kartSirasi([
+        pkart({ id: 'b', gun: 3 }),
+        pkart({ id: 'a', gun: 0, sira: 2 }),
+        pkart({ id: 'c', gun: 0, sira: 1 }),
+      ]).map((k) => k.id),
+    ).toEqual(['c', 'a', 'b']);
   });
   it('başlatınca ajanda kartı: gün kayar, tekrarlı bitişte durur, bağ taşır', () => {
     const p = program({ baslangic: BUGUN });
     const tek = ajandaKarti(pkart({ gun: 2 }), p, BUGUN, kimlik)!;
-    expect(tek.kart).toMatchObject({ tarih: '2026-10-22', tekrar: null, bitis: null, planId: 'p1', bag: 'program:pk1' });
+    expect(tek.kart).toMatchObject({
+      tarih: '2026-10-22',
+      tekrar: null,
+      bitis: null,
+      planId: 'p1',
+      bag: 'program:pk1',
+    });
     expect(tek.bloklar[0]).toMatchObject({ tur: 'video', metin: 'https://youtu.be/x' });
-    const tekrarli = ajandaKarti(pkart({ tekrar: herGun, saat: '07:30', hatirlatma: 'saatinde', alarm: true }), p, BUGUN, kimlik)!;
+    const tekrarli = ajandaKarti(
+      pkart({ tekrar: herGun, saat: '07:30', hatirlatma: 'saatinde', alarm: true }),
+      p,
+      BUGUN,
+      kimlik,
+    )!;
     expect(tekrarli.kart).toMatchObject({ tarih: BUGUN, bitis: '2026-11-09', hatirlatma: 'saatinde', alarm: true });
     expect(programBagCoz(tekrarli.kart.bag)).toBe('pk1');
   });
@@ -148,13 +178,20 @@ describe('programın kartları', () => {
   });
   it('ajanda kartından program kartı', () => {
     const k = yeniKart('a', { baslik: 'Arkadaşını ara', tarih: '2026-10-15', tekrar: herGun, saat: '19:00' });
-    expect(karttanIcerik(k, [], '2026-10-12')).toMatchObject({ gun: 3, baslik: 'Arkadaşını ara', saat: '19:00', tekrar: herGun });
+    expect(karttanIcerik(k, [], '2026-10-12')).toMatchObject({
+      gun: 3,
+      baslik: 'Arkadaşını ara',
+      saat: '19:00',
+      tekrar: herGun,
+    });
     expect(karttanIcerik(k, [], null).gun).toBe(0);
   });
   it('kart çeşidi programdan ajandaya, ajandadan programa geçer (P-45)', () => {
     const p = program({ baslangic: '2026-10-12' });
     expect(ajandaKarti(pkart({ cesit: 'beslenme-su' }), p, BUGUN, kimlik)!.kart.cesit).toBe('beslenme-su');
     expect(ajandaKarti(pkart(), p, BUGUN, kimlik)!.kart.cesit).toBeNull();
+    expect(ajandaKarti(pkart({ cesit: 'beslenme-su', tekrar: herGun }), p, BUGUN, kimlik)!.kart.seriSay).toBe(false);
+    expect(ajandaKarti(pkart({ tekrar: herGun }), p, BUGUN, kimlik)!.kart.seriSay).toBeNull();
     expect(karttanIcerik(yeniKart('a', { baslik: 'Su', cesit: 'beslenme-su' }), [], null).cesit).toBe('beslenme-su');
   });
   it('ara ver: başlamış dizi dün biter, gelecektekiler ve yapılmamışlar silinir', () => {
@@ -183,16 +220,29 @@ describe('ilerleme ve gelişim', () => {
   });
   it('uygulama özeti ve son ölçümler', () => {
     const a = yeniKart('a', { baslik: 'Esneme', tarih: '2026-10-18', tekrar: herGun });
-    expect(uygulamaOzeti([a], [{ kartId: 'a', tarih: '2026-10-18' }, { kartId: 'a', tarih: BUGUN }], '2026-10-18', BUGUN)).toEqual({
+    expect(
+      uygulamaOzeti(
+        [a],
+        [
+          { kartId: 'a', tarih: '2026-10-18' },
+          { kartId: 'a', tarih: BUGUN },
+        ],
+        '2026-10-18',
+        BUGUN,
+      ),
+    ).toEqual({
       yapilan: 2,
       toplam: 3,
     });
     const blok = { id: 'o', kartId: 'a', tur: 'olcum' as const, ad: 'Tekrar', birim: 'tekrar' };
     expect(
-      sonOlcumler([blok], [
-        { kartId: 'a', tarih: '2026-10-19', degerler: { o: '12' } },
-        { kartId: 'a', tarih: '2026-10-18', degerler: { o: '10' } },
-      ]),
+      sonOlcumler(
+        [blok],
+        [
+          { kartId: 'a', tarih: '2026-10-19', degerler: { o: '12' } },
+          { kartId: 'a', tarih: '2026-10-18', degerler: { o: '10' } },
+        ],
+      ),
     ).toEqual([{ ad: 'Tekrar', deger: '12 tekrar (ilk: 10)' }]);
   });
 });
@@ -203,7 +253,13 @@ describe('Rites önerileri', () => {
     const o = oneriler().find((x) => x.id === 'ph1')!;
     expect(o.sure).toBe(28);
     const { program: p, kartlar } = onerdenProgram(o, kimlik, '2026-10-20T10:00:00Z');
-    expect(p).toMatchObject({ ad: 'Sabah hareketi', alanlar: ['hareket'], durum: 'hazir', kaynak: 'Rites önerisi', sure: 28 });
+    expect(p).toMatchObject({
+      ad: 'Sabah hareketi',
+      alanlar: ['hareket'],
+      durum: 'hazir',
+      kaynak: 'Rites önerisi',
+      sure: 28,
+    });
     expect(kartlar.map((k) => [k.baslik, k.programId, k.gun])).toEqual([
       ['Sabah esnemesi', p.id, 0],
       ['Tai chi, 8 hareket', p.id, 0],

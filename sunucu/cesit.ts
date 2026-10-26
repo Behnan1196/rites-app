@@ -46,6 +46,7 @@ export async function cesitYaz(c: TasarimCesidi): Promise<void> {
     saat: c.saat,
     tekrar: c.tekrar,
     bloklar: c.bloklar.map(({ dosya: _d, ...b }) => b),
+    seri: c.seri,
     sira: c.sira,
     aktif: c.aktif,
   });

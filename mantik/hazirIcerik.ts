@@ -286,6 +286,8 @@ export const HAZIR_CESITLER: readonly KartCesidi[] = [
   {
     id: 'beslenme-ogun',
     alan: 'beslenme',
+    // P-49: Beslenme kartlarında seri yok (öğün, tartı… art arda gün sayılmaz).
+    seri: false,
     ad: 'Öğün listesi',
     ikon: 'restaurant-outline',
     aciklama: 'Öğün planın; farklı yediğini kısaca yazarsın',
@@ -301,6 +303,8 @@ export const HAZIR_CESITLER: readonly KartCesidi[] = [
   {
     id: 'beslenme-tarif',
     alan: 'beslenme',
+    // P-49: Beslenme kartlarında seri yok (öğün, tartı… art arda gün sayılmaz).
+    seri: false,
     ad: 'Yemek tarifi',
     ikon: 'book-outline',
     aciklama: 'Malzemeler ve yapılışı',
@@ -313,6 +317,8 @@ export const HAZIR_CESITLER: readonly KartCesidi[] = [
   {
     id: 'beslenme-tarti',
     alan: 'beslenme',
+    // P-49: Beslenme kartlarında seri yok (öğün, tartı… art arda gün sayılmaz).
+    seri: false,
     ad: 'Tartı',
     ikon: 'scale-outline',
     aciklama: 'Haftada bir kilo ve bel',
@@ -325,6 +331,8 @@ export const HAZIR_CESITLER: readonly KartCesidi[] = [
   {
     id: 'beslenme-tabak',
     alan: 'beslenme',
+    // P-49: Beslenme kartlarında seri yok (öğün, tartı… art arda gün sayılmaz).
+    seri: false,
     ad: 'Tabağım',
     ikon: 'camera-outline',
     aciklama: 'Tabağının fotoğrafı',
@@ -337,6 +345,8 @@ export const HAZIR_CESITLER: readonly KartCesidi[] = [
   {
     id: 'beslenme-su',
     alan: 'beslenme',
+    // P-49: Beslenme kartlarında seri yok (öğün, tartı… art arda gün sayılmaz).
+    seri: false,
     ad: 'Su',
     ikon: 'water-outline',
     aciklama: 'İçtiğin bardakları say',

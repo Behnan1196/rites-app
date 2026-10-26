@@ -33,7 +33,13 @@ k.programlar.forEach((p, i) =>
 satirlar.push('');
 k.cesitler.forEach((c, i) =>
   satirlar.push(
-    `insert into public.icerik_cesit (id, alan, ad, ikon, aciklama, baslik, baslik_ipucu, saat, tekrar, bloklar, sira) values (${m(c.id)}, ${m(c.alan)}, ${m(c.ad)}, ${m(c.ikon)}, ${m(c.aciklama)}, ${m(c.baslik)}, ${m(c.baslikIpucu)}, ${m(c.saat)}, ${j(c.tekrar)}, ${j(c.bloklar.map(({ dosya: _d, ...b }) => b))}, ${(i + 1) * 10}) on conflict (id) do nothing;`,
+    `insert into public.icerik_cesit (id, alan, ad, ikon, aciklama, baslik, baslik_ipucu, saat, tekrar, bloklar, seri, sira) values (${m(c.id)}, ${m(c.alan)}, ${m(c.ad)}, ${m(c.ikon)}, ${m(c.aciklama)}, ${m(c.baslik)}, ${m(c.baslikIpucu)}, ${m(c.saat)}, ${j(c.tekrar)}, ${j(c.bloklar.map(({ dosya: _d, ...b }) => b))}, ${c.seri ?? 'null'}, ${(i + 1) * 10}) on conflict (id) do nothing;`,
   ),
 );
+// P-49: önceden yüklenmiş çeşitlerde seri boşsa uygulamadakine eşitlenir (elle verilen değere dokunulmaz).
+k.cesitler
+  .filter((c) => c.seri !== null)
+  .forEach((c) =>
+    satirlar.push(`update public.icerik_cesit set seri = ${c.seri} where id = ${m(c.id)} and seri is null;`),
+  );
 process.stdout.write(satirlar.join('\n') + '\n');

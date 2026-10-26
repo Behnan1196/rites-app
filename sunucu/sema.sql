@@ -1589,5 +1589,7 @@ revoke insert, update, delete, truncate on public.icerik_cesit from anon;
 revoke delete, truncate on public.icerik_cesit from authenticated;
 grant select on public.icerik_cesit to anon, authenticated;
 grant insert, update on public.icerik_cesit to authenticated;
+-- P-49: tekrarlıda seri sayılsın mı (null: uygulamanın kuralı).
+alter table public.icerik_cesit add column if not exists seri boolean;
 drop trigger if exists guncelleme on public.icerik_cesit;
 create trigger guncelleme before update on public.icerik_cesit for each row execute function public.icerik_guncelleme();

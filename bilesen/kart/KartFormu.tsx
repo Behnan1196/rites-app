@@ -17,7 +17,7 @@ import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 
 import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
 import { adimDurumu, adimlariEsle } from '@/mantik/adimlar';
-import { CESIT_SIMGELERI, cesitler as tumCesitler, yeniCesitKimligi } from '@/mantik/cesit';
+import { CESIT_SIMGELERI, cesitBul, cesitler as tumCesitler, yeniCesitKimligi } from '@/mantik/cesit';
 import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Kart } from '@/mantik/kart';
 import { katalog, type KartCesidi } from '@/mantik/katalog';
 import {
@@ -28,7 +28,7 @@ import {
   type Program,
   type ProgramKarti,
 } from '@/mantik/program';
-import type { KartTaslagi } from '@/mantik/karakter';
+import { seriVarsayilani, type KartTaslagi } from '@/mantik/karakter';
 import { gunEkle, gunFarki, type Gun } from '@/mantik/tarih';
 import type { TasarimCesidi } from '@/sunucu/cesit';
 import { islemleriUygula, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
@@ -118,9 +118,11 @@ interface TasarimAlanlari {
   ikon: string | null;
   aciklama: string;
   aktif: boolean;
+  /** Tekrarlıda seri sayılsın mı (P-49); null: kural. */
+  seri: boolean | null;
 }
 
-const VARSAYILAN_IPUCU = 'Örneğin: Sabah yürüyüşü';
+const VARSAYILAN_IPUCU = 'Kartın başlığı';
 
 let geciciNo = 0;
 const geciciKimlik = () => `yeni-${++geciciNo}`;
@@ -198,7 +200,8 @@ function cesittenDurum(c: KartCesidi, gun: Gun): FormDurumu {
       tekrar: c.tekrar ? { ...c.tekrar, gunler: c.tekrar.gunler ? [...c.tekrar.gunler] : null } : null,
     },
     bloklar: cesitBloklari(c),
-    seriSay: null,
+    // P-49: çeşit seriyi belirleyebilir (Beslenme: yok).
+    seriSay: c.seri,
     cesit: c.id,
     baslikIpucu: c.baslikIpucu,
     tasarim: null,
@@ -218,6 +221,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
         ikon: c?.ikon ?? null,
         aciklama: c?.aciklama ?? '',
         aktif: c?.aktif ?? true,
+        seri: c?.seri ?? null,
       },
     };
   }
@@ -288,6 +292,7 @@ const BOS_CESIT: KartCesidi = {
   alan: '',
   ad: '',
   ikon: null,
+  seri: null,
   aciklama: '',
   baslik: '',
   baslikIpucu: '',
@@ -335,6 +340,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const sablon = hedef.tur === 'sablon' ? hedef : null;
   const tasarimHedefi = hedef.tur === 'cesit' ? hedef : null;
   const tasarim = durum.tasarim;
+  const secilenCesit = cesitBul(durum.cesit);
   const programGunu: ProgramGunu | null = sablon ? { ref: SABLON_REF, sure: sablon.program.sure } : null;
   const sayfaBasligi = tasarimHedefi
     ? tasarimHedefi.cesit
@@ -418,6 +424,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           tekrar: durum.zamanlama.tekrar,
           bloklar: durum.bloklar.map(kaydaBlok).map((b) => ({ ...blokKopyasi(b), dosya: null })),
           aktif: tasarim.aktif,
+          seri: tasarim.seri,
           sira: c?.sira ?? tasarimHedefi.yeniSira,
         });
         onKapat();
@@ -549,9 +556,29 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               />
             )}
             <View style={stiller.baslikSatiri}>
-              <Yazi kalinlik="kalin" style={stiller.esnek} numberOfLines={2}>
-                {tasarim ? 'Kartın başlığı (boşsa kişi yazar)' : 'Ne yapacaksın?'}
-              </Yazi>
+              {/* P-49: "Ne yapacaksın?" kalktı (bilgi kartı da var); solda varsa kartın çeşidi. */}
+              {tasarim ? (
+                <Yazi kalinlik="kalin" style={stiller.esnek} numberOfLines={2}>
+                  Kartın başlığı (boşsa kişi yazar)
+                </Yazi>
+              ) : (
+                <View style={[stiller.esnek, stiller.cesitAdi]}>
+                  {!!secilenCesit && (
+                    <>
+                      <Ionicons
+                        name={
+                          (secilenCesit.ikon as React.ComponentProps<typeof Ionicons>['name'] | null) ?? 'leaf-outline'
+                        }
+                        size={20}
+                        color={renk.ikincil}
+                      />
+                      <Yazi tur="etiket" kalinlik="kalin" numberOfLines={1}>
+                        {secilenCesit.ad}
+                      </Yazi>
+                    </>
+                  )}
+                </View>
+              )}
               <ZamanRozeti
                 deger={durum.zamanlama}
                 tarihYok={durum.tarihsiz}
@@ -564,7 +591,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               />
             </View>
             <GirisAlani
-              etiket={tasarim ? 'Kartın başlığı' : 'Ne yapacaksın?'}
+              etiket="Kartın başlığı"
               etiketGizli
               value={durum.baslik}
               onChangeText={(baslik) => {
@@ -647,6 +674,21 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                   </Yazi>
                 </View>
                 <AcKapa acik={tasarim.aktif} onDegis={(aktif) => tasarimGuncelle({ aktif })} etiket="Yayında" />
+              </View>
+            )}
+            {tasarim && durum.zamanlama.tekrar && (
+              <View style={stiller.yayinSatiri}>
+                <View style={stiller.esnek}>
+                  <Yazi kalinlik="kalin">Seri sayılsın</Yazi>
+                  <Yazi tur="ikincil">
+                    Art arda yapılan günler sayılır (alışkanlıklarda). Öğün, tartı gibi kartlarda gerekmez.
+                  </Yazi>
+                </View>
+                <AcKapa
+                  acik={tasarim.seri ?? seriVarsayilani(durum.bloklar)}
+                  onDegis={(seri) => tasarimGuncelle({ seri })}
+                  etiket="Seri sayılsın"
+                />
               </View>
             )}
 
@@ -793,6 +835,7 @@ const stiller = StyleSheet.create({
   bolumBasligi: { marginTop: 8 },
   esnek: { flex: 1 },
   baslikSatiri: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: -4 },
+  cesitAdi: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   haplar: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   simge: {
     width: 48,

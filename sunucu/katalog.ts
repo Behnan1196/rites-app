@@ -4,7 +4,7 @@
 
 import { sunucu } from './istemci';
 
-export const CESIT_SUTUNLARI = 'id, alan, ad, ikon, aciklama, baslik, baslik_ipucu, saat, tekrar, bloklar, sira, aktif';
+export const CESIT_SUTUNLARI = 'id, alan, ad, ikon, aciklama, baslik, baslik_ipucu, saat, tekrar, bloklar, seri, sira, aktif';
 
 export async function katalogIndir(): Promise<unknown | null> {
   const s = sunucu;

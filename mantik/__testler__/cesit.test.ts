@@ -65,6 +65,12 @@ describe('kart çeşitleri (P-41)', () => {
     ]);
   });
 
+  it('Beslenme çeşitlerinde seri yok; sunucudaki seri okunur (P-49)', () => {
+    expect(cesitler('beslenme').every((c) => c.seri === false)).toBe(true);
+    expect(cesitCoz({ id: 'x', alan: 'uyku', ad: 'X', seri: true })?.seri).toBe(true);
+    expect(cesitCoz({ id: 'x', alan: 'uyku', ad: 'X' })?.seri).toBeNull();
+  });
+
   it('yeni çeşidin kimliği', () => {
     expect(yeniCesitKimligi('beslenme', '3FA2C1d0-aaaa')).toBe('beslenme-3fa2c1');
   });

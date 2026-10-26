@@ -211,7 +211,7 @@ export function ZamanRozeti({
 
 /**
  * Zaman sayfası (P-47 / P-48): soru yok, doğrudan seçim alanları. Tarih (takvim; programda
- * "N. gün"), Saat, Tekrar günleri (hiç gün seçilmezse bir kez), Süre, Hatırlatma (saat varsa).
+ * "N. gün"), Saat, Süre (bir günden fazlaysa Günler), Hatırlatma (saat varsa).
  */
 export function ZamanSayfasi({
   gorunur,
@@ -254,9 +254,9 @@ export function ZamanSayfasi({
       </View>
       <View style={stiller.bolum}>
         <Yazi tur="bolumBasligi" accessibilityRole="header">
-          Tekrar günleri
+          Süre
         </Yazi>
-        <TekrarGunleri
+        <SureVeGunler
           tekrar={deger.tekrar}
           onDegis={(tekrar) => onDegis({ ...deger, tekrar })}
           programda={!!programGunu}
@@ -277,95 +277,95 @@ export function ZamanSayfasi({
 const SURE_SECENEKLERI = [7, 21, 30] as const;
 
 /**
- * Tekrar (P-48): yedi gün düğmesi; hiçbiri seçili değilse bir kez, hepsi seçiliyse her gün.
- * Gün seçilince altında Süre: Süresiz · 7 / 21 / 30 gün, − / + ile ince ayar.
+ * Süre ve günler (P-49): önce Süre (Bir gün · 7 · 21 · 30 gün · Süresiz; programda Bir gün ·
+ * Program boyunca), birden çok günse altında Günler (yedi gün düğmesi, en az biri; Her gün).
  */
-function TekrarGunleri({
+function SureVeGunler({
   tekrar,
   onDegis,
   programda = false,
 }: {
   tekrar: Tekrar | null;
   onDegis: (t: Tekrar | null) => void;
-  /** Programın kartı: tekrar programla biter; süre sorulmaz. */
+  /** Programın kartı: tekrar programla biter; gün sayısı sorulmaz. */
   programda?: boolean;
 }) {
   const secili = tekrar ? seciliGunler(tekrar) : [];
   const sure = tekrar?.gunSayisi ?? null;
+  const sureSec = (gunSayisi: number | null) =>
+    onDegis(tekrar ? { ...tekrar, gunSayisi } : { gunSayisi, gunler: null, desen: 'hergun' });
   const gunDegistir = (g: GunKisa) => {
+    if (!tekrar) return;
     const yeni = secili.includes(g) ? secili.filter((x) => x !== g) : [...secili, g];
-    if (yeni.length === 0) return onDegis(null);
-    const gunSayisi = tekrar?.gunSayisi ?? null;
+    if (yeni.length === 0) return; // en az bir gün kalır
     onDegis(
       yeni.length === 7
-        ? { gunSayisi, gunler: null, desen: 'hergun' }
-        : { gunSayisi, desen: null, gunler: GUN_KISA.filter((x) => yeni.includes(x)) },
+        ? { ...tekrar, gunler: null, desen: 'hergun' }
+        : { ...tekrar, desen: null, gunler: GUN_KISA.filter((x) => yeni.includes(x)) },
     );
   };
   return (
     <>
-      <View style={stiller.gunler}>
-        {GUN_KISA.map((g) => {
-          const acik = secili.includes(g);
-          return (
-            <Pressable
-              key={g}
-              onPress={() => gunDegistir(g)}
-              accessibilityRole="button"
-              accessibilityState={{ selected: acik }}
-              accessibilityLabel={g}
-              style={[stiller.gun, acik && stiller.gunSecili]}
-            >
-              <Yazi
-                kalinlik="kalin"
-                renk={acik ? renk.yuzey : renk.yazi}
-                maxFontSizeMultiplier={1.2}
-                style={stiller.gunYazi}
-              >
-                {g}
-              </Yazi>
-            </Pressable>
-          );
-        })}
-      </View>
       <View style={stiller.cipler}>
-        <SecenekHapi
-          etiket="Her gün"
-          secili={secili.length === 7}
-          onPress={() => onDegis({ gunSayisi: tekrar?.gunSayisi ?? null, gunler: null, desen: 'hergun' })}
-        />
-        <SecenekHapi etiket="Bir kez" secili={!tekrar} onPress={() => onDegis(null)} />
+        <SecenekHapi etiket="Bir gün" secili={!tekrar} onPress={() => onDegis(null)} />
+        {programda ? (
+          <SecenekHapi etiket="Program boyunca" secili={!!tekrar} onPress={() => sureSec(null)} />
+        ) : (
+          <>
+            {SURE_SECENEKLERI.map((n) => (
+              <SecenekHapi key={n} etiket={`${n} gün`} secili={!!tekrar && sure === n} onPress={() => sureSec(n)} />
+            ))}
+            <SecenekHapi etiket="Süresiz" secili={!!tekrar && sure === null} onPress={() => sureSec(null)} />
+          </>
+        )}
       </View>
-      {tekrar && programda && <Yazi tur="ikincil">Program bitince tekrar da biter.</Yazi>}
-      {tekrar && !programda && (
+      {tekrar && !programda && sure !== null && (
+        <View style={stiller.satir}>
+          <Yazi>Gün sayısı</Yazi>
+          <ArtiEksi
+            deger={String(sure)}
+            onEksi={() => (sure <= 2 ? onDegis(null) : onDegis({ ...tekrar, gunSayisi: sure - 1 }))}
+            onArti={() => onDegis({ ...tekrar, gunSayisi: sure + 1 })}
+            eksiEtiket="Bir gün azalt"
+            artiEtiket="Bir gün artır"
+          />
+        </View>
+      )}
+      {tekrar && (
         <>
           <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.altBaslik}>
-            Süre
+            Günler
           </Yazi>
-          <View style={stiller.cipler}>
-            <SecenekHapi
-              etiket="Süresiz"
-              secili={sure === null}
-              onPress={() => onDegis({ ...tekrar, gunSayisi: null })}
-            />
-            {SURE_SECENEKLERI.map((n) => (
-              <SecenekHapi
-                key={n}
-                etiket={`${n} gün`}
-                secili={sure === n}
-                onPress={() => onDegis({ ...tekrar, gunSayisi: n })}
-              />
-            ))}
+          <View style={stiller.gunler}>
+            {GUN_KISA.map((g) => {
+              const acik = secili.includes(g);
+              return (
+                <Pressable
+                  key={g}
+                  onPress={() => gunDegistir(g)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: acik }}
+                  accessibilityLabel={g}
+                  style={[stiller.gun, acik && stiller.gunSecili]}
+                >
+                  <Yazi
+                    kalinlik="kalin"
+                    renk={acik ? renk.yuzey : renk.yazi}
+                    maxFontSizeMultiplier={1.2}
+                    style={stiller.gunYazi}
+                  >
+                    {g}
+                  </Yazi>
+                </Pressable>
+              );
+            })}
           </View>
-          {sure !== null && (
-            <View style={stiller.satir}>
-              <Yazi>Gün sayısı</Yazi>
-              <ArtiEksi
-                deger={String(sure)}
-                onEksi={() => onDegis({ ...tekrar, gunSayisi: Math.max(1, sure - 1) })}
-                onArti={() => onDegis({ ...tekrar, gunSayisi: sure + 1 })}
-                eksiEtiket="Bir gün azalt"
-                artiEtiket="Bir gün artır"
+          {secili.length < 7 && (
+            <View style={stiller.cipler}>
+              <SecenekHapi
+                etiket="Her gün"
+                secili={false}
+                onPress={() => onDegis({ ...tekrar, gunler: null, desen: 'hergun' })}
               />
             </View>
           )}
@@ -892,6 +892,7 @@ const stiller = StyleSheet.create({
   bolum: { gap: 10, marginBottom: 8 },
   altBaslik: { marginTop: 6 },
   rozet: {
+    flexShrink: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,

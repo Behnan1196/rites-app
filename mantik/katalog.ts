@@ -98,6 +98,8 @@ export interface KartCesidi {
   /** null = tek seferlik. */
   tekrar: Tekrar | null;
   bloklar: KatalogBlogu[];
+  /** Tekrarlıda seri (art arda günler) sayılsın mı (P-49); null: kural (`mantik/karakter`). */
+  seri: boolean | null;
 }
 
 export interface Katalog {
@@ -169,6 +171,7 @@ export function cesitCoz(x: unknown): KartCesidi | null {
     saat: saatCoz(c.saat),
     tekrar: c.tekrar === null || c.tekrar === undefined ? null : tekrarCoz(c.tekrar),
     bloklar: (Array.isArray(c.bloklar) ? c.bloklar : []).map(blokCoz).filter((b): b is KatalogBlogu => !!b),
+    seri: typeof c.seri === 'boolean' ? c.seri : null,
   };
 }
 

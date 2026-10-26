@@ -12,6 +12,7 @@
 // - Uygulanmış program 1–5 yıldız ve kısa notla değerlendirilir.
 // - Alan puanı programlardan bağımsızdır (kişinin kendi değerlendirmesi).
 
+import { cesitBul } from './cesit';
 import { alanAdi, type AlanAnahtari } from './alanlar';
 import { katalog, type KatalogKart, type KatalogProgram } from './katalog';
 import { gorunurMu, tekrarMetni } from './gorunurluk';
@@ -207,6 +208,8 @@ export function ajandaKarti(
       alarm: pk.alarm && !!gecerliHatirlatma(pk.hatirlatma, pk.saat),
       alarmSesi: pk.alarmSesi ?? null,
       cesit: pk.cesit ?? null,
+      // P-49: çeşit seriyi belirleyebilir.
+      seriSay: pk.tekrar ? (cesitBul(pk.cesit)?.seri ?? null) : null,
       tekrar: tekrarKopyasi(pk.tekrar),
       bitis: pk.tekrar ? bitis : null,
       planId: p.id,

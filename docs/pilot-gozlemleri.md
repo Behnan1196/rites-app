@@ -255,3 +255,8 @@ Sonuç: → kararlar.md (Zaman sağ üstte)
 Ne dedi: "Bence sadece saat kaçta gibi sorulara gerek yok, saat seçim alanı olması yeterli. Tekrar etsin mi demek yerine de süre ve hangi günler olacağını seçsin."
 Nerede: Kart formu → Ne zaman? sayfası
 Sonuç: → kararlar.md (Zaman sayfasında soru yok)
+
+### P-49 · 26 Ekim 2026 · Behnan
+Ne dedi: "Üstte ne yapacaksın diye soruyoruz, biz bilgi kartı da düzenliyoruz, o başlığa gerek yok. Tekrar varsa her zaman seri mi olmalı (streak)? Örneğin beslenmede öğünler bir seri değil bence, başka örneklerde de olacak. Bir de önce tekrar günlerini soruyoruz sonra süreyi; bence tekrar demek yerine süre desek, bir günden fazla ise başka soruları sorarız."
+Nerede: Kart formu → Ne zaman?; seri
+Sonuç: → kararlar.md (Kart formu: başlık, süre ve seri)
