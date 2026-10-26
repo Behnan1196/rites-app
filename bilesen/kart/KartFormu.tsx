@@ -49,7 +49,7 @@ import { Yazi } from '../Yazi';
 import { BlokDuzenleyici } from './BlokDuzenleyici';
 import { BlokSecici } from './BlokSecici';
 import { CesitSecici } from './CesitSecici';
-import { ZamanSatirlari, type ProgramGunu, type Zamanlama, type ZamanlamaBolmesi } from './Zamanlama';
+import { ZamanRozeti, ZamanSayfasi, type ProgramGunu, type Zamanlama } from './Zamanlama';
 
 export type KartFormuHedefi =
   /**
@@ -319,15 +319,11 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   );
   const [durum, setDurum] = useState<FormDurumu>(ilk);
   const [hata, setHata] = useState<string | null>(null);
-  const [altSayfa, setAltSayfa] = useState<ZamanlamaBolmesi | null>(null);
+  // P-47: zaman sağ üstteki rozetten açılan sayfada.
+  const [zamanAcik, setZamanAcik] = useState(false);
   const [blokSeciciAcik, setBlokSeciciAcik] = useState(hedef.tur === 'duzenle' && !!hedef.blokEkle);
   // P-36: yeni kartta "Karta bir şey ekle" kapalı gelir (kartların çoğu başlık ve zamandan ibaret).
   const [eklerAcik, setEklerAcik] = useState(hedef.tur !== 'yeni' || ilkDurum(hedef).bloklar.length > 0);
-  /** Çubuktaki bölme: klavye kapanır, ayarı çubuğun altında açılır; aynı bölme yeniden kapatır. */
-  const bolmeAc = (b: ZamanlamaBolmesi | null) => {
-    Keyboard.dismiss();
-    setAltSayfa((a) => (a === b ? null : b));
-  };
   const [soru, setSoru] = useState<Soru | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
   // Paylaşımdan dolu gelen form kaydedilmeden kapatılırken de sorar.
@@ -552,8 +548,24 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 }}
               />
             )}
+            <View style={stiller.baslikSatiri}>
+              <Yazi kalinlik="kalin" style={stiller.esnek} numberOfLines={2}>
+                {tasarim ? 'Kartın başlığı (boşsa kişi yazar)' : 'Ne yapacaksın?'}
+              </Yazi>
+              <ZamanRozeti
+                deger={durum.zamanlama}
+                tarihYok={durum.tarihsiz}
+                programGunu={programGunu}
+                kalip={!!tasarim}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setZamanAcik(true);
+                }}
+              />
+            </View>
             <GirisAlani
-              etiket={tasarim ? 'Kartın başlığı (boşsa kişi yazar)' : 'Ne yapacaksın?'}
+              etiket={tasarim ? 'Kartın başlığı' : 'Ne yapacaksın?'}
+              etiketGizli
               value={durum.baslik}
               onChangeText={(baslik) => {
                 guncelle({ baslik });
@@ -584,21 +596,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 returnKeyType="done"
               />
             )}
-            <ZamanSatirlari
-              kalip={!!tasarim}
-              deger={durum.zamanlama}
-              bugunGun={bugunGun}
-              acik={altSayfa}
-              onAc={bolmeAc}
-              tarihYok={durum.tarihsiz}
-              programGunu={programGunu}
-              onDegis={(zamanlama) =>
-                guncelle({
-                  zamanlama,
-                  tarihsiz: durum.tarihsiz && altSayfa !== 'tarih' && zamanlama.tekrar === null,
-                })
-              }
-            />
 
             {!eklerAcik ? (
               <Pressable
@@ -635,7 +632,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                   etiket="+ Karta ekle"
                   onPress={() => {
                     Keyboard.dismiss();
-                    setAltSayfa(null);
                     setBlokSeciciAcik(true);
                   }}
                 />
@@ -671,6 +667,18 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           </>
         )}
       </AltSayfa>
+
+      <ZamanSayfasi
+        gorunur={zamanAcik}
+        onKapat={() => setZamanAcik(false)}
+        deger={durum.zamanlama}
+        bugunGun={bugunGun}
+        tarihYok={durum.tarihsiz}
+        programGunu={programGunu}
+        kalip={!!tasarim}
+        onTarihSec={(zamanlama) => guncelle({ zamanlama, tarihsiz: false })}
+        onDegis={(zamanlama) => guncelle({ zamanlama, tarihsiz: durum.tarihsiz && zamanlama.tekrar === null })}
+      />
 
       <BlokSecici
         haric={tasarim ? ['foto', 'dosya'] : []}
@@ -784,6 +792,7 @@ const stiller = StyleSheet.create({
   },
   bolumBasligi: { marginTop: 8 },
   esnek: { flex: 1 },
+  baslikSatiri: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: -4 },
   haplar: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   simge: {
     width: 48,

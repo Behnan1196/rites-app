@@ -245,3 +245,8 @@ Sonuç: → kararlar.md (Programa kart eklerken de çeşitler); zamanlayıcı ye
 Ne dedi: "Kartlarda ne zaman soruları bence çok yer kaplıyor ve dikkati dağıtıyor, bir de karttan vazgeç ile çıkmaya çalıştığımda sorduğu Devam et, Sil ve Kapat seçenekleri beni rahatsız ediyor, özellikle Sil sözü." Sorulara: Kaydet / Kaydetmeden çık; tek satır özet.
 Nerede: Kart formu; bütün alttan sayfalar
 Sonuç: → kararlar.md (Kart formu: zaman özeti ve Vazgeç sorusu)
+
+### P-47 · 26 Ekim 2026 · Behnan
+Ne dedi: "Zamanlama ile ilgili sorular tam oturmadı. Görünümde zaman bilgisini en tepede özetliyoruz; düzenleme modunda tarih ve saat kartın sağ üstünde yer alabilir, yeni kartta zaten bugünün tarihi, saat her zaman kullanılmıyor ancak set edilecek yeri belirtmek için ..:.. konulabilir. Buradan açılacak takvimle tarih ve istenirse saat set edilebilir, aynı zamanda kartı taşımak için de kullanılmış olur." Soruya: Tekrar ve Hatırlatma aynı takvim sayfasında.
+Nerede: Kart formu
+Sonuç: → kararlar.md (Zaman sağ üstte)

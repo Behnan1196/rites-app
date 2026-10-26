@@ -5,6 +5,9 @@
 // mi?", "Hatırlatsın mı?"); dokunulan satırın ayarı hemen altında açılır.
 // P-46: satırlar kapalı gelir; yerine tek özet satırı ("Bugün · 09:00 · Her gün").
 // Dokununca sorular açılır, özet satırına yeniden dokununca kapanır.
+// P-47: kart formunda zaman sağ üstte (`ZamanRozeti`: "26 Ekim · ..:.."); dokununca
+// `ZamanSayfasi`: üstte takvim, altında saat, tekrar ve hatırlatma soruları. Tarihi
+// değiştirmek kartı taşımaktır.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -23,8 +26,9 @@ import {
   type OzelHatirlatma,
   type Tekrar,
 } from '@/mantik/kart';
-import { GUN_KISA, gunEkle, gunFarki, uzunTarih, type Gun, type GunKisa } from '@/mantik/tarih';
+import { GUN_KISA, gunEkle, gunFarki, kisaTarih, uzunTarih, type Gun, type GunKisa } from '@/mantik/tarih';
 
+import { AltSayfa } from '../AltSayfa';
 import { AyTakvimi } from '../AyTakvimi';
 import { SesSecici } from '../SesSecici';
 import { Dugme } from '../Dugme';
@@ -157,6 +161,7 @@ export function ZamanSatirlari({
   tarihYok = false,
   programGunu = null,
   kalip = false,
+  duz = false,
 }: {
   deger: Zamanlama;
   bugunGun: Gun;
@@ -167,6 +172,8 @@ export function ZamanSatirlari({
   programGunu?: ProgramGunu | null;
   /** Kart çeşidi tasarımı (P-41): yalnız saat ve tekrar; gün ve hatırlatma kişinin. */
   kalip?: boolean;
+  /** P-47: zaman sayfasında: özet satırı yok, sorular hep açık; tarih satırı yok (takvim üstte). */
+  duz?: boolean;
 }) {
   const hatirlatmaDegeri = !deger.hatirlatma
     ? 'Hayır'
@@ -198,10 +205,12 @@ export function ZamanSatirlari({
       ayarli: deger.tekrar !== null,
     },
   ];
-  const [genis, setGenis] = useState(false);
-  if (kalip) satirlar.shift();
-  // Hatırlatma saat seçilince (ya da zaten kuruluysa) sorulur.
-  else if (deger.saat !== null || deger.hatirlatma !== null)
+  const [genisDurum, setGenis] = useState(false);
+  const genis = duz || genisDurum;
+  // Çeşit tasarımında ve zaman sayfasında tarih satırı yok (sayfada takvim üstte).
+  if (kalip || duz) satirlar.shift();
+  // Hatırlatma saat seçilince (ya da zaten kuruluysa) sorulur; çeşit tasarımında yok.
+  if (!kalip && (deger.saat !== null || deger.hatirlatma !== null))
     satirlar.push({ k: 'hatirlatma', soru: 'Hatırlatsın mı?', deger: hatirlatmaDegeri, ayarli: !!deger.hatirlatma });
 
   const ozet =
@@ -232,7 +241,7 @@ export function ZamanSatirlari({
 
   return (
     <View style={stiller.satirlar}>
-      {ozetSatiri}
+      {!duz && ozetSatiri}
       {satirlar.map((s) => (
         <View key={s.k} style={[stiller.zamanSatiri, acik === s.k && stiller.zamanSatiriAcik]}>
           <Pressable
@@ -268,6 +277,123 @@ export function ZamanSatirlari({
   );
 }
 
+// ---- Sağ üstteki rozet ve zaman sayfası (P-47) ----------------------------------
+
+/** Rozetteki kısa yazı: "26 Ekim · ..:..", programda "3. gün · 08:00"; çeşitte yalnız saat. */
+export function zamanRozetiMetni(
+  deger: Pick<Zamanlama, 'tarih' | 'saat'>,
+  {
+    tarihYok = false,
+    programGunu = null,
+    kalip = false,
+  }: { tarihYok?: boolean; programGunu?: ProgramGunu | null; kalip?: boolean } = {},
+): string {
+  const saat = deger.saat ?? '..:..';
+  if (kalip) return saat;
+  const gun = tarihYok
+    ? 'Tarih yok'
+    : programGunu
+      ? programGunuMetni(programGunu, deger.tarih)
+      : kisaTarih(deger.tarih);
+  return `${gun} · ${saat}`;
+}
+
+export function ZamanRozeti({
+  deger,
+  onPress,
+  tarihYok = false,
+  programGunu = null,
+  kalip = false,
+}: {
+  deger: Zamanlama;
+  onPress: () => void;
+  tarihYok?: boolean;
+  programGunu?: ProgramGunu | null;
+  kalip?: boolean;
+}) {
+  const metin = zamanRozetiMetni(deger, { tarihYok, programGunu, kalip });
+  const ekler = [deger.tekrar ? tekrarSatirMetni(deger.tekrar) : null, deger.hatirlatma ? 'hatırlatma var' : null]
+    .filter(Boolean)
+    .join(', ');
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Ne zaman: ${metin.replace('..:..', 'saat yok')}${ekler ? `, ${ekler}` : ''}. Değiştir`}
+      hitSlop={6}
+      style={({ pressed }) => [stiller.rozet, pressed && { opacity: 0.7 }]}
+    >
+      <Ionicons name="calendar-outline" size={18} color={renk.ana} />
+      <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.rozetYazi}>
+        {metin}
+      </Yazi>
+      {!!deger.tekrar && <Ionicons name="repeat" size={18} color={renk.ana} />}
+      {!!deger.hatirlatma && (
+        <Ionicons name={deger.alarm ? 'alarm-outline' : 'notifications-outline'} size={18} color={renk.ana} />
+      )}
+    </Pressable>
+  );
+}
+
+/** Zaman sayfası: üstte gün (takvim ya da programın günü), altında saat, tekrar, hatırlatma. */
+export function ZamanSayfasi({
+  gorunur,
+  onKapat,
+  deger,
+  bugunGun,
+  onDegis,
+  onTarihSec,
+  tarihYok = false,
+  programGunu = null,
+  kalip = false,
+}: {
+  gorunur: boolean;
+  onKapat: () => void;
+  deger: Zamanlama;
+  bugunGun: Gun;
+  onDegis: (z: Zamanlama) => void;
+  /** Takvimden gün seçildi (tarihsiz plan adımı tarih kazanır). */
+  onTarihSec: (z: Zamanlama) => void;
+  tarihYok?: boolean;
+  programGunu?: ProgramGunu | null;
+  kalip?: boolean;
+}) {
+  const [acik, setAcik] = useState<ZamanlamaBolmesi | null>(null);
+  return (
+    <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Ne zaman?" sagKapat="Tamam">
+      {!kalip && (
+        <>
+          <Yazi kalinlik="kalin">
+            {programGunu ? 'Programın kaçıncı günü?' : deger.tekrar ? 'Hangi gün başlasın?' : 'Hangi gün?'}
+          </Yazi>
+          <ZamanlamaPaneli
+            acik="tarih"
+            deger={deger}
+            bugunGun={bugunGun}
+            onDegis={onTarihSec}
+            onAc={() => undefined}
+            tarihYok={tarihYok}
+            programGunu={programGunu}
+            satirIci
+            tamamYok
+          />
+        </>
+      )}
+      <ZamanSatirlari
+        deger={deger}
+        bugunGun={bugunGun}
+        acik={acik}
+        onAc={setAcik}
+        onDegis={onDegis}
+        tarihYok={tarihYok}
+        programGunu={programGunu}
+        kalip={kalip}
+        duz
+      />
+    </AltSayfa>
+  );
+}
+
 // ---- Bölme ayarları (çubuğun altında) -----------------------------------------
 
 interface SayfaOzellikleri {
@@ -281,6 +407,8 @@ interface SayfaOzellikleri {
   programGunu?: ProgramGunu | null;
   /** P-37: satırın altında açılır; başlık satırda, kaydırma sayfanın. */
   satirIci?: boolean;
+  /** Zaman sayfasının üstündeki takvim (P-47): kapatılmaz, "Tamam" yok. */
+  tamamYok?: boolean;
 }
 
 const BOLME_BASLIGI: Record<ZamanlamaBolmesi, string> = {
@@ -304,6 +432,7 @@ export function ZamanlamaPaneli({
   tarihYok = false,
   programGunu = null,
   satirIci = false,
+  tamamYok = false,
 }: SayfaOzellikleri) {
   const alarm = useAlarmDestegi();
   if (!acik) return null;
@@ -498,7 +627,7 @@ export function ZamanlamaPaneli({
             programda={!!programGunu}
           />
         )}
-        {satirIci && <Dugme tur="ikincil" etiket="Tamam" onPress={() => onAc(null)} />}
+        {satirIci && !tamamYok && <Dugme tur="ikincil" etiket="Tamam" onPress={() => onAc(null)} />}
       </Kap>
     </View>
   );
@@ -779,6 +908,18 @@ const stiller = StyleSheet.create({
     borderRadius: olcu.kose.kart,
     paddingHorizontal: olcu.kartIci,
   },
+  rozet: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 40,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    backgroundColor: renk.yuzey,
+  },
+  rozetYazi: { fontVariant: ['tabular-nums'] },
   zamanSatiriAcik: { borderColor: renk.ana, borderWidth: 2, paddingBottom: 12 },
   zamanSatiriUst: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 60 },
   panelSatirIci: { borderTopWidth: 1, borderTopColor: renk.satirCizgi, paddingTop: 12 },
