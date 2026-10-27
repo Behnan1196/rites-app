@@ -1,6 +1,6 @@
 // Kayıt ayrıntısı (L-2): etiketler, kaynak, içerik; "Bugün Ajandama ekle"
-// (düzenlenebilir kopya), "Programa ekle" (pilot 20 Ekim), "Paylaş",
-// "Kütüphaneden çıkar".
+// (düzenlenebilir kopya), "Düzenle" (P-59: ajandaya koymadan, kart formuyla),
+// "Programa ekle" (pilot 20 Ekim), "Paylaş", "Kütüphaneden çıkar".
 
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -14,18 +14,13 @@ import { OnayKutusu } from '@/bilesen/OnayKutusu';
 import { usePaylas } from '@/bilesen/paylasim/PaylasSayfasi';
 import { renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
-import {
-  etiketMetni,
-  kayitAltMetni,
-  kayitPaketi,
-  kutuphanedenKart,
-  type KartIcerigi,
-} from '@/mantik/kutuphane';
+import { etiketMetni, kayitAltMetni, kayitPaketi, kutuphanedenKart, type KartIcerigi } from '@/mantik/kutuphane';
 import { useSorgu } from '@/veri/kancalar';
 import { KartIcerigiGorunumu } from '@/bilesen/kutuphane/KartIcerigi';
 import { yeniKartKaydet } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
-import { kutuphaneKaydiOku, kutuphanedenCikar } from '@/veri/kutuphane';
+import { kutuphaneIcerigiYaz, kutuphaneKaydiOku, kutuphanedenCikar } from '@/veri/kutuphane';
+import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { programKartiEkle } from '@/veri/programlar';
 import { ProgramSecSayfasi } from '@/bilesen/yasam/ProgramSayfalari';
 import { useBugun } from '@/veri/useBugun';
@@ -40,7 +35,21 @@ export default function KayitAyrintisi() {
   const veri = useSorgu(['kutuphane'], (o) => kutuphaneKaydiOku(o, id), [id]);
   const [cikarSorusu, setCikarSorusu] = useState(false);
   const [programSec, setProgramSec] = useState(0);
+  const form = useKartFormu();
   const k = veri.veri;
+
+  const duzenle = () => {
+    if (!k) return;
+    form.ac({
+      tur: 'kutuphane',
+      icerik: k.icerik,
+      bugunGun,
+      onKaydet: async (icerik) => {
+        await kutuphaneIcerigiYaz(kapi, k.id, icerik);
+        kisaMesaj('Kütüphanede güncellendi');
+      },
+    });
+  };
 
   const hata = (e: unknown) => {
     console.warn(e);
@@ -112,6 +121,7 @@ export default function KayitAyrintisi() {
 
           <View style={stiller.eylemler}>
             <Dugme etiket="Bugün Ajandama ekle" onPress={() => void ajandayaEkle(k.icerik)} />
+            <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Düzenle" onPress={duzenle} />
             <Dugme
               tur="ikincil"
               yaziRengi={renk.ana}
@@ -144,6 +154,7 @@ export default function KayitAyrintisi() {
         </Katman>
       )}
       {paylas.oge}
+      {form.oge}
       {k && programSec > 0 && (
         <ProgramSecSayfasi
           key={programSec}

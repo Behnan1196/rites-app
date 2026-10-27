@@ -519,3 +519,8 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - Yalnız listeden ibaret tek seferlik kartlar (tekrarı, programı, grup bağı olmayan) ilk açılışta bir kez Listelerim'e taşınır: adı kartın başlığı, açıklaması kartın açıklaması; işaretler korunur; kartın tarihi bugün ya da sonraysa bitmemiş maddelere o tarih verilir. — Ürün sahibi (P-58); tarih aktarımı: Öneri
 - Giriş'teki **Listelerim** kutusu (19 Ekim'de kalkmıştı) geri geldi: yarım kutu, "N liste"; "Giriş'te neler görünsün?"de açılıp kapatılır, varsayılan açık, en sonda. — Ürün sahibi (P-58); yer: Öneri
 - Tarihsiz yeni liste yalnız Listelerim'den (**+ Yeni liste**) açılır; kart formundaki Liste parçası tarihli kartlar için kalır. — Ürün sahibi (P-58)
+
+## Kütüphanedeki kartı düzenleme (27 Ekim)
+
+- Kütüphanedeki kart ajandaya konmadan düzenlenir: kaydın ekranında **Düzenle** kart formunu açar (başlık "Kartı düzenle"); tarih sorulmaz, saat ve süre değişebilir, parça eklenir / çıkarılır. Paylaşımla gelen video "Gelenlerden al" ile bu karta da eklenir; kaydedilince Gelenler'den kalkar. Kaydın adı kartın başlığıyla değişir; alanları ve türü aynı kalır. — Ürün sahibi (P-59); ayrıntılar: Öneri
+- Hatırlatma bu formda sorulmaz; kayıtta varsa korunur (ajandaya eklerken kullanılır). — Öneri

@@ -305,3 +305,8 @@ Sonuç: → kararlar.md (Kart formu: ikinci şerit; editörde satır aralığı)
 Ne dedi: "Tarihsiz bir listenin ajandada olması garip… Gruplarda ortak listeler var; kimseyle paylaşmazsam benim listem." Kararlar: kişisel liste telefonda dursun; yalnız listeden ibaret kartlar kendiliğinden taşınsın; tarihsiz liste yalnız Listelerim'den.
 Nerede: Ajanda; Giriş → Ortak listeler
 Sonuç: → kararlar.md (Listelerim: kişisel listeler telefonda)
+
+### P-59 · 27 Ekim 2026 · Behnan
+Ne dedi: "Kütüphaneye kaydettiğim bir karta, paylaş ile gelen videoyu eklemek istiyorum, ancak kütüphanedeki kartı açabilmem için ajandaya koymak zorunda olmamam lazım."
+Nerede: Yaşam Tarzım → Kütüphanem → kayıt
+Sonuç: → kararlar.md (Kütüphanedeki kartı düzenleme)

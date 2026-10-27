@@ -80,6 +80,13 @@ export function kutuphaneyeKaydet(kapi: Kapi, k: KutuphaneKaydi, ajandadanKaldir
   });
 }
 
+/** Kütüphanedeki kartın içeriğini değiştirir (P-59); kaydın adı kartın başlığıdır. */
+export function kutuphaneIcerigiYaz(kapi: Kapi, id: string, icerik: KutuphaneKaydi['icerik']): Promise<void> {
+  return kapi.yaz(['kutuphane'], (y) =>
+    y.calistir('UPDATE kutuphane SET baslik = ?, icerik = ? WHERE id = ?', [icerik.baslik, JSON.stringify(icerik), id]),
+  );
+}
+
 export function kutuphanedenCikar(kapi: Kapi, id: string): Promise<void> {
   return kapi.yaz(['kutuphane'], (y) => y.calistir('DELETE FROM kutuphane WHERE id = ?', [id]));
 }

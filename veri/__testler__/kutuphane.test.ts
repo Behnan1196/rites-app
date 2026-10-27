@@ -8,7 +8,7 @@ import { YEDEK_TABLOLARI } from '@/mantik/yedek';
 import { gocleriUygula } from '../gocler';
 import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
 import { isaretle, tumKartlar, yeniKartKaydet } from '../kartlar';
-import { kutuphaneKaydiOku, kutuphanedenCikar, kutuphaneSayisi, kutuphaneyeKaydet, kutuphaneyiOku } from '../kutuphane';
+import { kutuphaneIcerigiYaz, kutuphaneKaydiOku, kutuphanedenCikar, kutuphaneSayisi, kutuphaneyeKaydet, kutuphaneyiOku } from '../kutuphane';
 import { yayinOlustur, type Konu } from '../yayin';
 import { sqljsVeriTabani } from './sqljsVeriTabani';
 
@@ -55,6 +55,18 @@ it('"Ajandamdan kaldır": kart, blokları ve kayıtları aynı işlemde silinir'
   expect(await oku.hepsi('SELECT * FROM blok')).toEqual([]);
   expect(await oku.hepsi('SELECT * FROM kayit')).toEqual([]);
   expect(duyurulan).toEqual([['kart', 'kutuphane']]);
+});
+
+it('P-59: kütüphanedeki kart ajandaya konmadan düzenlenir', async () => {
+  const k = kayit('L1', '2026-10-13T08:00:00Z');
+  await kutuphaneyeKaydet(kapi, k);
+  const video = { tur: 'video' as const, ad: '', metin: 'https://youtu.be/abc', birim: '', dakika: null, maddeler: [], dosya: null };
+  await kutuphaneIcerigiYaz(kapi, 'L1', { ...k.icerik, baslik: 'Yeni ad', bloklar: [...k.icerik.bloklar, video] });
+  const o = await kutuphaneKaydiOku(oku, 'L1');
+  expect(o?.baslik).toBe('Yeni ad');
+  expect(o?.icerik.bloklar.map((b) => b.tur)).toEqual(['liste', 'video']);
+  expect(o?.alanlar).toEqual(k.alanlar);
+  expect(await tumKartlar(oku)).toEqual([]);
 });
 
 it('yedeğe girer', () => {

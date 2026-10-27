@@ -29,6 +29,7 @@ import {
   type ProgramKarti,
 } from '@/mantik/program';
 import { seriVarsayilani, type KartTaslagi } from '@/mantik/karakter';
+import type { KartIcerigi } from '@/mantik/kutuphane';
 import { gunEkle, gunFarki, type Gun } from '@/mantik/tarih';
 import { htmlMaddeleri, maddelerdenHtml } from '@/mantik/zenginMetin';
 import type { TasarimCesidi } from '@/sunucu/cesit';
@@ -85,6 +86,13 @@ export type KartFormuHedefi =
       /** Yeni çeşidin sırası (sona). */
       yeniSira: number;
       onKaydet: (c: TasarimCesidi) => Promise<void>;
+    }
+  /** Kütüphanedeki kart (P-59): tarihsiz kalıp; ajandaya koymadan düzenlenir. */
+  | {
+      tur: 'kutuphane';
+      icerik: KartIcerigi;
+      bugunGun: Gun;
+      onKaydet: (c: KartIcerigi) => Promise<void>;
     };
 
 export type { KartTaslagi };
@@ -226,6 +234,18 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
       },
     };
   }
+  if (hedef.tur === 'kutuphane') {
+    const c = hedef.icerik;
+    return {
+      ...ekAlanlar,
+      baslik: c.baslik,
+      kisa: c.kisa,
+      tarihsiz: false,
+      zamanlama: { tarih: hedef.bugunGun, saat: c.saat, hatirlatma: c.hatirlatma, alarm: false, tekrar: c.tekrar },
+      bloklar: c.bloklar.map((b) => formaBlok({ ...b, id: geciciKimlik(), kartId: '', sira: 0 })),
+      seriSay: null,
+    };
+  }
   if (hedef.tur === 'sablon') {
     const k = hedef.kart;
     const p = hedef.program;
@@ -341,7 +361,10 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const duzenleme = hedef.tur === 'duzenle' ? hedef : null;
   const sablon = hedef.tur === 'sablon' ? hedef : null;
   const tasarimHedefi = hedef.tur === 'cesit' ? hedef : null;
+  const kutuphaneHedefi = hedef.tur === 'kutuphane' ? hedef : null;
   const tasarim = durum.tasarim;
+  /** Tarihsiz kalıp: çeşit tasarımı ve kütüphanedeki kart (yalnız saat ve süre). */
+  const kalip = !!tasarim || !!kutuphaneHedefi;
   // P-51: uzman görünümü (çeşit tasarımı her zaman uzman); normal kullanıcıda gün düzeni yok.
   const uzmanAyari = useUzman();
   const uzman = uzmanAyari || !!tasarim;
@@ -360,13 +383,15 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     ? tasarimHedefi.cesit
       ? 'Kart çeşidi'
       : 'Yeni kart çeşidi'
-    : sablon
-      ? sablon.kart
-        ? 'Programın kartı'
-        : 'Programa yeni kart'
-      : duzenleme
-        ? 'Kartı düzenle'
-        : 'Yeni kart';
+    : kutuphaneHedefi
+      ? 'Kartı düzenle'
+      : sablon
+        ? sablon.kart
+          ? 'Programın kartı'
+          : 'Programa yeni kart'
+        : duzenleme
+          ? 'Kartı düzenle'
+          : 'Yeni kart';
 
   const guncelle = (alanlar: Partial<FormDurumu>) => setDurum((d) => ({ ...d, ...alanlar }));
   const tasarimGuncelle = (alanlar: Partial<TasarimAlanlari>) =>
@@ -462,7 +487,18 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     calistir(async () => {
       setSoru(null);
       const bloklar = durum.bloklar.map(listeAyarla).map(kaydaBlok);
-      if (sablon) {
+      if (kutuphaneHedefi) {
+        const t = tanim();
+        await kutuphaneHedefi.onKaydet({
+          baslik: t.baslik,
+          kisa: t.kisa,
+          saat: t.saat,
+          // Hatırlatma burada sorulmaz; kayıtta varsa korunur.
+          hatirlatma: gecerliHatirlatma(kutuphaneHedefi.icerik.hatirlatma, t.saat),
+          tekrar: t.tekrar,
+          bloklar: bloklar.map(blokKopyasi),
+        });
+      } else if (sablon) {
         const t = tanim();
         const icerik = {
           gun: Math.max(0, gunFarki(SABLON_REF, durum.zamanlama.tarih)),
@@ -602,7 +638,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 tarihYok={durum.tarihsiz}
                 programGunu={programGunu}
                 gunGizle={gunGizle}
-                kalip={!!tasarim}
+                kalip={kalip}
                 onPress={() => {
                   Keyboard.dismiss();
                   setZamanBolum('tarih');
@@ -620,7 +656,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               placeholder={(!tasarim && durum.baslikIpucu) || VARSAYILAN_IPUCU}
               hata={tasarim ? null : hata}
               returnKeyType="done"
-              autoFocus={!duzenleme && !sablon?.kart && !tasarim && ilk.baslik === ''}
+              autoFocus={!duzenleme && !sablon?.kart && !kalip && ilk.baslik === ''}
             />
             {tasarim ? (
               durum.baslik.trim() === '' && (
@@ -646,7 +682,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
             <ZamanSeridi
               deger={durum.zamanlama}
               programda={!!programGunu}
-              kalip={!!tasarim}
+              kalip={kalip}
               onSure={() => {
                 Keyboard.dismiss();
                 setZamanBolum('sure');
@@ -736,7 +772,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         tarihYok={durum.tarihsiz}
         programGunu={programGunu}
         gunGizle={gunGizle}
-        kalip={!!tasarim}
+        kalip={kalip}
         onTarihSec={(zamanlama) => guncelle({ zamanlama, tarihsiz: false })}
         onDegis={(zamanlama) => guncelle({ zamanlama, tarihsiz: durum.tarihsiz && zamanlama.tekrar === null })}
       />
