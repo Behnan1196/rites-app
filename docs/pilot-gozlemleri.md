@@ -270,3 +270,8 @@ Sonuç: → kararlar.md (Biçimli metin); sürüm 1.5.0
 Ne dedi: "Kart çeşitliliği açısından normal kullanıcılar ile uzmanları ayırmak, normal kullanıcı kartlarını oldukça sadeleştirebilir… normal kullanıcılar için karmaşık hale gelmesi daha büyük sorun olabilir." Ücretli sürüm konuşuldu: "ücretli kısmı hiç düşünmeyelim, ayrımı uzman ve normal kullanıcı olarak yapalım." Sorulara: açıklama talimat yerine; takip için tek liste; video ve fotoğraf; sade program; uzman Ayarlar'da anahtar; zamanlayıcı Giriş'teki yeter; dosya olmasın; liste davranışı süreden, çok günlükte seçim.
 Nerede: Kart formu, program, Ayarlar
 Sonuç: → kararlar.md (Normal kullanıcı ve uzman); kart-modeli.md §9
+
+### P-52 · 27 Ekim 2026 · Behnan
+Ne dedi: "1. Kart eklerken önce 'Karta bir şey ekle' var, ona basınca 'Karta ekle'ye dönüşüyor, gereksiz bir ara durum. 2. Kart eklerken bazı alanlar ve modallar klavye açıksa arkada kalıyor. 3. Not editöründe başlığı seçtiğimde gelen menü (Paste, Select vs) editörün üst menüsünü kapatıyor."
+Nerede: Kart formu, biçimli editör, alttan sayfalar
+Sonuç: → kararlar.md (Küçük düzeltmeler, 27 Ekim)

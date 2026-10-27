@@ -478,3 +478,9 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Normal kullanıcının kartı:** başlık, biçimli açıklama (talimatın yerine), zaman. "Karta ekle"de yalnız **Liste · Fotoğraf · Video**. Zamanlayıcı yok (Giriş'teki yeter); dosya yok. Ölçüm, sayarak, puan, soru, kronometre, gelişim fotoğrafı yalnız çeşitlerin içinde hazır gelir. Var olan kartlardaki parçalar görünür ve düzenlenir. Not → kart: notun metni açıklamaya gider. — Ürün sahibi (P-51)
 - **Tek Liste** (Proje adımları ayrı değil; ikisi de "Liste"): bir günlük ya da tarihsiz kartta işaretler kalır, hepsi bitince kart yapıldı sayılır; birden çok gün süren kartta listenin altında **Her gün baştan** (varsayılan) · **İşaretler kalsın** seçimi ("her cumartesi bahçe" gibi). Kişi seçmediyse süre değişince davranış da kendiliğinden değişir. Uzmanda da aynı. — Ürün sahibi (P-51)
 - **Program:** normal kullanıcı hazır programı uygular, kartlarını programa çevirir ya da adını verip kurar; programın kartlarında gün seçilmez (hepsi 1. günden). Gün / hafta düzeni uzmanda. — Ürün sahibi (P-51)
+
+## Küçük düzeltmeler (27 Ekim)
+
+- Kart formunda "Karta bir şey ekle (isteğe bağlı)" ara durumu kalktı; doğrudan "+ Karta ekle". — Ürün sahibi (P-52)
+- Klavye: alttan açılan sayfa ve sorular açılırken klavye kapanır; sayfada odaklanan alan (yazı alanı, biçimli editör) klavyenin altında kalırsa içerik kendiliğinden kayar. — Ürün sahibi (P-52); yöntem: Öneri
+- Biçimli editörün araç çubuğu alta alındı (metin seçince çıkan Kopyala / Yapıştır menüsü üstünü örtüyordu); seçim menüsüne de **Kalın** ve **İtalik** eklendi. — Ürün sahibi (P-52); seçim menüsü: Öneri

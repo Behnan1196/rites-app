@@ -1,5 +1,5 @@
 // Biçimli metin (pilot 26 Ekim, P-50): react-native-enriched-html. `ZenginMetinAlani`
-// düzenleme alanı (üstünde küçük araç çubuğu: Kalın · İtalik · • Liste · 1. Liste ·
+// düzenleme alanı (altında küçük araç çubuğu; P-52: Kalın · İtalik · • Liste · 1. Liste ·
 // ☑ Liste); `ZenginMetin` görünüm. Saklama biçimi HTML (`mantik/zenginMetin`); eski
 // düz metin de gösterilir. `liste` kipinde (Liste, Proje adımları) araç çubuğu yok,
 // her satır onay kutulu bir maddedir.
@@ -19,6 +19,7 @@ import {
 
 import { htmlMi, metinDoluMu, metniHtml } from '@/mantik/zenginMetin';
 
+import { useOdakGoster } from './AltSayfa';
 import { boyut, renk } from './tema';
 import { Yazi } from './Yazi';
 
@@ -77,6 +78,8 @@ export function ZenginMetinAlani({
   // Editör açılışta kendi biçimine çevirip onChangeHtml gönderebilir; kişi dokunmadan
   // gelen değişiklik sayılmaz (yoksa form "değişti" sanır).
   const dokunuldu = useRef(false);
+  const odakGoster = useOdakGoster();
+  const kutu = useRef<View>(null);
 
   const bicimle = (ad: string) => {
     const r = ref.current;
@@ -122,35 +125,36 @@ export function ZenginMetinAlani({
     },
   ];
 
-  return (
-    <View style={[stiller.kap, odak && stiller.kapOdak]}>
-      {!liste && (
-        <View style={stiller.cubuk} accessibilityRole="toolbar">
-          {dugmeler.map((d) => (
-            <Pressable
-              key={d.ad}
-              onPress={() => bicimle(d.ad)}
-              accessibilityRole="button"
-              accessibilityLabel={d.etiket}
-              accessibilityState={{ selected: d.acik }}
-              hitSlop={2}
-              style={({ pressed }) => [stiller.dugme, d.acik && stiller.dugmeAcik, pressed && { opacity: 0.6 }]}
+  const cubuk = !liste && (
+    <View style={stiller.cubuk} accessibilityRole="toolbar">
+      {dugmeler.map((d) => (
+        <Pressable
+          key={d.ad}
+          onPress={() => bicimle(d.ad)}
+          accessibilityRole="button"
+          accessibilityLabel={d.etiket}
+          accessibilityState={{ selected: d.acik }}
+          hitSlop={2}
+          style={({ pressed }) => [stiller.dugme, d.acik && stiller.dugmeAcik, pressed && { opacity: 0.6 }]}
+        >
+          {d.ikon ? (
+            <Ionicons name={d.ikon} size={22} color={d.acik ? renk.yuzey : renk.ana} />
+          ) : (
+            <Yazi
+              kalinlik="kalin"
+              renk={d.acik ? renk.yuzey : renk.ana}
+              style={[stiller.dugmeYazi, d.ad === 'italik' && stiller.italik]}
             >
-              {d.ikon ? (
-                <Ionicons name={d.ikon} size={22} color={d.acik ? renk.yuzey : renk.ana} />
-              ) : (
-                <Yazi
-                  kalinlik="kalin"
-                  renk={d.acik ? renk.yuzey : renk.ana}
-                  style={[stiller.dugmeYazi, d.ad === 'italik' && stiller.italik]}
-                >
-                  {d.yazi}
-                </Yazi>
-              )}
-            </Pressable>
-          ))}
-        </View>
-      )}
+              {d.yazi}
+            </Yazi>
+          )}
+        </Pressable>
+      ))}
+    </View>
+  );
+
+  return (
+    <View style={[stiller.kap, odak && stiller.kapOdak]} ref={kutu}>
       <EnrichedTextInput
         ref={ref}
         defaultValue={liste && !ilk ? '<html><ul data-type="checkbox"><li></li></ul></html>' : ilk}
@@ -163,9 +167,19 @@ export function ZenginMetinAlani({
         onFocus={() => {
           dokunuldu.current = true;
           setOdak(true);
+          odakGoster(kutu.current);
         }}
         onBlur={() => setOdak(false)}
         onChangeState={(e) => setDurum(e.nativeEvent)}
+        // P-52: metin seçince çıkan menüde de Kalın / İtalik.
+        contextMenuItems={
+          liste
+            ? []
+            : [
+                { text: 'Kalın', onPress: () => bicimle('kalin') },
+                { text: 'İtalik', onPress: () => bicimle('italik') },
+              ]
+        }
         onChangeHtml={(e) => {
           if (dokunuldu.current) onDegis(metinDoluMu(e.nativeEvent.value) ? e.nativeEvent.value : '');
         }}
@@ -177,6 +191,8 @@ export function ZenginMetinAlani({
           color: renk.yazi,
         }}
       />
+      {/* P-52: araç çubuğu altta: seçince çıkan Kopyala / Yapıştır menüsü üstünü örtmesin. */}
+      {cubuk}
     </View>
   );
 }
@@ -195,8 +211,8 @@ const stiller = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 8,
     paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: renk.satirCizgi,
+    borderTopWidth: 1,
+    borderTopColor: renk.satirCizgi,
   },
   dugme: {
     width: 40,

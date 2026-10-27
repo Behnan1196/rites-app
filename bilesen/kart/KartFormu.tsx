@@ -329,7 +329,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const [zamanAcik, setZamanAcik] = useState(false);
   const [blokSeciciAcik, setBlokSeciciAcik] = useState(hedef.tur === 'duzenle' && !!hedef.blokEkle);
   // P-36: yeni kartta "Karta bir şey ekle" kapalı gelir (kartların çoğu başlık ve zamandan ibaret).
-  const [eklerAcik, setEklerAcik] = useState(hedef.tur !== 'yeni' || ilkDurum(hedef).bloklar.length > 0);
   const [soru, setSoru] = useState<Soru | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
   // Paylaşımdan dolu gelen form kaydedilmeden kapatılırken de sorar.
@@ -376,7 +375,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       const yeni = cesittenDurum(c, durum.zamanlama.tarih);
       setDurum(yeni);
       setIlk(yeni);
-      setEklerAcik(true);
     }
     setCesitSorusu(false);
   };
@@ -639,51 +637,36 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               />
             )}
 
-            {!eklerAcik ? (
-              <Pressable
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setEklerAcik(true);
-                }}
-                accessibilityRole="button"
-                style={({ pressed }) => [stiller.ekleSatiri, pressed && { opacity: 0.7 }]}
-              >
-                <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.esnek}>
-                  Karta bir şey ekle (isteğe bağlı)
+            {/* P-52: ara durum ("Karta bir şey ekle") kalktı; doğrudan "+ Karta ekle". */}
+            <>
+              {durum.bloklar.length > 0 && (
+                <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumBasligi}>
+                  Kartın içinde
                 </Yazi>
-                <Yazi tur="ikincil">Liste, video, ölçüm…</Yazi>
-              </Pressable>
-            ) : (
-              <>
-                {durum.bloklar.length > 0 && (
-                  <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumBasligi}>
-                    Kartın içinde
-                  </Yazi>
-                )}
-                {durum.bloklar.map((b, i) => (
-                  <BlokDuzenleyici
-                    key={b.id}
-                    blok={listeAyarla(b)}
-                    onDegis={(yeni) => blokDegis(i, yeni)}
-                    onKaldir={() => blokKaldir(i)}
-                    cokGunlu={cokGunlu}
-                    onListeSecimi={(tur) => {
-                      setOtomatikListeler((s) => new Set([...s].filter((x) => x !== b.id)));
-                      blokDegis(i, { ...b, tur });
-                    }}
-                  />
-                ))}
-                <Dugme
-                  tur="ikincil"
-                  yaziRengi={renk.ana}
-                  etiket="+ Karta ekle"
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setBlokSeciciAcik(true);
+              )}
+              {durum.bloklar.map((b, i) => (
+                <BlokDuzenleyici
+                  key={b.id}
+                  blok={listeAyarla(b)}
+                  onDegis={(yeni) => blokDegis(i, yeni)}
+                  onKaldir={() => blokKaldir(i)}
+                  cokGunlu={cokGunlu}
+                  onListeSecimi={(tur) => {
+                    setOtomatikListeler((s) => new Set([...s].filter((x) => x !== b.id)));
+                    blokDegis(i, { ...b, tur });
                   }}
                 />
-              </>
-            )}
+              ))}
+              <Dugme
+                tur="ikincil"
+                yaziRengi={renk.ana}
+                etiket="+ Karta ekle"
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setBlokSeciciAcik(true);
+                }}
+              />
+            </>
 
             {tasarim && (
               <View style={stiller.yayinSatiri}>

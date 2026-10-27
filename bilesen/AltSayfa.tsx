@@ -8,7 +8,7 @@
 //   hepsi önce sorar (P-46): Kaydet (sağ üstteki eylem) · Kaydetmeden çık · Düzenlemeye dön.
 // - Üst katmanda çizilir (bkz. Katman.tsx); kapalıyken hiçbir şey çizmez.
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Animated,
   BackHandler,
@@ -64,6 +64,13 @@ interface Ozellikler {
   children: ReactNode;
 }
 
+/**
+ * Odaklanan alan klavyenin altında kalmasın (P-52): alan, odaklanınca kendi kutusunu
+ * verir; sayfa, klavye açıldıktan sonra gerekiyorsa içeriği kaydırır.
+ */
+const OdakGosterici = createContext<(kutu: View | null) => void>(() => undefined);
+export const useOdakGoster = () => useContext(OdakGosterici);
+
 const KAPATMA_ESIGI = 120;
 const KAPANIS_SURESI = 200;
 
@@ -89,6 +96,33 @@ export function AltSayfa({
   const [onaySoruluyor, setOnaySoruluyor] = useState(false);
   const [kayma] = useState(() => new Animated.Value(ekranYuksekligi));
   const [klavye, setKlavye] = useState(0);
+  const kaydirici = useRef<ScrollView>(null);
+  const kaydirmaY = useRef(0);
+
+  const odakGoster = useCallback((kutu: View | null) => {
+    if (!kutu) return;
+    // Klavye açılıp sayfa küçüldükten sonra ölçülür.
+    setTimeout(() => {
+      const m = Keyboard.metrics();
+      if (!m) return;
+      kutu.measureInWindow((_x, y, _g, y2) => {
+        const alt = y + y2;
+        const sinir = m.screenY - 16;
+        if (alt <= sinir) return;
+        // Uzun alanın üstü de görünür kalsın.
+        const fark = Math.min(alt - sinir, Math.max(0, y - 140));
+        if (fark > 0) kaydirici.current?.scrollTo({ y: kaydirmaY.current + fark, animated: true });
+      });
+    }, 350);
+  }, []);
+
+  // P-52: açılan sayfa ve sorular klavyenin arkasında kalmasın.
+  useEffect(() => {
+    if (gorunur) Keyboard.dismiss();
+  }, [gorunur]);
+  useEffect(() => {
+    if (onay || onaySoruluyor) Keyboard.dismiss();
+  }, [onay, onaySoruluyor]);
 
   // Klavye açıkken sayfanın en büyük yüksekliği klavye kadar küçülür; içerik kayar.
   useEffect(() => {
@@ -248,12 +282,17 @@ export function AltSayfa({
           </View>
 
           <ScrollView
+            ref={kaydirici}
+            onScroll={(e) => {
+              kaydirmaY.current = e.nativeEvent.contentOffset.y;
+            }}
+            scrollEventThrottle={32}
             style={stiller.icerikKaydirma}
             contentContainerStyle={[stiller.icerik, !altAlan && { paddingBottom: kenar.bottom + 24 }]}
             keyboardShouldPersistTaps="handled"
             scrollEnabled={kaydirilabilir}
           >
-            {children}
+            <OdakGosterici.Provider value={odakGoster}>{children}</OdakGosterici.Provider>
           </ScrollView>
 
           {altAlan && (

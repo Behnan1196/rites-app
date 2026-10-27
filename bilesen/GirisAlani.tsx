@@ -1,6 +1,7 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useRef, useState } from 'react';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
+import { useOdakGoster } from './AltSayfa';
 import { boyut, olcu, renk, yazi } from './tema';
 import { Yazi } from './Yazi';
 
@@ -18,8 +19,11 @@ export const GirisAlani = forwardRef<TextInput, Ozellikler>(function GirisAlani(
   ref,
 ) {
   const [odakta, setOdakta] = useState(false);
+  // P-52: alttan sayfada klavyenin altında kalmasın.
+  const odakGoster = useOdakGoster();
+  const kutu = useRef<View>(null);
   return (
-    <View style={stiller.kap}>
+    <View style={stiller.kap} ref={kutu}>
       {!etiketGizli && (
         <Yazi kalinlik="kalin" style={stiller.etiket}>
           {etiket}
@@ -32,6 +36,7 @@ export const GirisAlani = forwardRef<TextInput, Ozellikler>(function GirisAlani(
         selectionColor={renk.ana}
         onFocus={(e) => {
           setOdakta(true);
+          odakGoster(kutu.current);
           onFocus?.(e);
         }}
         onBlur={(e) => {
