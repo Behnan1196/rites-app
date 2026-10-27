@@ -517,4 +517,5 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - Kişisel liste telefonda durur; **Başkalarıyla paylaş** deyince maddeleriyle ortak listeye çevrilir (oturum yoksa önce giriş istenir) ve telefondaki kopyası silinir. — Ürün sahibi (P-58)
 - Bir maddeye tarih verilirse (Bugün · Yarın · takvim) o gün ajandada "Liste: …" etiketiyle görünür, oradan işaretlenebilir. — Öneri
 - Yalnız listeden ibaret tek seferlik kartlar (tekrarı, programı, grup bağı olmayan) ilk açılışta bir kez Listelerim'e taşınır: adı kartın başlığı, açıklaması kartın açıklaması; işaretler korunur; kartın tarihi bugün ya da sonraysa bitmemiş maddelere o tarih verilir. — Ürün sahibi (P-58); tarih aktarımı: Öneri
+- Giriş'teki **Listelerim** kutusu (19 Ekim'de kalkmıştı) geri geldi: yarım kutu, "N liste"; "Giriş'te neler görünsün?"de açılıp kapatılır, varsayılan açık, en sonda. — Ürün sahibi (P-58); yer: Öneri
 - Tarihsiz yeni liste yalnız Listelerim'den (**+ Yeni liste**) açılır; kart formundaki Liste parçası tarihli kartlar için kalır. — Ürün sahibi (P-58)
