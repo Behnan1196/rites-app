@@ -66,6 +66,8 @@ export function YoutubeOynatici({
         originWhitelist={['*']}
         allowsInlineMediaPlayback
         allowsFullscreenVideo
+        // P-54: oynatıcının tam ekranında AirPlay (Apple TV / AirPlay'li televizyon).
+        allowsAirPlayForMediaPlayback
         mediaPlaybackRequiresUserAction
         javaScriptEnabled
         scrollEnabled={false}

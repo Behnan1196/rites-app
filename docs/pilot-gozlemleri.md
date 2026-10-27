@@ -280,3 +280,8 @@ Sonuç: → kararlar.md (Küçük düzeltmeler, 27 Ekim)
 Ne dedi: "Çoklu video konusuna gelelim. 1. Video ekle dediğimizde video boyutunda koyu bir placeholder, altında + video ekle. 2. Video ekleye basınca placeholder içinde bağlantı adresi, isteğe bağlı başlık, başlama ve bitiş; altında Vazgeç, Ekle. 3. URL ve başlık için ayrı caption yok, Başla: ve Bitiş: aynı satırda. 4. İlk video eklendikten sonra altında ayar ikonu ve + Video ekle. 5. Ayar ikonuyla url, başlık, başlama, bitiş düzenlenebilecek. 6. İkinci video eklenirse üstte Video 1, Video 2 butonları. 7. Video eklenince doğrudan embed oynayabilecek. 8. Başlıkları seçicide yazdırmayalım."
 Nerede: Kart formu → Video; kart görünümü
 Sonuç: → kararlar.md (Çoklu video)
+
+### P-54 · 27 Ekim 2026 · Behnan
+Ne dedi: "YouTube'da aç demene gerek yok, zaten içinde çıkıyor. Onun yerine bir Yansıt düğmesi ile doğrudan bağlı bir televizyona görüntü aktarmayı araştırabilirsin. YouTube'dan paylaş deyip Rites'a aktardığım videoların bazılarının tek kartta toplanmasını yapabiliriz: paylaştıklarımız Gelenlere düşüyor; video ekle derken 'Gelenlerden al' seçeneği olup gelenlerdeki video kartları listelenir ve seçilenin videosu bu karta eklenir."
+Nerede: Kart formu → Video; video oynatıcı
+Sonuç: → kararlar.md (Videolar: Gelenlerden al, Yansıt)

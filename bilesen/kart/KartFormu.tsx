@@ -35,6 +35,7 @@ import type { TasarimCesidi } from '@/sunucu/cesit';
 import { islemleriUygula, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
 import { notSil } from '@/veri/notlar';
+import { paylasilanSil } from '@/veri/paylasilanlar';
 import { programaYansit, programKartiEkle, programKartiSil, programKartiYaz } from '@/veri/programlar';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
@@ -345,6 +346,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const uzman = uzmanAyari || !!tasarim;
   const cokGunlu = durum.zamanlama.tekrar !== null;
   /** Bu formda eklenen, davranışı kişinin seçmediği listeler: süreye göre (bir gün → kalır). */
+  const [alinanPaylasilanlar, setAlinanPaylasilanlar] = useState<readonly string[]>([]);
   const [otomatikListeler, setOtomatikListeler] = useState<ReadonlySet<string>>(new Set());
   const listeAyarla = (b: BlokTaslagi): BlokTaslagi =>
     otomatikListeler.has(b.id) && (b.tur === 'liste' || b.tur === 'adimlar')
@@ -502,6 +504,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           yeniKartId: eklenen?.tur === 'kartEkle' ? eklenen.kart.id : undefined,
         });
       }
+      // P-54: videoya alınan paylaşımlar Gelenler'den kalkar.
+      for (const id of alinanPaylasilanlar) await paylasilanSil(kapi, id);
       onKapat();
     });
 
@@ -651,6 +655,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                   onDegis={(yeni) => blokDegis(i, yeni)}
                   onKaldir={() => blokKaldir(i)}
                   cokGunlu={cokGunlu}
+                  onGelendenAlindi={(id) => setAlinanPaylasilanlar((a) => [...a, id])}
                   onListeSecimi={(tur) => {
                     setOtomatikListeler((s) => new Set([...s].filter((x) => x !== b.id)));
                     blokDegis(i, { ...b, tur });

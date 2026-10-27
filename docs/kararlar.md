@@ -491,3 +491,9 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - İki ya da daha çok videoda üstte **Video 1 · Video 2** seçici; başlık seçicide yazılmaz (uzun başlıklar sığmaz). Kart görünümünde de aynı; seçilen video gömülü oynar, başlığı varsa altında küçük. — Ürün sahibi (P-53); görünümde başlık: Öneri
 - YouTube'da başla / bitiş oynatıcıya verilir (orada başlar, orada durur). Başla boşsa bağlantıdaki `t=` kullanılır. — Öneri
 - Saklama: `blok.maddeler` her video için bir JSON, `blok.metin` ilk videonun bağlantısı; eski tek bağlantılı kartlar tek video olarak açılır. Veritabanı değişmedi. — Not
+
+## Videolar: Gelenlerden al, Yansıt (27 Ekim)
+
+- "YouTube'da aç" kalktı (video kartın içinde oynuyor). — Ürün sahibi (P-54)
+- **Gelenlerden al:** video eklerken, YouTube'dan Rites'a paylaşılan videolar (Gelenler'deki paylaşımlar) "Gelenlerden al (N)" altında listelenir; dokunulan bu karta eklenir (başlığıyla). Kart kaydedilince Gelenler'den kalkar; vazgeçilirse Gelenler'de kalır. Başka kişilerin gönderdiği kartlardaki videolar şimdilik listede yok. — Ürün sahibi (P-54); kaydedince kalkması: Öneri
+- **Yansıt:** şimdilik oynatıcının tam ekranında AirPlay açık (Apple TV ya da AirPlay 2'li televizyon). Ayrı bir "Yansıt" düğmesi (AirPlay seçici) yerel modül ister: bir sonraki derlemede. Chromecast / Android TV ayrı ve daha büyük iş. — Öneri (P-54)

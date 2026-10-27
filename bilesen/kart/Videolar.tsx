@@ -3,14 +3,18 @@
 // oynar. Düzenleme (kart formu): video yokken koyu bir alan ve "+ Video ekle"; eklerken
 // alanın içinde bağlantı, isteğe bağlı başlık, Başla / Bitiş (aynı satırda), altında
 // Vazgeç · Ekle. Video eklenince oynatılabilir halde görünür; altında ⚙ (seçilen videoyu
-// düzenle) ve "+ Video ekle".
+// düzenle) ve "+ Video ekle". P-54: eklerken "Gelenlerden al": YouTube'dan Rites'a paylaşılan
+// videolar listelenir, seçilen bu karta eklenir (kart kaydedilince Gelenler'den kalkar).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
-import { youtubeVideosu } from '@/mantik/paylasimAl';
+import { kaynakAdi, youtubeVideosu } from '@/mantik/paylasimAl';
 import { adrestekiBaslangic, sureCoz, sureYaz, type Video } from '@/mantik/video';
+
+import { useSorgu } from '@/veri/kancalar';
+import { paylasilanlariOku, type Paylasilan } from '@/veri/paylasilanlar';
 
 import { Dugme } from '../Dugme';
 import { boyut, olcu, renk, yazi } from '../tema';
@@ -47,25 +51,12 @@ export function VideoOynat({ video }: { video: Video }) {
   const gecerli = /^https?:\/\//i.test(video.adres);
   if (yt)
     return (
-      <View style={stiller.kap}>
-        <YoutubeOynatici
-          key={`${yt.kimlik}-${video.bas}-${video.bit}`}
-          kimlik={yt.kimlik}
-          baslangic={video.bas ?? yt.baslangic}
-          bitis={video.bit}
-        />
-        <Pressable
-          onPress={() => void Linking.openURL(video.adres)}
-          accessibilityRole="link"
-          hitSlop={8}
-          style={stiller.disariAc}
-        >
-          <Ionicons name="open-outline" size={16} color={renk.ana} />
-          <Yazi tur="ikincil" renk={renk.ana} kalinlik="yariKalin">
-            {"YouTube'da aç"}
-          </Yazi>
-        </Pressable>
-      </View>
+      <YoutubeOynatici
+        key={`${yt.kimlik}-${video.bas}-${video.bit}`}
+        kimlik={yt.kimlik}
+        baslangic={video.bas ?? yt.baslangic}
+        bitis={video.bit}
+      />
     );
   return (
     <Pressable
@@ -118,10 +109,26 @@ const bosTaslak: Taslak = { adres: '', baslik: '', bas: '', bit: '' };
 export function VideolarDuzenleyici({
   videolar,
   onDegis,
+  onGelendenAlindi,
 }: {
   videolar: readonly Video[];
   onDegis: (videolar: Video[]) => void;
+  /** P-54: Gelenler'deki paylaşılan video bu karta alındı (kart kaydedilince Gelenler'den kalkar). */
+  onGelendenAlindi?: (id: string) => void;
 }) {
+  const [alinanlar, setAlinanlar] = useState<readonly string[]>([]);
+  const paylasilanlar = (useSorgu(['paylasilan'], (o) => paylasilanlariOku(o), []).veri ?? []).filter(
+    (p) => !alinanlar.includes(p.id) && !videolar.some((v) => v.adres === p.adres),
+  );
+  const [gelenlerAcik, setGelenlerAcik] = useState(false);
+  const gelendenAl = (p: Paylasilan) => {
+    onDegis([...videolar, { adres: p.adres, baslik: p.baslik, bas: adrestekiBaslangic(p.adres), bit: null }]);
+    setSecili(videolar.length);
+    setAlinanlar((a) => [...a, p.id]);
+    onGelendenAlindi?.(p.id);
+    setGelenlerAcik(false);
+    setMod(null);
+  };
   const [secili, setSecili] = useState(0);
   /** 'ekle': yeni video; sayı: o videoyu düzenle; null: oynatıcı. */
   const [mod, setMod] = useState<'ekle' | number | null>(null);
@@ -133,6 +140,7 @@ export function VideolarDuzenleyici({
     const v = m === 'ekle' ? null : videolar[m];
     setTaslak(v ? { adres: v.adres, baslik: v.baslik, bas: sureYaz(v.bas), bit: sureYaz(v.bit) } : bosTaslak);
     setHata(null);
+    setGelenlerAcik(false);
     setMod(m);
   };
 
@@ -211,6 +219,39 @@ export function VideolarDuzenleyici({
             {hata}
           </Yazi>
         )}
+        {mod === 'ekle' && paylasilanlar.length > 0 && (
+          <View style={stiller.gelenler}>
+            <Pressable
+              onPress={() => setGelenlerAcik((a) => !a)}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: gelenlerAcik }}
+              style={({ pressed }) => [stiller.gelenlerBaslik, pressed && { opacity: 0.7 }]}
+            >
+              <Ionicons name="mail-open-outline" size={20} color={renk.ana} />
+              <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.esnek}>
+                {`Gelenlerden al (${paylasilanlar.length})`}
+              </Yazi>
+              <Ionicons name={gelenlerAcik ? 'chevron-up' : 'chevron-down'} size={20} color={renk.soluk} />
+            </Pressable>
+            {gelenlerAcik &&
+              paylasilanlar.map((p) => (
+                <Pressable
+                  key={p.id}
+                  onPress={() => gelendenAl(p)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Bu karta al: ${p.baslik}`}
+                  style={({ pressed }) => [stiller.gelen, pressed && { opacity: 0.7 }]}
+                >
+                  <Ionicons name="logo-youtube" size={22} color={renk.ikincil} />
+                  <View style={stiller.esnek}>
+                    <Yazi numberOfLines={2}>{p.baslik}</Yazi>
+                    <Yazi tur="etiket" numberOfLines={1}>{`${kaynakAdi(p.adres)}'dan paylaştın`}</Yazi>
+                  </View>
+                  <Ionicons name="add-circle-outline" size={24} color={renk.ana} />
+                </Pressable>
+              ))}
+          </View>
+        )}
         <View style={stiller.dugmeler}>
           {typeof mod === 'number' && (
             <Dugme tur="tehlike" etiket="Videoyu kaldır" onPress={kaldir} style={stiller.solda} />
@@ -268,7 +309,6 @@ const stiller = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  disariAc: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', minHeight: 32 },
   girdi: {
     minHeight: 44,
     borderRadius: 10,
@@ -291,6 +331,24 @@ const stiller = StyleSheet.create({
     justifyContent: 'center',
   },
   secici: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  gelenler: {
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: 12,
+    backgroundColor: renk.yuzey,
+    overflow: 'hidden',
+  },
+  gelenlerBaslik: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: 12 },
+  gelen: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 56,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: renk.satirCizgi,
+  },
   sekme: {
     minHeight: 40,
     paddingHorizontal: 14,

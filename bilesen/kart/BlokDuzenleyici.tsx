@@ -28,9 +28,18 @@ interface Ozellikler {
   cokGunlu?: boolean;
   /** Kişi listenin davranışını seçti. */
   onListeSecimi?: (tur: 'liste' | 'adimlar') => void;
+  /** Videoya Gelenler'den alındı (P-54). */
+  onGelendenAlindi?: (id: string) => void;
 }
 
-export function BlokDuzenleyici({ blok, onDegis, onKaldir, cokGunlu = false, onListeSecimi }: Ozellikler) {
+export function BlokDuzenleyici({
+  blok,
+  onDegis,
+  onKaldir,
+  cokGunlu = false,
+  onListeSecimi,
+  onGelendenAlindi,
+}: Ozellikler) {
   const tur = BLOK_TURLERI[blok.tur];
   const degis = (alanlar: Partial<BlokTaslagi>) => onDegis({ ...blok, ...alanlar });
 
@@ -69,7 +78,11 @@ export function BlokDuzenleyici({ blok, onDegis, onKaldir, cokGunlu = false, onL
       )}
       {blok.tur === 'video' && (
         // P-53: çoklu video; ekleme ve ayar videonun alanında.
-        <VideolarDuzenleyici videolar={blokVideolari(blok)} onDegis={(v) => degis(videolarBlogu(v))} />
+        <VideolarDuzenleyici
+          videolar={blokVideolari(blok)}
+          onDegis={(v) => degis(videolarBlogu(v))}
+          onGelendenAlindi={onGelendenAlindi}
+        />
       )}
       {(blok.tur === 'liste' || blok.tur === 'adimlar') && (
         <>
