@@ -484,3 +484,10 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - Kart formunda "Karta bir şey ekle (isteğe bağlı)" ara durumu kalktı; doğrudan "+ Karta ekle". — Ürün sahibi (P-52)
 - Klavye: alttan açılan sayfa ve sorular açılırken klavye kapanır; sayfada odaklanan alan (yazı alanı, biçimli editör) klavyenin altında kalırsa içerik kendiliğinden kayar. — Ürün sahibi (P-52); yöntem: Öneri
 - Biçimli editörün araç çubuğu alta alındı (metin seçince çıkan Kopyala / Yapıştır menüsü üstünü örtüyordu); seçim menüsüne de **Kalın** ve **İtalik** eklendi. — Ürün sahibi (P-52); seçim menüsü: Öneri
+
+## Çoklu video (27 Ekim)
+
+- Video parçası birden çok video tutar. Formda: video yokken koyu alan ve **+ Video ekle**; eklerken alanın içinde bağlantı adresi, isteğe bağlı başlık, aynı satırda **Başla:** ve **Bitiş:** (dakika:saniye), altında **Vazgeç · Ekle**. Eklenen video oynatılabilir halde görünür; altında ⚙ (seçilen videonun bağlantı, başlık, başla, bitiş ayarı; "Videoyu kaldır") ve **+ Video ekle**. — Ürün sahibi (P-53); "Videoyu kaldır": Öneri
+- İki ya da daha çok videoda üstte **Video 1 · Video 2** seçici; başlık seçicide yazılmaz (uzun başlıklar sığmaz). Kart görünümünde de aynı; seçilen video gömülü oynar, başlığı varsa altında küçük. — Ürün sahibi (P-53); görünümde başlık: Öneri
+- YouTube'da başla / bitiş oynatıcıya verilir (orada başlar, orada durur). Başla boşsa bağlantıdaki `t=` kullanılır. — Öneri
+- Saklama: `blok.maddeler` her video için bir JSON, `blok.metin` ilk videonun bağlantısı; eski tek bağlantılı kartlar tek video olarak açılır. Veritabanı değişmedi. — Not

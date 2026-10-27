@@ -1,15 +1,15 @@
 // Kütüphanedeki ya da katalogdaki kartın içeriği, salt okunur: meta, kısa açıklama, bloklar.
 
-import { Linking, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { blokBasligi, icerikMetaMetni, type KartIcerigi, type KutuphaneBlogu } from '@/mantik/kutuphane';
+import { blokVideolari } from '@/mantik/video';
 
-import { Dugme } from '../Dugme';
 import { BuyutulebilirFoto } from '../kart/BuyutulebilirFoto';
 import { Bolum } from '../Secim';
-import { renk } from '../tema';
 import { Yazi } from '../Yazi';
 import { ZenginMetin } from '../ZenginMetin';
+import { VideolarGorunumu } from '../kart/Videolar';
 
 /** Kartın içeriği, salt okunur: meta, kısa açıklama, bloklar. */
 export function KartIcerigiGorunumu({ c }: { c: KartIcerigi }) {
@@ -40,11 +40,7 @@ function BlokGorunumu({ b }: { b: KutuphaneBlogu }) {
         </Bolum>
       );
     case 'video':
-      return /^https?:\/\//i.test(b.metin) ? (
-        <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Videoyu aç" onPress={() => void Linking.openURL(b.metin)} />
-      ) : (
-        <Yazi tur="ikincil">Video</Yazi>
-      );
+      return <VideolarGorunumu videolar={blokVideolari(b)} />;
     case 'foto':
       return b.dosya ? <BuyutulebilirFoto uri={b.dosya} style={stiller.foto} etiket="Fotoğraf" /> : null;
     default:

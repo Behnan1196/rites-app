@@ -15,9 +15,11 @@ import { olcu, renk } from '../tema';
 
 const SAYFA_ADRESI = `https://${Constants.expoConfig?.ios?.bundleIdentifier ?? 'com.behnanozturkmen.ritespilot'}`;
 
-function sayfa(kimlik: string, baslangic: number): string {
+function sayfa(kimlik: string, baslangic: number, bitis: number | null): string {
   const ek = new URLSearchParams({ playsinline: '1', rel: '0', modestbranding: '1' });
   if (baslangic > 0) ek.set('start', String(baslangic));
+  // P-53: bitiş saniyesi (YouTube orada durur).
+  if (bitis !== null && bitis > baslangic) ek.set('end', String(bitis));
   return `<!doctype html><html><head>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -41,7 +43,15 @@ const WebView: ComponentType<WebViewProps> | null = (() => {
 
 export const gomuluOynatmaVar = WebView !== null;
 
-export function YoutubeOynatici({ kimlik, baslangic = 0 }: { kimlik: string; baslangic?: number }) {
+export function YoutubeOynatici({
+  kimlik,
+  baslangic = 0,
+  bitis = null,
+}: {
+  kimlik: string;
+  baslangic?: number;
+  bitis?: number | null;
+}) {
   const gecis = (istek: WebViewNavigation & { isTopFrame?: boolean }) => {
     if (istek.isTopFrame === false) return true; // oynatıcının kendi çerçevesi
     if (istek.url.startsWith(SAYFA_ADRESI) || istek.url.startsWith('about:')) return true;
@@ -52,7 +62,7 @@ export function YoutubeOynatici({ kimlik, baslangic = 0 }: { kimlik: string; bas
   return (
     <View style={stiller.kap} accessibilityLabel="YouTube videosu">
       <WebView
-        source={{ html: sayfa(kimlik, baslangic), baseUrl: SAYFA_ADRESI }}
+        source={{ html: sayfa(kimlik, baslangic, bitis), baseUrl: SAYFA_ADRESI }}
         originWhitelist={['*']}
         allowsInlineMediaPlayback
         allowsFullscreenVideo

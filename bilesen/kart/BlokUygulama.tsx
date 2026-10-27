@@ -5,13 +5,13 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useRef, useState } from 'react';
-import { Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { adimDurumu, ilerleme, ilerlemeMetni } from '@/mantik/adimlar';
+import { blokVideolari } from '@/mantik/video';
 import { oncekiDeger } from '@/mantik/ajanda';
 import { sesDosyasiMi } from '@/mantik/dosya';
 import type { Blok, Kayit } from '@/mantik/kart';
-import { youtubeVideosu } from '@/mantik/paylasimAl';
 import { cubukOranlari, kisaSure, olcumGecmisi, oncekiCevaplar, type OlcumNoktasi } from '@/mantik/karakter';
 import { gunKisa, kisaTarih, uzunTarih, type Gun } from '@/mantik/tarih';
 import { dosyayiSakla } from '@/veri/dosyalar';
@@ -23,10 +23,10 @@ import { useKisaMesaj } from '../KisaMesaj';
 import { SesOynatici } from '../not/SesOynatici';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
+import { VideolarGorunumu } from './Videolar';
 import { ZenginMetin } from '../ZenginMetin';
 
 import { BuyutulebilirFoto } from './BuyutulebilirFoto';
-import { gomuluOynatmaVar, YoutubeOynatici } from './YoutubeOynatici';
 
 interface Ozellikler {
   blok: Blok;
@@ -203,42 +203,9 @@ function PuanBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
   );
 }
 
+/** P-53: çoklu video ("Video 1 · Video 2"), seçilen gömülü oynar. */
 function VideoBlogu({ blok }: { blok: Blok }) {
-  const gecerli = /^https?:\/\//i.test(blok.metin);
-  const youtube = gomuluOynatmaVar ? youtubeVideosu(blok.metin) : null;
-  if (youtube)
-    return (
-      <View style={stiller.videoKabi}>
-        <YoutubeOynatici kimlik={youtube.kimlik} baslangic={youtube.baslangic} />
-        <Pressable
-          onPress={() => void Linking.openURL(blok.metin)}
-          accessibilityRole="link"
-          hitSlop={8}
-          style={stiller.disariAc}
-        >
-          <Ionicons name="open-outline" size={16} color={renk.ana} />
-          <Yazi tur="ikincil" renk={renk.ana} kalinlik="yariKalin">
-            {"YouTube'da aç"}
-          </Yazi>
-        </Pressable>
-      </View>
-    );
-  return (
-    <Pressable
-      onPress={() => gecerli && void Linking.openURL(blok.metin)}
-      disabled={!gecerli}
-      accessibilityRole="link"
-      accessibilityLabel="Videoyu aç"
-      style={({ pressed }) => [stiller.video, pressed && { opacity: 0.85 }]}
-    >
-      <View style={stiller.oynat}>
-        <Ionicons name="play" size={36} color={renk.yuzey} />
-      </View>
-      <Yazi renk={renk.yuzey} kalinlik="yariKalin">
-        {gecerli ? 'Videoyu aç' : 'Video bağlantısı yok'}
-      </Yazi>
-    </Pressable>
-  );
+  return <VideolarGorunumu videolar={blokVideolari(blok)} />;
 }
 
 function ListeBlogu({ blok, kayit, onKayit }: Ozellikler) {
@@ -642,24 +609,6 @@ const stiller = StyleSheet.create({
   satir: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   ic: { gap: 10 },
   foto: { width: '100%', aspectRatio: 4 / 3, borderRadius: olcu.kose.kart, backgroundColor: renk.satirCizgi },
-  videoKabi: { gap: 8 },
-  disariAc: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', minHeight: 32 },
-  video: {
-    height: 200,
-    borderRadius: olcu.kose.kart,
-    backgroundColor: renk.yazi,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  oynat: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   liste: { gap: 4 },
   madde: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: olcu.enAzDokunma + 4 },
   kare: {

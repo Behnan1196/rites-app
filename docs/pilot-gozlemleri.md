@@ -275,3 +275,8 @@ Sonuç: → kararlar.md (Normal kullanıcı ve uzman); kart-modeli.md §9
 Ne dedi: "1. Kart eklerken önce 'Karta bir şey ekle' var, ona basınca 'Karta ekle'ye dönüşüyor, gereksiz bir ara durum. 2. Kart eklerken bazı alanlar ve modallar klavye açıksa arkada kalıyor. 3. Not editöründe başlığı seçtiğimde gelen menü (Paste, Select vs) editörün üst menüsünü kapatıyor."
 Nerede: Kart formu, biçimli editör, alttan sayfalar
 Sonuç: → kararlar.md (Küçük düzeltmeler, 27 Ekim)
+
+### P-53 · 27 Ekim 2026 · Behnan
+Ne dedi: "Çoklu video konusuna gelelim. 1. Video ekle dediğimizde video boyutunda koyu bir placeholder, altında + video ekle. 2. Video ekleye basınca placeholder içinde bağlantı adresi, isteğe bağlı başlık, başlama ve bitiş; altında Vazgeç, Ekle. 3. URL ve başlık için ayrı caption yok, Başla: ve Bitiş: aynı satırda. 4. İlk video eklendikten sonra altında ayar ikonu ve + Video ekle. 5. Ayar ikonuyla url, başlık, başlama, bitiş düzenlenebilecek. 6. İkinci video eklenirse üstte Video 1, Video 2 butonları. 7. Video eklenince doğrudan embed oynayabilecek. 8. Başlıkları seçicide yazdırmayalım."
+Nerede: Kart formu → Video; kart görünümü
+Sonuç: → kararlar.md (Çoklu video)

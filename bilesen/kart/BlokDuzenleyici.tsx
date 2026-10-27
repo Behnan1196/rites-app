@@ -9,10 +9,12 @@ import * as ImagePicker from 'expo-image-picker';
 import { Image, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { dosyayiSakla } from '@/veri/dosyalar';
+import { blokVideolari, videolarBlogu } from '@/mantik/video';
 import type { BlokTaslagi } from '@/veri/kartlar';
 
 import { Dugme } from '../Dugme';
 import { ZenginMetinAlani } from '../ZenginMetin';
+import { VideolarDuzenleyici } from './Videolar';
 import { ArtiEksi, Bolum, SecenekHapi } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
@@ -66,13 +68,8 @@ export function BlokDuzenleyici({ blok, onDegis, onKaldir, cokGunlu = false, onL
         />
       )}
       {blok.tur === 'video' && (
-        <Alan
-          etiket="Video bağlantısı"
-          deger={blok.metin}
-          onDegis={(metin) => degis({ metin: metin.trim() })}
-          ipucu="Video bağlantısını yapıştır"
-          url
-        />
+        // P-53: çoklu video; ekleme ve ayar videonun alanında.
+        <VideolarDuzenleyici videolar={blokVideolari(blok)} onDegis={(v) => degis(videolarBlogu(v))} />
       )}
       {(blok.tur === 'liste' || blok.tur === 'adimlar') && (
         <>
