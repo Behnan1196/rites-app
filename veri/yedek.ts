@@ -38,7 +38,7 @@ export async function yedekVerisi(oku: Okuyucu, dosyaKlasoru: string): Promise<Y
  * sürümde olmayan sütunlar atlanır. Hepsi tek işlemde: yarıda kalırsa hiçbir şey değişmez.
  */
 export function yedegiYaz(kapi: Kapi, yedek: YedekDosyasi, yeniKlasor: string): Promise<void> {
-  return kapi.yaz(['ayar', 'kart', 'not', 'plan', 'animsatici', 'kisi', 'kutuphane', 'paylasilan'], async (y) => {
+  return kapi.yaz(['ayar', 'kart', 'not', 'plan', 'animsatici', 'kisi', 'kutuphane', 'paylasilan', 'liste'], async (y) => {
     for (const t of [...YEDEK_TABLOLARI].reverse()) await y.calistir(`DELETE FROM ${tirnak(t)}`);
     const tablolar = eskiPlanlariAyikla(yedek);
     for (const t of YEDEK_TABLOLARI) {

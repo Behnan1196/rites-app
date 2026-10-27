@@ -32,6 +32,7 @@ export function ListeFormu({
   mevcut,
   grup,
   onKaydedildi,
+  baslangicAdi,
 }: {
   onKapat: () => void;
   /** Üyesi olduğum gruplar. */
@@ -42,9 +43,11 @@ export function ListeFormu({
   /** Grup ekranından açıldıysa o grup seçili gelir. */
   grup?: string;
   onKaydedildi: (id: string) => void;
+  /** Yeni listenin adı hazır gelsin (P-58: kişisel liste paylaşılırken). */
+  baslangicAdi?: string;
 }) {
   const kisaMesaj = useKisaMesaj();
-  const [ad, setAd] = useState(mevcut?.ad ?? '');
+  const [ad, setAd] = useState(mevcut?.ad ?? baslangicAdi ?? '');
   const [secGrup, setSecGrup] = useState<ReadonlySet<string>>(
     new Set(mevcut ? mevcut.gruplar.map((g) => g.id) : grup ? [grup] : []),
   );

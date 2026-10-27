@@ -20,6 +20,7 @@ import {
   type Madde,
 } from '@/mantik/listeler';
 import { grupAdi } from '@/mantik/gruplar';
+import { yerelListeMi } from '@/mantik/yerelListe';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { listedenAyril, listeyiSil } from '@/sunucu/listeler';
 import { useOturum } from '@/sunucu/oturum';
@@ -41,8 +42,16 @@ import { ListeFormu } from './ListeFormu';
 import { MaddeSayfasi } from './MaddeSayfasi';
 import { useListeler } from './useListeler';
 import { useMaddeler } from './useMaddeler';
+import { YerelListeEkrani } from './YerelListeEkrani';
 
+/** P-58: kişisel liste (telefonda, `y-` ile başlayan kimlik) ya da ortak liste (sunucu). */
 export function ListeEkrani({ geri }: { geri: string }) {
+  const { id, geri: geriParam } = useLocalSearchParams<{ id: string; geri?: string }>();
+  if (yerelListeMi(id)) return <YerelListeEkrani id={id} geri={geriParam || geri} />;
+  return <OrtakListeEkrani geri={geri} />;
+}
+
+function OrtakListeEkrani({ geri }: { geri: string }) {
   const { id, geri: geriParam } = useLocalSearchParams<{ id: string; geri?: string }>();
   const oturum = useOturum();
   const bugunGun = useBugun();
@@ -129,7 +138,11 @@ export function ListeEkrani({ geri }: { geri: string }) {
           )}
           <Yazi tur="ikincil">{uyelerMetni(liste, ben, ad)}</Yazi>
           {liste.gruplar.length > 0 && <Yazi tur="ikincil">{GRUP_NOTU}</Yazi>}
-          {(baglanamiyor || m.hata) && <Yazi tur="ikincil" renk={renk.hata}>{BAGLANAMIYOR}</Yazi>}
+          {(baglanamiyor || m.hata) && (
+            <Yazi tur="ikincil" renk={renk.hata}>
+              {BAGLANAMIYOR}
+            </Yazi>
+          )}
 
           <GirisAlani
             ref={girdi}
@@ -185,7 +198,11 @@ export function ListeEkrani({ geri }: { geri: string }) {
                                   { backgroundColor: etiket.bana ? kaynakRenk.liste.zemin : renk.zemin },
                                 ]}
                               >
-                                <Yazi tur="etiket" kalinlik="kalin" renk={etiket.bana ? kaynakRenk.liste.yazi : renk.ikincil}>
+                                <Yazi
+                                  tur="etiket"
+                                  kalinlik="kalin"
+                                  renk={etiket.bana ? kaynakRenk.liste.yazi : renk.ikincil}
+                                >
                                   {etiket.metin}
                                 </Yazi>
                               </View>
@@ -203,7 +220,12 @@ export function ListeEkrani({ geri }: { geri: string }) {
 
           {yol?.tur === 'sahip' && (
             <View style={stiller.altDugmeler}>
-              <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Listeyi düzenle" onPress={() => setDuzenle((n) => n + 1)} />
+              <Dugme
+                tur="ikincil"
+                yaziRengi={renk.ana}
+                etiket="Listeyi düzenle"
+                onPress={() => setDuzenle((n) => n + 1)}
+              />
               <Dugme tur="tehlike" etiket="Listeyi sil" onPress={() => setSoru('sil')} />
             </View>
           )}
@@ -251,7 +273,9 @@ export function ListeEkrani({ geri }: { geri: string }) {
       {soru && liste && ben && (
         <Katman>
           <OnayKutusu
-            baslik={soru === 'sil' ? `${liste.ad} listesi silinsin mi?` : `${liste.ad} listesinden ayrılmak istiyor musun?`}
+            baslik={
+              soru === 'sil' ? `${liste.ad} listesi silinsin mi?` : `${liste.ad} listesinden ayrılmak istiyor musun?`
+            }
             aciklama={
               soru === 'sil'
                 ? 'Listedeki maddeler herkes için silinir.'
@@ -267,7 +291,8 @@ export function ListeEkrani({ geri }: { geri: string }) {
                 : {
                     etiket: 'Listeden ayrıl',
                     tur: 'tehlike',
-                    onPress: () => void listeIsi(() => listedenAyril(liste.id, ben), `${liste.ad} listesinden ayrıldın.`),
+                    onPress: () =>
+                      void listeIsi(() => listedenAyril(liste.id, ben), `${liste.ad} listesinden ayrıldın.`),
                   },
               { etiket: 'Vazgeç', tur: 'yazi', onPress: () => setSoru(null) },
             ]}

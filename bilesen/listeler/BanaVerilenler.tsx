@@ -2,6 +2,8 @@
 // Uygulama boyunca tek kaynak: oturum açılınca, uygulama öne dönünce, Ajandam
 // öne gelince ve listede bir değişiklik olunca (Realtime) tazelenir.
 // İşaretleme önce ekranda, sonra sunucuda yapılır; olmazsa geri alınır.
+// P-58: Listelerim'in (telefondaki listeler) tarihli maddeleri de buradan gelir; oturum
+// gerekmez, işaretleme telefonda yapılır.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
@@ -9,6 +11,9 @@ import { AppState } from 'react-native';
 import type { BanaVerilen } from '@/mantik/listeler';
 import { banaVerilenleriOku, maddeDegistir, maddeleriDinle } from '@/sunucu/listeler';
 import { useOturum } from '@/sunucu/oturum';
+import { useSorgu } from '@/veri/kancalar';
+import { useVeri } from '@/veri/VeriSaglayici';
+import { tarihliYerelMaddeler, yerelMaddeDegistir } from '@/veri/yerelListeler';
 
 interface Deger {
   maddeler: readonly BanaVerilen[];
@@ -23,7 +28,10 @@ const Baglam = createContext<Deger>({ maddeler: BOS, yenile: async () => undefin
 export function BanaVerilenlerSaglayici({ children }: { children: ReactNode }) {
   const oturum = useOturum();
   const ben = oturum.durum === 'var' ? oturum.id : null;
-  const [maddeler, setMaddeler] = useState<readonly BanaVerilen[]>(BOS);
+  const [sunucudakiler, setMaddeler] = useState<readonly BanaVerilen[]>(BOS);
+  const { kapi } = useVeri();
+  const yereller = useSorgu(['liste'], (o) => tarihliYerelMaddeler(o), []).veri ?? BOS;
+  const maddeler = useMemo(() => [...sunucudakiler, ...yereller], [sunucudakiler, yereller]);
   const sira = useRef(0);
 
   const yenile = useCallback(async () => {
@@ -56,6 +64,15 @@ export function BanaVerilenlerSaglayici({ children }: { children: ReactNode }) {
 
   const isaretle = useCallback(
     async (id: string, yapildi: boolean) => {
+      if (yereller.some((m) => m.id === id)) {
+        try {
+          await yerelMaddeDegistir(kapi, id, { yapildi });
+          return true;
+        } catch (e) {
+          console.warn(e);
+          return false;
+        }
+      }
       sira.current++; // yoldaki okuma bu değişikliği ezmesin
       setMaddeler((ms) => ms.map((m) => (m.id === id ? { ...m, yapildi } : m)));
       try {
@@ -67,7 +84,7 @@ export function BanaVerilenlerSaglayici({ children }: { children: ReactNode }) {
         return false;
       }
     },
-    [],
+    [kapi, yereller],
   );
 
   const deger = useMemo(() => ({ maddeler, yenile, isaretle }), [maddeler, yenile, isaretle]);

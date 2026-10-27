@@ -49,6 +49,7 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 19 | `kart.seri_say` (tekrarlı kartta seri sayılsın mı: 1 / 0; NULL: kural, `mantik/karakter.ts`) |
 | 20 | `kart.cesit` (kartın açıldığı isimli çeşit, `KartCesidi.id`; NULL: çeşitsiz). Bölmede yeni karta geçer |
 | 21 | `program_kart.cesit` (programın kartının çeşidi; ajandaya geçen karta geçer) |
+| 22 | Listelerim (P-58): `yerel_liste` (ad, açıklama, sıra, oluşturma) ve `yerel_madde` (liste → silinince maddeleri de silinir; metin, yapıldı, tarih, sıra). Kimlikleri `y-` ile başlar (`yerelListeMi`); ortak listeler sunucudadır. Tarihli madde `BanaVerilenler` üzerinden ajandaya düşer. Açılışta bir kez (`ayar.listeler_tasindi`) yalnız liste parçalarından oluşan tekrarsız, programsız, bağsız kartlar yerel listeye çevrilip silinir (`listeKartlariniTasi`) |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 
@@ -66,7 +67,7 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
   - `dosyaKlasoru`: yedeği alan telefondaki dosya klasörü (geri yüklemede yollar yeni klasöre çevrilir)
   - `tablolar`: `{ tabloAdı: satır[] }` — satırlar SQLite sütun adlarıyla; JSON sütunlar metin olarak
   - `dosyalar`: `{ dosyaAdı: base64 }` — fotoğraf, ses, belge
-- Yedeğe giren tablolar: `ayar, kart, blok, kayit, not, program, program_kart, alan_durumu, animsatici, animsatici_gun, kisi, kutuphane, paylasilan`. Sürüm 15'ten eski yedek geri yüklenirken plan kartları (ve blok / kayıtları) ile kütüphanedeki plan kopyaları alınmaz (`eskiPlanlariAyikla`).
+- Yedeğe giren tablolar: `ayar, kart, blok, kayit, not, program, program_kart, alan_durumu, animsatici, animsatici_gun, kisi, kutuphane, paylasilan, yerel_liste, yerel_madde`. Sürüm 15'ten eski yedek geri yüklenirken plan kartları (ve blok / kayıtları) ile kütüphanedeki plan kopyaları alınmaz (`eskiPlanlariAyikla`).
 - Geri yükleme tek işlemdir: telefondaki veriler silinir, yedektekiler yazılır; eski sürümden yedekte olmayan sütunlar varsayılanını alır; daha yeni sürümün yedeği reddedilir.
 
 ## Derleme ve dağıtım

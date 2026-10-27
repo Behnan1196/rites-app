@@ -36,6 +36,8 @@ export interface Ayarlar {
   zamanlayici: unknown;
   /** Uzman görünümü (P-51): kart formunda bütün parçalar, programda "N. gün". */
   uzman_gorunumu: boolean;
+  /** Liste kartları Listelerim'e taşındı (P-58; bir kez). */
+  listeler_tasindi: boolean;
 }
 
 export type AyarAnahtari = keyof Ayarlar;

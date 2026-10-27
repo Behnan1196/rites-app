@@ -300,3 +300,8 @@ Sonuç: → kararlar.md (Hesabımı sil düzeldi); sema.sql
 Ne dedi: "Stilli editörde satırlar çok bitişik, satır aralığını 1,2 yapsak. Zaman şeridimize basınca tarih ve saat dışında çıkan Süre ve Hatırlatma orada kayboluyor ve sayfayı fazla uzatıyor; o ikisi için ayrı bir şerit mi yapsak, hatta Karta ekle butonu da o şeritte olabilir."
 Nerede: Kart formu; biçimli editör
 Sonuç: → kararlar.md (Kart formu: ikinci şerit; editörde satır aralığı)
+
+### P-58 · 27 Ekim 2026 · Behnan
+Ne dedi: "Tarihsiz bir listenin ajandada olması garip… Gruplarda ortak listeler var; kimseyle paylaşmazsam benim listem." Kararlar: kişisel liste telefonda dursun; yalnız listeden ibaret kartlar kendiliğinden taşınsın; tarihsiz liste yalnız Listelerim'den.
+Nerede: Ajanda; Giriş → Ortak listeler
+Sonuç: → kararlar.md (Listelerim: kişisel listeler telefonda)

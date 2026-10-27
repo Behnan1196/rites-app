@@ -303,6 +303,27 @@ export const GOCLER: readonly Goc[] = [
     surum: 21,
     sql: `ALTER TABLE program_kart ADD COLUMN cesit TEXT;`,
   },
+  {
+    // Listelerim (pilot 27 Ekim, P-58): kişinin telefondaki listeleri ve maddeleri.
+    surum: 22,
+    sql: `CREATE TABLE yerel_liste (
+            id         TEXT PRIMARY KEY,
+            ad         TEXT NOT NULL,
+            aciklama   TEXT NOT NULL DEFAULT '',
+            sira       REAL NOT NULL DEFAULT 0,
+            olusturma  TEXT NOT NULL
+          );
+          CREATE TABLE yerel_madde (
+            id       TEXT PRIMARY KEY,
+            liste    TEXT NOT NULL REFERENCES yerel_liste(id) ON DELETE CASCADE,
+            metin    TEXT NOT NULL,
+            yapildi  INTEGER NOT NULL DEFAULT 0,
+            tarih    TEXT,
+            sira     REAL NOT NULL DEFAULT 0
+          );
+          CREATE INDEX yerel_madde_liste ON yerel_madde (liste, sira);
+          CREATE INDEX yerel_madde_tarih ON yerel_madde (tarih);`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */
