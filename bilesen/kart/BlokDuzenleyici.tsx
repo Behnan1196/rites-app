@@ -13,7 +13,7 @@ import type { BlokTaslagi } from '@/veri/kartlar';
 
 import { Dugme } from '../Dugme';
 import { ZenginMetinAlani } from '../ZenginMetin';
-import { ArtiEksi, Bolum } from '../Secim';
+import { ArtiEksi, Bolum, SecenekHapi } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
 import { BLOK_TURLERI } from './blokTurleri';
@@ -22,9 +22,13 @@ interface Ozellikler {
   blok: BlokTaslagi;
   onDegis: (blok: BlokTaslagi) => void;
   onKaldir: () => void;
+  /** Kart birden çok gün sürüyor: listede "Her gün baştan / İşaretler kalsın" seçimi (P-51). */
+  cokGunlu?: boolean;
+  /** Kişi listenin davranışını seçti. */
+  onListeSecimi?: (tur: 'liste' | 'adimlar') => void;
 }
 
-export function BlokDuzenleyici({ blok, onDegis, onKaldir }: Ozellikler) {
+export function BlokDuzenleyici({ blok, onDegis, onKaldir, cokGunlu = false, onListeSecimi }: Ozellikler) {
   const tur = BLOK_TURLERI[blok.tur];
   const degis = (alanlar: Partial<BlokTaslagi>) => onDegis({ ...blok, ...alanlar });
 
@@ -70,14 +74,9 @@ export function BlokDuzenleyici({ blok, onDegis, onKaldir }: Ozellikler) {
           url
         />
       )}
-      {blok.tur === 'liste' && (
+      {(blok.tur === 'liste' || blok.tur === 'adimlar') && (
         <>
-          <Alan
-            etiket="Liste adı"
-            deger={blok.ad}
-            onDegis={(ad) => degis({ ad })}
-            ipucu="Liste adı (örneğin Malzemeler)"
-          />
+          <Alan etiket="Liste adı" deger={blok.ad} onDegis={(ad) => degis({ ad })} ipucu="Liste adı (isteğe bağlı)" />
           <ZenginMetinAlani
             etiket="Maddeler"
             deger={blok.metin}
@@ -85,22 +84,25 @@ export function BlokDuzenleyici({ blok, onDegis, onKaldir }: Ozellikler) {
             ipucu="Her satıra bir madde"
             liste
           />
-        </>
-      )}
-      {blok.tur === 'adimlar' && (
-        <>
-          <Alan etiket="Proje adı" deger={blok.ad} onDegis={(ad) => degis({ ad })} ipucu="Kısa ad (isteğe bağlı)" />
-          <ZenginMetinAlani
-            etiket="Adımlar"
-            deger={blok.metin}
-            onDegis={(metin) => degis({ metin })}
-            ipucu="Her satıra bir adım"
-            liste
-          />
-          <Yazi tur="ikincil">
-            Liste her gün sıfırlanır; proje adımları sıfırlanmaz, kaldığın yerden sürer. Hepsi bitince kart yapıldı
-            sayılır.
-          </Yazi>
+          {/* P-51: tek Liste. Bir günlük kartta işaretler kalır; birden çok gün sürende seçilir. */}
+          {cokGunlu ? (
+            <View style={stiller.yanYana}>
+              <SecenekHapi
+                etiket="Her gün baştan"
+                secili={blok.tur === 'liste'}
+                onPress={() => onListeSecimi?.('liste')}
+                style={stiller.esit}
+              />
+              <SecenekHapi
+                etiket="İşaretler kalsın"
+                secili={blok.tur === 'adimlar'}
+                onPress={() => onListeSecimi?.('adimlar')}
+                style={stiller.esit}
+              />
+            </View>
+          ) : (
+            <Yazi tur="ikincil">İşaretlediklerin kalır; hepsi bitince kart yapıldı sayılır.</Yazi>
+          )}
         </>
       )}
       {blok.tur === 'foto' && (

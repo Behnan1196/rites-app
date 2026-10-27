@@ -33,7 +33,7 @@ function BlokGorunumu({ b }: { b: KutuphaneBlogu }) {
     case 'adimlar':
       return (
         <Bolum>
-          <Yazi kalinlik="kalin">{b.ad || (b.tur === 'adimlar' ? 'Proje adımları' : 'Liste')}</Yazi>
+          <Yazi kalinlik="kalin">{b.ad || 'Liste'}</Yazi>
           {b.maddeler.map((m, i) => (
             <Yazi key={i}>{`• ${m}`}</Yazi>
           ))}

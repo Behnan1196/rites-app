@@ -265,3 +265,8 @@ Sonuç: → kararlar.md (Kart formu: başlık, süre ve seri)
 Ne dedi: "Talimat bir textbox, liste ve proje adımları birer checklist, bir de açıklama alanımız var, o da textbox. Daha önce web'de uygulamıştım, stilli textbox için kütüphaneler var: bold, bullet, numaralı, checklist gibi, onlardan kullansak iyi olacak." Sorulara: Enriched; liste ve adımlar aynı editörde onay kutulu.
 Nerede: Kart formu (talimat, açıklama, liste, proje adımları)
 Sonuç: → kararlar.md (Biçimli metin); sürüm 1.5.0
+
+### P-51 · 27 Ekim 2026 · Behnan
+Ne dedi: "Kart çeşitliliği açısından normal kullanıcılar ile uzmanları ayırmak, normal kullanıcı kartlarını oldukça sadeleştirebilir… normal kullanıcılar için karmaşık hale gelmesi daha büyük sorun olabilir." Ücretli sürüm konuşuldu: "ücretli kısmı hiç düşünmeyelim, ayrımı uzman ve normal kullanıcı olarak yapalım." Sorulara: açıklama talimat yerine; takip için tek liste; video ve fotoğraf; sade program; uzman Ayarlar'da anahtar; zamanlayıcı Giriş'teki yeter; dosya olmasın; liste davranışı süreden, çok günlükte seçim.
+Nerede: Kart formu, program, Ayarlar
+Sonuç: → kararlar.md (Normal kullanıcı ve uzman); kart-modeli.md §9

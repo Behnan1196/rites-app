@@ -178,14 +178,17 @@ export function ZamanRozeti({
   tarihYok = false,
   programGunu = null,
   kalip = false,
+  gunGizle = false,
 }: {
   deger: Zamanlama;
   onPress: () => void;
   tarihYok?: boolean;
   programGunu?: ProgramGunu | null;
   kalip?: boolean;
+  /** P-51: normal kullanıcının program kartında gün yok (hepsi 1. günden). */
+  gunGizle?: boolean;
 }) {
-  const metin = zamanRozetiMetni(deger, { tarihYok, programGunu, kalip });
+  const metin = zamanRozetiMetni(deger, { tarihYok, programGunu, kalip: kalip || gunGizle });
   const ekler = [deger.tekrar ? tekrarSatirMetni(deger.tekrar) : null, deger.hatirlatma ? 'hatırlatma var' : null]
     .filter(Boolean)
     .join(', ');
@@ -223,6 +226,7 @@ export function ZamanSayfasi({
   tarihYok = false,
   programGunu = null,
   kalip = false,
+  gunGizle = false,
 }: {
   gorunur: boolean;
   onKapat: () => void;
@@ -234,11 +238,13 @@ export function ZamanSayfasi({
   tarihYok?: boolean;
   programGunu?: ProgramGunu | null;
   kalip?: boolean;
+  /** P-51: normal kullanıcının program kartında gün seçilmez. */
+  gunGizle?: boolean;
 }) {
   const ortak = { deger, bugunGun, onAc: () => undefined, tarihYok, programGunu, satirIci: true, tamamYok: true };
   return (
     <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Ne zaman?" sagKapat="Tamam">
-      {!kalip && (
+      {!kalip && !gunGizle && (
         <View style={stiller.bolum}>
           <Yazi tur="bolumBasligi" accessibilityRole="header">
             {programGunu ? 'Programın günü' : deger.tekrar ? 'Başlangıç' : 'Tarih'}

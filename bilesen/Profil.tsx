@@ -34,6 +34,8 @@ import { GirisAlani } from './GirisAlani';
 import { useGirisAyari } from './giris/GirisAyari';
 import { UcretsizSinir } from './gruplar/UcretsizSinir';
 import { Katman } from './Katman';
+import { AcKapa } from './Secim';
+import { useUzman } from './useUzman';
 import { useKisaMesaj } from './KisaMesaj';
 import { useOturumAc } from './oturum/OturumSayfasi';
 import { olcu, renk } from './tema';
@@ -319,6 +321,7 @@ function AyarlarSayfasi({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =>
   const [calisiyor, setCalisiyor] = useState(false);
   // P-41: Kart çeşitleri yalnız tasarımcıya görünür (sunucuda `tasarimci`).
   const [tasarimci, setTasarimci] = useState(false);
+  const uzman = useUzman();
   const oturumVar = oturum.durum === 'var';
   useEffect(() => {
     if (!gorunur || !oturumVar) return;
@@ -401,6 +404,29 @@ function AyarlarSayfasi({ gorunur, onKapat }: { gorunur: boolean; onKapat: () =>
             girisAyariniAc();
           }}
         />
+      </View>
+
+      <View style={stiller.kart}>
+        <View style={stiller.baslikSatiri}>
+          <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.ad}>
+            Uzman görünümü
+          </Yazi>
+          <AcKapa
+            acik={uzman}
+            onDegis={(acik) =>
+              void ayarYaz(kapi, 'uzman_gorunumu', acik).catch((e: unknown) => {
+                console.error('Ayar kaydedilemedi', e);
+                kisaMesaj('Kaydedilemedi. Yeniden dene.');
+              })
+            }
+            etiket="Uzman görünümü"
+          />
+        </View>
+        <Yazi tur="ikincil">
+          {uzman
+            ? 'Kart formunda bütün parçalar (talimat, zamanlayıcı, ölçüm, puan, soru…) ve programda gün düzeni açık.'
+            : 'Danışmanlar ve program hazırlayanlar için: kart formunda bütün parçalar ve programda gün düzeni.'}
+        </Yazi>
       </View>
 
       <View style={stiller.kart}>

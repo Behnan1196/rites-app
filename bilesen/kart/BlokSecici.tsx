@@ -17,29 +17,42 @@ export function BlokSecici({
   onKapat,
   onSec,
   haric = [],
+  uzman = false,
 }: {
   gorunur: boolean;
   onKapat: () => void;
   onSec: (tur: BlokTuru) => void;
   /** Gösterilmeyecek türler (çeşit tasarımında telefondaki fotoğraf / dosya; P-41). */
   haric?: readonly BlokTuru[];
+  /** P-51: normal kullanıcı yalnız Liste · Fotoğraf · Video görür; uzman hepsini. */
+  uzman?: boolean;
 }) {
-  const goster = (t: BlokTuru) => !haric.includes(t);
+  // P-51: tek Liste (işaretlerin kalıp kalmayacağı formda seçilir); "Proje adımları" ayrı değil.
+  const goster = (t: BlokTuru) => !haric.includes(t) && t !== 'adimlar';
   return (
     <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Karta ekle" sagKapat="Kapat">
-      <Izgara
-        baslik="Kartta ne görünsün?"
-        turler={[...ICERIK_BLOKLARI, ...ARAC_BLOKLARI].filter(goster)}
-        onSec={onSec}
-      />
-      <Izgara
-        baslik="Ne kaydedilsin?"
-        turler={KAYIT_BLOKLARI.filter((t) => !ARAC_BLOKLARI.includes(t) && goster(t))}
-        onSec={onSec}
-      />
+      {uzman ? (
+        <>
+          <Izgara
+            baslik="Kartta ne görünsün?"
+            turler={[...ICERIK_BLOKLARI, ...ARAC_BLOKLARI].filter(goster)}
+            onSec={onSec}
+          />
+          <Izgara
+            baslik="Ne kaydedilsin?"
+            turler={KAYIT_BLOKLARI.filter((t) => !ARAC_BLOKLARI.includes(t) && goster(t))}
+            onSec={onSec}
+          />
+        </>
+      ) : (
+        <Izgara baslik="" turler={NORMAL_BLOKLAR.filter(goster)} onSec={onSec} />
+      )}
     </AltSayfa>
   );
 }
+
+/** Normal kullanıcının parçaları (P-51); açıklama talimatın yerine geçer. */
+const NORMAL_BLOKLAR: readonly BlokTuru[] = ['liste', 'foto', 'video'];
 
 function Izgara({
   baslik,
@@ -52,9 +65,11 @@ function Izgara({
 }) {
   return (
     <View style={stiller.bolum}>
-      <Yazi tur="kutuBasligi" accessibilityRole="header">
-        {baslik}
-      </Yazi>
+      {!!baslik && (
+        <Yazi tur="kutuBasligi" accessibilityRole="header">
+          {baslik}
+        </Yazi>
+      )}
       <View style={stiller.izgara}>
         {turler.map((tur) => {
           const t = BLOK_TURLERI[tur];

@@ -470,3 +470,11 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - Talimat ve açıklamadaki onay kutuları yalnız biçimdir (işaret kaydedilmez); işaretlenecek şeyler Liste ile. — Not
 - Saklama HTML; eski kartların düz metni olduğu gibi gösterilir. Arama ve kısa gösterimlerde düz metne çevrilir. Biçimli metin sistem yazı tipiyle çizilir (kalın / italik güvenle çıksın diye). — Öneri
 - Yerel modül eklendiği için **yeni derleme** (1.5.0); bu sürümden sonraki güncellemeler yalnız 1.5.0'a gider. — Not
+
+## Normal kullanıcı ve uzman (27 Ekim)
+
+- Ayrım ücretle değil, **uzman / normal kullanıcı** olarak (ücretli sürüm şimdilik düşünülmüyor). — Ürün sahibi (P-51)
+- **Uzman görünümü** Ayarlar'da bir anahtar (`ayar.uzman_gorunumu`). Açıkken kart formu bugünkü tam hali: bütün parçalar, programda "N. gün". Kart çeşidi yayınlamak ayrıca sunucudaki tasarımcı yetkisidir. — Ürün sahibi (P-51: anahtar)
+- **Normal kullanıcının kartı:** başlık, biçimli açıklama (talimatın yerine), zaman. "Karta ekle"de yalnız **Liste · Fotoğraf · Video**. Zamanlayıcı yok (Giriş'teki yeter); dosya yok. Ölçüm, sayarak, puan, soru, kronometre, gelişim fotoğrafı yalnız çeşitlerin içinde hazır gelir. Var olan kartlardaki parçalar görünür ve düzenlenir. Not → kart: notun metni açıklamaya gider. — Ürün sahibi (P-51)
+- **Tek Liste** (Proje adımları ayrı değil; ikisi de "Liste"): bir günlük ya da tarihsiz kartta işaretler kalır, hepsi bitince kart yapıldı sayılır; birden çok gün süren kartta listenin altında **Her gün baştan** (varsayılan) · **İşaretler kalsın** seçimi ("her cumartesi bahçe" gibi). Kişi seçmediyse süre değişince davranış da kendiliğinden değişir. Uzmanda da aynı. — Ürün sahibi (P-51)
+- **Program:** normal kullanıcı hazır programı uygular, kartlarını programa çevirir ya da adını verip kurar; programın kartlarında gün seçilmez (hepsi 1. günden). Gün / hafta düzeni uzmanda. — Ürün sahibi (P-51)

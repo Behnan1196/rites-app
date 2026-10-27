@@ -34,6 +34,8 @@ export interface Ayarlar {
   avatar: string | null;
   /** Giriş'teki zamanlayıcının ayarı (`mantik/zamanlayici`; P-42); okurken `zamanlayiciAyariCoz`. */
   zamanlayici: unknown;
+  /** Uzman görünümü (P-51): kart formunda bütün parçalar, programda "N. gün". */
+  uzman_gorunumu: boolean;
 }
 
 export type AyarAnahtari = keyof Ayarlar;

@@ -86,7 +86,7 @@ export function cubukOranlari(noktalar: readonly OlcumNoktasi[]): number[] {
 export interface KartTaslagi {
   baslik: string;
   videoAdresi?: string;
-  /** Talimat bloğu olur. */
+  /** Açıklama olur (P-51; önceden talimat bloğu). */
   metin?: string;
   /** Sesli notun kaydı: dosya bloğu olur. */
   sesYolu?: string;
@@ -94,7 +94,7 @@ export interface KartTaslagi {
   notId?: string;
 }
 
-/** Not → kart taslağı: ilk satır başlık (en çok 60 harf); başka satır ya da uzun metin talimat olur. */
+/** Not → kart taslağı: ilk satır başlık (en çok 60 harf); başka satır ya da uzun metin açıklama olur. */
 export function notKartTaslagi(not: {
   id: string;
   metin: string;

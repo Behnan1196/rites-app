@@ -141,3 +141,47 @@ Behnan (24 Ekim): bu işi tam çözmek için pilotta isimli kart çeşitleri; **
 1. Ajandada çeşidin simgesi görünsün mü?
 2. Danışman kendi çeşidini tanımlayabilsin mi, yoksa çeşitler Rites'ın mı (bugün: Rites'ın tasarımcı hesapları)?
 3. Haftalık gözden geçirme çeşide göre mi özetlesin ("bu hafta 6 gün su hedefi, 1 tartı")?
+
+## 9. Normal kullanıcı ve uzman (tartışma, 27 Ekim)
+
+Behnan (27 Ekim): ayrım ücretle değil, **uzman / normal kullanıcı** olarak. Uzman görünümü Ayarlar'da bir anahtarla açılır. Normal kullanıcı programla sade çalışır (hazır programı uygular, kartlarını programa çevirir ya da adını verip kurar; "N. gün" ve hafta düzeni yalnız uzmanda). Normal kullanıcının kart parçaları: açıklama talimat yerine geçer (biçimli); takip için **tek bir Liste** (her gün sıfırlanan ya da devam eden); **Video** (bağlantı) ve **Fotoğraf**. "Normal kullanım senaryolarını irdelememiz lazım."
+
+### Normal kullanım senaryoları (taslak)
+
+| # | Senaryo | Kart | Gerekenler |
+|---|---|---|---|
+| 1 | Doktor randevusu, Salı 10:30 | Basit kart | Başlık, tarih + saat, hatırlatma; açıklamada adres |
+| 2 | Her sabah yürüyüş | Basit kart, süreli | Başlık, Süre (ör. 30 gün) + Günler; seri |
+| 3 | Sabah rutini: su, esneme, diş | Liste, her gün | Liste her gün baştan başlar |
+| 4 | Bahçeyi düzenle / taşınma işleri | Liste, bir gün ya da tarihsiz | İşaretler kalır, ilerleme (3 / 7) |
+| 5 | Annemin mercimek çorbası tarifi | Açıklama (biçimli: malzemeler maddeli, yapılış numaralı) + Fotoğraf | Takip yok; kütüphanede durur |
+| 6 | Kızımın gönderdiği egzersiz videosu | Video + açıklama, süreli | Paylaşımdan hazır gelir |
+| 7 | Haftada bir tartılma, su, tabağım | Çeşit (Beslenme) | Ölçüm / sayarak / fotoğraf kaydı çeşitten hazır |
+| 8 | Aklıma geleni söyleyip karta çevirmek | Not → Karta çevir | Ses kaydı kartta dosya olarak (seçicide yok) |
+| 9 | Akşam 10 dk nefes | Basit kart (+ zamanlayıcı?) | Giriş'teki zamanlayıcı yeter mi, kartta mı olsun? |
+| 10 | Diyetisyenin programı | Hazır / uzman programı | Uygular; kartları düzenleyebilir |
+
+### Öneri: Liste tek parça, davranışı süreden
+
+- **Bir gün** (ya da tarihsiz) kartta liste işaretleri **kalır** (bugünkü Proje adımları).
+- **Birden çok gün** süren kartta liste **her gün baştan başlar** (bugünkü Liste).
+- Kişiye ayrıca sorulmaz; uzman görünümünde iki tür ayrı ayrı seçilebilir.
+
+### Normal kullanıcının kartı (öneri)
+
+- Başlık, açıklama (biçimli; talimat yerine), zaman (sağ üstte).
+- "Karta ekle": **Liste · Fotoğraf · Video**. (Zamanlayıcı ve Dosya: açık soru.)
+- Ölçüm, sayarak, puan, soru, kronometre, gelişim fotoğrafı: yalnız çeşitlerin içinde hazır gelir; normal kullanıcı seçicide görmez ama kartta kullanır, düzenlerken de kaldırabilir.
+- Var olan kartlar bozulmaz: talimat bloğu olan kart görünür ve düzenlenir.
+
+### Uzman görünümü (Ayarlar → anahtar)
+
+- Bugünkü tam form: bütün parçalar (talimat, proje adımları, zamanlayıcı, kronometre, ölçüm, sayarak, puan, soru, gelişim fotoğrafı, dosya), seri ayarı.
+- Programda "N. gün" ve hafta düzeni.
+- Kart çeşitlerini yayınlamak sunucudaki tasarımcı yetkisiyle kalır.
+
+### Kararlar (27 Ekim, yapıldı)
+
+1. Zamanlayıcı: Giriş'teki yeter (normal kullanıcının kartında yok).
+2. Dosya: normal kullanıcıda yok.
+3. Liste davranışı süreden; çok günlük kartta "Her gün baştan / İşaretler kalsın" seçimi ("her cumartesi bahçe" için).

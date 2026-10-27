@@ -51,6 +51,7 @@ import { Yazi } from '../Yazi';
 import { BlokDuzenleyici } from './BlokDuzenleyici';
 import { BlokSecici } from './BlokSecici';
 import { CesitSecici } from './CesitSecici';
+import { useUzman } from '../useUzman';
 import { ZamanRozeti, ZamanSayfasi, type ProgramGunu, type Zamanlama } from './Zamanlama';
 
 export type KartFormuHedefi =
@@ -167,7 +168,6 @@ function taslakBloklari(t: KartTaslagi | undefined): BlokTaslagi[] {
   if (!t) return [];
   const b: BlokTaslagi[] = [];
   if (t.videoAdresi) b.push({ ...bosBlok('video'), metin: t.videoAdresi });
-  if (t.metin) b.push({ ...bosBlok('talimat'), metin: t.metin });
   if (t.sesYolu) b.push({ ...bosBlok('dosya'), ad: 'Sesli not', dosya: t.sesYolu });
   return b;
 }
@@ -264,7 +264,8 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
       },
       bloklar: taslakBloklari(hedef.taslak),
       seriSay: null,
-      ...(hedef.taslak ? { baslik: hedef.taslak.baslik } : {}),
+      // P-51: notun metni açıklamaya (talimat yerine; biçimli).
+      ...(hedef.taslak ? { baslik: hedef.taslak.baslik, kisa: hedef.taslak.metin ?? '' } : {}),
     };
   }
   const { kart } = hedef;
@@ -340,8 +341,19 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const sablon = hedef.tur === 'sablon' ? hedef : null;
   const tasarimHedefi = hedef.tur === 'cesit' ? hedef : null;
   const tasarim = durum.tasarim;
+  // P-51: uzman görünümü (çeşit tasarımı her zaman uzman); normal kullanıcıda gün düzeni yok.
+  const uzmanAyari = useUzman();
+  const uzman = uzmanAyari || !!tasarim;
+  const cokGunlu = durum.zamanlama.tekrar !== null;
+  /** Bu formda eklenen, davranışı kişinin seçmediği listeler: süreye göre (bir gün → kalır). */
+  const [otomatikListeler, setOtomatikListeler] = useState<ReadonlySet<string>>(new Set());
+  const listeAyarla = (b: BlokTaslagi): BlokTaslagi =>
+    otomatikListeler.has(b.id) && (b.tur === 'liste' || b.tur === 'adimlar')
+      ? { ...b, tur: cokGunlu ? 'liste' : 'adimlar' }
+      : b;
   const secilenCesit = cesitBul(durum.cesit);
   const programGunu: ProgramGunu | null = sablon ? { ref: SABLON_REF, sure: sablon.program.sure } : null;
+  const gunGizle = !!programGunu && !uzman;
   const sayfaBasligi = tasarimHedefi
     ? tasarimHedefi.cesit
       ? 'Kart çeşidi'
@@ -422,7 +434,10 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           baslikIpucu: durum.baslik.trim() ? '' : durum.baslikIpucu.trim(),
           saat: durum.zamanlama.saat,
           tekrar: durum.zamanlama.tekrar,
-          bloklar: durum.bloklar.map(kaydaBlok).map((b) => ({ ...blokKopyasi(b), dosya: null })),
+          bloklar: durum.bloklar
+            .map(listeAyarla)
+            .map(kaydaBlok)
+            .map((b) => ({ ...blokKopyasi(b), dosya: null })),
           aktif: tasarim.aktif,
           seri: tasarim.seri,
           sira: c?.sira ?? tasarimHedefi.yeniSira,
@@ -445,7 +460,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const uygulaKaydet = (secim: BolmeSecimi | null) =>
     calistir(async () => {
       setSoru(null);
-      const bloklar = durum.bloklar.map(kaydaBlok);
+      const bloklar = durum.bloklar.map(listeAyarla).map(kaydaBlok);
       if (sablon) {
         const t = tanim();
         const icerik = {
@@ -583,6 +598,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 deger={durum.zamanlama}
                 tarihYok={durum.tarihsiz}
                 programGunu={programGunu}
+                gunGizle={gunGizle}
                 kalip={!!tasarim}
                 onPress={() => {
                   Keyboard.dismiss();
@@ -647,9 +663,14 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 {durum.bloklar.map((b, i) => (
                   <BlokDuzenleyici
                     key={b.id}
-                    blok={b}
+                    blok={listeAyarla(b)}
                     onDegis={(yeni) => blokDegis(i, yeni)}
                     onKaldir={() => blokKaldir(i)}
+                    cokGunlu={cokGunlu}
+                    onListeSecimi={(tur) => {
+                      setOtomatikListeler((s) => new Set([...s].filter((x) => x !== b.id)));
+                      blokDegis(i, { ...b, tur });
+                    }}
                   />
                 ))}
                 <Dugme
@@ -716,6 +737,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         bugunGun={bugunGun}
         tarihYok={durum.tarihsiz}
         programGunu={programGunu}
+        gunGizle={gunGizle}
         kalip={!!tasarim}
         onTarihSec={(zamanlama) => guncelle({ zamanlama, tarihsiz: false })}
         onDegis={(zamanlama) => guncelle({ zamanlama, tarihsiz: durum.tarihsiz && zamanlama.tekrar === null })}
@@ -723,10 +745,13 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
 
       <BlokSecici
         haric={tasarim ? ['foto', 'dosya'] : []}
+        uzman={uzman}
         gorunur={blokSeciciAcik}
         onKapat={() => setBlokSeciciAcik(false)}
         onSec={(tur) => {
-          setDurum((d) => ({ ...d, bloklar: [...d.bloklar, bosBlok(tur)] }));
+          const yeni = bosBlok(tur);
+          if (tur === 'liste') setOtomatikListeler((s) => new Set([...s, yeni.id]));
+          setDurum((d) => ({ ...d, bloklar: [...d.bloklar, yeni] }));
           setBlokSeciciAcik(false);
         }}
       />
