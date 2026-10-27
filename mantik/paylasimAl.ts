@@ -150,10 +150,29 @@ export function paylasilanPaketi(t: KartTaslagi): KartPaketi {
 /** "YouTube" ya da site adı (Gelenler'de "… paylaştın" satırı için). */
 export function kaynakAdi(adres: string): string {
   if (youtubeMu(adres)) return 'YouTube';
+  if (instagramGomme(adres)) return 'Instagram';
   try {
     return new URL(adres).hostname.replace(/^www\./, '');
   } catch {
     return 'Bağlantı';
+  }
+}
+
+const INSTAGRAM = /^(?:www\.|m\.)?instagram\.com$/i;
+
+/**
+ * Instagram gönderisi / reel'i → gömülü oynatıcının adresi (P-55); değilse null.
+ * Instagram'da başlama / bitiş verilemez.
+ */
+export function instagramGomme(adres: string): string | null {
+  try {
+    const u = new URL(adres.trim());
+    if (!INSTAGRAM.test(u.hostname)) return null;
+    const [tip, kod] = u.pathname.split('/').filter(Boolean);
+    if (!tip || !kod || !['p', 'reel', 'reels', 'tv'].includes(tip) || !/^[A-Za-z0-9_-]+$/.test(kod)) return null;
+    return `https://www.instagram.com/${tip === 'reels' ? 'reel' : tip}/${kod}/embed/`;
+  } catch {
+    return null;
   }
 }
 

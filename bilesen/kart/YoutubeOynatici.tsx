@@ -90,3 +90,33 @@ const stiller = StyleSheet.create({
   },
   web: { flex: 1, backgroundColor: '#000' },
 });
+
+/**
+ * Başka sitelerin gömülü oynatıcısı (P-55: Instagram). Sayfa kendi adresinden açılır;
+ * içinden çıkan bağlantılar telefonun tarayıcısında / uygulamasında açılır.
+ */
+export function GomuluSayfa({ adres, oran = 4 / 5 }: { adres: string; oran?: number }) {
+  const gecis = (istek: WebViewNavigation & { isTopFrame?: boolean }) => {
+    if (istek.isTopFrame === false) return true;
+    if (istek.url.startsWith(adres) || istek.url.startsWith('about:')) return true;
+    void Linking.openURL(istek.url);
+    return false;
+  };
+  if (!WebView) return null;
+  return (
+    <View style={[stiller.kap, { aspectRatio: oran }]} accessibilityLabel="Gömülü video">
+      <WebView
+        source={{ uri: adres }}
+        allowsInlineMediaPlayback
+        allowsFullscreenVideo
+        allowsAirPlayForMediaPlayback
+        mediaPlaybackRequiresUserAction
+        javaScriptEnabled
+        bounces={false}
+        setSupportMultipleWindows={false}
+        onShouldStartLoadWithRequest={gecis}
+        style={stiller.web}
+      />
+    </View>
+  );
+}

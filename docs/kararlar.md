@@ -497,3 +497,9 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - "YouTube'da aç" kalktı (video kartın içinde oynuyor). — Ürün sahibi (P-54)
 - **Gelenlerden al:** video eklerken, YouTube'dan Rites'a paylaşılan videolar (Gelenler'deki paylaşımlar) "Gelenlerden al (N)" altında listelenir; dokunulan bu karta eklenir (başlığıyla). Kart kaydedilince Gelenler'den kalkar; vazgeçilirse Gelenler'de kalır. Başka kişilerin gönderdiği kartlardaki videolar şimdilik listede yok. — Ürün sahibi (P-54); kaydedince kalkması: Öneri
 - **Yansıt:** şimdilik oynatıcının tam ekranında AirPlay açık (Apple TV ya da AirPlay 2'li televizyon). Ayrı bir "Yansıt" düğmesi (AirPlay seçici) yerel modül ister: bir sonraki derlemede. Chromecast / Android TV ayrı ve daha büyük iş. — Öneri (P-54)
+
+## Instagram videoları; Hesabımı sil hatası (27 Ekim)
+
+- Yansıt: AirPlay yeter (oynatıcının tam ekranı ya da Denetim Merkezi); ayrı düğme yok. — Ürün sahibi (P-55)
+- **Instagram:** paylaşılan Instagram gönderisi / reel'i video parçasında ve Gelenler'de kartın içinde gömülü oynar (Instagram'ın gömme sayfası). Başla / Bitiş Instagram bağlantısında sorulmaz (verilemez). Gelenlerden al listesinde de var (Instagram simgesiyle). — Ürün sahibi (P-55)
+- Hesabımı sil başarısız olursa artık sunucunun gerekçesi gösterilir ("Silinemedi: …"); yalnız bağlantı sorununda "Şu an bağlanamıyor". Neden araştırılıyor. — Not

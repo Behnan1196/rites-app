@@ -4,11 +4,11 @@
 
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
-import { kaynakAdi, youtubeVideosu } from '@/mantik/paylasimAl';
+import { instagramGomme, kaynakAdi, youtubeVideosu } from '@/mantik/paylasimAl';
 import type { Paylasilan } from '@/veri/paylasilanlar';
 
 import { Dugme } from '../Dugme';
-import { gomuluOynatmaVar, YoutubeOynatici } from '../kart/YoutubeOynatici';
+import { GomuluSayfa, gomuluOynatmaVar, YoutubeOynatici } from '../kart/YoutubeOynatici';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 
@@ -26,12 +26,15 @@ export function PaylasilanKarti({
   onSil: () => void;
 }) {
   const youtube = gomuluOynatmaVar ? youtubeVideosu(p.adres) : null;
+  const insta = gomuluOynatmaVar ? instagramGomme(p.adres) : null;
   return (
     <View style={stiller.kart}>
       <Yazi tur="ikincil">{`${kaynakAdi(p.adres)}'dan paylaştın · ${neZaman}`}</Yazi>
       <Yazi tur="kartBasligi">{p.baslik}</Yazi>
       {youtube ? (
         <YoutubeOynatici kimlik={youtube.kimlik} baslangic={youtube.baslangic} />
+      ) : insta ? (
+        <GomuluSayfa adres={insta} />
       ) : (
         <Pressable onPress={() => void Linking.openURL(p.adres)} accessibilityRole="link" hitSlop={6}>
           <Yazi tur="ikincil" renk={renk.ana} numberOfLines={1}>

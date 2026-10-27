@@ -193,7 +193,15 @@ function ProfilSayfasi({ ad, gorunur, onKapat }: { ad: string; gorunur: boolean;
   const hesabiSil = async (telefondakilerDe: boolean) => {
     setSilSorusu(false);
     try {
-      await hesabimiSil();
+      try {
+        await hesabimiSil();
+      } catch (e) {
+        // P-55: sunucunun gerekçesi görünsün (bağlantı sorunu değilse).
+        const ileti = e && typeof e === 'object' && 'message' in e ? String((e as { message: unknown }).message) : '';
+        console.warn('Hesap silinemedi', e);
+        kisaMesaj(ileti && !/fetch|network|ağ/i.test(ileti) ? `Silinemedi: ${ileti}` : BAGLANAMIYOR);
+        return;
+      }
       if (telefondakilerDe) {
         onKapat();
         await telefondakileriSil(kapi);

@@ -10,7 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
-import { kaynakAdi, youtubeVideosu } from '@/mantik/paylasimAl';
+import { instagramGomme, kaynakAdi, youtubeMu, youtubeVideosu } from '@/mantik/paylasimAl';
 import { adrestekiBaslangic, sureCoz, sureYaz, type Video } from '@/mantik/video';
 
 import { useSorgu } from '@/veri/kancalar';
@@ -19,7 +19,7 @@ import { paylasilanlariOku, type Paylasilan } from '@/veri/paylasilanlar';
 import { Dugme } from '../Dugme';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
-import { gomuluOynatmaVar, YoutubeOynatici } from './YoutubeOynatici';
+import { GomuluSayfa, gomuluOynatmaVar, YoutubeOynatici } from './YoutubeOynatici';
 
 // ---- Görünüm --------------------------------------------------------------------
 
@@ -49,6 +49,9 @@ function Secici({ adet, secili, onSec }: { adet: number; secili: number; onSec: 
 export function VideoOynat({ video }: { video: Video }) {
   const yt = gomuluOynatmaVar ? youtubeVideosu(video.adres) : null;
   const gecerli = /^https?:\/\//i.test(video.adres);
+  // P-55: Instagram gönderisi / reel'i de kartın içinde (başla / bitiş yok).
+  const insta = gomuluOynatmaVar ? instagramGomme(video.adres) : null;
+  if (insta) return <GomuluSayfa key={insta} adres={insta} />;
   if (yt)
     return (
       <YoutubeOynatici
@@ -150,9 +153,11 @@ export function VideolarDuzenleyici({
       setHata('Geçerli bir video bağlantısı yapıştır.');
       return;
     }
-    const bas = sureCoz(taslak.bas) ?? (taslak.bas.trim() ? null : adrestekiBaslangic(adres));
-    const bit = sureCoz(taslak.bit);
-    if ((taslak.bas.trim() && sureCoz(taslak.bas) === null) || (taslak.bit.trim() && bit === null)) {
+    // P-55: başla / bitiş yalnız YouTube'da.
+    const yt = youtubeMu(adres);
+    const bas = yt ? (sureCoz(taslak.bas) ?? (taslak.bas.trim() ? null : adrestekiBaslangic(adres))) : null;
+    const bit = yt ? sureCoz(taslak.bit) : null;
+    if (yt && ((taslak.bas.trim() && sureCoz(taslak.bas) === null) || (taslak.bit.trim() && bit === null))) {
       setHata('Süreleri dakika:saniye olarak yaz (ör. 1:30).');
       return;
     }
@@ -203,16 +208,19 @@ export function VideolarDuzenleyici({
             autoFocus: mod === 'ekle',
           })}
           {alan('baslik', 'Başlık (isteğe bağlı)')}
-          <View style={stiller.sureler}>
-            <Yazi renk={renk.yuzey} kalinlik="yariKalin">
-              Başla:
-            </Yazi>
-            <View style={stiller.esnek}>{alan('bas', '0:00', { keyboardType: 'numbers-and-punctuation' })}</View>
-            <Yazi renk={renk.yuzey} kalinlik="yariKalin">
-              Bitiş:
-            </Yazi>
-            <View style={stiller.esnek}>{alan('bit', 'sonu', { keyboardType: 'numbers-and-punctuation' })}</View>
-          </View>
+          {/* P-55: başla / bitiş yalnız YouTube'da (Instagram'da verilemez). */}
+          {(!taslak.adres.trim() || youtubeMu(taslak.adres)) && (
+            <View style={stiller.sureler}>
+              <Yazi renk={renk.yuzey} kalinlik="yariKalin">
+                Başla:
+              </Yazi>
+              <View style={stiller.esnek}>{alan('bas', '0:00', { keyboardType: 'numbers-and-punctuation' })}</View>
+              <Yazi renk={renk.yuzey} kalinlik="yariKalin">
+                Bitiş:
+              </Yazi>
+              <View style={stiller.esnek}>{alan('bit', 'sonu', { keyboardType: 'numbers-and-punctuation' })}</View>
+            </View>
+          )}
         </View>
         {!!hata && (
           <Yazi tur="ikincil" renk={renk.hata} accessibilityLiveRegion="polite">
@@ -242,7 +250,13 @@ export function VideolarDuzenleyici({
                   accessibilityLabel={`Bu karta al: ${p.baslik}`}
                   style={({ pressed }) => [stiller.gelen, pressed && { opacity: 0.7 }]}
                 >
-                  <Ionicons name="logo-youtube" size={22} color={renk.ikincil} />
+                  <Ionicons
+                    name={
+                      instagramGomme(p.adres) ? 'logo-instagram' : youtubeMu(p.adres) ? 'logo-youtube' : 'link-outline'
+                    }
+                    size={22}
+                    color={renk.ikincil}
+                  />
                   <View style={stiller.esnek}>
                     <Yazi numberOfLines={2}>{p.baslik}</Yazi>
                     <Yazi tur="etiket" numberOfLines={1}>{`${kaynakAdi(p.adres)}'dan paylaştın`}</Yazi>

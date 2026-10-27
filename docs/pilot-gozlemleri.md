@@ -285,3 +285,8 @@ Sonuç: → kararlar.md (Çoklu video)
 Ne dedi: "YouTube'da aç demene gerek yok, zaten içinde çıkıyor. Onun yerine bir Yansıt düğmesi ile doğrudan bağlı bir televizyona görüntü aktarmayı araştırabilirsin. YouTube'dan paylaş deyip Rites'a aktardığım videoların bazılarının tek kartta toplanmasını yapabiliriz: paylaştıklarımız Gelenlere düşüyor; video ekle derken 'Gelenlerden al' seçeneği olup gelenlerdeki video kartları listelenir ve seçilenin videosu bu karta eklenir."
 Nerede: Kart formu → Video; video oynatıcı
 Sonuç: → kararlar.md (Videolar: Gelenlerden al, Yansıt)
+
+### P-55 · 27 Ekim 2026 · Behnan
+Ne dedi: "AirPlay kullanırım, bir şey yapmaya gerek yok. Gelenlerden alma da güzel çalıştı… Instagram için de aynı şeyler geçerli olacak, tabi onda başlama bitiş süreleri olamıyor. Bir süredir Hesabı sil'i deniyorum, hep 'Şu an bağlanamıyor, daha sonra yeniden dene' diyor."
+Nerede: Video; Ayarlar → Profil → Hesabımı sil
+Sonuç: → kararlar.md (Instagram videoları; Hesabımı sil hatası)
