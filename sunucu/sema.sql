@@ -78,6 +78,10 @@ create table if not exists public.liste_erisim (
 );
 create unique index if not exists liste_erisim_grup on public.liste_erisim (liste, grup) where grup is not null;
 create unique index if not exists liste_erisim_kisi on public.liste_erisim (liste, kullanici) where kullanici is not null;
+-- Birincil anahtarı yok (iki kısmi tekil dizin); canlı yayın (realtime) silmeleri yayınladığı
+-- için satırın tamamı kimlik sayılır. Yoksa silme "replica identity" hatası verir (P-56:
+-- Hesabımı sil, listeden çıkma, grup silme).
+alter table public.liste_erisim replica identity full;
 
 -- Madde: Kime? / Ne zaman? isteğe bağlı (GR-4).
 create table if not exists public.madde (

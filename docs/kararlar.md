@@ -503,3 +503,4 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - Yansıt: AirPlay yeter (oynatıcının tam ekranı ya da Denetim Merkezi); ayrı düğme yok. — Ürün sahibi (P-55)
 - **Instagram:** paylaşılan Instagram gönderisi / reel'i video parçasında ve Gelenler'de kartın içinde gömülü oynar (Instagram'ın gömme sayfası). Başla / Bitiş Instagram bağlantısında sorulmaz (verilemez). Gelenlerden al listesinde de var (Instagram simgesiyle). — Ürün sahibi (P-55)
 - Hesabımı sil başarısız olursa artık sunucunun gerekçesi gösterilir ("Silinemedi: …"); yalnız bağlantı sorununda "Şu an bağlanamıyor". Neden araştırılıyor. — Not
+- **Hesabımı sil düzeldi (P-56):** sebep `liste_erisim` tablosunun birincil anahtarı olmamasıydı; tablo canlı yayında (realtime) olduğu için silmeler "replica identity" ister. `alter table public.liste_erisim replica identity full;` (sema.sql). Aynı hata listeden çıkmayı ve grup silmeyi de etkiliyordu. — Not

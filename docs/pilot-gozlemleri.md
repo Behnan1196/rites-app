@@ -290,3 +290,8 @@ Sonuç: → kararlar.md (Videolar: Gelenlerden al, Yansıt)
 Ne dedi: "AirPlay kullanırım, bir şey yapmaya gerek yok. Gelenlerden alma da güzel çalıştı… Instagram için de aynı şeyler geçerli olacak, tabi onda başlama bitiş süreleri olamıyor. Bir süredir Hesabı sil'i deniyorum, hep 'Şu an bağlanamıyor, daha sonra yeniden dene' diyor."
 Nerede: Video; Ayarlar → Profil → Hesabımı sil
 Sonuç: → kararlar.md (Instagram videoları; Hesabımı sil hatası)
+
+### P-56 · 27 Ekim 2026 · Behnan
+Ne dedi: Hesabımı sil'in yeni hata iletisi: "cannot delete from table "liste_erisim" because it does not have a replica identity and publishes deletes"
+Nerede: Hesabımı sil (sunucu)
+Sonuç: → kararlar.md (Hesabımı sil düzeldi); sema.sql
