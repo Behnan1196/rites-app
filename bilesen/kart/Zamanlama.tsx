@@ -227,12 +227,15 @@ export function ZamanSayfasi({
   programGunu = null,
   kalip = false,
   gunGizle = false,
+  bolum = 'tarih',
 }: {
   gorunur: boolean;
   onKapat: () => void;
   deger: Zamanlama;
   bugunGun: Gun;
   onDegis: (z: Zamanlama) => void;
+  /** P-57: hangi ayar: tarih ve saat (sağ üstteki rozet), süre ya da hatırlatma (şerit). */
+  bolum?: 'tarih' | 'sure' | 'hatirlatma';
   /** Takvimden gün seçildi (tarihsiz plan adımı tarih kazanır). */
   onTarihSec: (z: Zamanlama) => void;
   tarihYok?: boolean;
@@ -243,8 +246,13 @@ export function ZamanSayfasi({
 }) {
   const ortak = { deger, bugunGun, onAc: () => undefined, tarihYok, programGunu, satirIci: true, tamamYok: true };
   return (
-    <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Ne zaman?" sagKapat="Tamam">
-      {!kalip && !gunGizle && (
+    <AltSayfa
+      gorunur={gorunur}
+      onKapat={onKapat}
+      baslik={bolum === 'sure' ? 'Süre' : bolum === 'hatirlatma' ? 'Hatırlatma' : 'Ne zaman?'}
+      sagKapat="Tamam"
+    >
+      {bolum === 'tarih' && !kalip && !gunGizle && (
         <View style={stiller.bolum}>
           <Yazi tur="bolumBasligi" accessibilityRole="header">
             {programGunu ? 'Programın günü' : deger.tekrar ? 'Başlangıç' : 'Tarih'}
@@ -252,31 +260,107 @@ export function ZamanSayfasi({
           <ZamanlamaPaneli acik="tarih" onDegis={onTarihSec} {...ortak} />
         </View>
       )}
-      <View style={stiller.bolum}>
-        <Yazi tur="bolumBasligi" accessibilityRole="header">
-          Saat
-        </Yazi>
-        <ZamanlamaPaneli acik="saat" onDegis={onDegis} {...ortak} />
-      </View>
-      <View style={stiller.bolum}>
-        <Yazi tur="bolumBasligi" accessibilityRole="header">
-          Süre
-        </Yazi>
-        <SureVeGunler
-          tekrar={deger.tekrar}
-          onDegis={(tekrar) => onDegis({ ...deger, tekrar })}
-          programda={!!programGunu}
-        />
-      </View>
-      {!kalip && (deger.saat !== null || deger.hatirlatma !== null) && (
+      {bolum === 'tarih' && (
         <View style={stiller.bolum}>
           <Yazi tur="bolumBasligi" accessibilityRole="header">
-            Hatırlatma
+            Saat
           </Yazi>
+          <ZamanlamaPaneli acik="saat" onDegis={onDegis} {...ortak} />
+        </View>
+      )}
+      {bolum === 'sure' && (
+        <View style={stiller.bolum}>
+          <SureVeGunler
+            tekrar={deger.tekrar}
+            onDegis={(tekrar) => onDegis({ ...deger, tekrar })}
+            programda={!!programGunu}
+          />
+        </View>
+      )}
+      {bolum === 'hatirlatma' && (
+        <View style={stiller.bolum}>
+          {deger.saat === null && <Yazi tur="ikincil">Saat seçersen saatinde ya da biraz önce de hatırlatabilir.</Yazi>}
           <ZamanlamaPaneli acik="hatirlatma" onDegis={onDegis} {...ortak} />
         </View>
       )}
     </AltSayfa>
+  );
+}
+
+/** Şeritteki süre: "Bir gün" · "30 gün" · "Süresiz" (programda "Program boyunca"). */
+export function sureSeridiMetni(tekrar: Tekrar | null, programda = false): string {
+  if (!tekrar) return 'Bir gün';
+  const gunler = seciliGunler(tekrar);
+  // Her gün değilse günler de (en çok üç gün; yoksa gün sayısı): "Pzt · Süresiz".
+  const ek = gunler.length === 7 ? '' : gunler.length <= 3 ? `${gunler.join(' ')} · ` : `Haftada ${gunler.length} · `;
+  if (programda) return `${ek}Program boyunca`;
+  return `${ek}${tekrar.gunSayisi !== null ? `${tekrar.gunSayisi} gün` : 'Süresiz'}`;
+}
+
+/** Şeritteki hatırlatma: "Yok" · "Saatinde" · "1 gün önce". */
+export function hatirlatmaSeridiMetni(z: Pick<Zamanlama, 'hatirlatma'>): string {
+  const h = z.hatirlatma;
+  if (!h) return 'Yok';
+  if (ozelHatirlatmaMi(h)) return h.gunOnce === 0 ? h.saat : `${h.gunOnce} gün önce`;
+  return hatirlatmaMetni(h);
+}
+
+/**
+ * Kart formunun ikinci şeridi (P-57): Süre · Hatırlatma · + Karta ekle. Tarih ve saat
+ * sağ üstteki rozette; süre ve hatırlatma kendi küçük sayfalarında açılır.
+ */
+export function ZamanSeridi({
+  deger,
+  programda = false,
+  kalip = false,
+  onSure,
+  onHatirlatma,
+  onEkle,
+}: {
+  deger: Zamanlama;
+  programda?: boolean;
+  /** Çeşit tasarımı: hatırlatma yok. */
+  kalip?: boolean;
+  onSure: () => void;
+  onHatirlatma: () => void;
+  onEkle: () => void;
+}) {
+  const hap = (ikon: IkonAdi, metin: string, etiket: string, onPress: () => void, ayarli: boolean) => (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${etiket}: ${metin}`}
+      style={({ pressed }) => [stiller.seritHap, ayarli && stiller.seritHapAyarli, pressed && { opacity: 0.7 }]}
+    >
+      <Ionicons name={ikon} size={18} color={ayarli ? renk.ana : renk.ikincil} />
+      <Yazi kalinlik="kalin" renk={ayarli ? renk.ana : renk.ikincil} numberOfLines={1} style={stiller.seritYazi}>
+        {metin}
+      </Yazi>
+    </Pressable>
+  );
+  return (
+    <View style={stiller.serit}>
+      {hap('repeat', sureSeridiMetni(deger.tekrar, programda), 'Süre', onSure, deger.tekrar !== null)}
+      {!kalip &&
+        hap(
+          deger.alarm && deger.hatirlatma ? 'alarm-outline' : 'notifications-outline',
+          hatirlatmaSeridiMetni(deger),
+          'Hatırlatma',
+          onHatirlatma,
+          deger.hatirlatma !== null,
+        )}
+      <Pressable
+        onPress={onEkle}
+        accessibilityRole="button"
+        accessibilityLabel="Karta ekle"
+        style={({ pressed }) => [stiller.seritHap, stiller.seritEkle, pressed && { opacity: 0.7 }]}
+      >
+        <Ionicons name="add" size={20} color={renk.yuzey} />
+        <Yazi kalinlik="kalin" renk={renk.yuzey} numberOfLines={1} style={stiller.seritYazi}>
+          Karta ekle
+        </Yazi>
+      </Pressable>
+    </View>
   );
 }
 
@@ -896,6 +980,22 @@ const stiller = StyleSheet.create({
     paddingHorizontal: olcu.kartIci,
   },
   bolum: { gap: 10, marginBottom: 8 },
+  serit: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  seritHap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 44,
+    paddingHorizontal: 12,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    backgroundColor: renk.yuzey,
+    flexShrink: 1,
+  },
+  seritHapAyarli: { borderColor: renk.ana },
+  seritEkle: { backgroundColor: renk.ana, borderColor: renk.ana, marginLeft: 'auto' },
+  seritYazi: { fontSize: boyut.etiket + 1 },
   altBaslik: { marginTop: 6 },
   rozet: {
     flexShrink: 0,

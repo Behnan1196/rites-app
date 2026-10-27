@@ -53,7 +53,7 @@ import { BlokDuzenleyici } from './BlokDuzenleyici';
 import { BlokSecici } from './BlokSecici';
 import { CesitSecici } from './CesitSecici';
 import { useUzman } from '../useUzman';
-import { ZamanRozeti, ZamanSayfasi, type ProgramGunu, type Zamanlama } from './Zamanlama';
+import { ZamanRozeti, ZamanSayfasi, ZamanSeridi, type ProgramGunu, type Zamanlama } from './Zamanlama';
 
 export type KartFormuHedefi =
   /**
@@ -327,7 +327,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const [durum, setDurum] = useState<FormDurumu>(ilk);
   const [hata, setHata] = useState<string | null>(null);
   // P-47: zaman sağ üstteki rozetten açılan sayfada.
-  const [zamanAcik, setZamanAcik] = useState(false);
+  // P-57: rozet → tarih ve saat; şerit → süre ya da hatırlatma.
+  const [zamanBolum, setZamanBolum] = useState<'tarih' | 'sure' | 'hatirlatma' | null>(null);
   const [blokSeciciAcik, setBlokSeciciAcik] = useState(hedef.tur === 'duzenle' && !!hedef.blokEkle);
   // P-36: yeni kartta "Karta bir şey ekle" kapalı gelir (kartların çoğu başlık ve zamandan ibaret).
   const [soru, setSoru] = useState<Soru | null>(null);
@@ -604,7 +605,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 kalip={!!tasarim}
                 onPress={() => {
                   Keyboard.dismiss();
-                  setZamanAcik(true);
+                  setZamanBolum('tarih');
                 }}
               />
             </View>
@@ -641,7 +642,24 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               />
             )}
 
-            {/* P-52: ara durum ("Karta bir şey ekle") kalktı; doğrudan "+ Karta ekle". */}
+            {/* P-57: ikinci şerit: Süre · Hatırlatma · + Karta ekle. */}
+            <ZamanSeridi
+              deger={durum.zamanlama}
+              programda={!!programGunu}
+              kalip={!!tasarim}
+              onSure={() => {
+                Keyboard.dismiss();
+                setZamanBolum('sure');
+              }}
+              onHatirlatma={() => {
+                Keyboard.dismiss();
+                setZamanBolum('hatirlatma');
+              }}
+              onEkle={() => {
+                Keyboard.dismiss();
+                setBlokSeciciAcik(true);
+              }}
+            />
             <>
               {durum.bloklar.length > 0 && (
                 <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumBasligi}>
@@ -662,15 +680,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                   }}
                 />
               ))}
-              <Dugme
-                tur="ikincil"
-                yaziRengi={renk.ana}
-                etiket="+ Karta ekle"
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setBlokSeciciAcik(true);
-                }}
-              />
             </>
 
             {tasarim && (
@@ -719,8 +728,9 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       </AltSayfa>
 
       <ZamanSayfasi
-        gorunur={zamanAcik}
-        onKapat={() => setZamanAcik(false)}
+        gorunur={zamanBolum !== null}
+        bolum={zamanBolum ?? 'tarih'}
+        onKapat={() => setZamanBolum(null)}
         deger={durum.zamanlama}
         bugunGun={bugunGun}
         tarihYok={durum.tarihsiz}

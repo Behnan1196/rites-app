@@ -295,3 +295,8 @@ Sonuç: → kararlar.md (Instagram videoları; Hesabımı sil hatası)
 Ne dedi: Hesabımı sil'in yeni hata iletisi: "cannot delete from table "liste_erisim" because it does not have a replica identity and publishes deletes"
 Nerede: Hesabımı sil (sunucu)
 Sonuç: → kararlar.md (Hesabımı sil düzeldi); sema.sql
+
+### P-57 · 27 Ekim 2026 · Behnan
+Ne dedi: "Stilli editörde satırlar çok bitişik, satır aralığını 1,2 yapsak. Zaman şeridimize basınca tarih ve saat dışında çıkan Süre ve Hatırlatma orada kayboluyor ve sayfayı fazla uzatıyor; o ikisi için ayrı bir şerit mi yapsak, hatta Karta ekle butonu da o şeritte olabilir."
+Nerede: Kart formu; biçimli editör
+Sonuç: → kararlar.md (Kart formu: ikinci şerit; editörde satır aralığı)

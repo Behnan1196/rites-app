@@ -188,6 +188,8 @@ export function ZenginMetinAlani({
           paddingHorizontal: 12,
           paddingVertical: 10,
           fontSize: boyut.govde + 1,
+          // P-57: satırlar biraz açık (yazı boyunun ~1,4 katı; "1,2 satır aralığı").
+          lineHeight: Math.round((boyut.govde + 1) * 1.4),
           color: renk.yazi,
         }}
       />
