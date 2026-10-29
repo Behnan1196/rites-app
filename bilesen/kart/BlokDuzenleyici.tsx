@@ -66,12 +66,27 @@ export function BlokDuzenleyici({
     if (secilen) degis({ dosya: await dosyayiSakla(secilen.uri, secilen.name), ad: secilen.name });
   };
 
+  // P-69: listede simge ve "Liste" yazısı yok; başlık satırında liste adı ve ⋯.
+  const listeMi = blok.tur === 'liste' || blok.tur === 'adimlar';
   return (
     <Bolum>
       <View style={stiller.ust}>
-        <View style={stiller.ad} accessibilityRole="header">
-          <Ionicons name={tur.ikon} size={22} color={tur.kayit ? renk.vurguYazi : renk.ana} />
-          <Yazi kalinlik="kalin">{tur.ad}</Yazi>
+        <View style={[stiller.ad, listeMi && stiller.esnek]} accessibilityRole={listeMi ? undefined : 'header'}>
+          {listeMi ? (
+            <View style={stiller.esnek}>
+              <Alan
+                etiket="Liste adı"
+                deger={blok.ad}
+                onDegis={(ad) => degis({ ad })}
+                ipucu="Liste adı (isteğe bağlı)"
+              />
+            </View>
+          ) : (
+            <>
+              <Ionicons name={tur.ikon} size={22} color={tur.kayit ? renk.vurguYazi : renk.ana} />
+              <Yazi kalinlik="kalin">{tur.ad}</Yazi>
+            </>
+          )}
           {!!blok.sabit && (
             <Ionicons
               name="lock-closed-outline"
@@ -102,7 +117,6 @@ export function BlokDuzenleyici({
       )}
       {(blok.tur === 'liste' || blok.tur === 'adimlar') && (
         <>
-          <Alan etiket="Liste adı" deger={blok.ad} onDegis={(ad) => degis({ ad })} ipucu="Liste adı (isteğe bağlı)" />
           <ZenginMetinAlani
             etiket="Maddeler"
             deger={blok.metin}
@@ -284,6 +298,7 @@ function Alan({
 const stiller = StyleSheet.create({
   ust: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   ad: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
+  esnek: { flex: 1 },
   eylemler: { flexDirection: 'row', alignItems: 'center' },
   kaldir: { alignSelf: 'flex-end', minHeight: olcu.enAzDokunma, justifyContent: 'center' },
   alan: {

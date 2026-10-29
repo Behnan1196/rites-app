@@ -9,9 +9,10 @@ type IkonAdi = ComponentProps<typeof Ionicons>['name'];
 export const BLOK_TURLERI: Record<BlokTuru, { ad: string; ikon: IkonAdi; kayit: boolean }> = {
   talimat: { ad: 'Talimat', ikon: 'reader-outline', kayit: false },
   video: { ad: 'Video', ikon: 'play-circle-outline', kayit: false },
-  liste: { ad: 'Liste', ikon: 'checkbox-outline', kayit: false },
+  // P-69: liste simgesi maddelerin kutularıyla karışmasın.
+  liste: { ad: 'Liste', ikon: 'list-outline', kayit: false },
   // P-51: tek Liste; işaretleri kalan liste (eski adıyla Proje adımları) de "Liste".
-  adimlar: { ad: 'Liste', ikon: 'checkbox-outline', kayit: false },
+  adimlar: { ad: 'Liste', ikon: 'list-outline', kayit: false },
   foto: { ad: 'Fotoğraf', ikon: 'image-outline', kayit: false },
   dosya: { ad: 'Dosya', ikon: 'document-outline', kayit: false },
   sayac: { ad: 'Zamanlayıcı', ikon: 'timer-outline', kayit: true },

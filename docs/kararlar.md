@@ -596,3 +596,8 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Uzmanda "Daha":** şeridin sonunda; öbür parçalar (talimat, dosya, zamanlayıcı, kronometre, ölçüm, sayarak, puan, günün notu, gelişim fotoğrafı) ızgarada. Hepsi eklenince Daha da görünmez. — Ürün sahibi (P-68)
 - Şeritte Dosya yerine **Fotoğraf** (normal kullanıcı fotoğrafı da ekleyebilsin); Dosya uzmanda Daha'da. — Ürün sahibi (P-68)
 - Sade yeni kartın düğmesi **Kur: ayarlar ve sıra** (parça ekleme, süre, hatırlatma artık kartın üstünde ve altında). Kart görünümündeki "+ Karta bir şey ekle" Kur'u açar, seçici kendiliğinden açılmaz. — Öneri
+
+## Sade parça başlıkları (29 Ekim)
+
+- **"Kartın içinde" (Kur) ve "Ne yapacaksın" (kart görünümü) başlıkları kalktı;** açıklama zaten yukarıda. Günün kaydı bölümünün başlığı (Bugün / gün) kalır. — Ürün sahibi (P-69); gün başlığının kalması: Öneri
+- **Listede simge ve "Liste" yazısı yok:** Kur'da başlık satırında liste adı alanı ve ⋯; kartta yalnız (varsa) liste adı. Liste simgesi maddelerin kutularıyla karışmasın diye her yerde (şerit, Daha) satırlı liste simgesi oldu. Öbür parçaların (video, talimat, ölçüm…) başlığı şimdilik yerinde. — Ürün sahibi (P-69); öbür parçalar: Öneri

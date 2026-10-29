@@ -807,11 +807,6 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
             )}
 
             <>
-              {!parca && kur && durum.bloklar.length > 0 && (
-                <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumBasligi}>
-                  Kartın içinde
-                </Yazi>
-              )}
               {durum.bloklar.map(
                 (b, i) =>
                   (parca ? b.id === parca : kur) && (

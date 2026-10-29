@@ -279,23 +279,37 @@ export default function KartGorunumu() {
           )}
 
           {[
-            { baslik: 'Ne yapacaksın', liste: yapilacaklar },
+            // P-69: "Ne yapacaksın" başlığı yok (açıklama da yukarıda); günün kaydında gün başlığı kalır.
+            { baslik: '', liste: yapilacaklar },
             { baslik: gun === bugunGun ? 'Bugün' : gunBasligi(gun, bugunGun), liste: kaydedilecekler },
           ].map(
             (bolum) =>
               bolum.liste.length > 0 && (
-                <View key={bolum.baslik} style={[stiller.bolum, stiller.cizgili, stiller.anaBolum]}>
-                  <Yazi tur="kutuBasligi" accessibilityRole="header">
-                    {bolum.baslik}
-                  </Yazi>
+                <View key={bolum.baslik || 'icerik'} style={[stiller.bolum, stiller.cizgili, stiller.anaBolum]}>
+                  {!!bolum.baslik && (
+                    <Yazi tur="kutuBasligi" accessibilityRole="header">
+                      {bolum.baslik}
+                    </Yazi>
+                  )}
                   {bolum.liste.map((b) => {
                     const tur = BLOK_TURLERI[b.tur];
-                    const ad = (b.tur === 'liste' || b.tur === 'adimlar') && b.ad ? `${tur.ad} · ${b.ad}` : tur.ad;
+                    // P-69: listede simge ve "Liste" yazısı yok; yalnız varsa liste adı.
+                    const listeMi = b.tur === 'liste' || b.tur === 'adimlar';
+                    const ad = listeMi ? b.ad : tur.ad;
+                    const sabitSimge = ayarliParcaMi(b.tur) && !parcaDegisir(kart, b);
                     const r = tur.kayit ? renk.vurguYazi : renk.ana;
                     return (
                       <View key={`${b.id}-${gun}`} style={stiller.parca}>
                         {/* Kayıt parçalarının kendi adı var ("Su", "Enerjim", soru); tür başlığı tekrar olmasın. */}
-                        {!tur.kayit && (
+                        {!tur.kayit && listeMi && (!!ad || sabitSimge) && (
+                          <View style={stiller.blokBasligi}>
+                            <Yazi kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
+                              {ad}
+                            </Yazi>
+                            {sabitSimge && <SabitSimgesi />}
+                          </View>
+                        )}
+                        {!tur.kayit && !listeMi && (
                           <View style={stiller.blokBasligi}>
                             <View
                               style={[
@@ -308,7 +322,7 @@ export default function KartGorunumu() {
                             <Yazi kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
                               {ad}
                             </Yazi>
-                            {ayarliParcaMi(b.tur) && !parcaDegisir(kart, b) && <SabitSimgesi />}
+                            {sabitSimge && <SabitSimgesi />}
                           </View>
                         )}
                         {/* P-66: kuran açık bıraktıysa talimat ve video yerinde düzeltilir, listeye madde eklenir. */}

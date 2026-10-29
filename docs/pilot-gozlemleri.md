@@ -355,3 +355,8 @@ Sonuç: → kararlar.md (Zaman satırı); karar: her parça karta bir kez
 Ne dedi: "+ Karta ekle butonunu kaldıralım, kartın en altına hafif koyu arkaplanlı bir şeritte Açıklama, Liste, Video ve Dosya için ikonlar koyalım, onlara basınca alanlar eklensin; ilk başta açıklama ikonu olmayacak çünkü varsayılan olarak gelecek. Bu durumda açıklama da diğerleri gibi kaldırılabilecek. Uzman için More.. gibi bir ikonla gerekli eklenecek bileşenlere ulaşılacak."
 Nerede: Yeni kart / Kur
 Sonuç: → kararlar.md (Kartın altında parça şeridi)
+
+### P-69 · 29 Ekim 2026 · Behnan
+Ne dedi: "Kartın içinde diyoruz ama açıklamayı yukarıda tutuyoruz, bence kartın içinde lafını veya ne yapacaksın laflarını tamamen kaldıralım. Liste ikonu listenin checkboxları ile karışıyor, ikon ve liste yazısı da gereksiz olabilir."
+Nerede: Kur, kart görünümü
+Sonuç: → kararlar.md (Sade parça başlıkları)
