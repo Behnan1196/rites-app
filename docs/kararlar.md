@@ -524,3 +524,10 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 
 - Kütüphanedeki kart ajandaya konmadan düzenlenir: kaydın ekranında **Düzenle** kart formunu açar (başlık "Kartı düzenle"); tarih sorulmaz, saat ve süre değişebilir, parça eklenir / çıkarılır. Paylaşımla gelen video "Gelenlerden al" ile bu karta da eklenir; kaydedilince Gelenler'den kalkar. Kaydın adı kartın başlığıyla değişir; alanları ve türü aynı kalır. — Ürün sahibi (P-59); ayrıntılar: Öneri
 - Hatırlatma bu formda sorulmaz; kayıtta varsa korunur (ajandaya eklerken kullanılır). — Öneri
+
+## Listeler tek yerde: Giriş → Listeler (29 Ekim)
+
+- **Liste yalnız Giriş → Listeler'de açılır** (kutunun ve ekranın adı "Listeler"). "+ Yeni liste" kişisel liste kurar (telefonda). Listenin ekranında **Başkalarıyla paylaş** → **Paylaş** sayfası: gruplar ve / veya kişiler (Kişilerim'de bağlı olanlar) seçilir, en az biri gerekir. Paylaşılan liste aynı ekranın altında **Paylaşılan listeler**de durur; başkalarının benimle paylaştığı listeler de orada. Bölüm yalnız paylaşılan liste varsa görünür. — Ürün sahibi (P-60); en az bir seçim: Öneri
+- 19 Ekim kararı ("listelerin tek yeri grup") ve P-58'deki "+ Ortak liste" kalktı: Gruplar ekranındaki "Kişilerle listeler" bölümü, grup ekranındaki listeler ve "+ Ekle → Yapılacak → Liste" yok; Yapılacak yalnız iş. Liste yine kişiye açılabilir (19 Ekim'de yalnız gruba açılıyordu). — Ürün sahibi (P-60)
+- Paylaşılan listede kuran için: **Paylaşımı düzenle** (ad, gruplar, kişiler), **Paylaşmayı bırak**, **Listeyi sil**. Paylaşmayı bırak (onaylı): liste maddeleriyle telefona döner, yeniden kişisel olur; paylaşılanlar artık görmez. Maddelerin sırası ve işaretleri korunur; tarih yalnız bana ya da kimseye verilmemiş maddede kalır. Paylaşımı düzenlerken herkes çıkarılamaz ("Paylaşmayı bırak"ı kullan). — Ürün sahibi (P-60); ayrıntılar: Öneri
+- Ajandadaki süzgeç çipinde "Ortak listeler" → "Listeler". — Öneri

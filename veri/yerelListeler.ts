@@ -108,6 +108,20 @@ export async function yerelListeEkle(kapi: Kapi, ad: string, kimlik: Uretec = ye
   return id;
 }
 
+/** P-60: "Paylaşmayı bırak": paylaşılan listenin maddeleriyle kişisel liste kurar; kimliğini döner. */
+export async function yerelListeKur(
+  kapi: Kapi,
+  ad: string,
+  maddeler: { metin: string; yapildi: boolean; tarih: Gun | null }[],
+  kimlik: Uretec = yeniKimlik,
+): Promise<string> {
+  let id = '';
+  await kapi.yaz(['liste'], async (y) => {
+    id = await listeEkleY(y, { ad }, maddeler, kimlik);
+  });
+  return id;
+}
+
 export function yerelListeYaz(kapi: Kapi, id: string, alanlar: { ad?: string; aciklama?: string }): Promise<void> {
   return kapi.yaz(['liste'], async (y) => {
     if (alanlar.ad !== undefined)

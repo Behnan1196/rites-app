@@ -73,8 +73,8 @@ export const KUTULAR: readonly KutuTanimi[] = [
   // Pilot 20 Ekim: Günün sorusu planla birlikte kalktı (ayarda da görünmez).
   { k: 'soru', ad: 'Günün sorusu', aciklama: '', hazir: false },
   { k: 'su', ad: 'Su', aciklama: 'Yarım kutu · günlük bardak sayacı', hazir: false },
-  // Pilot 19 Ekim: kutu kalkmıştı (listelerin yeri grup); P-58: kişisel listelerle Listelerim olarak geri geldi.
-  { k: 'ortak', ad: 'Listelerim', aciklama: 'Kendi listelerin ve ortak listeler', hazir: true },
+  // Pilot 19 Ekim: kutu kalkmıştı (listelerin yeri grup); P-58: kişisel listelerle geri geldi; P-60: adı Listeler.
+  { k: 'ortak', ad: 'Listeler', aciklama: 'Kendi ve paylaşılan listelerin', hazir: true },
 ];
 
 /** Yarım kutular (`05` §10). */

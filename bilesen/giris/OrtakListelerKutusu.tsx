@@ -1,5 +1,5 @@
-// Listelerim (G-4; P-58: önceden Ortak Listeler): yarım kutu; ad ve "N liste" (kişisel +
-// ortak). Dokununca Listelerim ekranı.
+// Listeler (G-4; P-58, P-60: önceden Ortak Listeler): yarım kutu; ad ve "N liste" (kişisel +
+// paylaşılan). Dokununca Listeler ekranı.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
@@ -23,13 +23,13 @@ export function OrtakListelerKutusu() {
     <Pressable
       onPress={() => router.push('/giris/listeler')}
       accessibilityRole="button"
-      accessibilityLabel={`Listelerim, ${alt}`}
+      accessibilityLabel={`Listeler, ${alt}`}
       style={({ pressed }) => [stiller.kutu, pressed && { opacity: 0.75 }]}
     >
       <View style={stiller.simge}>
         <Ionicons name="checkbox-outline" size={22} color={kaynakRenk.liste.serit} />
       </View>
-      <Yazi tur="kartBasligi">Listelerim</Yazi>
+      <Yazi tur="kartBasligi">Listeler</Yazi>
       <Yazi tur="ikincil">{alt}</Yazi>
     </Pressable>
   );

@@ -310,3 +310,8 @@ Sonuç: → kararlar.md (Listelerim: kişisel listeler telefonda)
 Ne dedi: "Kütüphaneye kaydettiğim bir karta, paylaş ile gelen videoyu eklemek istiyorum, ancak kütüphanedeki kartı açabilmem için ajandaya koymak zorunda olmamam lazım."
 Nerede: Yaşam Tarzım → Kütüphanem → kayıt
 Sonuç: → kararlar.md (Kütüphanedeki kartı düzenleme)
+
+### P-60 · 29 Ekim 2026 · Behnan
+Ne dedi: "Şu an Giriş'te Listeler'den hem liste hem ortak liste yarat var; gruplarda grup içinden yaratılır diyor ama grup içinde Yapılacak, Buluşma, Birlikte rutin var; Gruplar ana ekranında ortak liste var. Benim fikrim: sadece Giriş'te Listeler olsun, bir liste yaratsın; isterse onu bir grup veya kişi ile paylaştığında altta Paylaşılan listeler olarak listelensin." Kararlar: grup ekranında liste hiç görünmesin; paylaşmayı bırakınca liste yeniden kişisel olsun; ad "Listeler".
+Nerede: Giriş → Listelerim; Gruplar; grup ekranı
+Sonuç: → kararlar.md (Listeler tek yerde)

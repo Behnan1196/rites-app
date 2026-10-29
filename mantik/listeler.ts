@@ -61,6 +61,12 @@ export function listeFormuHatasi(ad: string): string | null {
   return ad.trim() === '' ? 'Listeye bir ad ver.' : null;
 }
 
+/** P-60: paylaşılan liste en az bir gruba ya da kişiye açıktır; kimseyle paylaşmamak "Paylaşmayı bırak"la. */
+export function paylasimHatasi(secilenSayisi: number, mevcut: boolean): string | null {
+  if (secilenSayisi > 0) return null;
+  return mevcut ? 'Kimseyle paylaşmamak için listede "Paylaşmayı bırak"ı kullan.' : 'Bir grup ya da kişi seç.';
+}
+
 /** Listenin paylaşıldığı kişiler, benim açımdan: kuran (ben değilsem) ve listeye eklenen kişiler. */
 export function paylasimKisileri(liste: OrtakListe, ben: string, ad: AdBulucu): { id: string; ad: string }[] {
   const idler = [...new Set([liste.sahip, ...liste.kisiler])].filter((k) => k !== ben);

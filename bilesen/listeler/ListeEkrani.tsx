@@ -1,8 +1,8 @@
 // Liste ekranı (GR-2, GR-4): ad, paylaşım çipleri, "Sen ve …", gruba açıksa not,
 // "Ekle ve Enter'a bas", maddeler (işaret kutusu, metin, "X ekledi", Kime/Ne zaman
-// etiketi). Maddeye dokununca madde sayfası. Kuran: Listeyi düzenle / Listeyi sil;
-// listeye kişi olarak eklenen: Listeden ayrıl.
-// Giriş (Ortak Listeler), Ajandam (sanal kart) ve Gruplar'dan (grup ekranı) açılır.
+// etiketi). Maddeye dokununca madde sayfası. Kuran: Paylaşımı düzenle / Paylaşmayı bırak
+// (P-60: liste maddeleriyle telefona döner, kişisel olur) / Listeyi sil; listeye kişi
+// olarak eklenen: Listeden ayrıl. Giriş → Listeler ve Ajandam'dan (sanal kart) açılır.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -20,11 +20,13 @@ import {
   type Madde,
 } from '@/mantik/listeler';
 import { grupAdi } from '@/mantik/gruplar';
-import { yerelListeMi } from '@/mantik/yerelListe';
+import { paylasimdanYerele, yerelListeMi } from '@/mantik/yerelListe';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { listedenAyril, listeyiSil } from '@/sunucu/listeler';
 import { useOturum } from '@/sunucu/oturum';
 import { useBugun } from '@/veri/useBugun';
+import { useVeri } from '@/veri/VeriSaglayici';
+import { yerelListeKur, yerelListeSil } from '@/veri/yerelListeler';
 
 import { Dugme } from '../Dugme';
 import { EkranKabi } from '../EkranKabi';
@@ -56,6 +58,7 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
   const oturum = useOturum();
   const bugunGun = useBugun();
   const kisaMesaj = useKisaMesaj();
+  const { kapi } = useVeri();
   const { ben, listeler, ad, yukleniyor, baglanamiyor, yenile } = useListeler(oturum);
   // Kişilerim sunucuyla eşleşsin (Yeni liste / düzenle formundaki kişiler için).
   const { kisiler } = useKisiler(oturum);
@@ -64,7 +67,7 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
   const [yeni, setYeni] = useState('');
   const [acikMadde, setAcikMadde] = useState<string | null>(null);
   const [duzenle, setDuzenle] = useState(0);
-  const [soru, setSoru] = useState<'sil' | 'ayril' | null>(null);
+  const [soru, setSoru] = useState<'sil' | 'ayril' | 'birak' | null>(null);
   const girdi = useRef<TextInput>(null);
 
   const liste = listeler.find((l) => l.id === id);
@@ -102,13 +105,30 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
     }
   };
 
+  /** P-60: önce telefonda kişisel liste kurulur, sonra paylaşılan liste silinir; olmazsa kopya geri alınır. */
+  const paylasmayiBirak = async () => {
+    setSoru(null);
+    if (!liste || !ben || !m.maddeler) return;
+    let yerelId: string | null = null;
+    try {
+      yerelId = await yerelListeKur(kapi, liste.ad, paylasimdanYerele(m.maddeler, ben));
+      await listeyiSil(liste.id);
+      kisaMesaj(`${liste.ad} artık yalnız sende`);
+      router.replace({ pathname: '/giris/liste/[id]', params: { id: yerelId } });
+    } catch (e) {
+      console.warn(e);
+      if (yerelId) await yerelListeSil(kapi, yerelId).catch(() => undefined);
+      kisaMesaj(BAGLANAMIYOR);
+    }
+  };
+
   const yol = liste && ben ? erisimYolu(liste, ben) : null;
 
   return (
     <EkranKabi geri={geriParam || geri} baslik={liste?.ad ?? 'Liste'}>
       {!ben ? (
         oturum.durum === 'yukleniyor' ? null : (
-          <OturumGerekli oturum={oturum} aciklama="Ortak listelerini görmek için e-postanla devam et." />
+          <OturumGerekli oturum={oturum} aciklama="Paylaşılan listeleri görmek için e-postanla devam et." />
         )
       ) : !liste ? (
         yukleniyor ? null : (
@@ -223,8 +243,15 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
               <Dugme
                 tur="ikincil"
                 yaziRengi={renk.ana}
-                etiket="Listeyi düzenle"
+                etiket="Paylaşımı düzenle"
                 onPress={() => setDuzenle((n) => n + 1)}
+              />
+              <Dugme
+                tur="ikincil"
+                yaziRengi={renk.ana}
+                etiket="Paylaşmayı bırak"
+                pasif={!m.maddeler}
+                onPress={() => setSoru('birak')}
               />
               <Dugme tur="tehlike" etiket="Listeyi sil" onPress={() => setSoru('sil')} />
             </View>
@@ -274,12 +301,18 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
         <Katman>
           <OnayKutusu
             baslik={
-              soru === 'sil' ? `${liste.ad} listesi silinsin mi?` : `${liste.ad} listesinden ayrılmak istiyor musun?`
+              soru === 'sil'
+                ? `${liste.ad} listesi silinsin mi?`
+                : soru === 'birak'
+                  ? `${liste.ad} artık yalnız sende mi kalsın?`
+                  : `${liste.ad} listesinden ayrılmak istiyor musun?`
             }
             aciklama={
               soru === 'sil'
                 ? 'Listedeki maddeler herkes için silinir.'
-                : 'Listeyi kuran seni yeniden ekleyene kadar bu listeyi görmezsin.'
+                : soru === 'birak'
+                  ? 'Liste maddeleriyle bu telefona döner; paylaştığın kişiler ve gruplar artık görmez.'
+                  : 'Listeyi kuran seni yeniden ekleyene kadar bu listeyi görmezsin.'
             }
             secenekler={[
               soru === 'sil'
@@ -288,12 +321,14 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
                     tur: 'tehlike',
                     onPress: () => void listeIsi(() => listeyiSil(liste.id), `Silindi: ${liste.ad}`),
                   }
-                : {
-                    etiket: 'Listeden ayrıl',
-                    tur: 'tehlike',
-                    onPress: () =>
-                      void listeIsi(() => listedenAyril(liste.id, ben), `${liste.ad} listesinden ayrıldın.`),
-                  },
+                : soru === 'birak'
+                  ? { etiket: 'Paylaşmayı bırak', tur: 'ana', onPress: () => void paylasmayiBirak() }
+                  : {
+                      etiket: 'Listeden ayrıl',
+                      tur: 'tehlike',
+                      onPress: () =>
+                        void listeIsi(() => listedenAyril(liste.id, ben), `${liste.ad} listesinden ayrıldın.`),
+                    },
               { etiket: 'Vazgeç', tur: 'yazi', onPress: () => setSoru(null) },
             ]}
           />

@@ -299,7 +299,7 @@ function ProfilSayfasi({ ad, gorunur, onKapat }: { ad: string; gorunur: boolean;
       {(oturum.durum === 'yok' || oturum.durum === 'ayarsiz') && (
         <View style={stiller.kart}>
           <Yazi tur="ikincil">
-            Kişilerine kart göndermek ve onlarla ortak listeler tutmak için e-postanla devam et. Şifre yok; e-postana
+            Kişilerine kart göndermek ve onlarla listelerini paylaşmak için e-postanla devam et. Şifre yok; e-postana
             gelen kodla girersin.
           </Yazi>
           <Dugme etiket="E-postanla devam et" onPress={oturumAc} pasif={oturum.durum === 'ayarsiz'} />

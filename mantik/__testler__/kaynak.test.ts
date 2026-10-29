@@ -18,7 +18,7 @@ describe('kaynak (PL-4, A-5)', () => {
     expect(kaynakAdi('kendim', planlar)).toBe('Kendi kartlarım');
     expect(kaynakAdi('plan:p1', planlar)).toBe('Sabah planım');
     expect(kaynakAdi('gelen', planlar)).toBe('Gelenlerden');
-    expect(kaynakAdi('liste', planlar)).toBe('Ortak listeler');
+    expect(kaynakAdi('liste', planlar)).toBe('Listeler');
     expect(kaynakAdi('koc:Ayşe Hanım', planlar)).toBe('Ayşe Hanım (koç)');
   });
   it('satır etiketi; kendi kartında yok', () => {

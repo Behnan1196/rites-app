@@ -1,14 +1,14 @@
-// "+ Yeni liste" ve "Listeyi düzenle" (GR-2): ad, gruplar (çip), kişiler (yalnız
-// bağlı olanlar). Gruba açık listeyi gruba sonradan katılan da görür.
-// Yeni listede adın altında örnek adlar (pilot 18 Ekim); grup ekranından açılınca
-// o grup seçili gelir.
+// Listeyi paylaş (P-60): kişisel liste "Paylaş" denince bu formla gruplara ve / veya
+// kişilere (yalnız bağlı olanlar) açılır; paylaşılan listede "Paylaşımı düzenle" (ad,
+// gruplar, kişiler). Gruba açık listeyi gruba sonradan katılan da görür. Kimseyle
+// paylaşmamak için formda herkes kaldırılmaz; liste ekranında "Paylaşmayı bırak".
 
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { bagliKisiler, type Grup } from '@/mantik/gruplar';
 import { BAGLANAMIYOR, type Kisi } from '@/mantik/kisiler';
-import { GRUP_SECIM_NOTU, LISTE_ORNEKLERI, listeFormuHatasi, listeHatasi, type OrtakListe } from '@/mantik/listeler';
+import { GRUP_SECIM_NOTU, listeFormuHatasi, listeHatasi, paylasimHatasi, type OrtakListe } from '@/mantik/listeler';
 import { listeDuzenle, listeOlustur } from '@/sunucu/listeler';
 
 import { AltSayfa } from '../AltSayfa';
@@ -16,6 +16,7 @@ import { Dugme } from '../Dugme';
 import { GirisAlani } from '../GirisAlani';
 import { useKisaMesaj } from '../KisaMesaj';
 import { Bolum, SecenekHapi } from '../Secim';
+import { renk } from '../tema';
 import { Yazi } from '../Yazi';
 
 function degistir(s: ReadonlySet<string>, id: string): Set<string> {
@@ -30,7 +31,6 @@ export function ListeFormu({
   gruplar,
   kisiler,
   mevcut,
-  grup,
   onKaydedildi,
   baslangicAdi,
 }: {
@@ -40,17 +40,13 @@ export function ListeFormu({
   kisiler: readonly Kisi[];
   /** Düzenlenen liste; yoksa yeni liste. */
   mevcut?: OrtakListe;
-  /** Grup ekranından açıldıysa o grup seçili gelir. */
-  grup?: string;
   onKaydedildi: (id: string) => void;
-  /** Yeni listenin adı hazır gelsin (P-58: kişisel liste paylaşılırken). */
+  /** Paylaşılan kişisel listenin adı (P-58). */
   baslangicAdi?: string;
 }) {
   const kisaMesaj = useKisaMesaj();
   const [ad, setAd] = useState(mevcut?.ad ?? baslangicAdi ?? '');
-  const [secGrup, setSecGrup] = useState<ReadonlySet<string>>(
-    new Set(mevcut ? mevcut.gruplar.map((g) => g.id) : grup ? [grup] : []),
-  );
+  const [secGrup, setSecGrup] = useState<ReadonlySet<string>>(new Set(mevcut ? mevcut.gruplar.map((g) => g.id) : []));
   const [secKisi, setSecKisi] = useState<ReadonlySet<string>>(new Set(mevcut?.kisiler));
   const [hata, setHata] = useState<string | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
@@ -68,10 +64,10 @@ export function ListeFormu({
       mevcut.gruplar.some((g) => !secGrup.has(g.id)) ||
       secKisi.size !== mevcut.kisiler.length ||
       mevcut.kisiler.some((k) => !secKisi.has(k))
-    : ad.trim() !== '' || secGrup.size > (grup ? 1 : 0) || secKisi.size > 0;
+    : secGrup.size > 0 || secKisi.size > 0;
 
   const kaydet = async () => {
-    const h = listeFormuHatasi(ad);
+    const h = listeFormuHatasi(ad) ?? paylasimHatasi(secGrup.size + secKisi.size, !!mevcut);
     if (h) {
       setHata(h);
       return;
@@ -84,7 +80,7 @@ export function ListeFormu({
         onKaydedildi(mevcut.id);
       } else {
         const id = await listeOlustur(ad, [...secGrup], [...secKisi]);
-        kisaMesaj(`${ad.trim()} listesi oluşturuldu`);
+        kisaMesaj(`Paylaşıldı: ${ad.trim()}`);
         onKaydedildi(id);
       }
       onKapat();
@@ -99,38 +95,35 @@ export function ListeFormu({
     <AltSayfa
       gorunur
       onKapat={onKapat}
-      baslik={mevcut ? 'Listeyi düzenle' : 'Yeni liste'}
+      baslik={mevcut ? 'Paylaşımı düzenle' : 'Paylaş'}
       solVazgec
       degisti={degisti}
-      altAlan={<Dugme etiket={mevcut ? 'Kaydet' : 'Listeyi oluştur'} onPress={() => void kaydet()} pasif={calisiyor} />}
+      altAlan={<Dugme etiket={mevcut ? 'Kaydet' : 'Paylaş'} onPress={() => void kaydet()} pasif={calisiyor} />}
     >
       <View style={stiller.kap}>
-        <GirisAlani
-          etiket="Listenin adı"
-          value={ad}
-          onChangeText={(t) => {
-            setAd(t);
-            setHata(null);
-          }}
-          placeholder="Örneğin: Yapılacaklar, Tatil hazırlığı"
-          hata={hata}
-          returnKeyType="done"
-        />
-        {!mevcut && (
-          <View style={stiller.cipler}>
-            {LISTE_ORNEKLERI.map((o) => (
-              <SecenekHapi
-                key={o}
-                etiket={o}
-                erisimEtiketi={`Ad: ${o}`}
-                secili={ad.trim() === o}
-                onPress={() => {
-                  setAd(o);
-                  setHata(null);
-                }}
-              />
-            ))}
-          </View>
+        {mevcut ? (
+          <GirisAlani
+            etiket="Listenin adı"
+            value={ad}
+            onChangeText={(t) => {
+              setAd(t);
+              setHata(null);
+            }}
+            hata={hata}
+            returnKeyType="done"
+          />
+        ) : (
+          <>
+            <Yazi tur="kartBasligi">{ad}</Yazi>
+            <Yazi tur="ikincil">
+              Bir ya da birkaç grup, istersen kişiler seç. Seçtiklerin listeyi görür ve ekleyebilir.
+            </Yazi>
+            {!!hata && (
+              <Yazi tur="ikincil" renk={renk.hata} accessibilityLiveRegion="polite">
+                {hata}
+              </Yazi>
+            )}
+          </>
         )}
         <Bolum>
           <Yazi kalinlik="kalin">Gruplar</Yazi>
@@ -145,32 +138,36 @@ export function ListeFormu({
                   etiket={`${g.ad} (${g.uyeler.filter((u) => u.durum === 'uye').length})`}
                   erisimEtiketi={g.ad}
                   secili={secGrup.has(g.id)}
-                  onPress={() => setSecGrup((s) => degistir(s, g.id))}
+                  onPress={() => {
+                    setSecGrup((s) => degistir(s, g.id));
+                    setHata(null);
+                  }}
                 />
               ))}
             </View>
           )}
         </Bolum>
-        {/* Pilot 19 Ekim: yeni listeler yalnız gruba açılır; eskiden kişiye açılmış listede kişiler düzenlenebilir. */}
-        {(mevcut?.kisiler.length ?? 0) > 0 && (
-          <Bolum>
-            <Yazi kalinlik="kalin">Kişiler</Yazi>
-            {kisiSecenekleri.length === 0 ? (
-              <Yazi tur="ikincil">{"Listeyi açabilmek için önce Kişilerim'den biriyle bağlanmalısın."}</Yazi>
-            ) : (
-              <View style={stiller.cipler}>
-                {kisiSecenekleri.map((k) => (
-                  <SecenekHapi
-                    key={k.id}
-                    etiket={k.ad}
-                    secili={secKisi.has(k.id)}
-                    onPress={() => setSecKisi((s) => degistir(s, k.id))}
-                  />
-                ))}
-              </View>
-            )}
-          </Bolum>
-        )}
+        {/* P-60: liste bir gruba ya da kişilere açılabilir. */}
+        <Bolum>
+          <Yazi kalinlik="kalin">Kişiler</Yazi>
+          {kisiSecenekleri.length === 0 ? (
+            <Yazi tur="ikincil">{"Kişilerim'de henüz bağlı olduğun kimse yok."}</Yazi>
+          ) : (
+            <View style={stiller.cipler}>
+              {kisiSecenekleri.map((k) => (
+                <SecenekHapi
+                  key={k.id}
+                  etiket={k.ad}
+                  secili={secKisi.has(k.id)}
+                  onPress={() => {
+                    setSecKisi((s) => degistir(s, k.id));
+                    setHata(null);
+                  }}
+                />
+              ))}
+            </View>
+          )}
+        </Bolum>
       </View>
     </AltSayfa>
   );

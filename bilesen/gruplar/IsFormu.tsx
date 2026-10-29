@@ -1,22 +1,17 @@
-// Yapılacak ekle (pilot 19 Ekim: İş ile Liste tek yerde) / iş düzenle.
-// - Tek iş: ne iş (örneklerle), Kime? (Herkes ya da gruptan biri), Ne zaman?;
-// - Liste: ad (örneklerle); gruba açılır, maddeler liste ekranında eklenir.
-// Düzenlemede "İşi sil".
+// Yapılacak ekle / iş düzenle: ne iş (örneklerle), Kime? (Herkes ya da gruptan biri),
+// Ne zaman?. Düzenlemede "İşi sil". P-60: liste burada açılmaz (Giriş → Listeler'de
+// açılır, "Paylaş" ile gruba açılır).
 
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { IS_NOTU, IS_ORNEKLERI, isFormuHatasi, isHatasi, type GrupIsi } from '@/mantik/isler';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
-import { LISTE_ORNEKLERI, listeHatasi } from '@/mantik/listeler';
-import { listeOlustur } from '@/sunucu/listeler';
 import { gunEkle, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useBugun } from '@/veri/useBugun';
 
 import { AltSayfa } from '../AltSayfa';
 import { AyTakvimi } from '../AyTakvimi';
-import { BolumluDugme } from '../BolumluDugme';
 import { Dugme } from '../Dugme';
 import { GirisAlani } from '../GirisAlani';
 import { useKisaMesaj } from '../KisaMesaj';
@@ -29,22 +24,17 @@ export function IsFormu({
   uyeler,
   mevcut,
   onKapat,
-  onListeOlustu,
 }: {
   grup: { id: string; ad: string };
   /** Benim dışımdaki üyeler. */
   uyeler: { id: string; ad: string }[];
   mevcut?: GrupIsi;
   onKapat: () => void;
-  /** Liste kurulunca (grup tazelensin). */
-  onListeOlustu?: () => void;
 }) {
   const bugunGun = useBugun();
   const kisaMesaj = useKisaMesaj();
   const { ekle, duzenle, sil } = useIsler();
   const [baslik, setBaslik] = useState(mevcut?.baslik ?? '');
-  const [tur, setTur] = useState<'is' | 'liste'>('is');
-  const liste = !mevcut && tur === 'liste';
   const [kime, setKime] = useState<string | null>(mevcut && mevcut.durum !== 'reddedildi' ? mevcut.kime : null);
   const [tarih, setTarih] = useState<Gun | null>(mevcut?.tarih ?? null);
   const [takvim, setTakvim] = useState(false);
@@ -57,30 +47,7 @@ export function IsFormu({
     ? baslik.trim() !== mevcut.baslik || kime !== mevcut.kime || tarih !== mevcut.tarih
     : baslik.trim() !== '';
 
-  const listeyiKur = async () => {
-    if (!baslik.trim()) {
-      setHata('Listeye bir ad ver.');
-      return;
-    }
-    setCalisiyor(true);
-    try {
-      const id = await listeOlustur(baslik, [grup.id], []);
-      kisaMesaj(`${baslik.trim()} listesi açıldı`);
-      onListeOlustu?.();
-      onKapat();
-      router.push({ pathname: '/gruplar/liste/[id]', params: { id, geri: grup.ad } });
-    } catch (e) {
-      setHata(listeHatasi(e instanceof Error ? e.message : String(e)) ?? BAGLANAMIYOR);
-    } finally {
-      setCalisiyor(false);
-    }
-  };
-
   const kaydet = async () => {
-    if (liste) {
-      await listeyiKur();
-      return;
-    }
     const h = isFormuHatasi(baslik);
     if (h) {
       setHata(h);
@@ -137,41 +104,27 @@ export function IsFormu({
       }
       altAlan={
         <Dugme
-          etiket={liste ? 'Listeyi aç' : kime ? 'İste' : 'Herkese aç'}
+          etiket={kime ? 'İste' : 'Herkese aç'}
           onPress={() => void kaydet()}
           pasif={calisiyor}
         />
       }
     >
       <View style={stiller.kap}>
-        {!mevcut && (
-          <BolumluDugme
-            secenekler={[
-              { deger: 'is', etiket: 'Tek iş' },
-              { deger: 'liste', etiket: 'Liste' },
-            ]}
-            secili={tur}
-            erisimEtiketi="Yapılacak türü"
-            onSec={(t) => {
-              setTur(t);
-              setHata(null);
-            }}
-          />
-        )}
         <GirisAlani
-          etiket={liste ? 'Listenin adı' : 'Ne iş?'}
+          etiket="Ne iş?"
           value={baslik}
           onChangeText={(t) => {
             setBaslik(t);
             setHata(null);
           }}
-          placeholder={liste ? 'Örneğin: Tatil hazırlığı' : 'Örneğin: Eczaneye uğra'}
+          placeholder="Örneğin: Eczaneye uğra"
           hata={hata}
           returnKeyType="done"
         />
         {!mevcut && (
           <View style={stiller.cipler}>
-            {(liste ? LISTE_ORNEKLERI : IS_ORNEKLERI).map((o) => (
+            {IS_ORNEKLERI.map((o) => (
               <SecenekHapi
                 key={o}
                 etiket={o}
@@ -186,12 +139,7 @@ export function IsFormu({
           </View>
         )}
 
-        {liste ? (
-          <Yazi tur="ikincil">
-            Liste grubun herkesine açılır. Maddeleri listede eklersin; her maddeye Kime? ve Ne zaman? verilebilir.
-          </Yazi>
-        ) : (
-          <>
+        <>
             <Bolum>
               <Yazi kalinlik="kalin">Kime?</Yazi>
               <View style={stiller.cipler}>
@@ -240,8 +188,7 @@ export function IsFormu({
             </Bolum>
 
             <Yazi tur="ikincil">{IS_NOTU}</Yazi>
-          </>
-        )}
+        </>
         {mevcut && <Dugme tur="tehlike" etiket="İşi sil" onPress={() => setSilSorusu(true)} />}
       </View>
     </AltSayfa>

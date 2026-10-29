@@ -89,3 +89,16 @@ export function kalanSayiMetni(toplam: number, kalan: number): string {
 export function kalanMetni(maddeler: readonly Pick<YerelMadde, 'yapildi'>[]): string {
   return kalanSayiMetni(maddeler.length, maddeler.filter((m) => !m.yapildi).length);
 }
+
+/**
+ * P-60: paylaşılan liste kişisele dönerken maddeler: sıra, metin, işaret korunur; tarih
+ * yalnız bana ya da kimseye verilmemiş maddede kalır (başkasına verilen işin tarihi benim değil).
+ */
+export function paylasimdanYerele(
+  maddeler: readonly { metin: string; yapildi: boolean; kime: string | null; tarih: Gun | null; sira: number }[],
+  ben: string,
+): { metin: string; yapildi: boolean; tarih: Gun | null }[] {
+  return [...maddeler]
+    .sort((a, b) => a.sira - b.sira)
+    .map((m) => ({ metin: m.metin, yapildi: m.yapildi, tarih: m.kime === null || m.kime === ben ? m.tarih : null }));
+}

@@ -1,5 +1,5 @@
 import { yeniKart, type Blok } from '../kart';
-import { kalanMetni, karttanListeler, tasinacakMi, yerelListeMi } from '../yerelListe';
+import { kalanMetni, karttanListeler, paylasimdanYerele, tasinacakMi, yerelListeMi } from '../yerelListe';
 
 type B = Pick<Blok, 'id' | 'tur' | 'ad' | 'maddeler' | 'durum'>;
 const blok = (o: Partial<B>): B => ({
@@ -61,5 +61,25 @@ describe('Listelerim (P-58)', () => {
     expect(kalanMetni([])).toBe('Boş');
     expect(kalanMetni([{ yapildi: true }])).toBe('Hepsi tamam');
     expect(kalanMetni([{ yapildi: false }, { yapildi: true }])).toBe('1 kalan');
+  });
+
+  it('P-60: paylaşmayı bırakınca: sıra korunur, başkasına verilen maddenin tarihi düşer', () => {
+    const m = (metin: string, sira: number, kime: string | null, tarih: string | null, yapildi = false) => ({
+      metin,
+      sira,
+      kime,
+      tarih,
+      yapildi,
+    });
+    expect(
+      paylasimdanYerele(
+        [m('c', 3, 'ali', '2026-11-01'), m('a', 1, null, '2026-11-02', true), m('b', 2, 'ben', '2026-11-03')],
+        'ben',
+      ),
+    ).toEqual([
+      { metin: 'a', yapildi: true, tarih: '2026-11-02' },
+      { metin: 'b', yapildi: false, tarih: '2026-11-03' },
+      { metin: 'c', yapildi: false, tarih: null },
+    ]);
   });
 });

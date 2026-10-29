@@ -11,6 +11,7 @@ import {
   listeKartlariniTasi,
   tarihliYerelMaddeler,
   yerelListeEkle,
+  yerelListeKur,
   yerelListeOku,
   yerelListeleriOku,
   yerelListeSil,
@@ -60,6 +61,24 @@ describe('Listelerim veri katmanı (P-58)', () => {
     ]);
     await yerelListeSil(kapi, id);
     expect(await yerelListeleriOku(oku)).toEqual([]);
+  });
+
+  it('P-60: paylaşmayı bırakınca maddeleriyle kişisel liste kurulur', async () => {
+    const id = await yerelListeKur(
+      kapi,
+      'Tatil',
+      [
+        { metin: 'Bilet', yapildi: true, tarih: null },
+        { metin: 'Valiz', yapildi: false, tarih: '2026-11-02' },
+      ],
+      idUret,
+    );
+    const l = (await yerelListeOku(oku, id))!;
+    expect(l.liste.ad).toBe('Tatil');
+    expect(l.maddeler.map((m) => [m.metin, m.yapildi, m.tarih])).toEqual([
+      ['Bilet', true, null],
+      ['Valiz', false, '2026-11-02'],
+    ]);
   });
 
   it('yalnız listeden ibaret tek seferlik kart taşınır, bir kez', async () => {

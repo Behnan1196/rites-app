@@ -1,7 +1,7 @@
-// Liste ekranı, Giriş → Listelerim'den açıldığında.
+// Liste ekranı, Giriş → Listeler'den açıldığında.
 
 import { ListeEkrani } from '@/bilesen/listeler/ListeEkrani';
 
 export default function Liste() {
-  return <ListeEkrani geri="Listelerim" />;
+  return <ListeEkrani geri="Listeler" />;
 }

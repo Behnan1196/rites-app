@@ -1,7 +1,7 @@
 // Gruplar: en üstte kapalı "Kişilerim" satırı (P-34: kişi sayısı, seni eklemek
 // isteyen varsa sayısı; dokununca Kişilerim ekranı), Seni gruba çağıranlar,
-// Gruplarım (bana bekleyen yanıt sayısıyla), + Grup kur (10. görev); yalnız eskiden
-// kişilerle açılmış listeler (pilot 19 Ekim: listelerin yeri grup). Sağ üstte
+// Gruplarım (bana bekleyen yanıt sayısıyla), + Grup kur (10. görev). Listeler burada
+// yok (P-60: Giriş → Listeler → Paylaşılan listeler). Sağ üstte
 // Kişilerim simgesi. Ücretsiz sınır göstergesi Ayarlar → Üyelik'te.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -17,8 +17,6 @@ import { GrupKurSayfasi } from '@/bilesen/gruplar/GrupKurSayfasi';
 import { useGrupBekleyenleri } from '@/bilesen/gruplar/useGrupBekleyenleri';
 import { useGruplar } from '@/bilesen/gruplar/useGruplar';
 import { useKisiler } from '@/bilesen/gruplar/useKisiler';
-import { OrtakListeSatiri } from '@/bilesen/listeler/OrtakListeSatiri';
-import { useListeler } from '@/bilesen/listeler/useListeler';
 import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
 import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
@@ -43,9 +41,6 @@ export default function Gruplar() {
     }, [bekleyenYenile]),
   );
   const [grupKurAcik, setGrupKurAcik] = useState(0);
-  const liste = useListeler(oturum);
-  // Pilot 19 Ekim: listelerin yeri grup; burada yalnız eskiden kişilerle açılmış (gruba açık olmayan) listeler.
-  const kisiListeleri = liste.listeler.filter((l) => l.gruplar.length === 0);
 
   return (
     <EkranKabi
@@ -57,12 +52,12 @@ export default function Gruplar() {
         oturum.durum === 'yukleniyor' ? null : (
           <OturumGerekli
             oturum={oturum}
-            aciklama="Kişilerine kart göndermek ve onlarla ortak listeler tutmak için e-postanla devam et. Ajandan ve notların yine yalnız bu telefonda kalır."
+            aciklama="Kişilerine kart göndermek ve gruplarınla birlikte iş yürütmek için e-postanla devam et. Ajandan ve notların yine yalnız bu telefonda kalır."
           />
         )
       ) : (
         <>
-          {(baglanamiyor || grup.baglanamiyor || liste.baglanamiyor) && (
+          {(baglanamiyor || grup.baglanamiyor) && (
             <Yazi tur="ikincil" renk={renk.hata}>
               {BAGLANAMIYOR}
             </Yazi>
@@ -131,23 +126,6 @@ export default function Gruplar() {
           ))}
           <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Grup kur" onPress={() => setGrupKurAcik((n) => n + 1)} />
 
-          {kisiListeleri.length > 0 && (
-            <>
-              <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
-                Kişilerle listeler
-              </Yazi>
-              <Yazi tur="ikincil">Yeni listeler gruplarda açılır (grup → + Ekle → Yapılacak → Liste).</Yazi>
-            </>
-          )}
-          {kisiListeleri.map((l) => (
-            <OrtakListeSatiri
-              key={l.id}
-              liste={l}
-              ben={ben}
-              ad={liste.ad}
-              onPress={() => router.push({ pathname: '/gruplar/liste/[id]', params: { id: l.id } })}
-            />
-          ))}
         </>
       )}
 

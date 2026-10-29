@@ -30,7 +30,7 @@ export function kaynakTuru(anahtar: KaynakAnahtari): KaynakTuru {
   return 'kendim';
 }
 
-/** Süzme çipindeki ad: "Kendi kartlarım", "Gelenlerden", "Ortak listeler", plan adı, "Ayşe Hanım (koç)". */
+/** Süzme çipindeki ad: "Kendi kartlarım", "Gelenlerden", "Listeler", plan adı, "Ayşe Hanım (koç)". */
 export function kaynakAdi(anahtar: KaynakAnahtari, planAdlari: ReadonlyMap<string, string>): string {
   switch (kaynakTuru(anahtar)) {
     case 'plan':
@@ -40,7 +40,7 @@ export function kaynakAdi(anahtar: KaynakAnahtari, planAdlari: ReadonlyMap<strin
     case 'gelen':
       return 'Gelenlerden';
     case 'liste':
-      return 'Ortak listeler';
+      return 'Listeler';
     case 'grup':
       return 'Gruplardan';
     default:

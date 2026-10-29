@@ -7,7 +7,7 @@ import {
 import { kaynakAnahtari, kaynakEtiketi, kaynaklar } from '../kaynak';
 import type { Kisi } from '../kisiler';
 import {
-  atamaEtiketi, ekleyenMetni, erisimYolu, kalanMetni, kimeSecenekleri, kimlerleMetni, kisiSayisiMetni, listeFormuHatasi,
+  atamaEtiketi, ekleyenMetni, erisimYolu, kalanMetni, kimeSecenekleri, kimlerleMetni, kisiSayisiMetni, listeFormuHatasi, paylasimHatasi,
   listeHatasi, maddeKarti, maddeKartiMi, maddeleriSirala, maddeYapilanlari, uyelerMetni, yapilanlariBirlestir,
   zamanSecenekleri, type BanaVerilen, type Madde, type OrtakListe,
 } from '../listeler';
@@ -103,6 +103,9 @@ describe('ortak listeler (GR-2)', () => {
     expect(kalanMetni(2)).toBe('2 madde kaldı');
     expect(kalanMetni(0)).toBe('Madde kalmadı');
     expect(listeFormuHatasi('')).toBe('Listeye bir ad ver.');
+    expect(paylasimHatasi(1, false)).toBeNull();
+    expect(paylasimHatasi(0, false)).toBe('Bir grup ya da kişi seç.');
+    expect(paylasimHatasi(0, true)).toContain('Paylaşmayı bırak');
     expect(listeHatasi('bagli degil')).toBe('Listeyi yalnız bağlı olduğun kişilere açabilirsin.');
   });
   it('liste ekranı metinleri', () => {

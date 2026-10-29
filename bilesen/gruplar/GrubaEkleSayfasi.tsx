@@ -1,5 +1,5 @@
 // Grup ekranındaki "+ Ekle" (pilot 19 Ekim: sadeleşti): üç ana tür — Yapılacak
-// (tek iş ya da liste), Buluşma (gün belli ya da günü oylayarak), Birlikte rutin;
+// (tek iş; P-60: liste Giriş → Listeler'de), Buluşma (gün belli ya da günü oylayarak), Birlikte rutin;
 // az kullanılanlar "Diğer" altında: Nöbet / sıra, Oylama.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -18,7 +18,7 @@ const ANA: Tur[] = [
   {
     tur: 'yapilacak',
     ad: 'Yapılacak',
-    aciklama: 'Tek iş (birine ver ya da herkese aç) ya da liste (market, hazırlık).',
+    aciklama: 'Bir iş: birine ver ya da herkese aç.',
     ikon: 'checkbox-outline',
   },
   {

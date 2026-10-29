@@ -50,7 +50,7 @@ export default function Kisilerim() {
         oturum.durum === 'yukleniyor' ? null : (
           <OturumGerekli
             oturum={oturum}
-            aciklama="Kişilerine kart göndermek ve onlarla ortak listeler tutmak için e-postanla devam et. Ajandan ve notların yine yalnız bu telefonda kalır."
+            aciklama="Kişilerine kart göndermek ve onlarla listelerini paylaşmak için e-postanla devam et. Ajandan ve notların yine yalnız bu telefonda kalır."
           />
         )
       ) : (

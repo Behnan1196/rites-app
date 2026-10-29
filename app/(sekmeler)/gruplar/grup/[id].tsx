@@ -1,12 +1,11 @@
-// Grup ekranı (GR-1): önce grubun içeriği (pilot 18 Ekim): yaklaşan buluşmalar,
-// gruba açık listeler ve "+ Ekle" (Buluşma, Liste); sonra üyeler (kuran çıkarır),
+// Grup ekranı (GR-1): önce grubun içeriği (pilot 18 Ekim): işler, yaklaşan buluşmalar,
+// rutinler ve "+ Ekle"; listeler burada görünmez (P-60: Giriş → Listeler); sonra üyeler (kuran çıkarır),
 // "Kişilerinden ekle" (kuran); kuran için "Grubu sil", üye için "Gruptan ayrıl".
 // Grup ekranı bundan derin değildir (`08` karar 38).
 
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState, type ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
@@ -33,7 +32,7 @@ import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { OnayKutusu } from '@/bilesen/OnayKutusu';
 import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
 import { SecenekHapi } from '@/bilesen/Secim';
-import { kaynakRenk, renk } from '@/bilesen/tema';
+import { renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { cagrilabilecekler, grupAdi, grupHatasi, type GrupUyesi } from '@/mantik/gruplar';
 import { yaklasanlar, type Bulusma } from '@/mantik/bulusma';
@@ -157,7 +156,7 @@ export default function GrupEkrani() {
   const oylamalar = grubunKararListesi.filter((k) => k.tur === 'metin');
   const bolumler: { anahtar: string; baslik: string; icerik: ReactNode }[] = [];
   if (grup && ben) {
-    if (grubunIsleriListesi.length > 0 || grup.listeler.length > 0)
+    if (grubunIsleriListesi.length > 0)
       bolumler.push({
         anahtar: 'yapilacak',
         baslik: 'Yapılacaklar',
@@ -173,31 +172,6 @@ export default function GrupEkrani() {
                 onDuzenle={() => isFormuAc(i)}
               />
             ))}
-            {grup.listeler.length > 0 && (
-              <ListeKutusu>
-                {grup.listeler.map((l, j) => (
-                  <Pressable
-                    key={l.id}
-                    onPress={() =>
-                      router.push({ pathname: '/gruplar/liste/[id]', params: { id: l.id, geri: grup.ad } })
-                    }
-                    accessibilityRole="button"
-                    accessibilityLabel={`${l.ad} listesini aç`}
-                    style={({ pressed }) => [
-                      parcaStilleri.satir,
-                      j > 0 && parcaStilleri.cizgili,
-                      pressed && { opacity: 0.7 },
-                    ]}
-                  >
-                    <Ionicons name="list-outline" size={22} color={kaynakRenk.liste.serit} />
-                    <Yazi kalinlik="kalin" style={parcaStilleri.esnek}>
-                      {l.ad}
-                    </Yazi>
-                    <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
-                  </Pressable>
-                ))}
-              </ListeKutusu>
-            )}
           </>
         ),
       });
@@ -286,7 +260,7 @@ export default function GrupEkrani() {
           )}
           {bolumler.length === 0 && (
             <Yazi tur="ikincil">
-              Bu grupta henüz bir şey yok. “+ Ekle” ile bir iş ya da liste, buluşma veya birlikte rutin başlat.
+              Bu grupta henüz bir şey yok. “+ Ekle” ile bir iş, buluşma ya da birlikte rutin başlat.
             </Yazi>
           )}
           {bolumler.map((bolum, i) => (
@@ -393,7 +367,6 @@ export default function GrupEkrani() {
           uyeler={grup.uyeler.filter((u) => u.durum === 'uye' && u.id !== ben).map((u) => ({ id: u.id, ad: ad(u) }))}
           mevcut={isFormu.mevcut}
           onKapat={() => setIsFormu(null)}
-          onListeOlustu={() => void yenile()}
         />
       )}
       {nobetFormu && grup && (
