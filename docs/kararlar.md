@@ -553,3 +553,10 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Veren:** grup ekranında **Verilen kartlar** (grubun üyeleri arasında), Gruplar'da **Verdiğin kartlar**: "Elif · Diş fırçala · Bu hafta 5/7" (tek seferlikte Yapıldı / Bekliyor; Bıraktı). Satıra dokununca son 14 gün ve **Geri al** (onaylı; kart alanın ajandasından da kalkar). — Öneri
 - Kaynak adı "Ayşe (koç)" yerine **Veren: Ayşe** (aile kullanımı). — Öneri
 - **Görüntülü görüşme:** buluşma formunda isteğe bağlı **Görüntülü görüşme** bağlantısı ve **WhatsApp'ı aç** düğmesi; açıklama: WhatsApp'ta Aramalar → "Arama bağlantısı oluştur" → Görüntülü → kopyala, yapıştır. "https://" eksikse eklenir; Meet, Zoom, FaceTime bağlantıları da olur. Buluşma kartında ve ajandadaki buluşma kartında **Görüşmeye katıl** (bağlantıyı açar). Görüşme Rites'ın içinde değil; Stream gibi bir servisle Rites içinde görüşme sonra düşünülür. — Ürün sahibi (P-62)
+
+## Kart görünümü düzenleme formuyla uyumlu (29 Ekim)
+
+- Kart görünümünün üstü formdaki gibi: solda kartın çeşidi (varsa), **sağ üstte zaman rozeti** ("29 Ekim · 08:00"). Rozete dokununca formdaki **Ne zaman?** sayfası (tarih ve saat) açılır; kart düzenlemeye girmeden başka güne taşınır ya da saati değişir. Tekrarlı kartın sonraki bir gününde formdaki gibi sorulur: Yalnız bu gün · Bu gün ve sonrası. Verilen kartta (P-62) yalnız saat. — Ürün sahibi (P-63); soru ve verilen kart: Öneri
+- Başlık daha küçük (26 → 20 pt); solunda **Yaptım** kutusu (açılan gün için; kart o gün yoksa görünmez). Tarih ve saat satırı kalktı, yalnız tekrar yazısı kaldı. — Ürün sahibi (P-63)
+- Tek seferlik kart taşınınca "Taşındı: 30 Ekim Cuma" ve görünüm o günü açar; o günün işareti kartla birlikte taşınır (formdaki gibi). — Öneri
+- Öteki parçalar (liste, ölçüm…) için görünüm / düzenleme uyumu sonra. — Not

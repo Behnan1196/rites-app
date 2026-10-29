@@ -11,6 +11,8 @@
 // altındaki "Seriyi gösterme / göster"den.
 // P-62 (29 Ekim): verilen kart (bağ `verilen:`) kilitli; menüde Saati değiştir · Hatırlatma ·
 // Bırak. Kendi kartında menüde "Birine ver".
+// P-63 (29 Ekim): düzenleme formuyla uyumlu üst bölüm: solda çeşit, sağda zaman rozeti (dokununca
+// tarih ve saat; kart buradan taşınır); altında Yaptım kutusu ve başlık (daha küçük yazı).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -26,6 +28,7 @@ import { useKartVer } from '@/bilesen/gruplar/KartVerSayfasi';
 import { BirakSorusu, VerilenZamanSayfasi } from '@/bilesen/gruplar/VerilenKartParcalari';
 import { BlokUygulama } from '@/bilesen/kart/BlokUygulama';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
+import { KartZamanRozeti } from '@/bilesen/kart/KartZamani';
 import { useKartSil } from '@/bilesen/kart/KartSil';
 import { useKutuphaneyeKaydet } from '@/bilesen/kutuphane/KaydetSayfasi';
 import { usePaylas } from '@/bilesen/paylasim/PaylasSayfasi';
@@ -36,7 +39,8 @@ import { kaynakAnahtari, kaynakTuru } from '@/mantik/kaynak';
 import { Yazi } from '@/bilesen/Yazi';
 import { ZenginMetin } from '@/bilesen/ZenginMetin';
 import { gunBasligi, yapilanGunler } from '@/mantik/ajanda';
-import { seri, seriMetni, son7Gun, tekrarMetni, type SeritGunu } from '@/mantik/gorunurluk';
+import { cesitBul } from '@/mantik/cesit';
+import { gorunurMu, seri, seriMetni, son7Gun, tekrarMetni, type SeritGunu } from '@/mantik/gorunurluk';
 import { seriSayilirMi, sonYediGunMetni } from '@/mantik/karakter';
 import { ARAC_BLOKLARI, bosKayit, type Kart, type Kayit } from '@/mantik/kart';
 import { bagCoz } from '@/mantik/bulusma';
@@ -45,7 +49,7 @@ import { kartPaketi } from '@/mantik/paylasim';
 import { useOturum } from '@/sunucu/oturum';
 import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
-import { kartAyrinti, kartKayitlari, kartSeriSayYaz, kayitDegistir } from '@/veri/kartlar';
+import { isaretle, kartAyrinti, kartKayitlari, kartSeriSayYaz, kayitDegistir } from '@/veri/kartlar';
 import { karttanProgramaEkle, programOku } from '@/veri/programlar';
 import { ProgramSecSayfasi } from '@/bilesen/yasam/ProgramSayfalari';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
@@ -118,9 +122,10 @@ export default function KartGorunumu() {
   // Ajandadaki gibi: kendi kartında şerit yok; program, grup, gelen… kartında kaynağın rengi.
   const kaynak = kaynakTuru(kaynakAnahtari(kart));
   const serit = kaynak === 'kendim' ? null : kaynakRenk[kaynak].serit;
-  const meta = [kart.saat, kart.tekrar ? tekrarMetni(kart.tekrar) : kart.tarih ? uzunTarih(kart.tarih) : null]
-    .filter(Boolean)
-    .join(' · ');
+  // P-63: tarih ve saat sağ üstteki rozette; burada yalnız tekrar.
+  const meta = kart.tekrar ? tekrarMetni(kart.tekrar) : null;
+  const cesit = cesitBul(kart.cesit ?? null);
+  const isaretlenir = gorunurMu(kart, gun, bugunGun);
   const duzenlenir = !kart.kilitli;
   const verilenId = verilenBagCoz(kart.bag);
   // P-62: buluşmanın görüntülü görüşme bağlantısı.
@@ -159,12 +164,47 @@ export default function KartGorunumu() {
         <View style={stiller.kart}>
           {serit && <View style={[stiller.kaynakSeridi, { backgroundColor: serit }]} />}
           <View style={[stiller.bolum, stiller.baslikAlani]}>
-            <Yazi tur="ekranBasligi" accessibilityRole="header">
-              {kart.baslik}
-            </Yazi>
+            <View style={stiller.ustSatir}>
+              <View style={[stiller.esnek, stiller.cesitAdi]}>
+                {!!cesit && (
+                  <>
+                    <Ionicons
+                      name={(cesit.ikon as React.ComponentProps<typeof Ionicons>['name'] | null) ?? 'leaf-outline'}
+                      size={20}
+                      color={renk.ikincil}
+                    />
+                    <Yazi tur="etiket" kalinlik="kalin" numberOfLines={1}>
+                      {cesit.ad}
+                    </Yazi>
+                  </>
+                )}
+              </View>
+              <KartZamanRozeti kart={kart} bloklar={bloklar} gun={gun} />
+            </View>
+            <View style={stiller.baslikSatiri}>
+              {isaretlenir && (
+                <Pressable
+                  onPress={() => void isaretle(kapi, kart.id, gun, !kayit.yapildi)}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: kayit.yapildi }}
+                  accessibilityLabel={
+                    kayit.yapildi ? `${kart.baslik}: yapıldı` : `${kart.baslik}: yapıldı olarak işaretle`
+                  }
+                  hitSlop={8}
+                  style={stiller.isaretAlani}
+                >
+                  <View style={[stiller.isaret, kayit.yapildi && stiller.isaretDolu]}>
+                    {kayit.yapildi && <Ionicons name="checkmark" size={20} color={renk.yuzey} />}
+                  </View>
+                </Pressable>
+              )}
+              <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.esnek}>
+                {kart.baslik}
+              </Yazi>
+            </View>
             {!!meta && (
               <View style={stiller.metaSatiri}>
-                <Ionicons name={kart.tekrar ? 'repeat-outline' : 'calendar-outline'} size={18} color={renk.ikincil} />
+                <Ionicons name="repeat-outline" size={18} color={renk.ikincil} />
                 <Yazi tur="ikincil">{meta}</Yazi>
               </View>
             )}
@@ -254,7 +294,7 @@ export default function KartGorunumu() {
         {kart.kilitli && (
           <Yazi tur="ikincil">
             {verilenId
-              ? `${kart.gelenKimden || 'Bir yakının'} verdi. İçeriğini o belirler; saatini ⋯ menüsünden değiştirebilirsin. Yaptım bilgin ona gider.`
+              ? `${kart.gelenKimden || 'Bir yakının'} verdi. İçeriğini o belirler; saatini sağ üstten değiştirebilirsin. Yaptım bilgin ona gider.`
               : 'Koçundan gelen kart paylaşılamaz; kendi kütüphanene kaydedebilirsin.'}
           </Yazi>
         )}
@@ -281,11 +321,6 @@ export default function KartGorunumu() {
               : []),
             ...(verilenId
               ? [
-                  {
-                    etiket: 'Saati değiştir',
-                    ikon: 'time-outline' as const,
-                    onPress: () => setZamanBolum('tarih'),
-                  },
                   {
                     etiket: 'Hatırlatma',
                     ikon: 'notifications-outline' as const,
@@ -466,6 +501,22 @@ const stiller = StyleSheet.create({
   bolum: { paddingHorizontal: olcu.kartIci + 4, paddingVertical: 16, gap: 12 },
   cizgili: { borderTopWidth: 1, borderTopColor: renk.satirCizgi },
   metaSatiri: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  ustSatir: { flexDirection: 'row', alignItems: 'center', gap: 8, marginRight: -6 },
+  cesitAdi: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  esnek: { flex: 1 },
+  baslikSatiri: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  isaretAlani: { minWidth: 44, minHeight: 44, justifyContent: 'center' },
+  isaret: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: renk.cizgi,
+    backgroundColor: renk.yuzey,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  isaretDolu: { backgroundColor: renk.ana, borderColor: renk.ana },
   kisa: { marginTop: 4 },
   blokBasligi: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   blokSimgesi: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
