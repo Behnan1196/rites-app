@@ -51,6 +51,7 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 21 | `program_kart.cesit` (programın kartının çeşidi; ajandaya geçen karta geçer) |
 | 22 | Listelerim (P-58): `yerel_liste` (ad, açıklama, sıra, oluşturma) ve `yerel_madde` (liste → silinince maddeleri de silinir; metin, yapıldı, tarih, sıra). Kimlikleri `y-` ile başlar (`yerelListeMi`); ortak listeler sunucudadır. Tarihli madde `BanaVerilenler` üzerinden ajandaya düşer. Açılışta bir kez (`ayar.listeler_tasindi`) yalnız liste parçalarından oluşan tekrarsız, programsız, bağsız kartlar yerel listeye çevrilip silinir (`listeKartlariniTasi`) |
 | 23 | Liste çeşitleri (P-61): `yerel_liste.cesit` (`yapilacak \| alisveris \| hazirlik \| not`, varsayılan `yapilacak`), `yerel_madde.miktar` (alışverişte "2 kg"; yoksa boş). Davranış `mantik/listeCesidi.ts`; alışveriş önerileri için `ayar.alisveris_gecmisi` (yalnız telefonda) |
+| 24 | Görünümde sabit (P-65): `blok.sabit` (0/1) ve `kart.sabitler` (JSON: `zaman`, `baslik`; NULL: hepsi değişir, ama eski kilitli kartta yalnız saat). Kural `mantik/gorunumDegisimi.ts`; paket, kütüphane içeriği ve verilen kart taşır |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 

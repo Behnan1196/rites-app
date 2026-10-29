@@ -122,6 +122,11 @@ export interface Kart {
   sira: number;
   /** Bir grup etkinliğine bağ (ör. `bulusma:<id>|<gün>|<saat>`); yoksa null. */
   bag: string | null;
+  /**
+   * P-65: kart görünümünde değiştirilemeyen alanlar (parçalar için `Blok.sabit`). null / yok:
+   * hepsi değişir; ancak eski verilen / koç kartında (kilitli) yalnız saat değişir.
+   */
+  sabitler?: SabitAlan[] | null;
 }
 
 export const ICERIK_BLOKLARI = ['talimat', 'video', 'liste', 'adimlar', 'foto', 'dosya'] as const;
@@ -154,7 +159,12 @@ export interface Blok {
   durum?: AdimDurumu | null;
   /** Fotoğraf / dosya yerel yolu. */
   dosya: string | null;
+  /** P-65: kart görünümünde değiştirilemez (yalnız Düzenle ile). */
+  sabit?: boolean;
 }
+
+/** P-65: kart görünümünde değiştirilemeyen kart alanları. */
+export type SabitAlan = 'zaman' | 'baslik';
 
 /** Kartın bir gündeki durumu. Yoksa boş kabul edilir (`05` §2). */
 export interface Kayit {

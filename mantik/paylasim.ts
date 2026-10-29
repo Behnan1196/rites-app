@@ -1,7 +1,7 @@
 // Kart paylaşımı ve Gelenler (L-4, `05` §13). Paylaşılan kart bir kopyadır:
 // tanımı gider, kayıtları (yapıldı, değerler) ve telefondaki dosyalar gitmez.
 
-import type { BlokTuru, Kart, Tekrar } from './kart';
+import type { BlokTuru, Kart, SabitAlan, Tekrar } from './kart';
 import { yeniKart } from './kart';
 import type { Gun } from './tarih';
 
@@ -12,6 +12,8 @@ export interface PaketBlok {
   birim: string;
   dakika: number | null;
   maddeler: string[];
+  /** P-65: kart görünümünde değiştirilemez. */
+  sabit?: boolean;
 }
 
 export interface KartPaketi {
@@ -24,12 +26,22 @@ export interface KartPaketi {
   /** Kütüphaneden paylaşılınca etiketler de gider (L-4); alıcı kaydederken önceden seçili gelir. */
   alanlar?: string[];
   etiketTur?: string;
+  /** P-65: görünümde değiştirilemeyen alanlar (verilen kartta verenin ayarı). Eski pakette yok. */
+  sabitler?: SabitAlan[];
 }
 
 /** Telefona bağlı içerik (fotoğraf, dosya) taşınmaz; o bloklar boş tanım olarak gider. */
 export function kartPaketi(
-  kart: Pick<Kart, 'baslik' | 'kisa' | 'saat' | 'tekrar'>,
-  bloklar: readonly { tur: BlokTuru; ad: string; metin: string; birim: string; dakika: number | null; maddeler: string[] }[],
+  kart: Pick<Kart, 'baslik' | 'kisa' | 'saat' | 'tekrar'> & { sabitler?: readonly SabitAlan[] | null },
+  bloklar: readonly {
+    tur: BlokTuru;
+    ad: string;
+    metin: string;
+    birim: string;
+    dakika: number | null;
+    maddeler: string[];
+    sabit?: boolean;
+  }[],
 ): KartPaketi {
   return {
     surum: 1,
@@ -39,7 +51,16 @@ export function kartPaketi(
     tekrar: kart.tekrar,
     bloklar: bloklar
       .filter((b) => b.tur !== 'foto' && b.tur !== 'dosya')
-      .map((b) => ({ tur: b.tur, ad: b.ad, metin: b.metin, birim: b.birim, dakika: b.dakika, maddeler: [...b.maddeler] })),
+      .map((b) => ({
+        tur: b.tur,
+        ad: b.ad,
+        metin: b.metin,
+        birim: b.birim,
+        dakika: b.dakika,
+        maddeler: [...b.maddeler],
+        ...(b.sabit ? { sabit: true } : {}),
+      })),
+    sabitler: [...(kart.sabitler ?? [])],
   };
 }
 

@@ -6,7 +6,16 @@ import { htmldenDuz } from './zenginMetin';
 import { alanAdi, type AlanAnahtari } from './alanlar';
 import { TURLER, type EtiketTuru, type KatalogBlogu } from './katalog';
 import { tekrarMetni } from './gorunurluk';
-import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Hatirlatma, type Kart, type Tekrar } from './kart';
+import {
+  gecerliHatirlatma,
+  yeniKart,
+  type Blok,
+  type BlokTuru,
+  type Hatirlatma,
+  type Kart,
+  type SabitAlan,
+  type Tekrar,
+} from './kart';
 import { trKucuk } from './metin';
 import type { KartPaketi } from './paylasim';
 import type { Gun } from './tarih';
@@ -25,6 +34,8 @@ export interface KartIcerigi {
   hatirlatma: Hatirlatma | null;
   tekrar: Tekrar | null;
   bloklar: KutuphaneBlogu[];
+  /** P-65: kart görünümünde değiştirilemeyen alanlar. */
+  sabitler?: SabitAlan[];
 }
 
 interface Ortak {
@@ -42,7 +53,10 @@ export type KutuphaneKaydi = Ortak & { tur: 'kart'; icerik: KartIcerigi };
 
 export const KENDIM = 'Kendim';
 
-type BlokBenzeri = Pick<Blok, 'tur' | 'ad' | 'metin' | 'birim' | 'dakika' | 'maddeler'> & { dosya?: string | null };
+type BlokBenzeri = Pick<Blok, 'tur' | 'ad' | 'metin' | 'birim' | 'dakika' | 'maddeler'> & {
+  dosya?: string | null;
+  sabit?: boolean;
+};
 
 function blokKopyasi(b: BlokBenzeri): KutuphaneBlogu {
   return {
@@ -53,12 +67,13 @@ function blokKopyasi(b: BlokBenzeri): KutuphaneBlogu {
     dakika: b.dakika,
     maddeler: [...b.maddeler],
     dosya: b.dosya ?? null,
+    ...(b.sabit ? { sabit: true } : {}),
   };
 }
 
 /** Kartın kayıtsız kopyası (tarih, yapıldı, değerler gitmez). */
 export function kartIcerigi(
-  kart: Pick<Kart, 'baslik' | 'kisa' | 'saat' | 'hatirlatma' | 'tekrar'>,
+  kart: Pick<Kart, 'baslik' | 'kisa' | 'saat' | 'hatirlatma' | 'tekrar' | 'sabitler'>,
   bloklar: readonly BlokBenzeri[],
 ): KartIcerigi {
   return {
@@ -68,6 +83,7 @@ export function kartIcerigi(
     hatirlatma: kart.hatirlatma,
     tekrar: kart.tekrar ? { ...kart.tekrar, gunler: kart.tekrar.gunler ? [...kart.tekrar.gunler] : null } : null,
     bloklar: bloklar.map(blokKopyasi),
+    ...(kart.sabitler?.length ? { sabitler: [...kart.sabitler] } : {}),
   };
 }
 
@@ -194,6 +210,7 @@ export function kutuphanedenKart(
       hatirlatma: gecerliHatirlatma(c.hatirlatma, c.saat),
       tekrar: c.tekrar ? { ...c.tekrar, gunler: c.tekrar.gunler ? [...c.tekrar.gunler] : null } : null,
       sira,
+      sabitler: c.sabitler?.length ? [...c.sabitler] : null,
     }),
     bloklar: c.bloklar.map((b) => ({ ...blokKopyasi(b), id: kimlik() })),
   };
@@ -217,8 +234,10 @@ export function kayitPaketi(k: KutuphaneKaydi): KartPaketi {
         birim: b.birim,
         dakika: b.dakika,
         maddeler: [...b.maddeler],
+        ...(b.sabit ? { sabit: true } : {}),
       })),
     alanlar: [...k.alanlar],
     etiketTur: k.etiketTur,
+    sabitler: [...(c.sabitler ?? [])],
   };
 }

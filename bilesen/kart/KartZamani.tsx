@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 
 import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
+import { zamanDegisimi } from '@/mantik/gorunumDegisimi';
 import { gecerliHatirlatma, type Blok, type Kart } from '@/mantik/kart';
 import { programBagCoz } from '@/mantik/program';
 import { uzunTarih, type Gun } from '@/mantik/tarih';
@@ -40,8 +41,9 @@ export function useKartZamani(kart: Kart, bloklar: readonly Blok[], gun: Gun) {
   const [z, setZ] = useState<Zamanlama>(() => zamanlamasi(kart, gun));
   const [tarihsiz, setTarihsiz] = useState(kart.tarihsiz);
   const [soru, setSoru] = useState<Zamanlama | null>(null);
-  /** Verilen kart: içerik ve gün verenin; yalnız saat. */
-  const yalnizSaat = kart.kilitli;
+  // P-65: verilen kartta verenin ayarı; eski verilen kartta yalnız saat; sabitse yalnız gösterir.
+  const degisim = zamanDegisimi(kart);
+  const yalnizSaat = degisim === 'saat';
 
   const ac = () => {
     setZ(zamanlamasi(kart, gun));
@@ -80,7 +82,8 @@ export function useKartZamani(kart: Kart, bloklar: readonly Blok[], gun: Gun) {
       // Tek seferlik kart başka güne taşındıysa görünüm o günü açar.
       const yeniGun = !kart.tekrar && tanim.tarih && tanim.tarih !== gun ? tanim.tarih : undefined;
       if (yeniGun && !yeniId) kisaMesaj(`Taşındı: ${yeniGun === bugunGun ? 'bugün' : uzunTarih(yeniGun)}`);
-      if (yeniId || yeniGun) router.setParams({ ...(yeniId ? { id: yeniId } : {}), ...(yeniGun ? { gun: yeniGun } : {}) });
+      if (yeniId || yeniGun)
+        router.setParams({ ...(yeniId ? { id: yeniId } : {}), ...(yeniGun ? { gun: yeniGun } : {}) });
     } catch (e) {
       hata(e);
     }
@@ -106,7 +109,13 @@ export function useKartZamani(kart: Kart, bloklar: readonly Blok[], gun: Gun) {
   };
 
   const rozet = (
-    <ZamanRozeti deger={zamanlamasi(kart, gun)} tarihYok={kart.tarihsiz} kalip={yalnizSaat} onPress={ac} />
+    <ZamanRozeti
+      deger={zamanlamasi(kart, gun)}
+      tarihYok={kart.tarihsiz}
+      kalip={yalnizSaat}
+      pasif={degisim === 'yok'}
+      onPress={ac}
+    />
   );
 
   const s = bolmeSecenekleri(gun);

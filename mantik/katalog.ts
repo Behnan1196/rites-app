@@ -42,6 +42,8 @@ export interface KatalogBlogu {
   maddeler: string[];
   /** Telefondaki fotoğraf / dosya (katalogda hep null). */
   dosya: string | null;
+  /** P-65: kart görünümünde değiştirilemez. */
+  sabit?: boolean;
 }
 
 export interface KatalogAlan {

@@ -330,6 +330,12 @@ export const GOCLER: readonly Goc[] = [
     sql: `ALTER TABLE yerel_liste ADD COLUMN cesit TEXT NOT NULL DEFAULT 'yapilacak';
           ALTER TABLE yerel_madde ADD COLUMN miktar TEXT NOT NULL DEFAULT '';`,
   },
+  {
+    // Görünümde sabit alanlar (pilot 29 Ekim, P-65): parça (`blok.sabit`) ve kart (`kart.sabitler`, JSON).
+    surum: 24,
+    sql: `ALTER TABLE blok ADD COLUMN sabit INTEGER NOT NULL DEFAULT 0;
+          ALTER TABLE kart ADD COLUMN sabitler TEXT;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

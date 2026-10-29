@@ -179,9 +179,12 @@ export function ZamanRozeti({
   programGunu = null,
   kalip = false,
   gunGizle = false,
+  pasif = false,
 }: {
   deger: Zamanlama;
   onPress: () => void;
+  /** P-65: görünümde zaman sabit: yalnız gösterir. */
+  pasif?: boolean;
   tarihYok?: boolean;
   programGunu?: ProgramGunu | null;
   kalip?: boolean;
@@ -195,12 +198,13 @@ export function ZamanRozeti({
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`Ne zaman: ${metin.replace('..:..', 'saat yok')}${ekler ? `, ${ekler}` : ''}. Değiştir`}
+      disabled={pasif}
+      accessibilityRole={pasif ? 'text' : 'button'}
+      accessibilityLabel={`Ne zaman: ${metin.replace('..:..', 'saat yok')}${ekler ? `, ${ekler}` : ''}${pasif ? '' : '. Değiştir'}`}
       hitSlop={6}
-      style={({ pressed }) => [stiller.rozet, pressed && { opacity: 0.7 }]}
+      style={({ pressed }) => [stiller.rozet, pasif && stiller.rozetPasif, pressed && { opacity: 0.7 }]}
     >
-      <Ionicons name="calendar-outline" size={18} color={renk.ana} />
+      <Ionicons name={pasif ? 'lock-closed-outline' : 'calendar-outline'} size={18} color={renk.ana} />
       <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.rozetYazi}>
         {metin}
       </Yazi>
@@ -1000,6 +1004,7 @@ const stiller = StyleSheet.create({
     borderColor: renk.cizgi,
     backgroundColor: renk.yuzey,
   },
+  rozetPasif: { backgroundColor: 'transparent', borderColor: 'transparent' },
   rozetYazi: { fontVariant: ['tabular-nums'] },
   zamanSatiriAcik: { borderColor: renk.ana, borderWidth: 2, paddingBottom: 12 },
   zamanSatiriUst: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 60 },

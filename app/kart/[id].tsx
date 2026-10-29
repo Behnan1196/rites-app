@@ -13,6 +13,8 @@
 // Bırak. Kendi kartında menüde "Birine ver".
 // P-63 (29 Ekim): düzenleme formuyla uyumlu üst bölüm: solda çeşit, sağda zaman rozeti (dokununca
 // tarih ve saat; kart buradan taşınır); altında Yaptım kutusu ve başlık (daha küçük yazı).
+// P-65: kartı tasarlayan açık bıraktıysa başlıkta ve içerik parçalarında "Değiştir" (yalnız o parça);
+// sabitse küçük kilit.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -45,6 +47,7 @@ import { seriSayilirMi, sonYediGunMetni } from '@/mantik/karakter';
 import { ARAC_BLOKLARI, bosKayit, type Kart, type Kayit } from '@/mantik/kart';
 import { bagCoz } from '@/mantik/bulusma';
 import { verilenBagCoz } from '@/mantik/kartVerme';
+import { ayarliParcaMi, baslikDegisir, parcaDegisir } from '@/mantik/gorunumDegisimi';
 import { kartPaketi } from '@/mantik/paylasim';
 import { useOturum } from '@/sunucu/oturum';
 import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
@@ -132,6 +135,8 @@ export default function KartGorunumu() {
   const bulusmaId = bagCoz(kart.bag)?.id;
   const gorusme = bulusmaId ? bulusmalar.find((b) => b.id === bulusmaId)?.baglanti : undefined;
   const duzenleAc = (blokEkle = false) => form.ac({ tur: 'duzenle', kart, bloklar, gun, blokEkle });
+  /** P-65: görünümden tek parça (ya da başlık ve açıklama). */
+  const parcaAc = (parca: string) => form.ac({ tur: 'duzenle', kart, bloklar, gun, parca });
   const seriDegis = (seriSay: boolean) =>
     void kartSeriSayYaz(kapi, kart.id, seriSay).catch((e: unknown) => console.error('Kaydedilemedi', e));
   // P-38: tek yerleşim: önce "Ne yapacaksın" (talimat, video, liste, zamanlayıcı…), sonra o günün kaydı.
@@ -201,6 +206,16 @@ export default function KartGorunumu() {
               <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.esnek}>
                 {kart.baslik}
               </Yazi>
+              {baslikDegisir(kart) ? (
+                <Dugme
+                  tur="yazi"
+                  etiket="Değiştir"
+                  erisimIpucu="Başlık ve açıklama"
+                  onPress={() => parcaAc('baslik')}
+                />
+              ) : (
+                <SabitSimgesi />
+              )}
             </View>
             {!!meta && (
               <View style={stiller.metaSatiri}>
@@ -268,6 +283,12 @@ export default function KartGorunumu() {
                             <Yazi kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
                               {ad}
                             </Yazi>
+                            {ayarliParcaMi(b.tur) &&
+                              (parcaDegisir(kart, b) ? (
+                                <Dugme tur="yazi" etiket="Değiştir" erisimIpucu={ad} onPress={() => parcaAc(b.id)} />
+                              ) : (
+                                <SabitSimgesi />
+                              ))}
                           </View>
                         )}
                         <BlokUygulama blok={b} gun={gun} kayit={kayit} kayitlar={kayitlar} onKayit={kayitDegis} />
@@ -380,6 +401,15 @@ export default function KartGorunumu() {
           onSec={(pid) => void programaEkle(pid)}
         />
       )}
+    </View>
+  );
+}
+
+/** Görünümde değiştirilemeyen alanın yanında küçük kilit (P-65). */
+function SabitSimgesi() {
+  return (
+    <View accessible accessibilityLabel="Bu kartta değiştirilemez" style={stiller.sabit}>
+      <Ionicons name="lock-closed-outline" size={18} color={renk.soluk} />
     </View>
   );
 }
@@ -517,6 +547,7 @@ const stiller = StyleSheet.create({
     justifyContent: 'center',
   },
   isaretDolu: { backgroundColor: renk.ana, borderColor: renk.ana },
+  sabit: { minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' },
   kisa: { marginTop: 4 },
   blokBasligi: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   blokSimgesi: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },

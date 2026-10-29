@@ -75,6 +75,8 @@ export function verilenKarti(
       kilitli: true,
       bag: verilenBagi(v.id),
       sira: 0,
+      // P-65: verenin görünüm ayarı; eski pakette yok (o zaman yalnız saat değişir).
+      sabitler: p.sabitler ? [...p.sabitler] : null,
     }),
     bloklar: p.bloklar.map((b) => ({ ...b, maddeler: [...b.maddeler], id: kimlik(), dosya: null })),
   };

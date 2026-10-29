@@ -221,7 +221,10 @@ export function ajandaKarti(
   };
 }
 
-type BlokBenzeri = Pick<Blok, 'tur' | 'ad' | 'metin' | 'birim' | 'dakika' | 'maddeler'> & { dosya?: string | null };
+type BlokBenzeri = Pick<Blok, 'tur' | 'ad' | 'metin' | 'birim' | 'dakika' | 'maddeler'> & {
+  dosya?: string | null;
+  sabit?: boolean;
+};
 
 export function blokKopyasi(b: BlokBenzeri): KutuphaneBlogu {
   return {
@@ -232,6 +235,7 @@ export function blokKopyasi(b: BlokBenzeri): KutuphaneBlogu {
     dakika: b.dakika,
     maddeler: [...b.maddeler],
     dosya: b.dosya ?? null,
+    ...(b.sabit ? { sabit: true } : {}),
   };
 }
 

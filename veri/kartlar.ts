@@ -5,7 +5,16 @@ import { htmldenDuz } from '@/mantik/zenginMetin';
 import { adimDurumu, adimiDegistir, ilerleme } from '@/mantik/adimlar';
 import type { KartIslemi, KayitAraligi } from '@/mantik/bolme';
 import { kayitAnahtarlariniEsle } from '@/mantik/bolme';
-import { bosKayit, hatirlatmaCoz, hatirlatmaYaz, type Blok, type BlokTuru, type Kart, type Kayit } from '@/mantik/kart';
+import {
+  bosKayit,
+  hatirlatmaCoz,
+  hatirlatmaYaz,
+  type Blok,
+  type BlokTuru,
+  type Kart,
+  type Kayit,
+  type SabitAlan,
+} from '@/mantik/kart';
 import { yeniKartSirasi } from '@/mantik/ajanda';
 import { gecerliSes } from '@/mantik/sesler';
 import type { Gun } from '@/mantik/tarih';
@@ -48,6 +57,7 @@ interface KartSatiri {
   birakildi: number;
   sira: number;
   bag?: string | null;
+  sabitler?: string | null;
   blok_sayisi?: number;
   adim_maddeler?: string | null;
   adim_durum?: string | null;
@@ -65,6 +75,7 @@ interface BlokSatiri {
   maddeler: string;
   dosya: string | null;
   durum?: string | null;
+  sabit?: number;
 }
 
 interface KayitSatiri {
@@ -113,6 +124,7 @@ export function kartSatirdan(s: KartSatiri): KartOzeti {
     birakildi: s.birakildi === 1,
     sira: s.sira,
     bag: s.bag ?? null,
+    ...(s.sabitler ? { sabitler: json<SabitAlan[] | null>(s.sabitler, null) } : {}),
     blokSayisi: s.blok_sayisi ?? 0,
     adimlar: s.adim_maddeler
       ? ilerleme(adimDurumu(json<unknown>(s.adim_durum ?? null, null), json<string[]>(s.adim_maddeler, []).length))
@@ -132,6 +144,7 @@ function blokSatirdan(s: BlokSatiri): Blok {
     dakika: s.dakika,
     maddeler: json<string[]>(s.maddeler, []),
     dosya: s.dosya,
+    ...(s.sabit === 1 ? { sabit: true } : {}),
     ...(s.tur === 'adimlar'
       ? { durum: adimDurumu(json<unknown>(s.durum ?? null, null), json<string[]>(s.maddeler, []).length) }
       : {}),
@@ -150,7 +163,7 @@ function kayitSatirdan(s: KayitSatiri): Kayit {
 }
 
 const KART_ALANLARI =
-  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, seri_say, cesit, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag';
+  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, seri_say, cesit, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag, sabitler';
 
 function kartDegerleri(k: Kart): SqlDeger[] {
   return [
@@ -175,6 +188,7 @@ function kartDegerleri(k: Kart): SqlDeger[] {
     k.birakildi ? 1 : 0,
     k.sira,
     k.bag,
+    k.sabitler ? JSON.stringify(k.sabitler) : null,
   ];
 }
 
@@ -297,10 +311,20 @@ export async function bloklariYazY(
   const tutulan = new Set<string>();
   for (const [sira, t] of taslaklar.entries()) {
     const durum = t.tur === 'adimlar' && t.durum ? JSON.stringify(t.durum) : null;
-    const degerler: SqlDeger[] = [t.tur, t.ad, t.metin, t.birim, t.dakika, JSON.stringify(t.maddeler), t.dosya, durum];
+    const degerler: SqlDeger[] = [
+      t.tur,
+      t.ad,
+      t.metin,
+      t.birim,
+      t.dakika,
+      JSON.stringify(t.maddeler),
+      t.dosya,
+      durum,
+      t.sabit ? 1 : 0,
+    ];
     if (mevcut.has(t.id)) {
       await y.calistir(
-        'UPDATE blok SET sira = ?, tur = ?, ad = ?, metin = ?, birim = ?, dakika = ?, maddeler = ?, dosya = ?, durum = ? WHERE id = ?',
+        'UPDATE blok SET sira = ?, tur = ?, ad = ?, metin = ?, birim = ?, dakika = ?, maddeler = ?, dosya = ?, durum = ?, sabit = ? WHERE id = ?',
         [sira, ...degerler, t.id],
       );
       esleme.set(t.id, t.id);
@@ -308,7 +332,7 @@ export async function bloklariYazY(
     } else {
       const id = idUret();
       await y.calistir(
-        'INSERT INTO blok (id, kart_id, sira, tur, ad, metin, birim, dakika, maddeler, dosya, durum) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO blok (id, kart_id, sira, tur, ad, metin, birim, dakika, maddeler, dosya, durum, sabit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [id, kartId, sira, ...degerler],
       );
       esleme.set(t.id, id);

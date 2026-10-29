@@ -18,7 +18,8 @@ import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
 import { adimDurumu, adimlariEsle } from '@/mantik/adimlar';
 import { CESIT_SIMGELERI, cesitBul, cesitler as tumCesitler, yeniCesitKimligi } from '@/mantik/cesit';
-import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Kart } from '@/mantik/kart';
+import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Kart, type SabitAlan } from '@/mantik/kart';
+import { ayarliParcaMi, sabitDegistir } from '@/mantik/gorunumDegisimi';
 import { katalog, type KartCesidi } from '@/mantik/katalog';
 import {
   blokKopyasi,
@@ -51,6 +52,7 @@ import type { OnaySecenegi } from '../OnayKutusu';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 import { BlokDuzenleyici } from './BlokDuzenleyici';
+import { BLOK_TURLERI } from './blokTurleri';
 import { BlokSecici } from './BlokSecici';
 import { CesitSecici } from './CesitSecici';
 import { useUzman } from '../useUzman';
@@ -70,6 +72,11 @@ export type KartFormuHedefi =
       gun: Gun;
       /** Ekleme seçici hemen açılsın (boş kartta "Karta bir şey ekle"). */
       blokEkle?: boolean;
+      /**
+       * P-65: kart görünümünden "Değiştir": yalnız bu parça ('baslik': başlık ve açıklama; ya da
+       * bloğun kimliği). Yoksa bütün form.
+       */
+      parca?: string;
     }
   /** Programın kartı; `kart` null ise yeni. */
   | {
@@ -122,6 +129,8 @@ interface FormDurumu {
   baslikIpucu: string;
   /** Yalnız çeşit tasarımında. */
   tasarim: TasarimAlanlari | null;
+  /** P-65: kart görünümünde değiştirilemeyen alanlar. */
+  sabitler: SabitAlan[];
 }
 
 interface TasarimAlanlari {
@@ -214,10 +223,11 @@ function cesittenDurum(c: KartCesidi, gun: Gun): FormDurumu {
     cesit: c.id,
     baslikIpucu: c.baslikIpucu,
     tasarim: null,
+    sabitler: [],
   };
 }
 
-const ekAlanlar = { cesit: null, baslikIpucu: '', tasarim: null } as const;
+const ekAlanlar = { cesit: null, baslikIpucu: '', tasarim: null, sabitler: [] as SabitAlan[] };
 
 function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
   if (hedef.tur === 'cesit') {
@@ -244,6 +254,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
       zamanlama: { tarih: hedef.bugunGun, saat: c.saat, hatirlatma: c.hatirlatma, alarm: false, tekrar: c.tekrar },
       bloklar: c.bloklar.map((b) => formaBlok({ ...b, id: geciciKimlik(), kartId: '', sira: 0 })),
       seriSay: null,
+      sabitler: [...(c.sabitler ?? [])],
     };
   }
   if (hedef.tur === 'sablon') {
@@ -306,6 +317,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
     seriSay: kart.seriSay ?? null,
     ...ekAlanlar,
     cesit: kart.cesit ?? null,
+    sabitler: [...(kart.sabitler ?? [])],
   };
 }
 
@@ -379,19 +391,28 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const secilenCesit = cesitBul(durum.cesit);
   const programGunu: ProgramGunu | null = sablon ? { ref: SABLON_REF, sure: sablon.program.sure } : null;
   const gunGizle = !!programGunu && !uzman;
-  const sayfaBasligi = tasarimHedefi
-    ? tasarimHedefi.cesit
-      ? 'Kart çeşidi'
-      : 'Yeni kart çeşidi'
-    : kutuphaneHedefi
-      ? 'Kartı düzenle'
-      : sablon
-        ? sablon.kart
-          ? 'Programın kartı'
-          : 'Programa yeni kart'
-        : duzenleme
-          ? 'Kartı düzenle'
-          : 'Yeni kart';
+  /** P-65: görünümden tek parça değiştiriliyor. */
+  const parca = duzenleme?.parca ?? null;
+  const tekBlok = parca && parca !== 'baslik' ? (durum.bloklar.find((b) => b.id === parca) ?? null) : null;
+  const sayfaBasligi = parca
+    ? parca === 'baslik'
+      ? 'Başlık ve açıklama'
+      : tekBlok
+        ? BLOK_TURLERI[tekBlok.tur].ad
+        : 'Kartı düzenle'
+    : tasarimHedefi
+      ? tasarimHedefi.cesit
+        ? 'Kart çeşidi'
+        : 'Yeni kart çeşidi'
+      : kutuphaneHedefi
+        ? 'Kartı düzenle'
+        : sablon
+          ? sablon.kart
+            ? 'Programın kartı'
+            : 'Programa yeni kart'
+          : duzenleme
+            ? 'Kartı düzenle'
+            : 'Yeni kart';
 
   const guncelle = (alanlar: Partial<FormDurumu>) => setDurum((d) => ({ ...d, ...alanlar }));
   const tasarimGuncelle = (alanlar: Partial<TasarimAlanlari>) =>
@@ -424,6 +445,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     alarmSesi: durum.zamanlama.alarm ? (durum.zamanlama.alarmSesi ?? null) : null,
     tekrar: durum.zamanlama.tekrar,
     seriSay: durum.zamanlama.tekrar ? durum.seriSay : null,
+    sabitler: durum.sabitler.length ? [...durum.sabitler] : null,
   });
 
   const calistir = useCallback(
@@ -497,6 +519,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           hatirlatma: gecerliHatirlatma(kutuphaneHedefi.icerik.hatirlatma, t.saat),
           tekrar: t.tekrar,
           bloklar: bloklar.map(blokKopyasi),
+          ...(durum.sabitler.length ? { sabitler: [...durum.sabitler] } : {}),
         });
       } else if (sablon) {
         const t = tanim();
@@ -609,113 +632,125 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 }}
               />
             )}
-            <View style={stiller.baslikSatiri}>
-              {/* P-49: "Ne yapacaksın?" kalktı (bilgi kartı da var); solda varsa kartın çeşidi. */}
-              {tasarim ? (
-                <Yazi kalinlik="kalin" style={stiller.esnek} numberOfLines={2}>
-                  Kartın başlığı (boşsa kişi yazar)
-                </Yazi>
-              ) : (
-                <View style={[stiller.esnek, stiller.cesitAdi]}>
-                  {!!secilenCesit && (
-                    <>
-                      <Ionicons
-                        name={
-                          (secilenCesit.ikon as React.ComponentProps<typeof Ionicons>['name'] | null) ?? 'leaf-outline'
-                        }
-                        size={20}
-                        color={renk.ikincil}
-                      />
-                      <Yazi tur="etiket" kalinlik="kalin" numberOfLines={1}>
-                        {secilenCesit.ad}
-                      </Yazi>
-                    </>
-                  )}
-                </View>
-              )}
-              <ZamanRozeti
-                deger={durum.zamanlama}
-                tarihYok={durum.tarihsiz}
-                programGunu={programGunu}
-                gunGizle={gunGizle}
-                kalip={kalip}
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setZamanBolum('tarih');
-                }}
-              />
-            </View>
-            <GirisAlani
-              etiket="Kartın başlığı"
-              etiketGizli
-              value={durum.baslik}
-              onChangeText={(baslik) => {
-                guncelle({ baslik });
-                if (hata) setHata(null);
-              }}
-              placeholder={(!tasarim && durum.baslikIpucu) || VARSAYILAN_IPUCU}
-              hata={tasarim ? null : hata}
-              returnKeyType="done"
-              autoFocus={!duzenleme && !sablon?.kart && !kalip && ilk.baslik === ''}
-            />
-            {tasarim ? (
-              durum.baslik.trim() === '' && (
-                <GirisAlani
-                  etiket="Başlık ipucu (isteğe bağlı)"
-                  value={durum.baslikIpucu}
-                  onChangeText={(baslikIpucu) => guncelle({ baslikIpucu })}
-                  placeholder="Örneğin: Mercimek çorbası"
-                  returnKeyType="done"
+            {!parca && (
+              <View style={stiller.baslikSatiri}>
+                {/* P-49: "Ne yapacaksın?" kalktı (bilgi kartı da var); solda varsa kartın çeşidi. */}
+                {tasarim ? (
+                  <Yazi kalinlik="kalin" style={stiller.esnek} numberOfLines={2}>
+                    Kartın başlığı (boşsa kişi yazar)
+                  </Yazi>
+                ) : (
+                  <View style={[stiller.esnek, stiller.cesitAdi]}>
+                    {!!secilenCesit && (
+                      <>
+                        <Ionicons
+                          name={
+                            (secilenCesit.ikon as React.ComponentProps<typeof Ionicons>['name'] | null) ??
+                            'leaf-outline'
+                          }
+                          size={20}
+                          color={renk.ikincil}
+                        />
+                        <Yazi tur="etiket" kalinlik="kalin" numberOfLines={1}>
+                          {secilenCesit.ad}
+                        </Yazi>
+                      </>
+                    )}
+                  </View>
+                )}
+                <ZamanRozeti
+                  deger={durum.zamanlama}
+                  tarihYok={durum.tarihsiz}
+                  programGunu={programGunu}
+                  gunGizle={gunGizle}
+                  kalip={kalip}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setZamanBolum('tarih');
+                  }}
                 />
-              )
-            ) : (
-              <ZenginMetinAlani
-                etiket="Açıklama"
-                deger={durum.kisa}
-                onDegis={(kisa) => guncelle({ kisa })}
-                ipucu="Açıklama (isteğe bağlı)"
-                kisa
-              />
+              </View>
+            )}
+            {(!parca || parca === 'baslik') && (
+              <>
+                <GirisAlani
+                  etiket="Kartın başlığı"
+                  etiketGizli
+                  value={durum.baslik}
+                  onChangeText={(baslik) => {
+                    guncelle({ baslik });
+                    if (hata) setHata(null);
+                  }}
+                  placeholder={(!tasarim && durum.baslikIpucu) || VARSAYILAN_IPUCU}
+                  hata={tasarim ? null : hata}
+                  returnKeyType="done"
+                  autoFocus={!duzenleme && !sablon?.kart && !kalip && ilk.baslik === ''}
+                />
+                {tasarim ? (
+                  durum.baslik.trim() === '' && (
+                    <GirisAlani
+                      etiket="Başlık ipucu (isteğe bağlı)"
+                      value={durum.baslikIpucu}
+                      onChangeText={(baslikIpucu) => guncelle({ baslikIpucu })}
+                      placeholder="Örneğin: Mercimek çorbası"
+                      returnKeyType="done"
+                    />
+                  )
+                ) : (
+                  <ZenginMetinAlani
+                    etiket="Açıklama"
+                    deger={durum.kisa}
+                    onDegis={(kisa) => guncelle({ kisa })}
+                    ipucu="Açıklama (isteğe bağlı)"
+                    kisa
+                  />
+                )}
+              </>
             )}
 
             {/* P-57: ikinci şerit: Süre · Hatırlatma · + Karta ekle. */}
-            <ZamanSeridi
-              deger={durum.zamanlama}
-              programda={!!programGunu}
-              kalip={kalip}
-              onSure={() => {
-                Keyboard.dismiss();
-                setZamanBolum('sure');
-              }}
-              onHatirlatma={() => {
-                Keyboard.dismiss();
-                setZamanBolum('hatirlatma');
-              }}
-              onEkle={() => {
-                Keyboard.dismiss();
-                setBlokSeciciAcik(true);
-              }}
-            />
+            {!parca && (
+              <ZamanSeridi
+                deger={durum.zamanlama}
+                programda={!!programGunu}
+                kalip={kalip}
+                onSure={() => {
+                  Keyboard.dismiss();
+                  setZamanBolum('sure');
+                }}
+                onHatirlatma={() => {
+                  Keyboard.dismiss();
+                  setZamanBolum('hatirlatma');
+                }}
+                onEkle={() => {
+                  Keyboard.dismiss();
+                  setBlokSeciciAcik(true);
+                }}
+              />
+            )}
             <>
-              {durum.bloklar.length > 0 && (
+              {!parca && durum.bloklar.length > 0 && (
                 <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumBasligi}>
                   Kartın içinde
                 </Yazi>
               )}
-              {durum.bloklar.map((b, i) => (
-                <BlokDuzenleyici
-                  key={b.id}
-                  blok={listeAyarla(b)}
-                  onDegis={(yeni) => blokDegis(i, yeni)}
-                  onKaldir={() => blokKaldir(i)}
-                  cokGunlu={cokGunlu}
-                  onGelendenAlindi={(id) => setAlinanPaylasilanlar((a) => [...a, id])}
-                  onListeSecimi={(tur) => {
-                    setOtomatikListeler((s) => new Set([...s].filter((x) => x !== b.id)));
-                    blokDegis(i, { ...b, tur });
-                  }}
-                />
-              ))}
+              {durum.bloklar.map(
+                (b, i) =>
+                  (!parca || b.id === parca) && (
+                    <BlokDuzenleyici
+                      key={b.id}
+                      blok={listeAyarla(b)}
+                      onDegis={(yeni) => blokDegis(i, yeni)}
+                      onKaldir={() => blokKaldir(i)}
+                      cokGunlu={cokGunlu}
+                      onGelendenAlindi={(id) => setAlinanPaylasilanlar((a) => [...a, id])}
+                      onListeSecimi={(tur) => {
+                        setOtomatikListeler((s) => new Set([...s].filter((x) => x !== b.id)));
+                        blokDegis(i, { ...b, tur });
+                      }}
+                    />
+                  ),
+              )}
             </>
 
             {tasarim && (
@@ -742,6 +777,48 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                   onDegis={(seri) => tasarimGuncelle({ seri })}
                   etiket="Seri sayılsın"
                 />
+              </View>
+            )}
+
+            {/* P-65: kartı tasarlayan, görünümde neyin değişebileceğini seçer (verilen kartta da geçerli). */}
+            {!parca && !tasarim && !sablon && (
+              <View style={stiller.sabitBolum}>
+                <Yazi tur="bolumBasligi" accessibilityRole="header">
+                  Kart görünümünde değiştirilebilsin
+                </Yazi>
+                <Yazi tur="ikincil">
+                  Kapattığın, kart açıkken değiştirilemez; yalnız Düzenle ile. Kartı birine verdiğinde de geçerli.
+                </Yazi>
+                {(
+                  [
+                    ['zaman', 'Tarih ve saat'],
+                    ['baslik', 'Başlık ve açıklama'],
+                  ] as const
+                ).map(([alan, ad]) => (
+                  <View key={alan} style={stiller.sabitSatiri}>
+                    <Yazi style={stiller.esnek}>{ad}</Yazi>
+                    <AcKapa
+                      acik={!durum.sabitler.includes(alan)}
+                      onDegis={(acik) => guncelle({ sabitler: sabitDegistir(durum.sabitler, alan, !acik) })}
+                      etiket={`${ad} kart görünümünde değiştirilebilsin`}
+                    />
+                  </View>
+                ))}
+                {durum.bloklar.map(
+                  (b, i) =>
+                    ayarliParcaMi(b.tur) && (
+                      <View key={b.id} style={stiller.sabitSatiri}>
+                        <Yazi style={stiller.esnek} numberOfLines={1}>
+                          {b.ad ? `${BLOK_TURLERI[b.tur].ad} · ${b.ad}` : BLOK_TURLERI[b.tur].ad}
+                        </Yazi>
+                        <AcKapa
+                          acik={!b.sabit}
+                          onDegis={(acik) => blokDegis(i, { ...b, sabit: !acik })}
+                          etiket={`${BLOK_TURLERI[b.tur].ad} kart görünümünde değiştirilebilsin`}
+                        />
+                      </View>
+                    ),
+                )}
               </View>
             )}
 
@@ -906,6 +983,8 @@ const stiller = StyleSheet.create({
     justifyContent: 'center',
   },
   simgeSecili: { backgroundColor: renk.ana, borderColor: renk.ana },
+  sabitBolum: { gap: 10, marginTop: 12 },
+  sabitSatiri: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 48 },
   yayinSatiri: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -18,6 +18,8 @@ export type KartTanimi = Pick<Kart, 'baslik' | 'kisa' | 'tarih' | 'saat' | 'hati
   alarm?: boolean;
   alarmSesi?: string | null;
   seriSay?: boolean | null;
+  /** P-65. */
+  sabitler?: Kart['sabitler'];
 };
 
 export type KayitAraligi =

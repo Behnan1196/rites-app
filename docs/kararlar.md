@@ -564,3 +564,10 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 ## Sade saat seçimi (29 Ekim)
 
 - Kartın **Ne zaman?** sayfasında saat buluşmadaki gibi: **Saatli · Saat yok** ve küçük saat kutusu (dokununca çark açılır). Sabah / Öğle / Akşam kısayolları, büyük çark ve "Saati kaldır" kalktı; "Saatli" ilk seçilince 09:00. Bölüm başlıkları (Tarih, Saat) küçüldü. Anımsatıcının ve özel hatırlatmanın saati zaten bu küçük kutuydu. — Ürün sahibi (P-64); 09:00: Öneri
+
+## Kartı tasarlayan, görünümde neyin değişeceğini seçer (29 Ekim)
+
+- Düzenleme formunun altında **Kart görünümünde değiştirilebilsin**: Tarih ve saat · Başlık ve açıklama · her içerik parçası (liste, video, talimat, proje adımları, fotoğraf, dosya) için anahtar. Herkes görür (yalnız uzman değil); varsayılan hepsi açık. — Ürün sahibi (P-65)
+- Kart görünümünde açık olanın yanında **Değiştir**: o parçayı (ya da başlık ve açıklamayı) tek başına açan küçük form; kapalı olanın yanında küçük kilit, zaman rozeti kilitliyse dokunulmaz. Kayıt parçaları (ölçüm, puan, günün notu…) zaten görünümde doldurulur; anahtarları yok. Bütün kart için üstteki **Düzenle** yerinde (kendi kartında). — Ürün sahibi (P-65); "Değiştir" ile tek parça ve kayıt parçalarının dışarıda kalması: Öneri
+- **Verilen kartta verenin ayarı geçerli:** veren hangi alanı açık bıraktıysa alan görünümde onu değiştirir (Düzenle yine yok). Bu sürümden önce verilen kartlarda (ayar yok) eskisi gibi yalnız saat. Ayar kütüphaneye kaydedince ve paylaşınca da kartla gider. — Ürün sahibi (P-65)
+- Program kartı ve çeşit tasarımı formunda bu bölüm şimdilik yok. — Not

@@ -335,3 +335,8 @@ Sonuç: → kararlar.md (Kart görünümü düzenleme formuyla uyumlu)
 Ne dedi: "Tarih saat seçerken saat çok yer kaplıyor, fazla açıklama olmadan tarih ve saati değiştirmesi yeterli; gruplardaki buluşmada kullanılan saat oldukça sade ve kullanışlı, bu hem kartta hem de alarmın saatinin ayarlanmasında kullanılmalı. … Düzeltme modunda kartla alanlar eklemek, yerlerini değiştirmek yanında hangi alanın görünüm modunda değiştirilmesini istemediğimizi söylesek nasıl olurdu; sanki bir koçun kart tasarlaması böyle olur."
 Nerede: Kartın Ne zaman? sayfası; kart tasarımı
 Sonuç: → kararlar.md (Sade saat seçimi); görünümde değiştirilebilirlik ayrıca konuşuluyor
+
+### P-65 · 29 Ekim 2026 · Behnan
+Ne dedi: (P-64'ün devamı) görünümde neyin değiştirilemeyeceğini düzenleme modunda söylemek. Kararlar: kilit ayarı herkeste; varsayılan hepsi açık; verilen kartta verenin ayarı geçerli.
+Nerede: Kart formu, kart görünümü
+Sonuç: → kararlar.md (Kartı tasarlayan, görünümde neyin değişeceğini seçer)
