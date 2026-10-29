@@ -1,22 +1,24 @@
 // "+ Karta ekle" ızgarası (K-6). P-36 (sade) / P-39: iki soru: "Kartta ne görünsün?"
 // (talimat, video, liste…, zamanlayıcı, kronometre) ve "Ne kaydedilsin?" (ölçüm, sayarak,
-// puan, günün notu / soru, gelişim fotoğrafı).
+// puan, günün notu / soru, gelişim fotoğrafı). P-67: kartta olan parça listede yok (her parça bir kez).
 
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Pressable, StyleSheet, View } from 'react-native';
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Pressable, StyleSheet, View } from "react-native";
 
-import { ARAC_BLOKLARI, ICERIK_BLOKLARI, KAYIT_BLOKLARI, type BlokTuru } from '@/mantik/kart';
+import { type BlokTuru } from "@/mantik/kart";
+import { secilebilirParcalar } from "@/mantik/parcaSecimi";
 
-import { AltSayfa } from '../AltSayfa';
-import { renk } from '../tema';
-import { Yazi } from '../Yazi';
-import { BLOK_TURLERI } from './blokTurleri';
+import { AltSayfa } from "../AltSayfa";
+import { renk } from "../tema";
+import { Yazi } from "../Yazi";
+import { BLOK_TURLERI } from "./blokTurleri";
 
 export function BlokSecici({
   gorunur,
   onKapat,
   onSec,
   haric = [],
+  mevcut = [],
   uzman = false,
 }: {
   gorunur: boolean;
@@ -24,35 +26,38 @@ export function BlokSecici({
   onSec: (tur: BlokTuru) => void;
   /** Gösterilmeyecek türler (çeşit tasarımında telefondaki fotoğraf / dosya; P-41). */
   haric?: readonly BlokTuru[];
+  /** P-67: kartta zaten olan parçalar (yeniden eklenmez). */
+  mevcut?: readonly BlokTuru[];
   /** P-51: normal kullanıcı yalnız Liste · Fotoğraf · Video görür; uzman hepsini. */
   uzman?: boolean;
 }) {
-  // P-51: tek Liste (işaretlerin kalıp kalmayacağı formda seçilir); "Proje adımları" ayrı değil.
-  const goster = (t: BlokTuru) => !haric.includes(t) && t !== 'adimlar';
+  const { gorunen, kayit } = secilebilirParcalar({ uzman, haric, mevcut });
   return (
-    <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Karta ekle" sagKapat="Kapat">
+    <AltSayfa
+      gorunur={gorunur}
+      onKapat={onKapat}
+      baslik="Karta ekle"
+      sagKapat="Kapat"
+    >
       {uzman ? (
         <>
-          <Izgara
-            baslik="Kartta ne görünsün?"
-            turler={[...ICERIK_BLOKLARI, ...ARAC_BLOKLARI].filter(goster)}
-            onSec={onSec}
-          />
-          <Izgara
-            baslik="Ne kaydedilsin?"
-            turler={KAYIT_BLOKLARI.filter((t) => !ARAC_BLOKLARI.includes(t) && goster(t))}
-            onSec={onSec}
-          />
+          {gorunen.length > 0 && (
+            <Izgara
+              baslik="Kartta ne görünsün?"
+              turler={gorunen}
+              onSec={onSec}
+            />
+          )}
+          {kayit.length > 0 && (
+            <Izgara baslik="Ne kaydedilsin?" turler={kayit} onSec={onSec} />
+          )}
         </>
       ) : (
-        <Izgara baslik="" turler={NORMAL_BLOKLAR.filter(goster)} onSec={onSec} />
+        <Izgara baslik="" turler={gorunen} onSec={onSec} />
       )}
     </AltSayfa>
   );
 }
-
-/** Normal kullanıcının parçaları (P-51); açıklama talimatın yerine geçer. */
-const NORMAL_BLOKLAR: readonly BlokTuru[] = ['liste', 'foto', 'video'];
 
 function Izgara({
   baslik,
@@ -79,10 +84,22 @@ function Izgara({
               onPress={() => onSec(tur)}
               accessibilityRole="button"
               accessibilityLabel={`${t.ad} ekle`}
-              style={({ pressed }) => [stiller.kutu, t.kayit && stiller.kayitKutusu, pressed && { opacity: 0.7 }]}
+              style={({ pressed }) => [
+                stiller.kutu,
+                t.kayit && stiller.kayitKutusu,
+                pressed && { opacity: 0.7 },
+              ]}
             >
-              <Ionicons name={t.ikon} size={28} color={t.kayit ? renk.vurguYazi : renk.ana} />
-              <Yazi kalinlik="kalin" style={stiller.ad} maxFontSizeMultiplier={1.3}>
+              <Ionicons
+                name={t.ikon}
+                size={28}
+                color={t.kayit ? renk.vurguYazi : renk.ana}
+              />
+              <Yazi
+                kalinlik="kalin"
+                style={stiller.ad}
+                maxFontSizeMultiplier={1.3}
+              >
                 {t.ad}
               </Yazi>
             </Pressable>
@@ -95,16 +112,16 @@ function Izgara({
 
 const stiller = StyleSheet.create({
   bolum: { gap: 10 },
-  izgara: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  izgara: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   kutu: {
-    width: '31.8%',
+    width: "31.8%",
     minHeight: 92,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: renk.cizgi,
     backgroundColor: renk.yuzey,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     padding: 6,
   },
@@ -112,5 +129,5 @@ const stiller = StyleSheet.create({
     backgroundColor: renk.vurguAcik2,
     borderColor: renk.vurguCizgi,
   },
-  ad: { fontSize: 15, lineHeight: 19, textAlign: 'center' },
+  ad: { fontSize: 15, lineHeight: 19, textAlign: "center" },
 });

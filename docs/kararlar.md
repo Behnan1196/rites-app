@@ -586,3 +586,5 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Tarih ve saat izinleri ayrı:** başlık satırındaki ⋯ menüsünde **Başlık · Tarih ve süre · Saat ve hatırlatma** anahtarları. Kapalı olan hap görünümde kilitli (kilit simgesi, kesik çizgi, dokunulmaz). — Ürün sahibi (P-67); süre tarihle, hatırlatma saatle birlikte: Öneri
 - Eski kayıttaki tek "Tarih ve saat" kilidi ikisi birden kilitli sayılır; Kur'da açılınca iki anahtara ayrılır. Eski verilen kartta (ayar yok) yine yalnız saat ve hatırlatma. — Öneri
 - Kart görünümünün ⋯ menüsündeki ayrı "Hatırlatma" kalktı (satırda). Formun altındaki zaman şeridi yerine **+ Karta ekle**. — Öneri
+- **Her parça karta bir kez:** liste, video, talimat, fotoğraf, dosya, ölçüm, puan, sayarak, zamanlayıcı… hepsi. Kartta olan parça **Karta ekle** listesinde görünmez; hepsi eklenince düğme de görünmez. Kilo ve bel gibi iki ölçüm iki kart olur. — Ürün sahibi (P-67)
+- Liste ile proje adımları aynı parça sayılır; önceden çift eklenmiş parçalar kartta kalır (silinmez). — Öneri

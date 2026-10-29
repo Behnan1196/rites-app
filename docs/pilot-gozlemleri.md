@@ -349,4 +349,4 @@ Sonuç: → kararlar.md (Kur ve kullan)
 ### P-67 · 29 Ekim 2026 · Behnan
 Ne dedi: "Tekrar ve bildirim şu anda Kur'da var sadece, öncelikle onların yerini tarih saatin satırına alalım geçici de olsa. Kullanıcının tarihi değiştirmesini istemeyiz ama aynı anda saate karışmayabilir, o yüzden tarih ve saat izinleri ayrı olmalı. Bir fikrim de acaba liste, video gibi elemanlar sadece bir tane mi eklense; kullanım senaryolarında birden fazla olması ne zaman var irdeleyelim, uzman kullanıcının ekleyeceği alanlara da bakmak lazım."
 Nerede: Kart görünümü, yeni kart / Kur
-Sonuç: → kararlar.md (Zaman satırı); tek / çok parça konuşuluyor
+Sonuç: → kararlar.md (Zaman satırı); karar: her parça karta bir kez
