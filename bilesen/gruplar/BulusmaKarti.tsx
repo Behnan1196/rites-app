@@ -1,10 +1,18 @@
 // Grup ekranında bir buluşma: ad, gün · saat · yer, kim geliyor; altında
-// Geliyorum / Belki / Gelemem. Kuran için "Düzenle".
+// Geliyorum / Belki / Gelemem. Kuran için "Düzenle". P-62: bağlantı varsa "Görüşmeye katıl".
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 
-import { benimYanitim, bulusmaZamani, YANITLAR, yanitAyrintisi, yanitOzeti, type Bulusma } from '@/mantik/bulusma';
+import {
+  benimYanitim,
+  bulusmaZamani,
+  gorusmeUygulamasi,
+  YANITLAR,
+  yanitAyrintisi,
+  yanitOzeti,
+  type Bulusma,
+} from '@/mantik/bulusma';
 import { yanitlamayanlar } from '@/mantik/grupBekleyenler';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 
@@ -51,6 +59,9 @@ export function BulusmaKarti({
           <Yazi kalinlik="kalin" renk={kaynakRenk.grup.yazi}>
             {bulusmaZamani(bulusma)}
           </Yazi>
+          {!!bulusma.baglanti && (
+            <Yazi tur="ikincil">{`Görüntülü görüşme${gorusmeUygulamasi(bulusma.baglanti) ? ` · ${gorusmeUygulamasi(bulusma.baglanti)}` : ''}`}</Yazi>
+          )}
           <Yazi tur="ikincil">{ayrinti || yanitOzeti(bulusma)}</Yazi>
           {bekleyen.length > 0 && (
             <Yazi tur="ikincil" renk={renk.vurguYazi}>{`Yanıt bekleniyor: ${bekleyen.map(ad).join(', ')}`}</Yazi>
@@ -58,6 +69,7 @@ export function BulusmaKarti({
         </View>
         {bulusma.kuran === ben && <Dugme tur="yazi" etiket="Düzenle" onPress={onDuzenle} />}
       </View>
+      {!!bulusma.baglanti && <GorusmeyeKatil baglanti={bulusma.baglanti} />}
       <View style={stiller.yanitlar}>
         {YANITLAR.map(({ yanit, etiket }) => (
           <SecenekHapi
@@ -77,6 +89,19 @@ export function BulusmaKarti({
         ))}
       </View>
     </View>
+  );
+}
+
+/** "Görüşmeye katıl": bağlantıyı açar (WhatsApp, Meet…). Buluşma kartında ve ajandadaki kartta. */
+export function GorusmeyeKatil({ baglanti }: { baglanti: string }) {
+  const kisaMesaj = useKisaMesaj();
+  const uygulama = gorusmeUygulamasi(baglanti);
+  return (
+    <Dugme
+      etiket="Görüşmeye katıl"
+      erisimIpucu={uygulama ? `${uygulama} açılır` : 'Bağlantı açılır'}
+      onPress={() => void Linking.openURL(baglanti).catch(() => kisaMesaj('Bağlantı açılamadı.'))}
+    />
   );
 }
 

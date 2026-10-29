@@ -11,6 +11,8 @@ export interface BulusmaTanimi {
   gun: Gun;
   saat: string | null;
   yer: string;
+  /** Görüntülü görüşme bağlantısı (P-62); yoksa boş. */
+  baglanti?: string;
 }
 
 export async function bulusmalariOku(): Promise<Bulusma[]> {
@@ -26,6 +28,7 @@ export async function bulusmaKur(grup: string, t: BulusmaTanimi): Promise<string
     p_gun: t.gun,
     p_saat: t.saat,
     p_yer: t.yer.trim(),
+    p_baglanti: t.baglanti ?? '',
   });
   if (error) throw new Error(error.message);
   return data as string;
@@ -38,6 +41,7 @@ export async function bulusmaDuzenle(id: string, t: BulusmaTanimi): Promise<void
     p_gun: t.gun,
     p_saat: t.saat,
     p_yer: t.yer.trim(),
+    p_baglanti: t.baglanti ?? '',
   });
   if (error) throw new Error(error.message);
 }

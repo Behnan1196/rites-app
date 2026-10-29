@@ -1,5 +1,5 @@
 // Kayıt ayrıntısı (L-2): etiketler, kaynak, içerik; "Bugün Ajandama ekle"
-// (düzenlenebilir kopya), "Düzenle" (P-59: ajandaya koymadan, kart formuyla),
+// (düzenlenebilir kopya), "Düzenle" (P-59: ajandaya koymadan, kart formuyla), "Birine ver" (P-62),
 // "Programa ekle" (pilot 20 Ekim), "Paylaş", "Kütüphaneden çıkar".
 
 import { router, useLocalSearchParams } from 'expo-router';
@@ -21,6 +21,8 @@ import { yeniKartKaydet } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
 import { kutuphaneIcerigiYaz, kutuphaneKaydiOku, kutuphanedenCikar } from '@/veri/kutuphane';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
+import { useKartVer } from '@/bilesen/gruplar/KartVerSayfasi';
+import { useOturum } from '@/sunucu/oturum';
 import { programKartiEkle } from '@/veri/programlar';
 import { ProgramSecSayfasi } from '@/bilesen/yasam/ProgramSayfalari';
 import { useBugun } from '@/veri/useBugun';
@@ -36,6 +38,8 @@ export default function KayitAyrintisi() {
   const [cikarSorusu, setCikarSorusu] = useState(false);
   const [programSec, setProgramSec] = useState(0);
   const form = useKartFormu();
+  const kartVer = useKartVer();
+  const oturum = useOturum();
   const k = veri.veri;
 
   const duzenle = () => {
@@ -122,6 +126,14 @@ export default function KayitAyrintisi() {
           <View style={stiller.eylemler}>
             <Dugme etiket="Bugün Ajandama ekle" onPress={() => void ajandayaEkle(k.icerik)} />
             <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Düzenle" onPress={duzenle} />
+            {oturum.durum === 'var' && (
+              <Dugme
+                tur="ikincil"
+                yaziRengi={renk.ana}
+                etiket="Birine ver"
+                onPress={() => kartVer.ac({ paket: kayitPaketi(k) })}
+              />
+            )}
             <Dugme
               tur="ikincil"
               yaziRengi={renk.ana}
@@ -155,6 +167,7 @@ export default function KayitAyrintisi() {
       )}
       {paylas.oge}
       {form.oge}
+      {kartVer.oge}
       {k && programSec > 0 && (
         <ProgramSecSayfasi
           key={programSec}

@@ -103,7 +103,8 @@ export function AltSayfa({
     if (!kutu) return;
     // Klavye açılıp sayfa küçüldükten sonra ölçülür.
     setTimeout(() => {
-      const m = Keyboard.metrics();
+      // Web'de Keyboard.metrics yok.
+      const m = typeof Keyboard.metrics === 'function' ? Keyboard.metrics() : undefined;
       if (!m) return;
       kutu.measureInWindow((_x, y, _g, y2) => {
         const alt = y + y2;

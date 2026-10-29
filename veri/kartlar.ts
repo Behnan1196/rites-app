@@ -533,3 +533,45 @@ export async function isKartlari(oku: Okuyucu): Promise<{ id: string; bag: strin
 export function kartSeriSayYaz(kapi: Kapi, kartId: string, seriSay: boolean): Promise<void> {
   return kapi.yaz(['kart'], (y) => y.calistir('UPDATE kart SET seri_say = ? WHERE id = ?', [seriSay ? 1 : 0, kartId]));
 }
+
+// ---- Verilen kartlar (pilot 29 Ekim, P-62) -------------------------------------------
+
+/** `verilen:` bağlı kartlar ve "Yaptım" denen günleri (eşitleme için). */
+export async function verilenYerelKartlar(
+  oku: Okuyucu,
+): Promise<{ id: string; bag: string | null; yapilan: Gun[] }[]> {
+  const satirlar = await oku.hepsi<{ id: string; bag: string | null; tarih: string | null }>(
+    `SELECT k.id, k.bag, r.tarih FROM kart k
+     LEFT JOIN kayit r ON r.kart_id = k.id AND r.yapildi = 1
+     WHERE k.bag LIKE 'verilen:%' ORDER BY k.olusturma, k.id, r.tarih`,
+  );
+  const harita = new Map<string, { id: string; bag: string | null; yapilan: Gun[] }>();
+  for (const s of satirlar) {
+    const k = harita.get(s.id) ?? { id: s.id, bag: s.bag, yapilan: [] };
+    if (s.tarih) k.yapilan.push(s.tarih);
+    harita.set(s.id, k);
+  }
+  return [...harita.values()];
+}
+
+/** Verilen kartta alanın değiştirebildikleri: saat ve hatırlatma (bütün günler için). */
+export function kartZamaniYaz(
+  kapi: Kapi,
+  kartId: string,
+  z: Pick<Kart, 'saat' | 'hatirlatma' | 'alarm'> & { alarmSesi?: string | null },
+  simdi: string = new Date().toISOString(),
+): Promise<void> {
+  return kapi.yaz(['kart'], async (y) => {
+    const s = await y.ilk<KartSatiri>(
+      `SELECT k.*, (SELECT COUNT(*) FROM blok b WHERE b.kart_id = k.id) AS blok_sayisi, ${ADIM_SUTUNLARI} FROM kart k WHERE k.id = ?`,
+      [kartId],
+    );
+    if (!s) return;
+    const k = kartSatirdan(s);
+    await kartGuncelleY(
+      y,
+      { ...k, saat: z.saat, hatirlatma: z.hatirlatma, alarm: z.alarm, alarmSesi: z.alarmSesi ?? k.alarmSesi ?? null },
+      simdi,
+    );
+  });
+}

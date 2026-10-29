@@ -13,7 +13,9 @@ import { useGelenBildirimi } from '@/bilesen/GelenBildirimi';
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { PaylasilanKarti } from '@/bilesen/giris/PaylasilanKarti';
 import { useGelenler } from '@/bilesen/giris/useGelenler';
+import { AjandaIzinIstekleri } from '@/bilesen/gruplar/AjandaIzni';
 import { GrupBekleyenleri } from '@/bilesen/gruplar/GrupBekleyenleri';
+import { useKartVerme } from '@/bilesen/gruplar/KartVerme';
 import { GrupDavetleri } from '@/bilesen/gruplar/GrupDavetleri';
 import { KisiIstekleri } from '@/bilesen/gruplar/KisiIstekleri';
 import { useKisiler } from '@/bilesen/gruplar/useKisiler';
@@ -28,6 +30,7 @@ import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { ZenginMetin } from '@/bilesen/ZenginMetin';
 import { alanAdi } from '@/mantik/alanlar';
+import { izinIstekleri } from '@/mantik/kartVerme';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { blokOzeti, GELEN_UYARISI, gelenKarti } from '@/mantik/paylasim';
 import { bugun, gunFarki, kisaTarih } from '@/mantik/tarih';
@@ -56,6 +59,8 @@ export default function Gelenler() {
   const bekleyen = useGrupBekleyenleri();
   const kisi = useKisiler(oturum);
   const zil = useGelenBildirimi();
+  const kartVerme = useKartVerme();
+  const izinIstegiVar = !!ben && izinIstekleri(kartVerme.izinler, ben).length > 0;
   const bekleyenYenile = bekleyen.yenile;
   useFocusEffect(
     useCallback(() => {
@@ -142,6 +147,7 @@ export default function Gelenler() {
             </Yazi>
           )}
           <KisiIstekleri ben={ben} istekler={kisi.istekler} onYanit={() => void kisi.yenile()} />
+          <AjandaIzinIstekleri ad={grup.ad} />
           <GrupDavetleri
             davetler={grup.davetler}
             ad={grup.ad}
@@ -156,6 +162,7 @@ export default function Gelenler() {
             grup.davetler.length === 0 &&
             bekleyen.bekleyenler.length === 0 &&
             kisi.istekler.length === 0 &&
+            !izinIstegiVar &&
             !baglanamiyor &&
             (paylasilanlar.veri ?? []).length === 0 && <Yazi tur="ikincil">Şu an yeni bir şey yok.</Yazi>}
           {gelenler.map((g) => (

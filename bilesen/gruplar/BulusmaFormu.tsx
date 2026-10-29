@@ -1,12 +1,23 @@
 // Buluşma ekle / düzenle (pilot 18 Ekim): ad (örneklerle), gün (takvim), isteğe
 // bağlı saat ve yer. Düzenlemede kuran için "Buluşmayı sil".
+// P-62 (29 Ekim): isteğe bağlı görüntülü görüşme bağlantısı (WhatsApp arama bağlantısı ya da başka);
+// "WhatsApp'ı aç" bağlantıyı oluşturmak için WhatsApp'a geçer.
 // Pilot 19 Ekim: yeni buluşmada "Günü oylayalım": birkaç gün önerilir, herkes uyan
 // günleri işaretler; kuran karar verince o güne buluşma kurulur (Karar, tur 'gun').
 
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 
-import { BULUSMA_NOTU, BULUSMA_ORNEKLERI, bulusmaFormuHatasi, bulusmaHatasi, type Bulusma } from '@/mantik/bulusma';
+import {
+  BULUSMA_NOTU,
+  BULUSMA_ORNEKLERI,
+  bulusmaFormuHatasi,
+  bulusmaHatasi,
+  GORUSME_NOTU,
+  gorusmeBaglantisi,
+  gorusmeBaglantisiHatasi,
+  type Bulusma,
+} from '@/mantik/bulusma';
 import { GUN_KARARI_NOTU, kararFormuHatasi, kararHatasi } from '@/mantik/karar';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { uzunTarih, type Gun } from '@/mantik/tarih';
@@ -20,6 +31,7 @@ import { GirisAlani } from '../GirisAlani';
 import { SaatSecici } from '../kart/Zamanlama';
 import { useKisaMesaj } from '../KisaMesaj';
 import { Bolum, SecenekHapi } from '../Secim';
+import { renk } from '../tema';
 import { Yazi } from '../Yazi';
 import { useBulusmalar } from './Bulusmalar';
 import { useKararlar } from './Kararlar';
@@ -44,14 +56,20 @@ export function BulusmaFormu({
   const [saat, setSaat] = useState<string | null>(mevcut?.saat ?? null);
   const [saatVar, setSaatVar] = useState(mevcut ? mevcut.saat !== null : true);
   const [yer, setYer] = useState(mevcut?.yer ?? '');
+  const [baglanti, setBaglanti] = useState(mevcut?.baglanti ?? '');
+  const [baglantiHatasi, setBaglantiHatasi] = useState<string | null>(null);
   const [hata, setHata] = useState<string | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
   const [silSorusu, setSilSorusu] = useState(false);
 
   const sonSaat = saatVar ? (saat ?? '19:00') : null;
   const degisti = mevcut
-    ? baslik.trim() !== mevcut.baslik || gun !== mevcut.gun || sonSaat !== mevcut.saat || yer.trim() !== mevcut.yer
-    : baslik.trim() !== '' || gun !== null || yer.trim() !== '';
+    ? baslik.trim() !== mevcut.baslik ||
+      gun !== mevcut.gun ||
+      sonSaat !== mevcut.saat ||
+      yer.trim() !== mevcut.yer ||
+      gorusmeBaglantisi(baglanti) !== (mevcut.baglanti ?? '')
+    : baslik.trim() !== '' || gun !== null || yer.trim() !== '' || baglanti.trim() !== '';
   const zamanDegisti = !!mevcut && (gun !== mevcut.gun || sonSaat !== mevcut.saat);
 
   const oylamaAc = async () => {
@@ -83,9 +101,14 @@ export function BulusmaFormu({
       setHata(h);
       return;
     }
+    const bh = gorusmeBaglantisiHatasi(baglanti);
+    if (bh) {
+      setBaglantiHatasi(bh);
+      return;
+    }
     setCalisiyor(true);
     try {
-      const t = { baslik, gun, saat: sonSaat, yer };
+      const t = { baslik, gun, saat: sonSaat, yer, baglanti: gorusmeBaglantisi(baglanti) };
       if (mevcut) {
         await duzenle(mevcut, t);
         kisaMesaj(zamanDegisti ? 'Kaydedildi; herkes yeniden yanıtlayacak' : 'Buluşma kaydedildi');
@@ -231,6 +254,35 @@ export function BulusmaFormu({
           placeholder="Örneğin: Bizde, Moda sahili"
           returnKeyType="done"
         />
+        {!(oylama && !mevcut) && (
+          <Bolum>
+            <Yazi kalinlik="kalin">Görüntülü görüşme (isteğe bağlı)</Yazi>
+            <GirisAlani
+              etiket="Görüşme bağlantısı"
+              etiketGizli
+              value={baglanti}
+              onChangeText={(t) => {
+                setBaglanti(t);
+                setBaglantiHatasi(null);
+              }}
+              placeholder="https://call.whatsapp.com/…"
+              hata={baglantiHatasi}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
+              returnKeyType="done"
+            />
+            <Yazi tur="ikincil">{GORUSME_NOTU}</Yazi>
+            <Dugme
+              tur="ikincil"
+              yaziRengi={renk.ana}
+              etiket="WhatsApp'ı aç"
+              onPress={() =>
+                void Linking.openURL('whatsapp://').catch(() => kisaMesaj('WhatsApp bu telefonda açılamadı.'))
+              }
+            />
+          </Bolum>
+        )}
         <Yazi tur="ikincil">{oylama && !mevcut ? GUN_KARARI_NOTU : BULUSMA_NOTU}</Yazi>
         {mevcut && <Dugme tur="tehlike" etiket="Buluşmayı sil" onPress={() => setSilSorusu(true)} />}
       </View>

@@ -320,3 +320,8 @@ Sonuç: → kararlar.md (Listeler tek yerde)
 Ne dedi: "Liste kurarken Vazgeç dediğimde Kaydetmeden çık ve Düzenlemeye dön diye soruyor; bence 2 soru güzel, diğerlerinde de, örneğin ajanda kartlarında da 3 seçenek değil bu 2 seçenek olsun. … Yeni liste dediğimde yapılacaklar, market, bayram hazırlığı vb. çipler var, ancak bu sadece isim öneriyor; altyapıda listeler hep aynı davranıyor. Listeleri yapısal olarak çeşitlendirebilir miyiz?" Kararlar: dört çeşit (Yapılacaklar, Alışveriş, Hazırlık, Not listesi); ad çipi çeşidi de seçsin; paylaşılan listelerde de geçerli.
 Nerede: Bütün alttan sayfalar; Giriş → Listeler
 Sonuç: → kararlar.md (Vazgeç sorusu iki seçenek; liste çeşitleri). Ajanda kartlarındaki Liste parçasına ayrıca bakılacak.
+
+### P-62 · 29 Ekim 2026 · Behnan
+Ne dedi: "Yaptım bilgisi şu an yeterli ancak atanan kartlar Gelenler'e değil doğrudan ajandaya ve tarihli olarak düşmeli. Şu an aile içi kullanımı düşünelim, belki bu kişi doğrudan ajandama atayabilir iznini vermeli. Video görüşmeyi WhatsApp'a bağlamayı önce uygulayalım, nasıl olacağını görelim. Bu arada daha önce yaptığım stream.io ile 100 aynı anda konuşma ücretsizdi, hâlâ öyleyse ve gerekliyse tekrar kurabiliriz." Kararlar: anahtar + İzin iste; grup ve kart menüsü; alan saati değiştirir, içeriği değil.
+Nerede: Gruplar, grup ekranı, Kişilerim, Gelenler, kart görünümü, buluşma formu
+Sonuç: → kararlar.md (Kart verme ve görüntülü görüşme bağlantısı)

@@ -388,4 +388,43 @@ esit('herkes pasifi görmez', (await q(`select count(*)::int n from icerik_cesit
 await ex('reset role');
 await hataBekle('tasarımcı da çeşit silemez', () => olarak(ali, () => q(`delete from icerik_cesit where id = 'deneme'`)), 'permission denied');
 
+// Kart verme (P-62): izin, verilen kart, Yaptım günleri; buluşma bağlantısı.
+// Kendi kişileri: anne (ayse yerine) ve çocuk; bağlantı kurulur.
+const anne = await kayit('anne@ornek.com');
+const cocuk = await kayit('cocuk@ornek.com');
+await olarak(anne, () => q(`select kisi_ekle('cocuk@ornek.com')`));
+await olarak(cocuk, () => q('select istegi_kabul_et($1)', [anne]));
+const paket = { surum: 1, baslik: 'Yatağını topla', kisa: '', saat: '08:00', tekrar: null, bloklar: [] };
+await hataBekle('izinsiz kart verilemez', () => olarak(anne, () => q(`select kart_ver($1, $2::jsonb, '2099-01-01')`, [cocuk, paket])), 'izin yok');
+await hataBekle('bağlı olmayandan izin istenemez', () => olarak(anne, () => q('select ajanda_izni_iste($1)', [veli])), 'bagli degil');
+await olarak(anne, () => q('select ajanda_izni_iste($1)', [cocuk]));
+esit('istek alana görünür', (await olarak(cocuk, () => q('select durum from ajanda_izni where sahip = $1', [cocuk]))).rows.map(r => r.durum), ['istek']);
+await hataBekle('istekle kart verilemez', () => olarak(anne, () => q(`select kart_ver($1, $2::jsonb, '2099-01-01')`, [cocuk, paket])), 'izin yok');
+await hataBekle('izin doğrudan yazılamaz', () => olarak(anne, () => q(`update ajanda_izni set durum = 'izinli'`)), 'permission denied');
+await olarak(cocuk, () => q('select ajanda_izni_ver($1, true)', [anne]));
+esit('izin verildi', (await olarak(anne, () => q('select durum from ajanda_izni where sahip = $1', [cocuk]))).rows.map(r => r.durum), ['izinli']);
+const vk = (await tek(anne, `select kart_ver($1, $2::jsonb, '2099-01-01') k`, [cocuk, paket])).k;
+esit('alan kartı görür', (await olarak(cocuk, () => q('select kart->>\'baslik\' b, durum from verilen_kart'))).rows, [{ b: 'Yatağını topla', durum: 'aktif' }]);
+esit('başkası görmez', (await olarak(veli, () => q('select * from verilen_kart'))).rows.length, 0);
+await olarak(cocuk, () => q(`insert into verilen_yapildi (kart, gun) values ($1, '2099-01-01'), ($1, '2099-01-02')`, [vk]));
+await hataBekle('veren Yaptım yazamaz', () => olarak(anne, () => q(`insert into verilen_yapildi (kart, gun) values ($1, '2099-01-03')`, [vk])), 'row-level security');
+esit('veren Yaptım günlerini görür', (await olarak(anne, () => q('select gun::text g from verilen_yapildi order by gun'))).rows.map(r => r.g), ['2099-01-01', '2099-01-02']);
+await olarak(cocuk, () => q(`delete from verilen_yapildi where gun = '2099-01-02'`));
+esit('Yaptım geri alınır', (await olarak(anne, () => q('select count(*)::int n from verilen_yapildi'))).rows[0].n, 1);
+await hataBekle('veren bırakamaz', () => olarak(anne, () => q('select karti_birak($1)', [vk])), 'yetki yok');
+await olarak(cocuk, () => q('select karti_birak($1)', [vk]));
+esit('bırakıldı', (await olarak(anne, () => q('select durum from verilen_kart where id = $1', [vk]))).rows[0].durum, 'birakildi');
+await hataBekle('alan silemez (yalnız bırakır)', async () => { const r = await olarak(cocuk, () => q('delete from verilen_kart where id = $1 returning id', [vk])); if (!r.rows.length) throw new Error('silinmedi'); }, 'silinmedi');
+await olarak(anne, () => q('delete from verilen_kart where id = $1', [vk]));
+esit('geri alınca Yaptım günleri de gider', (await q('select count(*)::int n from verilen_yapildi')).rows[0].n, 0);
+await olarak(cocuk, () => q('select ajanda_izni_ver($1, false)', [anne]));
+await hataBekle('izin kalkınca verilemez', () => olarak(anne, () => q(`select kart_ver($1, $2::jsonb, '2099-01-01')`, [cocuk, paket])), 'izin yok');
+const ev = (await tek(anne, `select grup_kur('Ev', array[$1]::uuid[]) g`, [cocuk])).g;
+await olarak(cocuk, () => q('select grup_davetini_yanitla($1, true)', [ev]));
+const gb = (await tek(anne, `select bulusma_kur($1, 'Görüntülü', '2099-02-01', '20:00', '', 'https://call.whatsapp.com/video/abc') b`, [ev])).b;
+esit('buluşma bağlantısı', (await tek(cocuk, 'select bulusmalarim() b')).b.find(x => x.id === gb).baglanti, 'https://call.whatsapp.com/video/abc');
+await hataBekle('bağlantı adres olmalı', () => olarak(anne, () => q(`select bulusma_duzenle($1, 'Görüntülü', '2099-02-01', '20:00', '', 'whatsapp')`, [gb])), 'check');
+await olarak(anne, () => q(`select bulusma_duzenle($1, 'Görüntülü', '2099-02-01', '20:00', '', '')`, [gb]));
+esit('bağlantı kaldırılır', (await tek(cocuk, 'select bulusmalarim() b')).b.find(x => x.id === gb).baglanti, '');
+
 console.log(hatalar ? `${hatalar} HATA` : 'HEPSİ TAMAM');

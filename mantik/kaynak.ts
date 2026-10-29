@@ -1,5 +1,5 @@
 // Kartın kaynağı (PL-4, A-5, `05` §8): süzme, renk şeridi ve etiket.
-// Kaynak: ortak liste maddesi → liste; koç → koç; gelen → gelen; plan → plan;
+// Kaynak: ortak liste maddesi → liste; verilen kart (P-62; eski adı koç) → koç; gelen → gelen; plan → plan;
 // grup etkinliği → grup; diğerleri → kendi kartı (şeritsiz).
 
 import type { Kart } from './kart';
@@ -30,13 +30,13 @@ export function kaynakTuru(anahtar: KaynakAnahtari): KaynakTuru {
   return 'kendim';
 }
 
-/** Süzme çipindeki ad: "Kendi kartlarım", "Gelenlerden", "Listeler", plan adı, "Ayşe Hanım (koç)". */
+/** Süzme çipindeki ad: "Kendi kartlarım", "Gelenlerden", "Listeler", plan adı, "Veren: Ayşe". */
 export function kaynakAdi(anahtar: KaynakAnahtari, planAdlari: ReadonlyMap<string, string>): string {
   switch (kaynakTuru(anahtar)) {
     case 'plan':
       return planAdlari.get(anahtar.slice(5)) ?? 'Program';
     case 'koc':
-      return `${anahtar.slice(4)} (koç)`;
+      return `Veren: ${anahtar.slice(4)}`;
     case 'gelen':
       return 'Gelenlerden';
     case 'liste':
@@ -55,7 +55,7 @@ export function kaynakEtiketi(k: KaynakliKart, planAdlari: ReadonlyMap<string, s
     case 'plan':
       return kaynakAdi(anahtar, planAdlari);
     case 'koc':
-      return k.gelenKimden ?? 'Koç';
+      return `Veren: ${k.gelenKimden ?? ''}`.trim();
     case 'gelen':
       return `Gelen: ${k.gelenKimden ?? ''}`.trim();
     case 'liste':

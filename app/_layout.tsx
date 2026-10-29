@@ -22,6 +22,7 @@ import { KatmanSaglayici } from "@/bilesen/Katman";
 import { KatalogGuncelleyici } from "@/bilesen/KatalogGuncelleyici";
 import { BulusmaSaglayici } from "@/bilesen/gruplar/Bulusmalar";
 import { IsSaglayici } from "@/bilesen/gruplar/Isler";
+import { KartVermeSaglayici } from "@/bilesen/gruplar/KartVerme";
 import { KararSaglayici } from "@/bilesen/gruplar/Kararlar";
 import { GelenBildirimiSaglayici } from "@/bilesen/GelenBildirimi";
 import { NobetSaglayici } from "@/bilesen/gruplar/Nobetler";
@@ -62,6 +63,7 @@ export default function KokDuzen() {
                 <RutinSaglayici>
                 <NobetSaglayici>
                 <IsSaglayici>
+                <KartVermeSaglayici>
                 <KararSaglayici>
                 <GelenBildirimiSaglayici>
                   <GirisAyariSaglayici>
@@ -80,6 +82,7 @@ export default function KokDuzen() {
                   </GirisAyariSaglayici>
                 </GelenBildirimiSaglayici>
                 </KararSaglayici>
+                </KartVermeSaglayici>
                 </IsSaglayici>
                 </NobetSaglayici>
                 </RutinSaglayici>

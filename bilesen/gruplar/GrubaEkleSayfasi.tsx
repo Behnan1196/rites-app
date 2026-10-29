@@ -1,4 +1,4 @@
-// Grup ekranındaki "+ Ekle" (pilot 19 Ekim: sadeleşti): üç ana tür — Yapılacak
+// Grup ekranındaki "+ Ekle" (pilot 19 Ekim: sadeleşti): ana türler — Yapılacak, Kart ver (P-62)
 // (tek iş; P-60: liste Giriş → Listeler'de), Buluşma (gün belli ya da günü oylayarak), Birlikte rutin;
 // az kullanılanlar "Diğer" altında: Nöbet / sıra, Oylama.
 
@@ -10,7 +10,7 @@ import { AltSayfa } from '../AltSayfa';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 
-export type GrupEklemeTuru = 'yapilacak' | 'bulusma' | 'rutin' | 'nobet' | 'karar';
+export type GrupEklemeTuru = 'yapilacak' | 'kart' | 'bulusma' | 'rutin' | 'nobet' | 'karar';
 
 type Tur = { tur: GrupEklemeTuru; ad: string; aciklama: string; ikon: keyof typeof Ionicons.glyphMap };
 
@@ -20,6 +20,12 @@ const ANA: Tur[] = [
     ad: 'Yapılacak',
     aciklama: 'Bir iş: birine ver ya da herkese aç.',
     ikon: 'checkbox-outline',
+  },
+  {
+    tur: 'kart',
+    ad: 'Kart ver',
+    aciklama: 'Kütüphanendeki ya da önerilerdeki bir kartı birinin ajandasına koy; yaptığı günleri görürsün.',
+    ikon: 'gift-outline',
   },
   {
     tur: 'bulusma',

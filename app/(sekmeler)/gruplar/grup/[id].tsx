@@ -15,6 +15,10 @@ import { BulusmaFormu } from '@/bilesen/gruplar/BulusmaFormu';
 import { BulusmaKarti } from '@/bilesen/gruplar/BulusmaKarti';
 import { useBulusmalar } from '@/bilesen/gruplar/Bulusmalar';
 import { GrubaEkleSayfasi } from '@/bilesen/gruplar/GrubaEkleSayfasi';
+import { useKartVer } from '@/bilesen/gruplar/KartVerSayfasi';
+import { useKartVerme } from '@/bilesen/gruplar/KartVerme';
+import { VerilecekKartSecici } from '@/bilesen/gruplar/VerilecekKartSecici';
+import { VerilenKartlarListesi, verilenleriSuz } from '@/bilesen/gruplar/VerilenKartlar';
 import { IsFormu } from '@/bilesen/gruplar/IsFormu';
 import { KararFormu } from '@/bilesen/gruplar/KararFormu';
 import { KararKarti } from '@/bilesen/gruplar/KararKarti';
@@ -67,6 +71,9 @@ export default function GrupEkrani() {
   const karar = useKararlar();
   const kararYenile = karar.yenile;
   const [kararFormu, setKararFormu] = useState(0);
+  const kartVer = useKartVer();
+  const kartVerme = useKartVerme();
+  const [kartSec, setKartSec] = useState(false);
   const [isFormu, setIsFormu] = useState<{ n: number; mevcut?: GrupIsi } | null>(null);
   const isFormuAc = (mevcut?: GrupIsi) => setIsFormu((f) => ({ n: (f?.n ?? 0) + 1, mevcut }));
   const [nobetFormu, setNobetFormu] = useState<{ n: number; mevcut?: Nobet } | null>(null);
@@ -175,6 +182,14 @@ export default function GrupEkrani() {
           </>
         ),
       });
+    // P-62: grubun üyeleri arasında verilen kartlar.
+    const verilenler = verilenleriSuz(kartVerme.verilenler, ben, new Set(uyeKimlikleri));
+    if (verilenler.length > 0)
+      bolumler.push({
+        anahtar: 'verilen',
+        baslik: 'Verilen kartlar',
+        icerik: <VerilenKartlarListesi liste={verilenler} ad={ad} />,
+      });
     if (grubunBulusmalari.length > 0 || gunKararlari.length > 0)
       bolumler.push({
         anahtar: 'bulusma',
@@ -260,7 +275,7 @@ export default function GrupEkrani() {
           )}
           {bolumler.length === 0 && (
             <Yazi tur="ikincil">
-              Bu grupta henüz bir şey yok. “+ Ekle” ile bir iş, buluşma ya da birlikte rutin başlat.
+              Bu grupta henüz bir şey yok. “+ Ekle” ile bir iş, kart, buluşma ya da birlikte rutin başlat.
             </Yazi>
           )}
           {bolumler.map((bolum, i) => (
@@ -342,6 +357,7 @@ export default function GrupEkrani() {
           onSec={(tur) => {
             setEkleAcik(false);
             if (tur === 'yapilacak') isFormuAc();
+            else if (tur === 'kart') setKartSec(true);
             else if (tur === 'rutin') rutinFormuAc({ tur: 'kur' });
             else if (tur === 'nobet') nobetFormuAc();
             else if (tur === 'karar') setKararFormu((n) => n + 1);
@@ -349,6 +365,21 @@ export default function GrupEkrani() {
           }}
         />
       )}
+      {kartSec && grup && (
+        <VerilecekKartSecici
+          onKapat={() => setKartSec(false)}
+          onSec={(paket) => {
+            setKartSec(false);
+            kartVer.ac({
+              paket,
+              kisiler: grup.uyeler
+                .filter((u) => u.durum === 'uye' && u.id !== ben)
+                .map((u) => ({ id: u.id, ad: ad(u) })),
+            });
+          }}
+        />
+      )}
+      {kartVer.oge}
       {bulusmaFormu && grup && (
         <BulusmaFormu
           key={bulusmaFormu.n}

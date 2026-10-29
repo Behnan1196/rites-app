@@ -1,12 +1,14 @@
 // Kişilerim (pilot 23 Ekim, P-34): Gruplar'ın en üstündeki "Kişilerim" satırından
 // ya da üst satırdaki kişiler simgesinden açılır. Seni eklemek isteyenler, kişi
 // listesi (Sil), + Kişi ekle. Eskiden Gruplar ekranının altındaydı.
+// P-62: bağlı kişinin altında "Ajandama kart ekleyebilir" anahtarı.
 
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
+import { AjandaIzniAnahtari } from '@/bilesen/gruplar/AjandaIzni';
 import { KisiEkleSayfasi } from '@/bilesen/gruplar/KisiEkleSayfasi';
 import { KisiIstekleri } from '@/bilesen/gruplar/KisiIstekleri';
 import { useKisiler } from '@/bilesen/gruplar/useKisiler';
@@ -65,20 +67,23 @@ export default function Kisilerim() {
           {kisiler.length > 0 && (
             <View style={stiller.liste}>
               {kisiler.map((k, i) => (
-                <View key={k.id} style={[stiller.satir, stiller.kisi, i > 0 && stiller.cizgili]}>
-                  <View style={stiller.avatar}>
-                    <Yazi kalinlik="kalin" renk={renk.ana}>
-                      {kisiBasHarf(k.ad)}
-                    </Yazi>
+                <View key={k.id} style={[stiller.kisi, i > 0 && stiller.cizgili]}>
+                  <View style={stiller.satir}>
+                    <View style={stiller.avatar}>
+                      <Yazi kalinlik="kalin" renk={renk.ana}>
+                        {kisiBasHarf(k.ad)}
+                      </Yazi>
+                    </View>
+                    <View style={stiller.esnek}>
+                      <Yazi tur="kartBasligi">{k.ad}</Yazi>
+                      <Yazi tur="ikincil">{k.eposta}</Yazi>
+                      <Yazi kalinlik="kalin" renk={k.durum === 'bagli' ? renk.ana : renk.vurguYazi}>
+                        {DURUM_METNI[k.durum]}
+                      </Yazi>
+                    </View>
+                    <Dugme tur="tehlike" etiket="Sil" onPress={() => setSilinecek(k)} />
                   </View>
-                  <View style={stiller.esnek}>
-                    <Yazi tur="kartBasligi">{k.ad}</Yazi>
-                    <Yazi tur="ikincil">{k.eposta}</Yazi>
-                    <Yazi kalinlik="kalin" renk={k.durum === 'bagli' ? renk.ana : renk.vurguYazi}>
-                      {DURUM_METNI[k.durum]}
-                    </Yazi>
-                  </View>
-                  <Dugme tur="tehlike" etiket="Sil" onPress={() => setSilinecek(k)} />
+                  {k.durum === 'bagli' && !!k.kullaniciId && <AjandaIzniAnahtari kisi={k.kullaniciId} ad={k.ad} />}
                 </View>
               ))}
             </View>
@@ -141,6 +146,6 @@ const stiller = StyleSheet.create({
     paddingLeft: olcu.kartIci,
     paddingRight: 4,
   },
-  kisi: { paddingVertical: 14 },
+  kisi: { paddingVertical: 14, paddingRight: olcu.kartIci - 4 },
   cizgili: { borderTopWidth: 1, borderTopColor: renk.satirCizgi },
 });

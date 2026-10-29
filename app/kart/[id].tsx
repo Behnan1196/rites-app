@@ -9,6 +9,8 @@
 // P-36 (24 Ekim, 50+ kullanıcı için sade): yine tek bir yazılı "Düzenle"; kalemler ve
 // "Kartın yapısı" kalktı. Boş kartta "+ Karta bir şey ekle". Seri istisnası seri satırının
 // altındaki "Seriyi gösterme / göster"den.
+// P-62 (29 Ekim): verilen kart (bağ `verilen:`) kilitli; menüde Saati değiştir · Hatırlatma ·
+// Bırak. Kendi kartında menüde "Birine ver".
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -18,6 +20,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AcilirMenu } from '@/bilesen/AcilirMenu';
 import { Dugme } from '@/bilesen/Dugme';
+import { useBulusmalar } from '@/bilesen/gruplar/Bulusmalar';
+import { GorusmeyeKatil } from '@/bilesen/gruplar/BulusmaKarti';
+import { useKartVer } from '@/bilesen/gruplar/KartVerSayfasi';
+import { BirakSorusu, VerilenZamanSayfasi } from '@/bilesen/gruplar/VerilenKartParcalari';
 import { BlokUygulama } from '@/bilesen/kart/BlokUygulama';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { useKartSil } from '@/bilesen/kart/KartSil';
@@ -33,6 +39,10 @@ import { gunBasligi, yapilanGunler } from '@/mantik/ajanda';
 import { seri, seriMetni, son7Gun, tekrarMetni, type SeritGunu } from '@/mantik/gorunurluk';
 import { seriSayilirMi, sonYediGunMetni } from '@/mantik/karakter';
 import { ARAC_BLOKLARI, bosKayit, type Kart, type Kayit } from '@/mantik/kart';
+import { bagCoz } from '@/mantik/bulusma';
+import { verilenBagCoz } from '@/mantik/kartVerme';
+import { kartPaketi } from '@/mantik/paylasim';
+import { useOturum } from '@/sunucu/oturum';
 import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import { kartAyrinti, kartKayitlari, kartSeriSayYaz, kayitDegistir } from '@/veri/kartlar';
@@ -52,6 +62,11 @@ export default function KartGorunumu() {
   const { kapi, oku } = useVeri();
   const kisaMesaj = useKisaMesaj();
   const [programSec, setProgramSec] = useState(0);
+  const oturum = useOturum();
+  const kartVer = useKartVer();
+  const { bulusmalar } = useBulusmalar();
+  const [zamanBolum, setZamanBolum] = useState<'tarih' | 'hatirlatma' | null>(null);
+  const [birakSorusu, setBirakSorusu] = useState(false);
 
   const form = useKartFormu((sonuc) => {
     if (sonuc.silindi) router.back();
@@ -107,6 +122,10 @@ export default function KartGorunumu() {
     .filter(Boolean)
     .join(' · ');
   const duzenlenir = !kart.kilitli;
+  const verilenId = verilenBagCoz(kart.bag);
+  // P-62: buluşmanın görüntülü görüşme bağlantısı.
+  const bulusmaId = bagCoz(kart.bag)?.id;
+  const gorusme = bulusmaId ? bulusmalar.find((b) => b.id === bulusmaId)?.baglanti : undefined;
   const duzenleAc = (blokEkle = false) => form.ac({ tur: 'duzenle', kart, bloklar, gun, blokEkle });
   const seriDegis = (seriSay: boolean) =>
     void kartSeriSayYaz(kapi, kart.id, seriSay).catch((e: unknown) => console.error('Kaydedilemedi', e));
@@ -163,6 +182,7 @@ export default function KartGorunumu() {
               </Pressable>
             )}
             <ZenginMetin metin={kart.kisa} />
+            {!!gorusme && <GorusmeyeKatil baglanti={gorusme} />}
           </View>
 
           {kart.tekrar && (
@@ -232,7 +252,11 @@ export default function KartGorunumu() {
         </View>
 
         {kart.kilitli && (
-          <Yazi tur="ikincil">Koçundan gelen kart paylaşılamaz; kendi kütüphanene kaydedebilirsin.</Yazi>
+          <Yazi tur="ikincil">
+            {verilenId
+              ? `${kart.gelenKimden || 'Bir yakının'} verdi. İçeriğini o belirler; saatini ⋯ menüsünden değiştirebilirsin. Yaptım bilgin ona gider.`
+              : 'Koçundan gelen kart paylaşılamaz; kendi kütüphanene kaydedebilirsin.'}
+          </Yazi>
         )}
       </ScrollView>
 
@@ -255,6 +279,35 @@ export default function KartGorunumu() {
                   },
                 ]
               : []),
+            ...(verilenId
+              ? [
+                  {
+                    etiket: 'Saati değiştir',
+                    ikon: 'time-outline' as const,
+                    onPress: () => setZamanBolum('tarih'),
+                  },
+                  {
+                    etiket: 'Hatırlatma',
+                    ikon: 'notifications-outline' as const,
+                    onPress: () => setZamanBolum('hatirlatma'),
+                  },
+                  {
+                    etiket: 'Bırak',
+                    ikon: 'close-circle-outline' as const,
+                    tehlike: true,
+                    onPress: () => setBirakSorusu(true),
+                  },
+                ]
+              : []),
+            ...(!kart.kilitli && !kart.bag && oturum.durum === 'var'
+              ? [
+                  {
+                    etiket: 'Birine ver',
+                    ikon: 'gift-outline' as const,
+                    onPress: () => kartVer.ac({ paket: kartPaketi(kart, bloklar) }),
+                  },
+                ]
+              : []),
             ...(kart.kilitli
               ? []
               : [
@@ -270,6 +323,16 @@ export default function KartGorunumu() {
         />
       )}
       {form.oge}
+      {kartVer.oge}
+      {zamanBolum && <VerilenZamanSayfasi kart={kart} bolum={zamanBolum} onKapat={() => setZamanBolum(null)} />}
+      {birakSorusu && verilenId && (
+        <BirakSorusu
+          kart={kart}
+          verilenId={verilenId}
+          onKapat={() => setBirakSorusu(false)}
+          onBirakildi={() => router.back()}
+        />
+      )}
       {paylas.oge}
       {kutuphane.oge}
       {kartSil.oge}

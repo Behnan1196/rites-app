@@ -18,7 +18,44 @@ export interface Bulusma {
   gun: Gun;
   saat: string | null;
   yer: string;
+  /** Görüntülü görüşme bağlantısı (P-62); yoksa boş. Eski sunucuda alan yok. */
+  baglanti?: string;
   yanitlar: { kullanici: string; yanit: BulusmaYaniti }[];
+}
+
+// ---- Görüntülü görüşme (pilot 29 Ekim, P-62) -------------------------------------------
+
+export const GORUSME_NOTU =
+  'WhatsApp\'ta Aramalar sekmesinde "Arama bağlantısı oluştur"a dokun, Görüntülü\'yü seç, bağlantıyı kopyala ve buraya yapıştır. Saatinde herkes "Görüşmeye katıl"a dokunur.';
+
+const BILINEN_ALANLAR =
+  /^(www\.|call\.whatsapp\.com|chat\.whatsapp\.com|wa\.me|meet\.google\.com|([a-z0-9-]+\.)?zoom\.us|facetime\.apple\.com)/i;
+
+/** Yapıştırılan bağlantıyı düzeltir: boşlukları atar, "https://" eksikse ekler. */
+export function gorusmeBaglantisi(metin: string): string {
+  const t = metin.trim().replace(/\s+/g, '');
+  if (!t) return '';
+  if (/^https?:\/\//i.test(t)) return t;
+  return BILINEN_ALANLAR.test(t) ? `https://${t}` : t;
+}
+
+export function gorusmeBaglantisiHatasi(metin: string): string | null {
+  const t = gorusmeBaglantisi(metin);
+  if (!t) return null;
+  if (!/^https?:\/\/[^\s/]+\.[^\s]+$/i.test(t))
+    return "Bu bir bağlantıya benzemiyor. WhatsApp'tan kopyaladığın bağlantıyı yapıştır.";
+  if (t.length > 300) return 'Bağlantı çok uzun.';
+  return null;
+}
+
+/** "WhatsApp" · "Google Meet" · "Zoom" · "FaceTime"; bilinmiyorsa null. */
+export function gorusmeUygulamasi(baglanti: string | undefined): string | null {
+  if (!baglanti) return null;
+  if (/whatsapp\.com|wa\.me/i.test(baglanti)) return 'WhatsApp';
+  if (/meet\.google\.com/i.test(baglanti)) return 'Google Meet';
+  if (/zoom\.us/i.test(baglanti)) return 'Zoom';
+  if (/facetime\.apple\.com/i.test(baglanti)) return 'FaceTime';
+  return null;
 }
 
 export const YANITLAR: readonly { yanit: BulusmaYaniti; etiket: string }[] = [

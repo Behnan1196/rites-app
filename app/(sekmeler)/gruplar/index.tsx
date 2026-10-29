@@ -1,6 +1,6 @@
 // Gruplar: en üstte kapalı "Kişilerim" satırı (P-34: kişi sayısı, seni eklemek
 // isteyen varsa sayısı; dokununca Kişilerim ekranı), Seni gruba çağıranlar,
-// Gruplarım (bana bekleyen yanıt sayısıyla), + Grup kur (10. görev). Listeler burada
+// Gruplarım (bana bekleyen yanıt sayısıyla), + Grup kur (10. görev), Verdiğin kartlar (P-62). Listeler burada
 // yok (P-60: Giriş → Listeler → Paylaşılan listeler). Sağ üstte
 // Kişilerim simgesi. Ücretsiz sınır göstergesi Ayarlar → Üyelik'te.
 
@@ -17,6 +17,8 @@ import { GrupKurSayfasi } from '@/bilesen/gruplar/GrupKurSayfasi';
 import { useGrupBekleyenleri } from '@/bilesen/gruplar/useGrupBekleyenleri';
 import { useGruplar } from '@/bilesen/gruplar/useGruplar';
 import { useKisiler } from '@/bilesen/gruplar/useKisiler';
+import { useKartVerme } from '@/bilesen/gruplar/KartVerme';
+import { VerilenKartlarListesi, verilenleriSuz } from '@/bilesen/gruplar/VerilenKartlar';
 import { OturumGerekli } from '@/bilesen/oturum/OturumGerekli';
 import { olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
@@ -41,6 +43,8 @@ export default function Gruplar() {
     }, [bekleyenYenile]),
   );
   const [grupKurAcik, setGrupKurAcik] = useState(0);
+  const kartVerme = useKartVerme();
+  const verdiklerim = ben ? verilenleriSuz(kartVerme.verilenler, ben) : [];
 
   return (
     <EkranKabi
@@ -125,6 +129,16 @@ export default function Gruplar() {
             </Pressable>
           ))}
           <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="+ Grup kur" onPress={() => setGrupKurAcik((n) => n + 1)} />
+
+          {/* P-62: verdiğim kartların hepsi (grupta da görünür). */}
+          {verdiklerim.length > 0 && (
+            <>
+              <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumArasi}>
+                Verdiğin kartlar
+              </Yazi>
+              <VerilenKartlarListesi liste={verdiklerim} ad={grup.ad} />
+            </>
+          )}
 
         </>
       )}

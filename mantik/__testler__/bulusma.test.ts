@@ -1,4 +1,7 @@
 import {
+  gorusmeBaglantisi,
+  gorusmeBaglantisiHatasi,
+  gorusmeUygulamasi,
   bagCoz,
   bulusmaBagi,
   bulusmaFormuHatasi,
@@ -55,7 +58,13 @@ describe('buluşma', () => {
 
   it('ajandaya giren kart: saat, yer, 1 saat önce bildirim, grup kaynağı', () => {
     const k = bulusmaKarti('k1', b());
-    expect(k).toMatchObject({ baslik: 'Akşam yemeği', tarih: '2026-10-25', saat: '19:30', kisa: 'Yer: Bizde', hatirlatma: '1sa' });
+    expect(k).toMatchObject({
+      baslik: 'Akşam yemeği',
+      tarih: '2026-10-25',
+      saat: '19:30',
+      kisa: 'Yer: Bizde',
+      hatirlatma: '1sa',
+    });
     expect(kaynakAnahtari(k)).toBe('grup');
     expect(kaynakEtiketi(k, new Map())).toBe('Grup: Aile');
     expect(bulusmaKarti('k2', b({ saat: null })).hatirlatma).toBeNull();
@@ -80,5 +89,20 @@ describe('buluşma', () => {
       geliyor({ id: 'b3', saat: '20:00' }),
     ];
     expect(kaldirilacakKartlar(kartlar, sunucu, BEN, '2026-10-18')).toEqual(['belki', 'saat', 'silindi']);
+  });
+});
+
+describe('Görüntülü görüşme bağlantısı (P-62)', () => {
+  it('düzeltilir, denetlenir, uygulaması bulunur', () => {
+    expect(gorusmeBaglantisi(' call.whatsapp.com/video/AbC ')).toBe('https://call.whatsapp.com/video/AbC');
+    expect(gorusmeBaglantisi('https://meet.google.com/abc-defg-hij')).toBe('https://meet.google.com/abc-defg-hij');
+    expect(gorusmeBaglantisi('')).toBe('');
+    expect(gorusmeBaglantisiHatasi('')).toBeNull();
+    expect(gorusmeBaglantisiHatasi('call.whatsapp.com/video/x')).toBeNull();
+    expect(gorusmeBaglantisiHatasi('yarın ararım')).not.toBeNull();
+    expect(gorusmeUygulamasi('https://call.whatsapp.com/video/x')).toBe('WhatsApp');
+    expect(gorusmeUygulamasi('https://us02web.zoom.us/j/1')).toBe('Zoom');
+    expect(gorusmeUygulamasi('https://ornek.com')).toBeNull();
+    expect(gorusmeUygulamasi(undefined)).toBeNull();
   });
 });

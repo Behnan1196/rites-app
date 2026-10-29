@@ -8,6 +8,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { bekleyenOzeti } from '@/mantik/grupBekleyenler';
 import { davetOzeti } from '@/mantik/gruplar';
+import { izinIstekleri } from '@/mantik/kartVerme';
 import { gelenlerOzeti } from '@/mantik/paylasim';
 import { kaynakAdi } from '@/mantik/paylasimAl';
 import { useSorgu } from '@/veri/kancalar';
@@ -16,6 +17,7 @@ import { useOturum } from '@/sunucu/oturum';
 
 import { olcu, renk } from '../tema';
 import { useGelenBildirimi } from '../GelenBildirimi';
+import { useKartVerme } from '../gruplar/KartVerme';
 import { useGrupBekleyenleri } from '../gruplar/useGrupBekleyenleri';
 import { useGruplar } from '../gruplar/useGruplar';
 import { useKisiler } from '../gruplar/useKisiler';
@@ -31,6 +33,8 @@ export function GelenlerKutusu() {
   const { bekleyenler } = useGrupBekleyenleri();
   const zil = useGelenBildirimi();
   const { istekler } = useKisiler(oturum);
+  const kartVerme = useKartVerme();
+  const izinIstegi = ben ? izinIstekleri(kartVerme.izinler, ben).length : 0;
   const paylasilanlar = useSorgu(['paylasilan'], (o) => paylasilanlariOku(o), []).veri ?? [];
   if (!ben && paylasilanlar.length === 0) return null;
   const davet = davetOzeti(davetler, ad);
@@ -38,9 +42,10 @@ export function GelenlerKutusu() {
     ...paylasilanlar.map((p) => ({ kimden: kaynakAdi(p.adres), baslik: p.baslik })),
     ...gelenler.map((g) => ({ kimden: g.kimdenAd, baslik: g.paket.baslik })),
   ];
-  const sayi = ogeler.length + davetler.length + bekleyenler.length + istekler.length;
+  const sayi = ogeler.length + davetler.length + bekleyenler.length + istekler.length + izinIstegi;
   const istekOzeti = istekler.length ? `${istekler.length} kişi ekleme isteği` : null;
-  const grupOzeti = [istekOzeti, bekleyenOzeti(bekleyenler)].filter(Boolean).join(' · ') || null;
+  const izinOzeti = izinIstegi ? `${izinIstegi} ajanda izni isteği` : null;
+  const grupOzeti = [istekOzeti, izinOzeti, bekleyenOzeti(bekleyenler)].filter(Boolean).join(' · ') || null;
   const ozet =
     ogeler.length > 0 || !davet
       ? [

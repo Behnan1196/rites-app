@@ -8,7 +8,7 @@ import { GOCLER, gocleriUygula } from '../gocler';
 import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
 import {
   blokMetinleri, gunYapilanlari, isaretle, islemleriUygula, kartAyrinti, kartKayitlari, kayitDegistir, kayitVarMi, tumKartlar,
-  bagliKart, bagliKartlar, kartlariSil, siralariYaz, yeniKartKaydet, type BlokTaslagi,
+  bagliKart, bagliKartlar, kartlariSil, kartZamaniYaz, siralariYaz, verilenYerelKartlar, yeniKartKaydet, type BlokTaslagi,
 } from '../kartlar';
 import { yayinOlustur } from '../yayin';
 import { sqljsVeriTabani } from './sqljsVeriTabani';
@@ -214,5 +214,20 @@ describe('grup etkinliğine bağlı kartlar (pilot 18 Ekim)', () => {
     await kartlariSil(kapi, ['b']);
     expect((await tumKartlar(oku)).map((k) => k.id)).toEqual(['a']);
   });
-});
 
+  it('P-62: verilen kartlar ve Yaptım günleri; saat değişir, içerik kalır', async () => {
+    const k = yeniKart('v1', {
+      baslik: 'Yatağını topla', tarih: '2026-10-26', saat: '08:00', tekrar: her(), kaynak: 'koc', kilitli: true, bag: 'verilen:a',
+    });
+    await yeniKartKaydet(kapi, k, [blok('b1', { tur: 'talimat', metin: 'Yorgan' })], idUret);
+    await yeniKartKaydet(kapi, yeniKart('x', { baslik: 'Kendi', tarih: '2026-10-26' }), [], idUret);
+    await isaretle(kapi, 'v1', '2026-10-27', true);
+    await isaretle(kapi, 'v1', '2026-10-28', true);
+    await isaretle(kapi, 'v1', '2026-10-28', false);
+    expect(await verilenYerelKartlar(oku)).toEqual([{ id: 'v1', bag: 'verilen:a', yapilan: ['2026-10-27'] }]);
+    await kartZamaniYaz(kapi, 'v1', { saat: '07:30', hatirlatma: 'saatinde', alarm: false });
+    const a = (await kartAyrinti(oku, 'v1'))!;
+    expect([a.kart.saat, a.kart.baslik, a.kart.kilitli, a.kart.bag, a.bloklar.length]).toEqual(['07:30', 'Yatağını topla', true, 'verilen:a', 1]);
+    expect(await gunYapilanlari(oku, '2026-10-27')).toEqual(new Set(['v1']));
+  });
+});
