@@ -5,7 +5,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { AdBulucu } from '@/mantik/gruplar';
-import { kalanMetni, kimlerleMetni, kisiSayisiMetni, type OrtakListe } from '@/mantik/listeler';
+import { cesitTanimi, paylasilanOzeti } from '@/mantik/listeCesidi';
+import { kimlerleMetni, kisiSayisiMetni, type OrtakListe } from '@/mantik/listeler';
 
 import { kaynakRenk, olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
@@ -21,21 +22,25 @@ export function OrtakListeSatiri({
   ad: AdBulucu;
   onPress: () => void;
 }) {
-  const alt = `${kimlerleMetni(liste, ben, ad)} · ${kisiSayisiMetni(liste)}`;
+  const cesit = cesitTanimi(liste.cesit);
+  const ozet = paylasilanOzeti(cesit.cesit, liste.kalan);
+  const alt = `${cesit.ad} · ${kimlerleMetni(liste, ben, ad)} · ${kisiSayisiMetni(liste)}`;
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${liste.ad}, ${alt}, ${kalanMetni(liste.kalan)}`}
+      accessibilityLabel={[liste.ad, alt, ozet].filter(Boolean).join(', ')}
       style={({ pressed }) => [stiller.satir, pressed && { opacity: 0.75 }]}
     >
       <View style={stiller.esnek}>
         <Yazi tur="kartBasligi">{liste.ad}</Yazi>
         <Yazi tur="ikincil">{alt}</Yazi>
       </View>
-      <Yazi tur="ikincil" kalinlik="kalin" renk={kaynakRenk.liste.yazi}>
-        {kalanMetni(liste.kalan)}
-      </Yazi>
+      {!!ozet && (
+        <Yazi tur="ikincil" kalinlik="kalin" renk={kaynakRenk.liste.yazi}>
+          {ozet}
+        </Yazi>
+      )}
       <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
     </Pressable>
   );

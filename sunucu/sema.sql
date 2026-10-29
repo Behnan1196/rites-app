@@ -95,6 +95,11 @@ create table if not exists public.madde (
   sira    bigint generated always as identity
 );
 create index if not exists madde_liste on public.madde (liste);
+
+-- Liste çeşitleri (pilot 29 Ekim, P-61): davranış uygulamada; sunucu yalnız saklar.
+alter table public.liste add column if not exists cesit text not null default 'yapilacak'
+  check (cesit in ('yapilacak', 'alisveris', 'hazirlik', 'not'));
+alter table public.madde add column if not exists miktar text not null default '' check (length(miktar) <= 40);
 create index if not exists madde_kime on public.madde (kime) where kime is not null;
 
 alter table public.kullanici enable row level security;
@@ -285,8 +290,8 @@ revoke insert, update on public.kullanici from anon, authenticated;
 grant update (ad) on public.kullanici to authenticated;
 revoke insert, update on public.grup, public.grup_uye, public.liste, public.liste_erisim from anon, authenticated;
 revoke insert, update on public.madde from anon, authenticated;
-grant insert (liste, metin, ekleyen, kime, tarih) on public.madde to authenticated;
-grant update (yapildi, kime, tarih) on public.madde to authenticated;
+grant insert (liste, metin, ekleyen, kime, tarih, miktar) on public.madde to authenticated;
+grant update (yapildi, kime, tarih, miktar) on public.madde to authenticated;
 revoke all on public.kullanici, public.baglanti, public.davet, public.gelen from anon;
 revoke all on public.grup, public.grup_uye, public.liste, public.liste_erisim, public.madde from anon;
 
@@ -449,7 +454,9 @@ end;
 $$;
 revoke execute on function public.liste_paylasimini_yaz(uuid, uuid[], uuid[], uuid[]) from anon, authenticated, public;
 
-create or replace function public.liste_olustur(p_ad text, p_gruplar uuid[], p_kisiler uuid[]) returns uuid
+-- P-61: çeşit eklendi; eski üç parametreli sürüm kaldırılır (aynı adla iki işlev olmasın).
+drop function if exists public.liste_olustur(text, uuid[], uuid[]);
+create or replace function public.liste_olustur(p_ad text, p_gruplar uuid[], p_kisiler uuid[], p_cesit text default 'yapilacak') returns uuid
 language plpgsql security definer set search_path = public as $$
 declare
   ben uuid := auth.uid();
@@ -457,21 +464,22 @@ declare
 begin
   if ben is null then raise exception 'oturum yok'; end if;
   if length(trim(coalesce(p_ad, ''))) = 0 then raise exception 'ad yok'; end if;
-  insert into public.liste (sahip, ad) values (ben, trim(p_ad)) returning id into l;
+  insert into public.liste (sahip, ad, cesit) values (ben, trim(p_ad), coalesce(p_cesit, 'yapilacak')) returning id into l;
   perform public.liste_paylasimini_yaz(l, p_gruplar, p_kisiler, '{}');
   return l;
 end;
 $$;
 
 -- Listeyi düzenle: ad ve paylaşım (yalnız kuran).
-create or replace function public.liste_duzenle(p_liste uuid, p_ad text, p_gruplar uuid[], p_kisiler uuid[]) returns void
+drop function if exists public.liste_duzenle(uuid, text, uuid[], uuid[]);
+create or replace function public.liste_duzenle(p_liste uuid, p_ad text, p_gruplar uuid[], p_kisiler uuid[], p_cesit text default null) returns void
 language plpgsql security definer set search_path = public as $$
 declare
   eski uuid[];
 begin
   if not exists (select 1 from public.liste where id = p_liste and sahip = auth.uid()) then raise exception 'yetki yok'; end if;
   if length(trim(coalesce(p_ad, ''))) = 0 then raise exception 'ad yok'; end if;
-  update public.liste set ad = trim(p_ad) where id = p_liste;
+  update public.liste set ad = trim(p_ad), cesit = coalesce(p_cesit, cesit) where id = p_liste;
   select coalesce(array_agg(kullanici), '{}') into eski from public.liste_erisim where liste = p_liste and kullanici is not null;
   perform public.liste_paylasimini_yaz(p_liste, p_gruplar, p_kisiler, eski);
 end;
@@ -483,6 +491,7 @@ language sql stable security definer set search_path = public as $$
   select coalesce(jsonb_agg(jsonb_build_object(
     'id', l.id,
     'ad', l.ad,
+    'cesit', l.cesit,
     'sahip', l.sahip,
     'gruplar', (
       select coalesce(jsonb_agg(jsonb_build_object('id', g.id, 'ad', g.ad) order by g.ad), '[]'::jsonb)
@@ -522,12 +531,12 @@ $$;
 
 revoke execute on function
   public.grup_kur(text, uuid[]), public.gruba_cagir(uuid, uuid), public.grup_davetini_yanitla(uuid, boolean),
-  public.gruplarim(), public.liste_olustur(text, uuid[], uuid[]), public.liste_duzenle(uuid, text, uuid[], uuid[]),
+  public.gruplarim(), public.liste_olustur(text, uuid[], uuid[], text), public.liste_duzenle(uuid, text, uuid[], uuid[], text),
   public.listelerim(), public.bana_verilenler()
   from anon, public;
 grant execute on function
   public.grup_kur(text, uuid[]), public.gruba_cagir(uuid, uuid), public.grup_davetini_yanitla(uuid, boolean),
-  public.gruplarim(), public.liste_olustur(text, uuid[], uuid[]), public.liste_duzenle(uuid, text, uuid[], uuid[]),
+  public.gruplarim(), public.liste_olustur(text, uuid[], uuid[], text), public.liste_duzenle(uuid, text, uuid[], uuid[], text),
   public.listelerim(), public.bana_verilenler()
   to authenticated;
 revoke execute on function

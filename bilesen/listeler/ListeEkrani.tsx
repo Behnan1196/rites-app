@@ -4,10 +4,9 @@
 // (P-60: liste maddeleriyle telefona döner, kişisel olur) / Listeyi sil; listeye kişi
 // olarak eklenen: Listeden ayrıl. Giriş → Listeler ve Ajandam'dan (sanal kart) açılır.
 
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useRef, useState } from 'react';
-import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import {
   atamaEtiketi,
@@ -20,6 +19,7 @@ import {
   type Madde,
 } from '@/mantik/listeler';
 import { grupAdi } from '@/mantik/gruplar';
+import { cesitTanimi, maddeSirasi } from '@/mantik/listeCesidi';
 import { paylasimdanYerele, yerelListeMi } from '@/mantik/yerelListe';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { listedenAyril, listeyiSil } from '@/sunucu/listeler';
@@ -30,8 +30,7 @@ import { yerelListeKur, yerelListeSil } from '@/veri/yerelListeler';
 
 import { Dugme } from '../Dugme';
 import { EkranKabi } from '../EkranKabi';
-import { GirisAlani } from '../GirisAlani';
-import { IsaretKutusu, ListeKutusu, parcaStilleri } from '../gruplar/parcalar';
+import { ListeKutusu } from '../gruplar/parcalar';
 import { useGruplar } from '../gruplar/useGruplar';
 import { useKisiler } from '../gruplar/useKisiler';
 import { Katman } from '../Katman';
@@ -41,6 +40,7 @@ import { OturumGerekli } from '../oturum/OturumGerekli';
 import { kaynakRenk, olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 import { ListeFormu } from './ListeFormu';
+import { CesitEylemi, HazirlikIlerlemesi, MaddeEkleAlani, MaddeSatiri } from './ListeParcalari';
 import { MaddeSayfasi } from './MaddeSayfasi';
 import { useListeler } from './useListeler';
 import { useMaddeler } from './useMaddeler';
@@ -64,24 +64,19 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
   const { kisiler } = useKisiler(oturum);
   const { gruplar } = useGruplar(oturum);
   const m = useMaddeler(id, ben);
-  const [yeni, setYeni] = useState('');
   const [acikMadde, setAcikMadde] = useState<string | null>(null);
   const [duzenle, setDuzenle] = useState(0);
   const [soru, setSoru] = useState<'sil' | 'ayril' | 'birak' | null>(null);
-  const girdi = useRef<TextInput>(null);
 
   const liste = listeler.find((l) => l.id === id);
+  const cesit = cesitTanimi(liste?.cesit).cesit;
+  const maddeler = m.maddeler ? maddeSirasi(cesit, m.maddeler) : null;
   const madde = m.maddeler?.find((x) => x.id === acikMadde) ?? null;
+  const yapilanSayisi = maddeler?.filter((x) => x.yapildi).length ?? 0;
 
-  const ekle = () => {
-    const metin = yeni.trim();
-    if (!metin) return;
-    setYeni('');
-    void m.ekle(metin).then((ok) => {
-      if (!ok) {
-        kisaMesaj(BAGLANAMIYOR);
-        setYeni((y) => y || metin);
-      }
+  const ekle = (metin: string, miktar: string) => {
+    void m.ekle(metin, miktar).then((ok) => {
+      if (!ok) kisaMesaj(`${BAGLANAMIYOR} (${metin})`);
       void yenile();
     });
   };
@@ -111,7 +106,7 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
     if (!liste || !ben || !m.maddeler) return;
     let yerelId: string | null = null;
     try {
-      yerelId = await yerelListeKur(kapi, liste.ad, paylasimdanYerele(m.maddeler, ben));
+      yerelId = await yerelListeKur(kapi, liste.ad, cesit, paylasimdanYerele(m.maddeler, ben));
       await listeyiSil(liste.id);
       kisaMesaj(`${liste.ad} artık yalnız sende`);
       router.replace({ pathname: '/giris/liste/[id]', params: { id: yerelId } });
@@ -156,7 +151,7 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
               ))}
             </View>
           )}
-          <Yazi tur="ikincil">{uyelerMetni(liste, ben, ad)}</Yazi>
+          <Yazi tur="ikincil">{`${cesitTanimi(cesit).ad} · ${uyelerMetni(liste, ben, ad)}`}</Yazi>
           {liste.gruplar.length > 0 && <Yazi tur="ikincil">{GRUP_NOTU}</Yazi>}
           {(baglanamiyor || m.hata) && (
             <Yazi tur="ikincil" renk={renk.hata}>
@@ -164,79 +159,70 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
             </Yazi>
           )}
 
-          <GirisAlani
-            ref={girdi}
-            etiket="Listeye ekle"
-            etiketGizli
-            value={yeni}
-            onChangeText={setYeni}
-            placeholder="Ekle ve Enter'a bas"
-            returnKeyType="done"
-            submitBehavior="submit"
-            onSubmitEditing={ekle}
+          {cesit === 'hazirlik' && maddeler && <HazirlikIlerlemesi toplam={maddeler.length} hazir={yapilanSayisi} />}
+
+          <MaddeEkleAlani
+            cesit={cesit}
+            listedekiler={(maddeler ?? []).filter((x) => !x.yapildi).map((x) => x.metin)}
+            onEkle={ekle}
           />
 
-          {m.maddeler && m.maddeler.length === 0 && <Yazi tur="ikincil">{BOS_LISTE}</Yazi>}
-          {m.maddeler && m.maddeler.length > 0 && (
+          {maddeler && maddeler.length === 0 && <Yazi tur="ikincil">{BOS_LISTE}</Yazi>}
+          {maddeler && maddeler.length > 0 && (
             <ListeKutusu>
-              {m.maddeler.map((x, i) => {
+              {maddeler.map((x, i) => {
                 const etiket = atamaEtiketi(x, ben, ad, bugunGun);
                 const kim = ekleyenMetni(x, ben, ad);
                 return (
-                  <View key={x.id} style={[stiller.madde, i > 0 && parcaStilleri.cizgili]}>
-                    <Pressable
-                      onPress={() => isaretle(x)}
-                      accessibilityRole="checkbox"
-                      accessibilityState={{ checked: x.yapildi }}
-                      accessibilityLabel={`${x.metin}: alındı`}
-                      hitSlop={6}
-                      style={stiller.isaretAlani}
-                    >
-                      <IsaretKutusu secili={x.yapildi} />
-                    </Pressable>
-                    <Pressable
-                      onPress={() => setAcikMadde(x.id)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${x.metin}${etiket ? `, ${etiket.metin}` : ''}. Kime ve ne zaman`}
-                      style={({ pressed }) => [stiller.maddeGovde, pressed && { opacity: 0.7 }]}
-                    >
-                      <View style={parcaStilleri.esnek}>
-                        <Yazi
-                          tur="kartBasligi"
-                          renk={x.yapildi ? renk.ikincil : renk.yazi}
-                          style={x.yapildi && stiller.cizili}
-                        >
-                          {x.metin}
-                        </Yazi>
-                        {(!!kim || etiket) && (
-                          <View style={stiller.meta}>
-                            {!!kim && <Yazi tur="ikincil">{kim}</Yazi>}
-                            {etiket && (
-                              <View
-                                style={[
-                                  stiller.etiket,
-                                  { backgroundColor: etiket.bana ? kaynakRenk.liste.zemin : renk.zemin },
-                                ]}
+                  <MaddeSatiri
+                    key={x.id}
+                    cesit={cesit}
+                    metin={x.metin}
+                    miktar={x.miktar}
+                    yapildi={x.yapildi}
+                    cizgili={i > 0}
+                    erisimEki={etiket?.metin}
+                    onIsaretle={() => isaretle(x)}
+                    onAc={() => setAcikMadde(x.id)}
+                    etiketler={
+                      (!!kim || etiket) && (
+                        <View style={stiller.meta}>
+                          {!!kim && <Yazi tur="ikincil">{kim}</Yazi>}
+                          {etiket && (
+                            <View
+                              style={[
+                                stiller.etiket,
+                                { backgroundColor: etiket.bana ? kaynakRenk.liste.zemin : renk.zemin },
+                              ]}
+                            >
+                              <Yazi
+                                tur="etiket"
+                                kalinlik="kalin"
+                                renk={etiket.bana ? kaynakRenk.liste.yazi : renk.ikincil}
                               >
-                                <Yazi
-                                  tur="etiket"
-                                  kalinlik="kalin"
-                                  renk={etiket.bana ? kaynakRenk.liste.yazi : renk.ikincil}
-                                >
-                                  {etiket.metin}
-                                </Yazi>
-                              </View>
-                            )}
-                          </View>
-                        )}
-                      </View>
-                      <Ionicons name="chevron-forward" size={18} color={renk.soluk} />
-                    </Pressable>
-                  </View>
+                                {etiket.metin}
+                              </Yazi>
+                            </View>
+                          )}
+                        </View>
+                      )
+                    }
+                  />
                 );
               })}
             </ListeKutusu>
           )}
+          <CesitEylemi
+            cesit={cesit}
+            yapilanSayisi={yapilanSayisi}
+            onTemizle={() =>
+              void m.yapilanlariTemizle().then((ok) => {
+                sonuc(ok);
+                if (ok) kisaMesaj('Alınanlar temizlendi');
+              })
+            }
+            onBastan={() => void m.bastanBasla().then(sonuc)}
+          />
 
           {yol?.tur === 'sahip' && (
             <View style={stiller.altDugmeler}>
@@ -270,6 +256,7 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
       {madde && liste && ben && (
         <MaddeSayfasi
           madde={madde}
+          cesit={cesit}
           liste={liste}
           ben={ben}
           ad={ad}

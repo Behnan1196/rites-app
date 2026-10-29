@@ -3,6 +3,7 @@
 // erişen herkes madde ekler, işaretler, verir ve siler (10. görev kararı).
 
 import { kisaGoreliTarih } from './ajanda';
+import type { ListeCesidi } from './listeCesidi';
 import type { AdBulucu, SunucuKisisi } from './gruplar';
 import type { KaynakliKart } from './kaynak';
 import { gunEkle, type Gun } from './tarih';
@@ -10,6 +11,8 @@ import { gunEkle, type Gun } from './tarih';
 export interface OrtakListe {
   id: string;
   ad: string;
+  /** P-61; eski sunucuda yoksa Yapılacaklar sayılır. */
+  cesit?: ListeCesidi;
   sahip: string;
   /** Listenin açık olduğu gruplar. */
   gruplar: { id: string; ad: string }[];
@@ -29,6 +32,8 @@ export interface Madde {
   ekleyen: string | null;
   kime: string | null;
   tarih: Gun | null;
+  /** Alışverişte miktar (P-61); eski sunucuda yok. */
+  miktar?: string;
   sira: number;
 }
 

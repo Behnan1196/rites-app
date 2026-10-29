@@ -1,14 +1,22 @@
-// Listelerim'deki kişisel liste (pilot 27 Ekim, P-58): telefonda durur. "Ekle ve Enter'a bas",
-// maddeler (işaret kutusu, metin, tarih etiketi). Maddeye dokununca: Ne zaman? (tarihli madde o
-// gün ajandada) ve Maddeyi sil. Altta: Başkalarıyla paylaş (ortak listeye taşınır), Adını
-// değiştir, Listeyi sil.
+// Listeler'deki kişisel liste (pilot 27 Ekim, P-58): telefonda durur. Çeşide göre (P-61):
+// Yapılacaklar (tarih → ajanda; yapılan alta), Alışveriş (miktar, öneri, alınan alta,
+// "Alınanları temizle"), Hazırlık (ilerleme, "Baştan başla"), Not listesi (işaretsiz).
+// Maddeye dokununca: Ne kadar? (alışveriş), Ne zaman? (tarihli madde o gün ajandada),
+// Maddeyi sil. Altta: Başkalarıyla paylaş, Listeyi düzenle (ad, çeşit), Listeyi sil.
 
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { BOS_LISTE, LISTE_ORNEKLERI, zamanSecenekleri } from '@/mantik/listeler';
+import {
+  AD_ORNEKLERI,
+  cesitTanimi,
+  maddeSirasi,
+  tarihliMi,
+  VARSAYILAN_CESIT,
+  type ListeCesidi,
+} from '@/mantik/listeCesidi';
+import { BOS_LISTE, zamanSecenekleri } from '@/mantik/listeler';
 import { kisaGoreliTarih } from '@/mantik/ajanda';
 import type { YerelMadde } from '@/mantik/yerelListe';
 import { maddeDegistir, maddeEkle } from '@/sunucu/listeler';
@@ -19,10 +27,12 @@ import { useVeri } from '@/veri/VeriSaglayici';
 import {
   yerelListeOku,
   yerelListeSil,
+  yerelIsaretleriSil,
   yerelListeYaz,
   yerelMaddeDegistir,
   yerelMaddeEkle,
   yerelMaddeSil,
+  yerelYapilanlariSil,
 } from '@/veri/yerelListeler';
 
 import { AltSayfa } from '../AltSayfa';
@@ -30,7 +40,7 @@ import { AyTakvimi } from '../AyTakvimi';
 import { Dugme } from '../Dugme';
 import { EkranKabi } from '../EkranKabi';
 import { GirisAlani } from '../GirisAlani';
-import { IsaretKutusu, ListeKutusu, parcaStilleri } from '../gruplar/parcalar';
+import { ListeKutusu } from '../gruplar/parcalar';
 import { useGruplar } from '../gruplar/useGruplar';
 import { useKisiler } from '../gruplar/useKisiler';
 import { Katman } from '../Katman';
@@ -41,6 +51,14 @@ import { Bolum, SecenekHapi } from '../Secim';
 import { kaynakRenk, olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 import { ListeFormu } from './ListeFormu';
+import {
+  CesitEylemi,
+  CesitSecimi,
+  HazirlikIlerlemesi,
+  MaddeEkleAlani,
+  MaddeSatiri,
+  MiktarBolumu,
+} from './ListeParcalari';
 
 export function YerelListeEkrani({ id, geri }: { id: string; geri: string }) {
   const { kapi } = useVeri();
@@ -52,9 +70,8 @@ export function YerelListeEkrani({ id, geri }: { id: string; geri: string }) {
   const { kisiler } = useKisiler(oturum);
   const { gruplar } = useGruplar(oturum);
   const veri = useSorgu(['liste'], (o) => yerelListeOku(o, id), [id]);
-  const [yeni, setYeni] = useState('');
   const [acikMadde, setAcikMadde] = useState<string | null>(null);
-  const [adDegis, setAdDegis] = useState<string | null>(null);
+  const [duzenle, setDuzenle] = useState<{ ad: string; cesit: ListeCesidi } | null>(null);
   const [silSorusu, setSilSorusu] = useState(false);
   const [paylas, setPaylas] = useState(0);
 
@@ -63,22 +80,17 @@ export function YerelListeEkrani({ id, geri }: { id: string; geri: string }) {
     kisaMesaj('Kaydedilemedi. Yeniden dene.');
   };
   const liste = veri.veri?.liste;
-  const maddeler = veri.veri?.maddeler ?? [];
+  const cesit = liste?.cesit ?? VARSAYILAN_CESIT;
+  const maddeler = maddeSirasi(cesit, veri.veri?.maddeler ?? []);
   const madde = maddeler.find((m) => m.id === acikMadde) ?? null;
-
-  const ekle = () => {
-    const metin = yeni.trim();
-    if (!metin) return;
-    setYeni('');
-    void yerelMaddeEkle(kapi, id, metin).catch(hata);
-  };
+  const yapilanSayisi = maddeler.filter((m) => m.yapildi).length;
 
   /** Paylaşınca: ortak liste kurulur, maddeler oraya yazılır, bu liste telefondan silinir. */
   const tasi = async (ortakId: string) => {
     if (!ben) return;
     try {
       for (const m of maddeler) {
-        const yeniMadde = await maddeEkle(ortakId, ben, m.metin);
+        const yeniMadde = await maddeEkle(ortakId, ben, m.metin, m.miktar);
         if (m.yapildi || m.tarih) await maddeDegistir(yeniMadde.id, { yapildi: m.yapildi, tarih: m.tarih });
       }
       await yerelListeSil(kapi, id);
@@ -100,62 +112,56 @@ export function YerelListeEkrani({ id, geri }: { id: string; geri: string }) {
   return (
     <EkranKabi geri={geri} baslik={liste.ad}>
       {!!liste.aciklama && <Yazi tur="ikincil">{liste.aciklama}</Yazi>}
-      <Yazi tur="ikincil">Yalnız sende. Bir maddeye tarih verirsen o gün ajandanda görünür.</Yazi>
+      <Yazi tur="ikincil">
+        {cesit === 'yapilacak'
+          ? 'Yalnız sende. Bir maddeye gün verirsen o gün ajandanda görünür.'
+          : `${cesitTanimi(cesit).ad} · yalnız sende`}
+      </Yazi>
+      {cesit === 'hazirlik' && <HazirlikIlerlemesi toplam={maddeler.length} hazir={yapilanSayisi} />}
 
-      <GirisAlani
-        etiket="Listeye ekle"
-        etiketGizli
-        value={yeni}
-        onChangeText={setYeni}
-        placeholder="Ekle ve Enter'a bas"
-        returnKeyType="done"
-        submitBehavior="submit"
-        onSubmitEditing={ekle}
+      <MaddeEkleAlani
+        cesit={cesit}
+        listedekiler={maddeler.filter((m) => !m.yapildi).map((m) => m.metin)}
+        onEkle={(metin, miktar) => void yerelMaddeEkle(kapi, id, metin, miktar).catch(hata)}
       />
 
       {maddeler.length === 0 && <Yazi tur="ikincil">{BOS_LISTE}</Yazi>}
       {maddeler.length > 0 && (
         <ListeKutusu>
           {maddeler.map((x, i) => (
-            <View key={x.id} style={[stiller.madde, i > 0 && parcaStilleri.cizgili]}>
-              <Pressable
-                onPress={() => void yerelMaddeDegistir(kapi, x.id, { yapildi: !x.yapildi }).catch(hata)}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: x.yapildi }}
-                accessibilityLabel={x.metin}
-                hitSlop={6}
-                style={stiller.isaretAlani}
-              >
-                <IsaretKutusu secili={x.yapildi} />
-              </Pressable>
-              <Pressable
-                onPress={() => setAcikMadde(x.id)}
-                accessibilityRole="button"
-                accessibilityLabel={`${x.metin}${x.tarih ? `, ${kisaGoreliTarih(x.tarih, bugunGun)}` : ''}. Ne zaman`}
-                style={({ pressed }) => [stiller.maddeGovde, pressed && { opacity: 0.7 }]}
-              >
-                <View style={parcaStilleri.esnek}>
-                  <Yazi
-                    tur="kartBasligi"
-                    renk={x.yapildi ? renk.ikincil : renk.yazi}
-                    style={x.yapildi && stiller.cizili}
-                  >
-                    {x.metin}
-                  </Yazi>
-                  {!!x.tarih && (
-                    <View style={stiller.etiket}>
-                      <Yazi tur="etiket" kalinlik="kalin" renk={kaynakRenk.liste.yazi}>
-                        {kisaGoreliTarih(x.tarih, bugunGun)}
-                      </Yazi>
-                    </View>
-                  )}
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={renk.soluk} />
-              </Pressable>
-            </View>
+            <MaddeSatiri
+              key={x.id}
+              cesit={cesit}
+              metin={x.metin}
+              miktar={x.miktar}
+              yapildi={x.yapildi}
+              cizgili={i > 0}
+              erisimEki={x.tarih ? kisaGoreliTarih(x.tarih, bugunGun) : undefined}
+              etiketler={
+                x.tarih ? (
+                  <View style={stiller.etiket}>
+                    <Yazi tur="etiket" kalinlik="kalin" renk={kaynakRenk.liste.yazi}>
+                      {kisaGoreliTarih(x.tarih, bugunGun)}
+                    </Yazi>
+                  </View>
+                ) : undefined
+              }
+              onIsaretle={() => void yerelMaddeDegistir(kapi, x.id, { yapildi: !x.yapildi }).catch(hata)}
+              onAc={() => setAcikMadde(x.id)}
+            />
           ))}
         </ListeKutusu>
       )}
+      <CesitEylemi
+        cesit={cesit}
+        yapilanSayisi={yapilanSayisi}
+        onTemizle={() =>
+          void yerelYapilanlariSil(kapi, id)
+            .then(() => kisaMesaj('Alınanlar temizlendi'))
+            .catch(hata)
+        }
+        onBastan={() => void yerelIsaretleriSil(kapi, id).catch(hata)}
+      />
 
       <View style={stiller.altDugmeler}>
         <Dugme
@@ -164,15 +170,22 @@ export function YerelListeEkrani({ id, geri }: { id: string; geri: string }) {
           etiket="Başkalarıyla paylaş"
           onPress={() => (ben ? setPaylas((n) => n + 1) : oturumAc())}
         />
-        <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Adını değiştir" onPress={() => setAdDegis(liste.ad)} />
+        <Dugme
+          tur="ikincil"
+          yaziRengi={renk.ana}
+          etiket="Listeyi düzenle"
+          onPress={() => setDuzenle({ ad: liste.ad, cesit })}
+        />
         <Dugme tur="tehlike" etiket="Listeyi sil" onPress={() => setSilSorusu(true)} />
       </View>
 
       {madde && (
         <YerelMaddeSayfasi
           madde={madde}
+          cesit={cesit}
           onKapat={() => setAcikMadde(null)}
           onTarih={(tarih) => void yerelMaddeDegistir(kapi, madde.id, { tarih }).catch(hata)}
+          onMiktar={(miktar) => void yerelMaddeDegistir(kapi, madde.id, { miktar }).catch(hata)}
           onSil={() => {
             setAcikMadde(null);
             void yerelMaddeSil(kapi, madde.id)
@@ -183,28 +196,33 @@ export function YerelListeEkrani({ id, geri }: { id: string; geri: string }) {
       )}
 
       <AltSayfa
-        gorunur={adDegis !== null}
-        onKapat={() => setAdDegis(null)}
-        baslik="Listenin adı"
+        gorunur={duzenle !== null}
+        onKapat={() => setDuzenle(null)}
+        baslik="Listeyi düzenle"
         solVazgec
+        degisti={!!duzenle && (duzenle.ad.trim() !== liste.ad || duzenle.cesit !== cesit)}
         sagEylem={{
           etiket: 'Kaydet',
-          pasif: !adDegis?.trim(),
+          pasif: !duzenle?.ad.trim(),
           onPress: () => {
-            const ad = adDegis?.trim();
-            if (!ad) return;
-            setAdDegis(null);
-            void yerelListeYaz(kapi, id, { ad }).catch(hata);
+            const d = duzenle;
+            if (!d?.ad.trim()) return;
+            setDuzenle(null);
+            void yerelListeYaz(kapi, id, { ad: d.ad, cesit: d.cesit }).catch(hata);
           },
         }}
       >
-        <GirisAlani
-          etiket="Listenin adı"
-          value={adDegis ?? ''}
-          onChangeText={setAdDegis}
-          returnKeyType="done"
-          autoFocus
-        />
+        {duzenle && (
+          <>
+            <GirisAlani
+              etiket="Listenin adı"
+              value={duzenle.ad}
+              onChangeText={(ad) => setDuzenle({ ...duzenle, ad })}
+              returnKeyType="done"
+            />
+            <CesitSecimi secili={duzenle.cesit} onSec={(c) => setDuzenle({ ...duzenle, cesit: c })} />
+          </>
+        )}
       </AltSayfa>
 
       {paylas > 0 && (
@@ -214,6 +232,7 @@ export function YerelListeEkrani({ id, geri }: { id: string; geri: string }) {
           gruplar={gruplar}
           kisiler={kisiler}
           baslangicAdi={liste.ad}
+          cesit={cesit}
           onKaydedildi={(ortakId) => void tasi(ortakId)}
         />
       )}
@@ -248,34 +267,41 @@ export function YerelListeEkrani({ id, geri }: { id: string; geri: string }) {
 
 function YerelMaddeSayfasi({
   madde,
+  cesit,
   onTarih,
+  onMiktar,
   onSil,
   onKapat,
 }: {
   madde: YerelMadde;
+  cesit: ListeCesidi;
   onTarih: (tarih: string | null) => void;
+  onMiktar: (miktar: string) => void;
   onSil: () => void;
   onKapat: () => void;
 }) {
   const bugunGun = useBugun();
   return (
     <AltSayfa gorunur onKapat={onKapat} baslik={madde.metin} sagKapat="Tamam">
-      <Bolum>
-        <Yazi kalinlik="kalin">Ne zaman?</Yazi>
-        <View style={stiller.cipler}>
-          {zamanSecenekleri(bugunGun).map((z) => (
-            <SecenekHapi
-              key={z.etiket}
-              etiket={z.etiket}
-              secili={madde.tarih === z.tarih}
-              onPress={() => onTarih(z.tarih)}
-            />
-          ))}
-        </View>
-        <Yazi tur="ikincil">Ya da bir tarih seç</Yazi>
-        <AyTakvimi secili={madde.tarih} bugunGun={bugunGun} onSec={(tarih) => onTarih(tarih)} />
-        <Yazi tur="ikincil">Tarihi olan madde o gün ajandanda görünür.</Yazi>
-      </Bolum>
+      {cesit === 'alisveris' && <MiktarBolumu miktar={madde.miktar} onDegis={onMiktar} />}
+      {tarihliMi(cesit) && (
+        <Bolum>
+          <Yazi kalinlik="kalin">Ne zaman?</Yazi>
+          <View style={stiller.cipler}>
+            {zamanSecenekleri(bugunGun).map((z) => (
+              <SecenekHapi
+                key={z.etiket}
+                etiket={z.etiket}
+                secili={madde.tarih === z.tarih}
+                onPress={() => onTarih(z.tarih)}
+              />
+            ))}
+          </View>
+          <Yazi tur="ikincil">Ya da bir tarih seç</Yazi>
+          <AyTakvimi secili={madde.tarih} bugunGun={bugunGun} onSec={(tarih) => onTarih(tarih)} />
+          <Yazi tur="ikincil">Tarihi olan madde o gün ajandanda görünür.</Yazi>
+        </Bolum>
+      )}
       <Dugme tur="tehlike" etiket="Maddeyi sil" onPress={onSil} />
     </AltSayfa>
   );
@@ -289,14 +315,19 @@ export function YeniYerelListe({
 }: {
   gorunur: boolean;
   onKapat: () => void;
-  onKaydet: (ad: string) => void;
+  onKaydet: (ad: string, cesit: ListeCesidi) => void;
 }) {
   const [ad, setAd] = useState('');
+  const [cesit, setCesit] = useState<ListeCesidi>(VARSAYILAN_CESIT);
+  const sifirla = () => {
+    setAd('');
+    setCesit(VARSAYILAN_CESIT);
+  };
   return (
     <AltSayfa
       gorunur={gorunur}
       onKapat={() => {
-        setAd('');
+        sifirla();
         onKapat();
       }}
       baslik="Yeni liste"
@@ -306,17 +337,26 @@ export function YeniYerelListe({
         pasif: !ad.trim(),
         onPress: () => {
           if (!ad.trim()) return;
-          onKaydet(ad.trim());
-          setAd('');
+          onKaydet(ad.trim(), cesit);
+          sifirla();
         },
       }}
     >
       <GirisAlani etiket="Listenin adı" value={ad} onChangeText={setAd} returnKeyType="done" autoFocus />
       <View style={stiller.cipler}>
-        {LISTE_ORNEKLERI.map((o) => (
-          <SecenekHapi key={o} etiket={o} secili={ad === o} onPress={() => setAd(o)} />
+        {AD_ORNEKLERI.map((o) => (
+          <SecenekHapi
+            key={o.ad}
+            etiket={o.ad}
+            secili={ad === o.ad}
+            onPress={() => {
+              setAd(o.ad);
+              setCesit(o.cesit);
+            }}
+          />
         ))}
       </View>
+      <CesitSecimi secili={cesit} onSec={setCesit} />
       <Yazi tur="ikincil">Liste yalnız bu telefonda durur; istersen sonra başkalarıyla paylaşırsın.</Yazi>
     </AltSayfa>
   );

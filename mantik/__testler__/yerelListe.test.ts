@@ -77,9 +77,9 @@ describe('Listelerim (P-58)', () => {
         'ben',
       ),
     ).toEqual([
-      { metin: 'a', yapildi: true, tarih: '2026-11-02' },
-      { metin: 'b', yapildi: false, tarih: '2026-11-03' },
-      { metin: 'c', yapildi: false, tarih: null },
+      { metin: 'a', yapildi: true, tarih: '2026-11-02', miktar: '' },
+      { metin: 'b', yapildi: false, tarih: '2026-11-03', miktar: '' },
+      { metin: 'c', yapildi: false, tarih: null, miktar: '' },
     ]);
   });
 });

@@ -315,3 +315,8 @@ Sonuç: → kararlar.md (Kütüphanedeki kartı düzenleme)
 Ne dedi: "Şu an Giriş'te Listeler'den hem liste hem ortak liste yarat var; gruplarda grup içinden yaratılır diyor ama grup içinde Yapılacak, Buluşma, Birlikte rutin var; Gruplar ana ekranında ortak liste var. Benim fikrim: sadece Giriş'te Listeler olsun, bir liste yaratsın; isterse onu bir grup veya kişi ile paylaştığında altta Paylaşılan listeler olarak listelensin." Kararlar: grup ekranında liste hiç görünmesin; paylaşmayı bırakınca liste yeniden kişisel olsun; ad "Listeler".
 Nerede: Giriş → Listelerim; Gruplar; grup ekranı
 Sonuç: → kararlar.md (Listeler tek yerde)
+
+### P-61 · 29 Ekim 2026 · Behnan
+Ne dedi: "Liste kurarken Vazgeç dediğimde Kaydetmeden çık ve Düzenlemeye dön diye soruyor; bence 2 soru güzel, diğerlerinde de, örneğin ajanda kartlarında da 3 seçenek değil bu 2 seçenek olsun. … Yeni liste dediğimde yapılacaklar, market, bayram hazırlığı vb. çipler var, ancak bu sadece isim öneriyor; altyapıda listeler hep aynı davranıyor. Listeleri yapısal olarak çeşitlendirebilir miyiz?" Kararlar: dört çeşit (Yapılacaklar, Alışveriş, Hazırlık, Not listesi); ad çipi çeşidi de seçsin; paylaşılan listelerde de geçerli.
+Nerede: Bütün alttan sayfalar; Giriş → Listeler
+Sonuç: → kararlar.md (Vazgeç sorusu iki seçenek; liste çeşitleri). Ajanda kartlarındaki Liste parçasına ayrıca bakılacak.

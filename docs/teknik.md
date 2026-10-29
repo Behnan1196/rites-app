@@ -50,10 +50,11 @@ Kural: veritabanına yazan her şey `veri/kapi.ts` üzerinden geçer ve hangi ko
 | 20 | `kart.cesit` (kartın açıldığı isimli çeşit, `KartCesidi.id`; NULL: çeşitsiz). Bölmede yeni karta geçer |
 | 21 | `program_kart.cesit` (programın kartının çeşidi; ajandaya geçen karta geçer) |
 | 22 | Listelerim (P-58): `yerel_liste` (ad, açıklama, sıra, oluşturma) ve `yerel_madde` (liste → silinince maddeleri de silinir; metin, yapıldı, tarih, sıra). Kimlikleri `y-` ile başlar (`yerelListeMi`); ortak listeler sunucudadır. Tarihli madde `BanaVerilenler` üzerinden ajandaya düşer. Açılışta bir kez (`ayar.listeler_tasindi`) yalnız liste parçalarından oluşan tekrarsız, programsız, bağsız kartlar yerel listeye çevrilip silinir (`listeKartlariniTasi`) |
+| 23 | Liste çeşitleri (P-61): `yerel_liste.cesit` (`yapilacak \| alisveris \| hazirlik \| not`, varsayılan `yapilacak`), `yerel_madde.miktar` (alışverişte "2 kg"; yoksa boş). Davranış `mantik/listeCesidi.ts`; alışveriş önerileri için `ayar.alisveris_gecmisi` (yalnız telefonda) |
 
 Var olan bir göç değiştirilmez; yapı değişince yeni sürüm eklenir. Fotoğraf, ses ve belgeler uygulamanın `dosyalar/` klasöründe; tablolarda yolları durur.
 
-**Sunucu (Supabase, `sunucu/sema.sql`):** `kullanici`, `baglanti`, `davet`, `gelen` (gönderilen kart, alınınca silinir), `grup`, `grup_uye`, `liste`, `liste_erisim`, `madde`. İçerik kataloğu: `icerik_alan`, `icerik_kart`, `icerik_program`, `icerik_cesit` (isimli kart çeşitleri, P-41) herkese yalnız okunur; `icerik_cesit`e yalnız `tasarimci` tablosundaki hesaplar yazar (`tasarimci_miyim()`), yayında olmayanı da onlar görür. Bütün tablolarda satır düzeyi yetki; yazmaların çoğu işlevlerle (`kisi_ekle`, `grup_kur`, `liste_olustur`…). `npm run sunucu-denemesi` şemayı yerelde gerçek Postgres (PGlite) üzerinde dener.
+**Sunucu (Supabase, `sunucu/sema.sql`):** `kullanici`, `baglanti`, `davet`, `gelen` (gönderilen kart, alınınca silinir), `grup`, `grup_uye`, `liste` (P-61: `cesit`), `liste_erisim`, `madde` (P-61: `miktar`). İçerik kataloğu: `icerik_alan`, `icerik_kart`, `icerik_program`, `icerik_cesit` (isimli kart çeşitleri, P-41) herkese yalnız okunur; `icerik_cesit`e yalnız `tasarimci` tablosundaki hesaplar yazar (`tasarimci_miyim()`), yayında olmayanı da onlar görür. Bütün tablolarda satır düzeyi yetki; yazmaların çoğu işlevlerle (`kisi_ekle`, `grup_kur`, `liste_olustur`…). `npm run sunucu-denemesi` şemayı yerelde gerçek Postgres (PGlite) üzerinde dener.
 
 ## Yedek dosyası biçimi
 

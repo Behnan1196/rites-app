@@ -6,6 +6,8 @@ import type { BanaVerilen } from '@/mantik/listeler';
 import type { Gun } from '@/mantik/tarih';
 import { karttanListeler, tasinacakMi, YEREL_ONEKI, type YerelListe, type YerelMadde } from '@/mantik/yerelListe';
 
+import { cesitMi, VARSAYILAN_CESIT, type ListeCesidi } from '@/mantik/listeCesidi';
+
 import { ayarOku } from './ayar';
 import type { Kapi, Okuyucu, Yazici } from './kapi';
 import { kartAyrinti, kartlariSil, tumKartlar } from './kartlar';
@@ -17,6 +19,7 @@ interface MaddeSatiri {
   metin: string;
   yapildi: number;
   tarih: string | null;
+  miktar: string;
   sira: number;
 }
 
@@ -26,6 +29,7 @@ const maddeSatirdan = (s: MaddeSatiri): YerelMadde => ({
   metin: s.metin,
   yapildi: s.yapildi === 1,
   tarih: s.tarih,
+  miktar: s.miktar ?? '',
   sira: s.sira,
 });
 
@@ -42,15 +46,20 @@ export async function yerelListeleriOku(
               (SELECT COUNT(*) FROM yerel_madde m WHERE m.liste = l.id AND m.yapildi = 0) AS kalan
        FROM yerel_liste l ORDER BY l.sira, l.olusturma`,
     )
-  ).map(({ madde_sayisi, ...l }) => ({ ...l, maddeSayisi: madde_sayisi }));
+  ).map(({ madde_sayisi, ...l }) => ({
+    ...l,
+    cesit: cesitMi(l.cesit) ? l.cesit : VARSAYILAN_CESIT,
+    maddeSayisi: madde_sayisi,
+  }));
 }
 
 export async function yerelListeOku(
   oku: Okuyucu,
   id: string,
 ): Promise<{ liste: YerelListe; maddeler: YerelMadde[] } | null> {
-  const liste = await oku.ilk<YerelListe>('SELECT * FROM yerel_liste WHERE id = ?', [id]);
-  if (!liste) return null;
+  const ham = await oku.ilk<YerelListe>('SELECT * FROM yerel_liste WHERE id = ?', [id]);
+  if (!ham) return null;
+  const liste = { ...ham, cesit: cesitMi(ham.cesit) ? ham.cesit : VARSAYILAN_CESIT };
   const maddeler = await oku.hepsi<MaddeSatiri>('SELECT * FROM yerel_madde WHERE liste = ? ORDER BY sira', [id]);
   return { liste, maddeler: maddeler.map(maddeSatirdan) };
 }
@@ -75,35 +84,37 @@ export async function tarihliYerelMaddeler(oku: Okuyucu): Promise<BanaVerilen[]>
 
 async function listeEkleY(
   y: Yazici,
-  l: { ad: string; aciklama?: string },
-  maddeler: { metin: string; yapildi?: boolean; tarih?: Gun | null }[] = [],
+  l: { ad: string; aciklama?: string; cesit?: ListeCesidi },
+  maddeler: { metin: string; yapildi?: boolean; tarih?: Gun | null; miktar?: string }[] = [],
   kimlik: Uretec = yeniKimlik,
 ): Promise<string> {
   const id = YEREL_ONEKI + kimlik();
   const sira = ((await y.ilk<{ s: number | null }>('SELECT MAX(sira) AS s FROM yerel_liste'))?.s ?? 0) + 1;
-  await y.calistir('INSERT INTO yerel_liste (id, ad, aciklama, sira, olusturma) VALUES (?, ?, ?, ?, ?)', [
+  await y.calistir('INSERT INTO yerel_liste (id, ad, aciklama, cesit, sira, olusturma) VALUES (?, ?, ?, ?, ?, ?)', [
     id,
     l.ad.trim(),
     l.aciklama ?? '',
+    l.cesit ?? VARSAYILAN_CESIT,
     sira,
     new Date().toISOString(),
   ]);
   for (const [i, m] of maddeler.entries())
-    await y.calistir('INSERT INTO yerel_madde (id, liste, metin, yapildi, tarih, sira) VALUES (?, ?, ?, ?, ?, ?)', [
-      kimlik(),
-      id,
-      m.metin,
-      m.yapildi ? 1 : 0,
-      m.tarih ?? null,
-      i + 1,
-    ]);
+    await y.calistir(
+      'INSERT INTO yerel_madde (id, liste, metin, yapildi, tarih, miktar, sira) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [kimlik(), id, m.metin, m.yapildi ? 1 : 0, m.tarih ?? null, m.miktar ?? '', i + 1],
+    );
   return id;
 }
 
-export async function yerelListeEkle(kapi: Kapi, ad: string, kimlik: Uretec = yeniKimlik): Promise<string> {
+export async function yerelListeEkle(
+  kapi: Kapi,
+  ad: string,
+  cesit: ListeCesidi = VARSAYILAN_CESIT,
+  kimlik: Uretec = yeniKimlik,
+): Promise<string> {
   let id = '';
   await kapi.yaz(['liste'], async (y) => {
-    id = await listeEkleY(y, { ad }, [], kimlik);
+    id = await listeEkleY(y, { ad, cesit }, [], kimlik);
   });
   return id;
 }
@@ -112,18 +123,25 @@ export async function yerelListeEkle(kapi: Kapi, ad: string, kimlik: Uretec = ye
 export async function yerelListeKur(
   kapi: Kapi,
   ad: string,
-  maddeler: { metin: string; yapildi: boolean; tarih: Gun | null }[],
+  cesit: ListeCesidi,
+  maddeler: { metin: string; yapildi: boolean; tarih: Gun | null; miktar: string }[],
   kimlik: Uretec = yeniKimlik,
 ): Promise<string> {
   let id = '';
   await kapi.yaz(['liste'], async (y) => {
-    id = await listeEkleY(y, { ad }, maddeler, kimlik);
+    id = await listeEkleY(y, { ad, cesit }, maddeler, kimlik);
   });
   return id;
 }
 
-export function yerelListeYaz(kapi: Kapi, id: string, alanlar: { ad?: string; aciklama?: string }): Promise<void> {
+export function yerelListeYaz(
+  kapi: Kapi,
+  id: string,
+  alanlar: { ad?: string; aciklama?: string; cesit?: ListeCesidi },
+): Promise<void> {
   return kapi.yaz(['liste'], async (y) => {
+    if (alanlar.cesit !== undefined)
+      await y.calistir('UPDATE yerel_liste SET cesit = ? WHERE id = ?', [alanlar.cesit, id]);
     if (alanlar.ad !== undefined)
       await y.calistir('UPDATE yerel_liste SET ad = ? WHERE id = ?', [alanlar.ad.trim(), id]);
     if (alanlar.aciklama !== undefined)
@@ -138,26 +156,32 @@ export function yerelListeSil(kapi: Kapi, id: string): Promise<void> {
   });
 }
 
-export function yerelMaddeEkle(kapi: Kapi, liste: string, metin: string, kimlik: Uretec = yeniKimlik): Promise<void> {
+export function yerelMaddeEkle(
+  kapi: Kapi,
+  liste: string,
+  metin: string,
+  miktar = '',
+  kimlik: Uretec = yeniKimlik,
+): Promise<void> {
   return kapi.yaz(['liste'], async (y) => {
     const sira =
       ((await y.ilk<{ s: number | null }>('SELECT MAX(sira) AS s FROM yerel_madde WHERE liste = ?', [liste]))?.s ?? 0) +
       1;
-    await y.calistir('INSERT INTO yerel_madde (id, liste, metin, yapildi, tarih, sira) VALUES (?, ?, ?, 0, NULL, ?)', [
-      kimlik(),
-      liste,
-      metin.trim(),
-      sira,
-    ]);
+    await y.calistir(
+      'INSERT INTO yerel_madde (id, liste, metin, yapildi, tarih, miktar, sira) VALUES (?, ?, ?, 0, NULL, ?, ?)',
+      [kimlik(), liste, metin.trim(), miktar.trim(), sira],
+    );
   });
 }
 
 export function yerelMaddeDegistir(
   kapi: Kapi,
   id: string,
-  d: { yapildi?: boolean; tarih?: Gun | null; metin?: string },
+  d: { yapildi?: boolean; tarih?: Gun | null; metin?: string; miktar?: string },
 ): Promise<void> {
   return kapi.yaz(['liste'], async (y) => {
+    if (d.miktar !== undefined)
+      await y.calistir('UPDATE yerel_madde SET miktar = ? WHERE id = ?', [d.miktar.trim(), id]);
     if (d.yapildi !== undefined)
       await y.calistir('UPDATE yerel_madde SET yapildi = ? WHERE id = ?', [d.yapildi ? 1 : 0, id]);
     if (d.tarih !== undefined) await y.calistir('UPDATE yerel_madde SET tarih = ? WHERE id = ?', [d.tarih, id]);
@@ -167,6 +191,16 @@ export function yerelMaddeDegistir(
 
 export function yerelMaddeSil(kapi: Kapi, id: string): Promise<void> {
   return kapi.yaz(['liste'], (y) => y.calistir('DELETE FROM yerel_madde WHERE id = ?', [id]));
+}
+
+/** Alışveriş: "Alınanları temizle" (P-61). */
+export function yerelYapilanlariSil(kapi: Kapi, liste: string): Promise<void> {
+  return kapi.yaz(['liste'], (y) => y.calistir('DELETE FROM yerel_madde WHERE liste = ? AND yapildi = 1', [liste]));
+}
+
+/** Hazırlık: "Baştan başla": maddeler kalır, işaretler silinir (P-61). */
+export function yerelIsaretleriSil(kapi: Kapi, liste: string): Promise<void> {
+  return kapi.yaz(['liste'], (y) => y.calistir('UPDATE yerel_madde SET yapildi = 0 WHERE liste = ?', [liste]));
 }
 
 // ---- Bir kez: liste kartlarını taşı ----------------------------------------------------

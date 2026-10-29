@@ -9,6 +9,7 @@ import { StyleSheet, View } from 'react-native';
 import { bagliKisiler, type Grup } from '@/mantik/gruplar';
 import { BAGLANAMIYOR, type Kisi } from '@/mantik/kisiler';
 import { GRUP_SECIM_NOTU, listeFormuHatasi, listeHatasi, paylasimHatasi, type OrtakListe } from '@/mantik/listeler';
+import { cesitTanimi, VARSAYILAN_CESIT, type ListeCesidi } from '@/mantik/listeCesidi';
 import { listeDuzenle, listeOlustur } from '@/sunucu/listeler';
 
 import { AltSayfa } from '../AltSayfa';
@@ -18,6 +19,7 @@ import { useKisaMesaj } from '../KisaMesaj';
 import { Bolum, SecenekHapi } from '../Secim';
 import { renk } from '../tema';
 import { Yazi } from '../Yazi';
+import { CesitSecimi } from './ListeParcalari';
 
 function degistir(s: ReadonlySet<string>, id: string): Set<string> {
   const y = new Set(s);
@@ -33,6 +35,7 @@ export function ListeFormu({
   mevcut,
   onKaydedildi,
   baslangicAdi,
+  cesit: baslangicCesidi,
 }: {
   onKapat: () => void;
   /** Üyesi olduğum gruplar. */
@@ -43,9 +46,13 @@ export function ListeFormu({
   onKaydedildi: (id: string) => void;
   /** Paylaşılan kişisel listenin adı (P-58). */
   baslangicAdi?: string;
+  /** Paylaşılan kişisel listenin çeşidi (P-61). */
+  cesit?: ListeCesidi;
 }) {
   const kisaMesaj = useKisaMesaj();
   const [ad, setAd] = useState(mevcut?.ad ?? baslangicAdi ?? '');
+  const ilkCesit = mevcut ? cesitTanimi(mevcut.cesit).cesit : (baslangicCesidi ?? VARSAYILAN_CESIT);
+  const [cesit, setCesit] = useState<ListeCesidi>(ilkCesit);
   const [secGrup, setSecGrup] = useState<ReadonlySet<string>>(new Set(mevcut ? mevcut.gruplar.map((g) => g.id) : []));
   const [secKisi, setSecKisi] = useState<ReadonlySet<string>>(new Set(mevcut?.kisiler));
   const [hata, setHata] = useState<string | null>(null);
@@ -60,6 +67,7 @@ export function ListeFormu({
 
   const degisti = mevcut
     ? ad.trim() !== mevcut.ad ||
+      cesit !== ilkCesit ||
       secGrup.size !== mevcut.gruplar.length ||
       mevcut.gruplar.some((g) => !secGrup.has(g.id)) ||
       secKisi.size !== mevcut.kisiler.length ||
@@ -75,11 +83,11 @@ export function ListeFormu({
     setCalisiyor(true);
     try {
       if (mevcut) {
-        await listeDuzenle(mevcut.id, ad, [...secGrup], [...secKisi]);
+        await listeDuzenle(mevcut.id, ad, [...secGrup], [...secKisi], cesit);
         kisaMesaj('Liste kaydedildi');
         onKaydedildi(mevcut.id);
       } else {
-        const id = await listeOlustur(ad, [...secGrup], [...secKisi]);
+        const id = await listeOlustur(ad, [...secGrup], [...secKisi], cesit);
         kisaMesaj(`Paylaşıldı: ${ad.trim()}`);
         onKaydedildi(id);
       }
@@ -125,6 +133,7 @@ export function ListeFormu({
             )}
           </>
         )}
+        {!!mevcut && <CesitSecimi secili={cesit} onSec={setCesit} />}
         <Bolum>
           <Yazi kalinlik="kalin">Gruplar</Yazi>
           <Yazi tur="ikincil">{GRUP_SECIM_NOTU}</Yazi>

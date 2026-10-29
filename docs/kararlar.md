@@ -531,3 +531,15 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - 19 Ekim kararı ("listelerin tek yeri grup") ve P-58'deki "+ Ortak liste" kalktı: Gruplar ekranındaki "Kişilerle listeler" bölümü, grup ekranındaki listeler ve "+ Ekle → Yapılacak → Liste" yok; Yapılacak yalnız iş. Liste yine kişiye açılabilir (19 Ekim'de yalnız gruba açılıyordu). — Ürün sahibi (P-60)
 - Paylaşılan listede kuran için: **Paylaşımı düzenle** (ad, gruplar, kişiler), **Paylaşmayı bırak**, **Listeyi sil**. Paylaşmayı bırak (onaylı): liste maddeleriyle telefona döner, yeniden kişisel olur; paylaşılanlar artık görmez. Maddelerin sırası ve işaretleri korunur; tarih yalnız bana ya da kimseye verilmemiş maddede kalır. Paylaşımı düzenlerken herkes çıkarılamaz ("Paylaşmayı bırak"ı kullan). — Ürün sahibi (P-60); ayrıntılar: Öneri
 - Ajandadaki süzgeç çipinde "Ortak listeler" → "Listeler". — Öneri
+
+## Vazgeç sorusu iki seçenek; liste çeşitleri (29 Ekim)
+
+- **Vazgeç sorusu (bütün alttan sayfalarda, kart formu dahil):** "Kaydetmeden çıkılsın mı?" — **Kaydetmeden çık** · **Düzenlemeye dön**. Soruda "Kaydet" seçeneği kalktı (kaydetmek için düzenlemeye dönülüp sağ üstteki Kaydet). P-46'daki üç seçeneğin yerine. — Ürün sahibi (P-61)
+- **Liste çeşitleri:** listeler davranışla ayrılır; kişisel ve paylaşılan listelerde aynı. — Ürün sahibi (P-61)
+  - **Yapılacaklar:** maddeye gün verilir (o gün ajandada); yapılan alta iner. Eski bütün listeler bu çeşit.
+  - **Alışveriş:** maddeye miktar; satırın başında yazılan miktar ayrılır ("2 kg domates" → Domates, 2 kg) ve maddenin baş harfi büyük olur. Madde sayfasında **Ne kadar?** (Yok · 1 · 2 · 3 · ½ kg · 1 kg · 1 paket · 1 lt ve elle). Alınan alta iner; altta **Alınanları temizle (N)**. Yazarken önceki alışverişlerden öneri çipleri (bu telefonda yazılanlardan; listede alınmamış duranlar önerilmez).
+  - **Hazırlık:** tekrar kullanılır; üstte "3/10 hazır" çubuğu, işaretli madde yerinde kalır; **Baştan başla** (onaylı) yalnız işaretleri siler.
+  - **Not listesi:** işaret kutusu yok, tarih ve Kime? yok; yalnız sıralı maddeler.
+- Yeni listede ad çipi çeşidi de seçer: Yapılacaklar, Market (Alışveriş), Bayram hazırlığı ve Bavul (Hazırlık), Taşınma (Yapılacaklar), Okunacak kitaplar ve Hediye fikirleri (Not listesi). Altında "Ne tür bir liste?" çipleri ve seçilenin açıklaması; elle yazılan ad Yapılacaklar kalır, çeşit elle değiştirilebilir. — Ürün sahibi (P-61); çip listesi ve eşlemeler: Öneri
+- Çeşit sonradan değişir: kişisel listede **Listeyi düzenle** (ad ve çeşit; "Adını değiştir"in yerine), paylaşılanda **Paylaşımı düzenle**. Paylaşınca ve paylaşmayı bırakınca çeşit ve miktarlar korunur. — Öneri
+- Sunucuda `liste.cesit` ve `madde.miktar`; çalıştırılması gereken kısa SQL `sunucu/sema.sql`de. — Not

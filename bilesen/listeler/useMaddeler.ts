@@ -8,11 +8,19 @@ import { AppState } from 'react-native';
 
 import { maddeleriSirala, type Madde } from '@/mantik/listeler';
 import type { Gun } from '@/mantik/tarih';
-import { maddeDegistir, maddeEkle, maddeleriDinle, maddeleriOku, maddeSil } from '@/sunucu/listeler';
+import {
+  isaretleriSil,
+  maddeDegistir,
+  maddeEkle,
+  maddeleriDinle,
+  maddeleriOku,
+  maddeSil,
+  yapilanlariSil,
+} from '@/sunucu/listeler';
 
 import { useBanaVerilenler } from './BanaVerilenler';
 
-type Degisiklik = Partial<{ yapildi: boolean; kime: string | null; tarih: Gun | null }>;
+type Degisiklik = Partial<{ yapildi: boolean; kime: string | null; tarih: Gun | null; miktar: string }>;
 
 export function useMaddeler(liste: string, ben: string | null) {
   const [maddeler, setMaddeler] = useState<Madde[] | null>(null);
@@ -73,10 +81,10 @@ export function useMaddeler(liste: string, ben: string | null) {
   );
 
   const ekle = useCallback(
-    (metin: string) => {
+    (metin: string, miktar = '') => {
       if (!ben) return Promise.resolve(false);
       return yaz(async () => {
-        const m = await maddeEkle(liste, ben, metin);
+        const m = await maddeEkle(liste, ben, metin, miktar);
         setMaddeler((ms) => maddeleriSirala([...(ms ?? []).filter((x) => x.id !== m.id), m]));
       });
     },
@@ -99,5 +107,17 @@ export function useMaddeler(liste: string, ben: string | null) {
     [yaz],
   );
 
-  return { maddeler, hata, yenile, ekle, degistir, sil };
+  /** P-61: Alışveriş "Alınanları temizle". */
+  const yapilanlariTemizle = useCallback(() => {
+    setMaddeler((ms) => ms?.filter((m) => !m.yapildi) ?? null);
+    return yaz(() => yapilanlariSil(liste));
+  }, [liste, yaz]);
+
+  /** P-61: Hazırlık "Baştan başla". */
+  const bastanBasla = useCallback(() => {
+    setMaddeler((ms) => ms?.map((m) => ({ ...m, yapildi: false })) ?? null);
+    return yaz(() => isaretleriSil(liste));
+  }, [liste, yaz]);
+
+  return { maddeler, hata, yenile, ekle, degistir, sil, yapilanlariTemizle, bastanBasla };
 }

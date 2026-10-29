@@ -324,6 +324,12 @@ export const GOCLER: readonly Goc[] = [
           CREATE INDEX yerel_madde_liste ON yerel_madde (liste, sira);
           CREATE INDEX yerel_madde_tarih ON yerel_madde (tarih);`,
   },
+  {
+    // Liste çeşitleri (pilot 29 Ekim, P-61): yapilacak · alisveris · hazirlik · not; madde miktarı.
+    surum: 23,
+    sql: `ALTER TABLE yerel_liste ADD COLUMN cesit TEXT NOT NULL DEFAULT 'yapilacak';
+          ALTER TABLE yerel_madde ADD COLUMN miktar TEXT NOT NULL DEFAULT '';`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

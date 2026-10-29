@@ -17,7 +17,7 @@ import { YeniYerelListe } from '@/bilesen/listeler/YerelListeEkrani';
 import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
-import { kalanSayiMetni } from '@/mantik/yerelListe';
+import { cesitTanimi, listeOzeti } from '@/mantik/listeCesidi';
 import { useOturum } from '@/sunucu/oturum';
 import { useSorgu } from '@/veri/kancalar';
 import { useVeri } from '@/veri/VeriSaglayici';
@@ -39,15 +39,15 @@ export default function Listeler() {
           key={l.id}
           onPress={() => ac(l.id)}
           accessibilityRole="button"
-          accessibilityLabel={`${l.ad}, ${kalanSayiMetni(l.maddeSayisi, l.kalan)}`}
+          accessibilityLabel={`${l.ad}, ${cesitTanimi(l.cesit).ad}, ${listeOzeti(l.cesit, l.maddeSayisi, l.kalan)}`}
           style={({ pressed }) => [stiller.satir, pressed && { opacity: 0.75 }]}
         >
           <View style={stiller.simge}>
-            <Ionicons name="checkbox-outline" size={22} color={kaynakRenk.liste.serit} />
+            <Ionicons name={cesitTanimi(l.cesit).ikon} size={22} color={kaynakRenk.liste.serit} />
           </View>
           <View style={stiller.esnek}>
             <Yazi tur="kartBasligi">{l.ad}</Yazi>
-            <Yazi tur="ikincil">{kalanSayiMetni(l.maddeSayisi, l.kalan)}</Yazi>
+            <Yazi tur="ikincil">{`${cesitTanimi(l.cesit).ad} · ${listeOzeti(l.cesit, l.maddeSayisi, l.kalan)}`}</Yazi>
           </View>
           <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
         </Pressable>
@@ -75,9 +75,9 @@ export default function Listeler() {
       <YeniYerelListe
         gorunur={yeniYerel}
         onKapat={() => setYeniYerel(false)}
-        onKaydet={(adi) => {
+        onKaydet={(adi, cesit) => {
           setYeniYerel(false);
-          void yerelListeEkle(kapi, adi)
+          void yerelListeEkle(kapi, adi, cesit)
             .then(ac)
             .catch((e: unknown) => {
               console.warn(e);

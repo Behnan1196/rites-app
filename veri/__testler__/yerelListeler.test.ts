@@ -46,12 +46,14 @@ beforeEach(async () => {
 
 describe('Listelerim veri katmanı (P-58)', () => {
   it('liste ve maddeler; tarihli madde ajandaya', async () => {
-    const id = await yerelListeEkle(kapi, ' Market ', idUret);
+    const id = await yerelListeEkle(kapi, ' Market ', 'alisveris', idUret);
     expect(id.startsWith('y-')).toBe(true);
-    await yerelMaddeEkle(kapi, id, 'Süt', idUret);
-    await yerelMaddeEkle(kapi, id, 'Ekmek', idUret);
+    await yerelMaddeEkle(kapi, id, 'Süt', '2 lt', idUret);
+    await yerelMaddeEkle(kapi, id, 'Ekmek', '', idUret);
     const l = (await yerelListeOku(oku, id))!;
     expect(l.liste.ad).toBe('Market');
+    expect(l.liste.cesit).toBe('alisveris');
+    expect(l.maddeler.map((m) => m.miktar)).toEqual(['2 lt', '']);
     expect(l.maddeler.map((m) => m.metin)).toEqual(['Süt', 'Ekmek']);
     await yerelMaddeDegistir(kapi, l.maddeler[0]!.id, { yapildi: true });
     await yerelMaddeDegistir(kapi, l.maddeler[1]!.id, { tarih: '2026-10-30' });
@@ -67,9 +69,10 @@ describe('Listelerim veri katmanı (P-58)', () => {
     const id = await yerelListeKur(
       kapi,
       'Tatil',
+      'hazirlik',
       [
-        { metin: 'Bilet', yapildi: true, tarih: null },
-        { metin: 'Valiz', yapildi: false, tarih: '2026-11-02' },
+        { metin: 'Bilet', yapildi: true, tarih: null, miktar: '' },
+        { metin: 'Valiz', yapildi: false, tarih: '2026-11-02', miktar: '' },
       ],
       idUret,
     );

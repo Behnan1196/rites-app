@@ -1,5 +1,6 @@
 // Ortak listeler ve maddeler (GR-2, GR-4): sunucu çağrıları.
 
+import type { ListeCesidi } from '@/mantik/listeCesidi';
 import type { BanaVerilen, Madde, OrtakListe } from '@/mantik/listeler';
 import type { Gun } from '@/mantik/tarih';
 
@@ -11,22 +12,35 @@ export async function listeleriOku(): Promise<OrtakListe[]> {
   return (data ?? []) as OrtakListe[];
 }
 
-export async function listeOlustur(ad: string, gruplar: string[], kisiler: string[]): Promise<string> {
+export async function listeOlustur(
+  ad: string,
+  gruplar: string[],
+  kisiler: string[],
+  cesit: ListeCesidi = 'yapilacak',
+): Promise<string> {
   const { data, error } = await sunucuGerekli().rpc('liste_olustur', {
     p_ad: ad.trim(),
     p_gruplar: gruplar,
     p_kisiler: kisiler,
+    p_cesit: cesit,
   });
   if (error) throw new Error(error.message);
   return data as string;
 }
 
-export async function listeDuzenle(liste: string, ad: string, gruplar: string[], kisiler: string[]): Promise<void> {
+export async function listeDuzenle(
+  liste: string,
+  ad: string,
+  gruplar: string[],
+  kisiler: string[],
+  cesit?: ListeCesidi,
+): Promise<void> {
   const { error } = await sunucuGerekli().rpc('liste_duzenle', {
     p_liste: liste,
     p_ad: ad.trim(),
     p_gruplar: gruplar,
     p_kisiler: kisiler,
+    p_cesit: cesit ?? null,
   });
   if (error) throw new Error(error.message);
 }
@@ -45,18 +59,19 @@ export async function listedenAyril(liste: string, ben: string): Promise<void> {
 export async function maddeleriOku(liste: string): Promise<Madde[]> {
   const { data, error } = await sunucuGerekli()
     .from('madde')
-    .select('id, liste, metin, yapildi, ekleyen, kime, tarih, sira')
+    // P-61: `*` (miktar sütunu sunucuda yoksa da çalışsın).
+    .select('*')
     .eq('liste', liste)
     .order('sira');
   if (error) throw error;
   return (data ?? []) as Madde[];
 }
 
-export async function maddeEkle(liste: string, ben: string, metin: string): Promise<Madde> {
+export async function maddeEkle(liste: string, ben: string, metin: string, miktar = ''): Promise<Madde> {
   const { data, error } = await sunucuGerekli()
     .from('madde')
-    .insert({ liste, ekleyen: ben, metin: metin.trim() })
-    .select('id, liste, metin, yapildi, ekleyen, kime, tarih, sira')
+    .insert({ liste, ekleyen: ben, metin: metin.trim(), ...(miktar.trim() ? { miktar: miktar.trim() } : {}) })
+    .select('*')
     .single();
   if (error) throw error;
   return data as Madde;
@@ -64,7 +79,7 @@ export async function maddeEkle(liste: string, ben: string, metin: string): Prom
 
 export async function maddeDegistir(
   id: string,
-  degisiklik: Partial<{ yapildi: boolean; kime: string | null; tarih: Gun | null }>,
+  degisiklik: Partial<{ yapildi: boolean; kime: string | null; tarih: Gun | null; miktar: string }>,
 ): Promise<void> {
   const { error } = await sunucuGerekli().from('madde').update(degisiklik).eq('id', id);
   if (error) throw error;
@@ -72,6 +87,22 @@ export async function maddeDegistir(
 
 export async function maddeSil(id: string): Promise<void> {
   const { error } = await sunucuGerekli().from('madde').delete().eq('id', id);
+  if (error) throw error;
+}
+
+/** Alışveriş: "Alınanları temizle" (P-61). */
+export async function yapilanlariSil(liste: string): Promise<void> {
+  const { error } = await sunucuGerekli().from('madde').delete().eq('liste', liste).eq('yapildi', true);
+  if (error) throw error;
+}
+
+/** Hazırlık: "Baştan başla" (P-61): bütün işaretler kalkar. */
+export async function isaretleriSil(liste: string): Promise<void> {
+  const { error } = await sunucuGerekli()
+    .from('madde')
+    .update({ yapildi: false })
+    .eq('liste', liste)
+    .eq('yapildi', true);
   if (error) throw error;
 }
 

@@ -5,7 +5,7 @@
 //   uzun formda klavye sayfayı iterken başlık ve ilk alan ekranın üstünde kalıyordu).
 // - Kapatma yolları: "Vazgeç"/"Kapat" düğmesi, tutamaçtan aşağı kaydırma,
 //   perdeye dokunma, Android geri tuşu. İçinde değişiklik varsa (`degisti`)
-//   hepsi önce sorar (P-46): Kaydet (sağ üstteki eylem) · Kaydetmeden çık · Düzenlemeye dön.
+//   hepsi önce sorar (P-46, P-61): Kaydetmeden çık · Düzenlemeye dön.
 // - Üst katmanda çizilir (bkz. Katman.tsx); kapalıyken hiçbir şey çizmez.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
@@ -304,21 +304,9 @@ export function AltSayfa({
 
         {onaySoruluyor && (
           <OnayKutusu
-            baslik={sagEylem && !sagEylem.pasif ? 'Değişiklikler kaydedilsin mi?' : 'Kaydetmeden çıkılsın mı?'}
+            baslik="Kaydetmeden çıkılsın mı?"
             secenekler={[
-              // P-46: "Sil" sözü yok; kaydetmek de buradan.
-              ...(sagEylem && !sagEylem.pasif
-                ? [
-                    {
-                      etiket: sagEylem.etiket,
-                      tur: 'ana' as const,
-                      onPress: () => {
-                        setOnaySoruluyor(false);
-                        sagEylem.onPress();
-                      },
-                    },
-                  ]
-                : []),
+              // P-46: "Sil" sözü yok. P-61: iki seçenek; kaydetmek için düzenlemeye dönülür.
               {
                 etiket: 'Kaydetmeden çık',
                 tur: 'ikincil',

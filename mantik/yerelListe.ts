@@ -7,6 +7,7 @@
 // yapılmamış maddeleri o tarihi alır (ajandada o gün yine görünür).
 
 import { adimDurumu } from './adimlar';
+import type { ListeCesidi } from './listeCesidi';
 import type { Blok, Kart } from './kart';
 import type { Gun } from './tarih';
 import { htmldenDuz } from './zenginMetin';
@@ -22,6 +23,8 @@ export interface YerelListe {
   id: string;
   ad: string;
   aciklama: string;
+  /** P-61. */
+  cesit: ListeCesidi;
   sira: number;
   olusturma: string;
 }
@@ -32,6 +35,8 @@ export interface YerelMadde {
   metin: string;
   yapildi: boolean;
   tarih: Gun | null;
+  /** Alışverişte miktar ("2 kg"); yoksa boş (P-61). */
+  miktar: string;
   sira: number;
 }
 
@@ -95,10 +100,22 @@ export function kalanMetni(maddeler: readonly Pick<YerelMadde, 'yapildi'>[]): st
  * yalnız bana ya da kimseye verilmemiş maddede kalır (başkasına verilen işin tarihi benim değil).
  */
 export function paylasimdanYerele(
-  maddeler: readonly { metin: string; yapildi: boolean; kime: string | null; tarih: Gun | null; sira: number }[],
+  maddeler: readonly {
+    metin: string;
+    yapildi: boolean;
+    kime: string | null;
+    tarih: Gun | null;
+    sira: number;
+    miktar?: string;
+  }[],
   ben: string,
-): { metin: string; yapildi: boolean; tarih: Gun | null }[] {
+): { metin: string; yapildi: boolean; tarih: Gun | null; miktar: string }[] {
   return [...maddeler]
     .sort((a, b) => a.sira - b.sira)
-    .map((m) => ({ metin: m.metin, yapildi: m.yapildi, tarih: m.kime === null || m.kime === ben ? m.tarih : null }));
+    .map((m) => ({
+      metin: m.metin,
+      yapildi: m.yapildi,
+      tarih: m.kime === null || m.kime === ben ? m.tarih : null,
+      miktar: m.miktar ?? '',
+    }));
 }

@@ -38,6 +38,8 @@ export interface Ayarlar {
   uzman_gorunumu: boolean;
   /** Liste kartları Listelerim'e taşındı (P-58; bir kez). */
   listeler_tasindi: boolean;
+  /** Alışveriş listelerine yazılan maddeler, en yeni başta (P-61: yazarken öneri; yalnız bu telefonda). */
+  alisveris_gecmisi: string[];
 }
 
 export type AyarAnahtari = keyof Ayarlar;
