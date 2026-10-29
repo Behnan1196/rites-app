@@ -254,7 +254,7 @@ export function ZamanSayfasi({
     >
       {bolum === 'tarih' && !kalip && !gunGizle && (
         <View style={stiller.bolum}>
-          <Yazi tur="bolumBasligi" accessibilityRole="header">
+          <Yazi kalinlik="kalin" accessibilityRole="header">
             {programGunu ? 'Programın günü' : deger.tekrar ? 'Başlangıç' : 'Tarih'}
           </Yazi>
           <ZamanlamaPaneli acik="tarih" onDegis={onTarihSec} {...ortak} />
@@ -262,7 +262,7 @@ export function ZamanSayfasi({
       )}
       {bolum === 'tarih' && (
         <View style={stiller.bolum}>
-          <Yazi tur="bolumBasligi" accessibilityRole="header">
+          <Yazi kalinlik="kalin" accessibilityRole="header">
             Saat
           </Yazi>
           <ZamanlamaPaneli acik="saat" onDegis={onDegis} {...ortak} />
@@ -596,38 +596,26 @@ export function ZamanlamaPaneli({
           </>
         )}
 
+        {/* P-64: buluşmadaki gibi sade: Saatli · Saat yok ve küçük saat kutusu (dokununca çark). */}
         {acik === 'saat' && (
-          <>
-            <View style={stiller.haplar}>
-              {(
-                [
-                  ['Sabah', '08:00'],
-                  ['Öğle', '12:00'],
-                  ['Akşam', '19:00'],
-                ] as const
-              ).map(([ad, saat]) => (
-                <SecenekHapi
-                  key={saat}
-                  etiket={ad}
-                  altEtiket={saat}
-                  secili={deger.saat === saat}
-                  onPress={() => onDegis({ ...deger, saat })}
-                  style={stiller.esit}
-                />
-              ))}
-            </View>
-            <SaatSecici saat={deger.saat} onDegis={(saat) => onDegis({ ...deger, saat })} />
+          <View style={stiller.saatSatiri}>
+            <SecenekHapi
+              etiket="Saatli"
+              secili={deger.saat !== null}
+              onPress={() => deger.saat === null && onDegis({ ...deger, saat: VARSAYILAN_SAAT })}
+            />
+            <SecenekHapi
+              etiket="Saat yok"
+              secili={deger.saat === null}
+              onPress={() => {
+                const hatirlatma = gecerliHatirlatma(deger.hatirlatma, null);
+                onDegis({ ...deger, saat: null, hatirlatma, alarm: hatirlatma ? deger.alarm : false });
+              }}
+            />
             {deger.saat !== null && (
-              <Dugme
-                tur="tehlike"
-                etiket="Saati kaldır"
-                onPress={() => {
-                  const hatirlatma = gecerliHatirlatma(deger.hatirlatma, null);
-                  onDegis({ ...deger, saat: null, hatirlatma, alarm: hatirlatma ? deger.alarm : false });
-                }}
-              />
+              <SaatSecici saat={deger.saat} onDegis={(saat) => onDegis({ ...deger, saat })} kompakt etiket="Saat" />
             )}
-          </>
+          </View>
         )}
 
         {acik === 'hatirlatma' && (
@@ -748,6 +736,9 @@ function OzelHatirlatmaAyari({
 }
 
 // ---- Saat seçici ---------------------------------------------------------------
+
+/** "Saatli" denince ilk saat. */
+const VARSAYILAN_SAAT = '09:00';
 
 function saatTarihe(saat: string | null): Date {
   const d = new Date();
@@ -1044,6 +1035,7 @@ const stiller = StyleSheet.create({
   bolmeAyarli: { backgroundColor: renk.yuzey },
   bolmeYazi: { fontSize: 15, lineHeight: 18, textAlign: 'center' },
   haplar: { flexDirection: 'row', gap: 10 },
+  saatSatiri: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10 },
   esit: { flex: 1 },
   dikey: { gap: 10 },
   satir: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' },

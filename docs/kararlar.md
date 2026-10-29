@@ -560,3 +560,7 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - Başlık daha küçük (26 → 20 pt); solunda **Yaptım** kutusu (açılan gün için; kart o gün yoksa görünmez). Tarih ve saat satırı kalktı, yalnız tekrar yazısı kaldı. — Ürün sahibi (P-63)
 - Tek seferlik kart taşınınca "Taşındı: 30 Ekim Cuma" ve görünüm o günü açar; o günün işareti kartla birlikte taşınır (formdaki gibi). — Öneri
 - Öteki parçalar (liste, ölçüm…) için görünüm / düzenleme uyumu sonra. — Not
+
+## Sade saat seçimi (29 Ekim)
+
+- Kartın **Ne zaman?** sayfasında saat buluşmadaki gibi: **Saatli · Saat yok** ve küçük saat kutusu (dokununca çark açılır). Sabah / Öğle / Akşam kısayolları, büyük çark ve "Saati kaldır" kalktı; "Saatli" ilk seçilince 09:00. Bölüm başlıkları (Tarih, Saat) küçüldü. Anımsatıcının ve özel hatırlatmanın saati zaten bu küçük kutuydu. — Ürün sahibi (P-64); 09:00: Öneri

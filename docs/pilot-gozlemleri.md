@@ -330,3 +330,8 @@ Sonuç: → kararlar.md (Kart verme ve görüntülü görüşme bağlantısı)
 Ne dedi: "Ajanda kartlarında görünüm modunu biraz düzenleme modu ile uyumlu yapmamızda yarar var, öncelikle tarih ve saat alanı benzer konumda olmalı, hatta görünüm modunda tarih ve saat değiştirilebilmeli; şu an bir kartı başka tarihe taşımak için kartı açıp düzenleme moduna girmemiz gerekiyor. Ayrıca kart başlığının fontunu görünümde biraz düşürelim ve Yaptım checkbox'ı görünümden de işaretlenebilsin. Diğer kart elemanları için de benzeri bir çalışma yaparız."
 Nerede: Kart görünümü
 Sonuç: → kararlar.md (Kart görünümü düzenleme formuyla uyumlu)
+
+### P-64 · 29 Ekim 2026 · Behnan
+Ne dedi: "Tarih saat seçerken saat çok yer kaplıyor, fazla açıklama olmadan tarih ve saati değiştirmesi yeterli; gruplardaki buluşmada kullanılan saat oldukça sade ve kullanışlı, bu hem kartta hem de alarmın saatinin ayarlanmasında kullanılmalı. … Düzeltme modunda kartla alanlar eklemek, yerlerini değiştirmek yanında hangi alanın görünüm modunda değiştirilmesini istemediğimizi söylesek nasıl olurdu; sanki bir koçun kart tasarlaması böyle olur."
+Nerede: Kartın Ne zaman? sayfası; kart tasarımı
+Sonuç: → kararlar.md (Sade saat seçimi); görünümde değiştirilebilirlik ayrıca konuşuluyor
