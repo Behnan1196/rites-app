@@ -350,3 +350,8 @@ Sonuç: → kararlar.md (Kur ve kullan)
 Ne dedi: "Tekrar ve bildirim şu anda Kur'da var sadece, öncelikle onların yerini tarih saatin satırına alalım geçici de olsa. Kullanıcının tarihi değiştirmesini istemeyiz ama aynı anda saate karışmayabilir, o yüzden tarih ve saat izinleri ayrı olmalı. Bir fikrim de acaba liste, video gibi elemanlar sadece bir tane mi eklense; kullanım senaryolarında birden fazla olması ne zaman var irdeleyelim, uzman kullanıcının ekleyeceği alanlara da bakmak lazım."
 Nerede: Kart görünümü, yeni kart / Kur
 Sonuç: → kararlar.md (Zaman satırı); karar: her parça karta bir kez
+
+### P-68 · 29 Ekim 2026 · Behnan
+Ne dedi: "+ Karta ekle butonunu kaldıralım, kartın en altına hafif koyu arkaplanlı bir şeritte Açıklama, Liste, Video ve Dosya için ikonlar koyalım, onlara basınca alanlar eklensin; ilk başta açıklama ikonu olmayacak çünkü varsayılan olarak gelecek. Bu durumda açıklama da diğerleri gibi kaldırılabilecek. Uzman için More.. gibi bir ikonla gerekli eklenecek bileşenlere ulaşılacak."
+Nerede: Yeni kart / Kur
+Sonuç: → kararlar.md (Kartın altında parça şeridi)

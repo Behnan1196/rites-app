@@ -2,18 +2,13 @@
 // kartta olan "Karta ekle" listesinde görünmez. Liste ile proje adımları aynı parça sayılır
 // (adımlar listenin bir biçimi). Önceden eklenmiş çift parçalar kartta kalır.
 
-import {
-  ARAC_BLOKLARI,
-  ICERIK_BLOKLARI,
-  KAYIT_BLOKLARI,
-  type BlokTuru,
-} from "./kart";
+import { ARAC_BLOKLARI, ICERIK_BLOKLARI, KAYIT_BLOKLARI, type BlokTuru } from './kart';
 
 /** Normal kullanıcının parçaları (P-51); açıklama talimatın yerine geçer. */
-export const NORMAL_BLOKLAR: readonly BlokTuru[] = ["liste", "foto", "video"];
+export const NORMAL_BLOKLAR: readonly BlokTuru[] = ['liste', 'foto', 'video'];
 
 function esi(t: BlokTuru): BlokTuru {
-  return t === "adimlar" ? "liste" : t;
+  return t === 'adimlar' ? 'liste' : t;
 }
 
 export function secilebilirParcalar({
@@ -27,21 +22,47 @@ export function secilebilirParcalar({
 }): { gorunen: BlokTuru[]; kayit: BlokTuru[] } {
   const kartta = new Set(mevcut.map(esi));
   // P-51: tek Liste; "Proje adımları" ayrı seçenek değil.
-  const goster = (t: BlokTuru) =>
-    !haric.includes(t) && t !== "adimlar" && !kartta.has(t);
+  const goster = (t: BlokTuru) => !haric.includes(t) && t !== 'adimlar' && !kartta.has(t);
   if (!uzman) return { gorunen: NORMAL_BLOKLAR.filter(goster), kayit: [] };
   return {
     gorunen: [...ICERIK_BLOKLARI, ...ARAC_BLOKLARI].filter(goster),
-    kayit: KAYIT_BLOKLARI.filter(
-      (t) => !ARAC_BLOKLARI.includes(t) && goster(t),
-    ),
+    kayit: KAYIT_BLOKLARI.filter((t) => !ARAC_BLOKLARI.includes(t) && goster(t)),
   };
 }
 
 /** Eklenecek parça kaldı mı ("+ Karta ekle" düğmesi için). */
-export function eklenecekParcaVarMi(
-  a: Parameters<typeof secilebilirParcalar>[0],
-): boolean {
+export function eklenecekParcaVarMi(a: Parameters<typeof secilebilirParcalar>[0]): boolean {
   const s = secilebilirParcalar(a);
   return s.gorunen.length + s.kayit.length > 0;
+}
+
+/** P-68: kartın altındaki şeritte doğrudan duran parçalar (açıklama ayrıca). */
+export const SERIT_PARCALARI: readonly BlokTuru[] = ['liste', 'foto', 'video'];
+
+export type SeritOgesi = 'aciklama' | BlokTuru;
+
+/**
+ * P-68: kartın altındaki ikon şeridi: kartta olmayan Açıklama · Liste · Fotoğraf · Video; uzmanda
+ * kalan öbür parçalar için "Daha".
+ */
+export function seritOgeleri({
+  aciklamaVar,
+  aciklamaOlur = true,
+  uzman,
+  haric = [],
+  mevcut = [],
+}: {
+  aciklamaVar: boolean;
+  /** Çeşit tasarımında açıklama yerine başlık ipucu var. */
+  aciklamaOlur?: boolean;
+  uzman: boolean;
+  haric?: readonly BlokTuru[];
+  mevcut?: readonly BlokTuru[];
+}): { ogeler: SeritOgesi[]; daha: boolean } {
+  const kartta = new Set(mevcut.map(esi));
+  const ogeler: SeritOgesi[] = [];
+  if (aciklamaOlur && !aciklamaVar) ogeler.push('aciklama');
+  for (const t of SERIT_PARCALARI) if (!haric.includes(t) && !kartta.has(t)) ogeler.push(t);
+  const daha = uzman && eklenecekParcaVarMi({ uzman, haric, mevcut: [...mevcut, ...SERIT_PARCALARI] });
+  return { ogeler, daha };
 }

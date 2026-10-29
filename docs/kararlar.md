@@ -588,3 +588,11 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - Kart görünümünün ⋯ menüsündeki ayrı "Hatırlatma" kalktı (satırda). Formun altındaki zaman şeridi yerine **+ Karta ekle**. — Öneri
 - **Her parça karta bir kez:** liste, video, talimat, fotoğraf, dosya, ölçüm, puan, sayarak, zamanlayıcı… hepsi. Kartta olan parça **Karta ekle** listesinde görünmez; hepsi eklenince düğme de görünmez. Kilo ve bel gibi iki ölçüm iki kart olur. — Ürün sahibi (P-67)
 - Liste ile proje adımları aynı parça sayılır; önceden çift eklenmiş parçalar kartta kalır (silinmez). — Öneri
+
+## Kartın altında parça şeridi (29 Ekim)
+
+- **"+ Karta ekle" düğmesi kalktı;** kartın en altında hafif koyu zeminli bir şeritte ikonlar: **Açıklama · Liste · Fotoğraf · Video**. Basınca parça kartın içine eklenir, ikon şeritten kalkar (her parça bir kez). Sade yeni kartta da şerit var; parça eklenince form Kur'a geçer ki parça görünsün. — Ürün sahibi (P-68)
+- **Açıklama da bir parça:** yeni kartta varsayılan olarak gelir (şeritte ikonu yok); ⋯ → **Karttan kaldır** ile kalkar, ikonu şeride döner. Kayıtlı kartta açıklama boşsa kartta değil, şeritte durur. — Ürün sahibi (P-68); kayıtlı boş kart: Öneri
+- **Uzmanda "Daha":** şeridin sonunda; öbür parçalar (talimat, dosya, zamanlayıcı, kronometre, ölçüm, sayarak, puan, günün notu, gelişim fotoğrafı) ızgarada. Hepsi eklenince Daha da görünmez. — Ürün sahibi (P-68)
+- Şeritte Dosya yerine **Fotoğraf** (normal kullanıcı fotoğrafı da ekleyebilsin); Dosya uzmanda Daha'da. — Ürün sahibi (P-68)
+- Sade yeni kartın düğmesi **Kur: ayarlar ve sıra** (parça ekleme, süre, hatırlatma artık kartın üstünde ve altında). Kart görünümündeki "+ Karta bir şey ekle" Kur'u açar, seçici kendiliğinden açılmaz. — Öneri

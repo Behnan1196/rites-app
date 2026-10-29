@@ -11,35 +11,17 @@
 // parçaları ve zamanı gelir, kart çeşidini hatırlar. Tasarımcı aynı formla çeşit
 // yazar (`cesit` hedefi): çeşidin adı, alanı, simgesi; zamanda yalnız saat ve tekrar.
 
-import { useCallback, useMemo, useState } from "react";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { Keyboard, Pressable, StyleSheet, View } from "react-native";
+import { useCallback, useMemo, useState } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 
-import {
-  bolmeSecenekleri,
-  bolmeSorusuGerekirMi,
-  duzenle,
-  type BolmeSecimi,
-  type KartTanimi,
-} from "@/mantik/bolme";
-import { adimDurumu, adimlariEsle } from "@/mantik/adimlar";
-import {
-  CESIT_SIMGELERI,
-  cesitBul,
-  cesitler as tumCesitler,
-  yeniCesitKimligi,
-} from "@/mantik/cesit";
-import {
-  gecerliHatirlatma,
-  yeniKart,
-  type Blok,
-  type BlokTuru,
-  type Kart,
-  type SabitAlan,
-} from "@/mantik/kart";
-import { eklenecekParcaVarMi } from "@/mantik/parcaSecimi";
-import { ayarliParcaMi, sabitDegistir } from "@/mantik/gorunumDegisimi";
-import { katalog, type KartCesidi } from "@/mantik/katalog";
+import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
+import { adimDurumu, adimlariEsle } from '@/mantik/adimlar';
+import { CESIT_SIMGELERI, cesitBul, cesitler as tumCesitler, yeniCesitKimligi } from '@/mantik/cesit';
+import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Kart, type SabitAlan } from '@/mantik/kart';
+import { SERIT_PARCALARI, seritOgeleri, type SeritOgesi } from '@/mantik/parcaSecimi';
+import { ayarliParcaMi, sabitDegistir } from '@/mantik/gorunumDegisimi';
+import { katalog, type KartCesidi } from '@/mantik/katalog';
 import {
   blokKopyasi,
   kacinciGun,
@@ -47,52 +29,38 @@ import {
   uygulaniyorMu,
   type Program,
   type ProgramKarti,
-} from "@/mantik/program";
-import { seriVarsayilani, type KartTaslagi } from "@/mantik/karakter";
-import type { KartIcerigi } from "@/mantik/kutuphane";
-import { gunEkle, gunFarki, type Gun } from "@/mantik/tarih";
-import { htmlMaddeleri, maddelerdenHtml } from "@/mantik/zenginMetin";
-import type { TasarimCesidi } from "@/sunucu/cesit";
-import {
-  islemleriUygula,
-  yeniKartKaydet,
-  type BlokTaslagi,
-} from "@/veri/kartlar";
-import { yeniKimlik } from "@/veri/kimlik";
-import { notSil } from "@/veri/notlar";
-import { paylasilanSil } from "@/veri/paylasilanlar";
-import {
-  programaYansit,
-  programKartiEkle,
-  programKartiSil,
-  programKartiYaz,
-} from "@/veri/programlar";
-import { useBugun } from "@/veri/useBugun";
-import { useVeri } from "@/veri/VeriSaglayici";
+} from '@/mantik/program';
+import { seriVarsayilani, type KartTaslagi } from '@/mantik/karakter';
+import type { KartIcerigi } from '@/mantik/kutuphane';
+import { gunEkle, gunFarki, type Gun } from '@/mantik/tarih';
+import { htmlMaddeleri, maddelerdenHtml } from '@/mantik/zenginMetin';
+import type { TasarimCesidi } from '@/sunucu/cesit';
+import { islemleriUygula, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
+import { yeniKimlik } from '@/veri/kimlik';
+import { notSil } from '@/veri/notlar';
+import { paylasilanSil } from '@/veri/paylasilanlar';
+import { programaYansit, programKartiEkle, programKartiSil, programKartiYaz } from '@/veri/programlar';
+import { useBugun } from '@/veri/useBugun';
+import { useVeri } from '@/veri/VeriSaglayici';
 
-import { AltSayfa } from "../AltSayfa";
-import { SimgeDugmesi } from "../SimgeDugmesi";
-import { GirisAlani } from "../GirisAlani";
-import { ZenginMetinAlani } from "../ZenginMetin";
-import { Dugme } from "../Dugme";
-import { AcKapa, SecenekHapi } from "../Secim";
-import { useKisaMesaj } from "../KisaMesaj";
-import type { OnaySecenegi } from "../OnayKutusu";
-import { olcu, renk } from "../tema";
-import { Yazi } from "../Yazi";
-import { BlokDuzenleyici } from "./BlokDuzenleyici";
-import { ElemanMenusu } from "./ElemanMenusu";
-import { BLOK_TURLERI } from "./blokTurleri";
-import { BlokSecici } from "./BlokSecici";
-import { CesitSecici } from "./CesitSecici";
-import { useUzman } from "../useUzman";
-import {
-  ZamanHaplari,
-  ZamanSayfasi,
-  type ProgramGunu,
-  type ZamanBolumu,
-  type Zamanlama,
-} from "./Zamanlama";
+import { AltSayfa } from '../AltSayfa';
+import { SimgeDugmesi } from '../SimgeDugmesi';
+import { GirisAlani } from '../GirisAlani';
+import { ZenginMetinAlani } from '../ZenginMetin';
+import { Dugme } from '../Dugme';
+import { AcKapa, SecenekHapi } from '../Secim';
+import { useKisaMesaj } from '../KisaMesaj';
+import type { OnaySecenegi } from '../OnayKutusu';
+import { olcu, renk } from '../tema';
+import { Yazi } from '../Yazi';
+import { BlokDuzenleyici } from './BlokDuzenleyici';
+import { ElemanMenusu } from './ElemanMenusu';
+import { BLOK_TURLERI } from './blokTurleri';
+import { BlokSecici } from './BlokSecici';
+import { ParcaSeridi } from './ParcaSeridi';
+import { CesitSecici } from './CesitSecici';
+import { useUzman } from '../useUzman';
+import { ZamanHaplari, ZamanSayfasi, type ProgramGunu, type ZamanBolumu, type Zamanlama } from './Zamanlama';
 
 export type KartFormuHedefi =
   /**
@@ -100,9 +68,9 @@ export type KartFormuHedefi =
    * "Karta çevir" denen not (P-35: metni talimat, sesi dosya bloğu olur; kart
    * kaydedilince not silinir).
    */
-  | { tur: "yeni"; gun: Gun; taslak?: KartTaslagi; cesit?: KartCesidi }
+  | { tur: 'yeni'; gun: Gun; taslak?: KartTaslagi; cesit?: KartCesidi }
   | {
-      tur: "duzenle";
+      tur: 'duzenle';
       kart: Kart;
       bloklar: readonly Blok[];
       gun: Gun;
@@ -116,14 +84,14 @@ export type KartFormuHedefi =
     }
   /** Programın kartı; `kart` null ise yeni. */
   | {
-      tur: "sablon";
+      tur: 'sablon';
       program: Program;
       kart: ProgramKarti | null;
       bugunGun: Gun;
     }
   /** Kart çeşidi tasarımı (P-41; yalnız tasarımcı); `cesit` null ise yeni. */
   | {
-      tur: "cesit";
+      tur: 'cesit';
       cesit: TasarimCesidi | null;
       bugunGun: Gun;
       /** Yeni çeşidin sırası (sona). */
@@ -132,7 +100,7 @@ export type KartFormuHedefi =
     }
   /** Kütüphanedeki kart (P-59): tarihsiz kalıp; ajandaya koymadan düzenlenir. */
   | {
-      tur: "kutuphane";
+      tur: 'kutuphane';
       icerik: KartIcerigi;
       bugunGun: Gun;
       onKaydet: (c: KartIcerigi) => Promise<void>;
@@ -141,7 +109,7 @@ export type KartFormuHedefi =
 export type { KartTaslagi };
 
 /** Programın kartında "1. gün" sayılan sabit gün (yalnız formun içinde; Pazartesi). */
-const SABLON_REF: Gun = "2001-01-01";
+const SABLON_REF: Gun = '2001-01-01';
 
 export interface KartFormuSonucu {
   /** Düzenlenen gün yeni bir karta geçtiyse onun kimliği. */
@@ -179,7 +147,7 @@ interface TasarimAlanlari {
   seri: boolean | null;
 }
 
-const VARSAYILAN_IPUCU = "Kartın başlığı";
+const VARSAYILAN_IPUCU = 'Kartın başlığı';
 
 let geciciNo = 0;
 const geciciKimlik = () => `yeni-${++geciciNo}`;
@@ -188,21 +156,19 @@ const geciciKimlik = () => `yeni-${++geciciNo}`;
 function formaBlok(b: Blok): BlokTaslagi {
   const { kartId: _k, sira: _s, ...taslak } = b;
   // P-50: liste maddeleri editörde onay kutulu liste (HTML).
-  return b.tur === "liste" || b.tur === "adimlar"
-    ? { ...taslak, metin: maddelerdenHtml(b.maddeler) }
-    : taslak;
+  return b.tur === 'liste' || b.tur === 'adimlar' ? { ...taslak, metin: maddelerdenHtml(b.maddeler) } : taslak;
 }
 
 function kaydaBlok(b: BlokTaslagi): BlokTaslagi {
-  if (b.tur !== "liste" && b.tur !== "adimlar") return b;
+  if (b.tur !== 'liste' && b.tur !== 'adimlar') return b;
   const maddeler = htmlMaddeleri(b.metin);
-  if (b.tur === "liste") return { ...b, maddeler, metin: "" };
+  if (b.tur === 'liste') return { ...b, maddeler, metin: '' };
   // Proje adımları: yapılmış adımlar metnine göre yapılmış kalır.
   const eski = adimDurumu(b.durum, b.maddeler.length);
   return {
     ...b,
     maddeler,
-    metin: "",
+    metin: '',
     durum: adimlariEsle(b.maddeler, eski, maddeler),
   };
 }
@@ -211,10 +177,10 @@ function bosBlok(tur: BlokTuru): BlokTaslagi {
   return {
     id: geciciKimlik(),
     tur,
-    ad: "",
-    metin: "",
-    birim: "",
-    dakika: tur === "sayac" ? 10 : null,
+    ad: '',
+    metin: '',
+    birim: '',
+    dakika: tur === 'sayac' ? 10 : null,
     maddeler: [],
     dosya: null,
   };
@@ -223,21 +189,20 @@ function bosBlok(tur: BlokTuru): BlokTaslagi {
 function taslakBloklari(t: KartTaslagi | undefined): BlokTaslagi[] {
   if (!t) return [];
   const b: BlokTaslagi[] = [];
-  if (t.videoAdresi) b.push({ ...bosBlok("video"), metin: t.videoAdresi });
-  if (t.sesYolu)
-    b.push({ ...bosBlok("dosya"), ad: "Sesli not", dosya: t.sesYolu });
+  if (t.videoAdresi) b.push({ ...bosBlok('video'), metin: t.videoAdresi });
+  if (t.sesYolu) b.push({ ...bosBlok('dosya'), ad: 'Sesli not', dosya: t.sesYolu });
   return b;
 }
 
 /** Çeşidin parçaları formda (liste maddeleri satır satır). */
-function cesitBloklari(c: Pick<KartCesidi, "bloklar">): BlokTaslagi[] {
+function cesitBloklari(c: Pick<KartCesidi, 'bloklar'>): BlokTaslagi[] {
   return c.bloklar.map((b) =>
     formaBlok({
       ...b,
       maddeler: [...b.maddeler],
       dosya: null,
       id: geciciKimlik(),
-      kartId: "",
+      kartId: '',
       sira: 0,
     }),
   );
@@ -247,16 +212,14 @@ function cesitBloklari(c: Pick<KartCesidi, "bloklar">): BlokTaslagi[] {
 function cesittenDurum(c: KartCesidi, gun: Gun): FormDurumu {
   return {
     baslik: c.baslik,
-    kisa: "",
+    kisa: '',
     tarihsiz: false,
     zamanlama: {
       tarih: gun,
       saat: c.saat,
       hatirlatma: null,
       alarm: false,
-      tekrar: c.tekrar
-        ? { ...c.tekrar, gunler: c.tekrar.gunler ? [...c.tekrar.gunler] : null }
-        : null,
+      tekrar: c.tekrar ? { ...c.tekrar, gunler: c.tekrar.gunler ? [...c.tekrar.gunler] : null } : null,
     },
     bloklar: cesitBloklari(c),
     // P-49: çeşit seriyi belirleyebilir (Beslenme: yok).
@@ -270,29 +233,27 @@ function cesittenDurum(c: KartCesidi, gun: Gun): FormDurumu {
 
 const ekAlanlar = {
   cesit: null,
-  baslikIpucu: "",
+  baslikIpucu: '',
   tasarim: null,
   sabitler: [] as SabitAlan[],
 };
 
 function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
-  if (hedef.tur === "cesit") {
+  if (hedef.tur === 'cesit') {
     const c = hedef.cesit;
     return {
-      ...(c
-        ? cesittenDurum(c, hedef.bugunGun)
-        : { ...cesittenDurum(BOS_CESIT, hedef.bugunGun), cesit: null }),
+      ...(c ? cesittenDurum(c, hedef.bugunGun) : { ...cesittenDurum(BOS_CESIT, hedef.bugunGun), cesit: null }),
       tasarim: {
-        ad: c?.ad ?? "",
-        alan: c?.alan ?? "beslenme",
+        ad: c?.ad ?? '',
+        alan: c?.alan ?? 'beslenme',
         ikon: c?.ikon ?? null,
-        aciklama: c?.aciklama ?? "",
+        aciklama: c?.aciklama ?? '',
         aktif: c?.aktif ?? true,
         seri: c?.seri ?? null,
       },
     };
   }
-  if (hedef.tur === "kutuphane") {
+  if (hedef.tur === 'kutuphane') {
     const c = hedef.icerik;
     return {
       ...ekAlanlar,
@@ -306,23 +267,19 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
         alarm: false,
         tekrar: c.tekrar,
       },
-      bloklar: c.bloklar.map((b) =>
-        formaBlok({ ...b, id: geciciKimlik(), kartId: "", sira: 0 }),
-      ),
+      bloklar: c.bloklar.map((b) => formaBlok({ ...b, id: geciciKimlik(), kartId: '', sira: 0 })),
       seriSay: null,
       sabitler: [...(c.sabitler ?? [])],
     };
   }
-  if (hedef.tur === "sablon") {
+  if (hedef.tur === 'sablon') {
     const k = hedef.kart;
     const p = hedef.program;
     // Uygulanırken eklenen kart bugünden başlar.
-    const bugunku = uygulaniyorMu(p, hedef.bugunGun)
-      ? Math.max(0, (kacinciGun(p, hedef.bugunGun) ?? 1) - 1)
-      : 0;
+    const bugunku = uygulaniyorMu(p, hedef.bugunGun) ? Math.max(0, (kacinciGun(p, hedef.bugunGun) ?? 1) - 1) : 0;
     return {
-      baslik: k?.baslik ?? "",
-      kisa: k?.kisa ?? "",
+      baslik: k?.baslik ?? '',
+      kisa: k?.kisa ?? '',
       tarihsiz: false,
       zamanlama: {
         tarih: gunEkle(SABLON_REF, k ? k.gun : bugunku),
@@ -332,20 +289,18 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
         alarmSesi: k?.alarmSesi ?? null,
         tekrar: k?.tekrar ?? null,
       },
-      bloklar: (k?.bloklar ?? []).map((b) =>
-        formaBlok({ ...b, id: geciciKimlik(), kartId: "", sira: 0 }),
-      ),
+      bloklar: (k?.bloklar ?? []).map((b) => formaBlok({ ...b, id: geciciKimlik(), kartId: '', sira: 0 })),
       seriSay: null,
       ...ekAlanlar,
       cesit: k?.cesit ?? null,
     };
   }
-  if (hedef.tur === "yeni") {
+  if (hedef.tur === 'yeni') {
     if (hedef.cesit) return cesittenDurum(hedef.cesit, hedef.gun);
     return {
       ...ekAlanlar,
-      baslik: "",
-      kisa: "",
+      baslik: '',
+      kisa: '',
       tarihsiz: false,
       zamanlama: {
         tarih: hedef.gun,
@@ -357,9 +312,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
       bloklar: taslakBloklari(hedef.taslak),
       seriSay: null,
       // P-51: notun metni açıklamaya (talimat yerine; biçimli).
-      ...(hedef.taslak
-        ? { baslik: hedef.taslak.baslik, kisa: hedef.taslak.metin ?? "" }
-        : {}),
+      ...(hedef.taslak ? { baslik: hedef.taslak.baslik, kisa: hedef.taslak.metin ?? '' } : {}),
     };
   }
   const { kart } = hedef;
@@ -384,20 +337,20 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
 }
 
 const BOS_CESIT: KartCesidi = {
-  id: "",
-  alan: "",
-  ad: "",
+  id: '',
+  alan: '',
+  ad: '',
   ikon: null,
   seri: null,
-  aciklama: "",
-  baslik: "",
-  baslikIpucu: "",
+  aciklama: '',
+  baslik: '',
+  baslikIpucu: '',
   saat: null,
   tekrar: null,
   bloklar: [],
 };
 
-type Soru = { tur: "kaydet" };
+type Soru = { tur: 'kaydet' };
 
 interface Ozellikler {
   hedef: KartFormuHedefi;
@@ -416,103 +369,83 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const [cesitSorusu, setCesitSorusu] = useState(
     () =>
       tumCesitler().length > 0 &&
-      ((hedef.tur === "yeni" && !hedef.taslak && !hedef.cesit) ||
-        (hedef.tur === "sablon" && !hedef.kart)),
+      ((hedef.tur === 'yeni' && !hedef.taslak && !hedef.cesit) || (hedef.tur === 'sablon' && !hedef.kart)),
   );
   const [durum, setDurum] = useState<FormDurumu>(ilk);
   const [hata, setHata] = useState<string | null>(null);
   // P-47: zaman sağ üstteki rozetten açılan sayfada.
   // P-57: rozet → tarih ve saat; şerit → süre ya da hatırlatma.
   const [zamanBolum, setZamanBolum] = useState<ZamanBolumu | null>(null);
-  const [blokSeciciAcik, setBlokSeciciAcik] = useState(
-    hedef.tur === "duzenle" && !!hedef.blokEkle,
-  );
+  const [blokSeciciAcik, setBlokSeciciAcik] = useState(false);
   // P-36: yeni kartta "Karta bir şey ekle" kapalı gelir (kartların çoğu başlık ve zamandan ibaret).
   const [soru, setSoru] = useState<Soru | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
   // P-66: öğelerin ⋯ menüsü.
-  const [menu, setMenu] = useState<
-    { tur: "baslik" } | { tur: "aciklama" } | { tur: "blok"; id: string } | null
-  >(null);
+  const [menu, setMenu] = useState<{ tur: 'baslik' } | { tur: 'aciklama' } | { tur: 'blok'; id: string } | null>(null);
   // P-66: "Basit kart" sade açılır (başlık, zaman, açıklama); "Kur" ile parça ekleme ve ayarlar.
+  /** P-68: açıklama öbür parçalar gibi kaldırılır; yeni kartta varsayılan, kayıtlı kartta doluysa. */
+  const [aciklamaVar, setAciklamaVar] = useState(
+    () => hedef.tur === 'yeni' || (hedef.tur === 'sablon' && !hedef.kart) || durum.kisa.trim() !== '',
+  );
   const [kur, setKur] = useState(
-    () =>
-      !(
-        hedef.tur === "yeni" &&
-        !hedef.taslak &&
-        !(hedef.cesit && hedef.cesit.bloklar.length > 0)
-      ),
+    () => !(hedef.tur === 'yeni' && !hedef.taslak && !(hedef.cesit && hedef.cesit.bloklar.length > 0)),
   );
   // Paylaşımdan dolu gelen form kaydedilmeden kapatılırken de sorar.
   const degisti = useMemo(
-    () =>
-      (hedef.tur === "yeni" && !!hedef.taslak) ||
-      JSON.stringify(durum) !== JSON.stringify(ilk),
+    () => (hedef.tur === 'yeni' && !!hedef.taslak) || JSON.stringify(durum) !== JSON.stringify(ilk),
     [durum, ilk, hedef],
   );
-  const duzenleme = hedef.tur === "duzenle" ? hedef : null;
-  const sablon = hedef.tur === "sablon" ? hedef : null;
-  const tasarimHedefi = hedef.tur === "cesit" ? hedef : null;
-  const kutuphaneHedefi = hedef.tur === "kutuphane" ? hedef : null;
+  const duzenleme = hedef.tur === 'duzenle' ? hedef : null;
+  const sablon = hedef.tur === 'sablon' ? hedef : null;
+  const tasarimHedefi = hedef.tur === 'cesit' ? hedef : null;
+  const kutuphaneHedefi = hedef.tur === 'kutuphane' ? hedef : null;
   const tasarim = durum.tasarim;
   /** Tarihsiz kalıp: çeşit tasarımı ve kütüphanedeki kart (yalnız saat ve süre). */
   const kalip = !!tasarim || !!kutuphaneHedefi;
   // P-51: uzman görünümü (çeşit tasarımı her zaman uzman); normal kullanıcıda gün düzeni yok.
   const uzmanAyari = useUzman();
   const uzman = uzmanAyari || !!tasarim;
-  const secHaric: BlokTuru[] = tasarim ? ["foto", "dosya"] : [];
+  const secHaric: BlokTuru[] = tasarim ? ['foto', 'dosya'] : [];
   const cokGunlu = durum.zamanlama.tekrar !== null;
   /** Bu formda eklenen, davranışı kişinin seçmediği listeler: süreye göre (bir gün → kalır). */
-  const [alinanPaylasilanlar, setAlinanPaylasilanlar] = useState<
-    readonly string[]
-  >([]);
-  const [otomatikListeler, setOtomatikListeler] = useState<ReadonlySet<string>>(
-    new Set(),
-  );
+  const [alinanPaylasilanlar, setAlinanPaylasilanlar] = useState<readonly string[]>([]);
+  const [otomatikListeler, setOtomatikListeler] = useState<ReadonlySet<string>>(new Set());
   const listeAyarla = (b: BlokTaslagi): BlokTaslagi =>
-    otomatikListeler.has(b.id) && (b.tur === "liste" || b.tur === "adimlar")
-      ? { ...b, tur: cokGunlu ? "liste" : "adimlar" }
+    otomatikListeler.has(b.id) && (b.tur === 'liste' || b.tur === 'adimlar')
+      ? { ...b, tur: cokGunlu ? 'liste' : 'adimlar' }
       : b;
   const secilenCesit = cesitBul(durum.cesit);
-  const programGunu: ProgramGunu | null = sablon
-    ? { ref: SABLON_REF, sure: sablon.program.sure }
-    : null;
+  const programGunu: ProgramGunu | null = sablon ? { ref: SABLON_REF, sure: sablon.program.sure } : null;
   const gunGizle = !!programGunu && !uzman;
   /** P-65: görünümden tek parça değiştiriliyor. */
   const parca = duzenleme?.parca ?? null;
-  const tekBlok =
-    parca && parca !== "baslik"
-      ? (durum.bloklar.find((b) => b.id === parca) ?? null)
-      : null;
+  const tekBlok = parca && parca !== 'baslik' ? (durum.bloklar.find((b) => b.id === parca) ?? null) : null;
   const sayfaBasligi = parca
-    ? parca === "baslik"
-      ? "Başlık ve açıklama"
+    ? parca === 'baslik'
+      ? 'Başlık ve açıklama'
       : tekBlok
         ? BLOK_TURLERI[tekBlok.tur].ad
-        : "Kartı düzenle"
+        : 'Kartı düzenle'
     : tasarimHedefi
       ? tasarimHedefi.cesit
-        ? "Kart çeşidi"
-        : "Yeni kart çeşidi"
+        ? 'Kart çeşidi'
+        : 'Yeni kart çeşidi'
       : kutuphaneHedefi
-        ? "Kartı düzenle"
+        ? 'Kartı düzenle'
         : sablon
           ? sablon.kart
-            ? "Programın kartı"
-            : "Programa yeni kart"
+            ? 'Programın kartı'
+            : 'Programa yeni kart'
           : duzenleme
-            ? "Kartı kur"
-            : "Yeni kart";
+            ? 'Kartı kur'
+            : 'Yeni kart';
 
-  const guncelle = (alanlar: Partial<FormDurumu>) =>
-    setDurum((d) => ({ ...d, ...alanlar }));
+  const guncelle = (alanlar: Partial<FormDurumu>) => setDurum((d) => ({ ...d, ...alanlar }));
   const tasarimGuncelle = (alanlar: Partial<TasarimAlanlari>) =>
-    setDurum((d) =>
-      d.tasarim ? { ...d, tasarim: { ...d.tasarim, ...alanlar } } : d,
-    );
+    setDurum((d) => (d.tasarim ? { ...d, tasarim: { ...d.tasarim, ...alanlar } } : d));
 
   const cesitSec = (c: KartCesidi | null) => {
-    if (c && (hedef.tur === "yeni" || hedef.tur === "sablon")) {
+    if (c && (hedef.tur === 'yeni' || hedef.tur === 'sablon')) {
       // Gün aynı kalır (programda "N. gün").
       const yeni = cesittenDurum(c, durum.zamanlama.tarih);
       setDurum(yeni);
@@ -526,8 +459,19 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       ...d,
       bloklar: d.bloklar.map((x, j) => (j === i ? b : x)),
     }));
-  const blokKaldir = (i: number) =>
-    setDurum((d) => ({ ...d, bloklar: d.bloklar.filter((_, j) => j !== i) }));
+  /** P-68: şeritten (ya da Daha'dan) parça ekle; sade yeni kart Kur'a geçer ki parça görünsün. */
+  const parcaEkle = (o: SeritOgesi) => {
+    Keyboard.dismiss();
+    setKur(true);
+    if (o === 'aciklama') {
+      setAciklamaVar(true);
+      return;
+    }
+    const yeni = bosBlok(o);
+    if (o === 'liste') setOtomatikListeler((s) => new Set([...s, yeni.id]));
+    setDurum((d) => ({ ...d, bloklar: [...d.bloklar, yeni] }));
+  };
+  const blokKaldir = (i: number) => setDurum((d) => ({ ...d, bloklar: d.bloklar.filter((_, j) => j !== i) }));
   /** P-66: ⋯ → Yukarı / Aşağı. */
   const blokTasi = (id: string, yon: -1 | 1) =>
     setDurum((d) => {
@@ -542,20 +486,13 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const sabitAyari = !tasarim && !sablon;
   // P-67: eski 'zaman' (tarih ve saat birlikte) ayrı iki alana açılır.
   const acilmisSabitler = (): SabitAlan[] =>
-    durum.sabitler.includes("zaman")
-      ? [
-          ...durum.sabitler.filter(
-            (x) => x !== "zaman" && x !== "tarih" && x !== "saat",
-          ),
-          "tarih",
-          "saat",
-        ]
+    durum.sabitler.includes('zaman')
+      ? [...durum.sabitler.filter((x) => x !== 'zaman' && x !== 'tarih' && x !== 'saat'), 'tarih', 'saat']
       : durum.sabitler;
   const sabitAnahtari = (alan: SabitAlan, etiket: string) => ({
     etiket,
     acik: !acilmisSabitler().includes(alan),
-    onDegis: (acik: boolean) =>
-      guncelle({ sabitler: sabitDegistir(acilmisSabitler(), alan, !acik) }),
+    onDegis: (acik: boolean) => guncelle({ sabitler: sabitDegistir(acilmisSabitler(), alan, !acik) }),
   });
 
   const tanim = (): KartTanimi => ({
@@ -564,17 +501,9 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     tarih: durum.tarihsiz ? null : durum.zamanlama.tarih,
     tarihsiz: durum.tarihsiz,
     saat: durum.zamanlama.saat,
-    hatirlatma: gecerliHatirlatma(
-      durum.zamanlama.hatirlatma,
-      durum.zamanlama.saat,
-    ),
-    alarm: !!(
-      gecerliHatirlatma(durum.zamanlama.hatirlatma, durum.zamanlama.saat) &&
-      durum.zamanlama.alarm
-    ),
-    alarmSesi: durum.zamanlama.alarm
-      ? (durum.zamanlama.alarmSesi ?? null)
-      : null,
+    hatirlatma: gecerliHatirlatma(durum.zamanlama.hatirlatma, durum.zamanlama.saat),
+    alarm: !!(gecerliHatirlatma(durum.zamanlama.hatirlatma, durum.zamanlama.saat) && durum.zamanlama.alarm),
+    alarmSesi: durum.zamanlama.alarm ? (durum.zamanlama.alarmSesi ?? null) : null,
     tekrar: durum.zamanlama.tekrar,
     seriSay: durum.zamanlama.tekrar ? durum.seriSay : null,
     sabitler: durum.sabitler.length ? [...durum.sabitler] : null,
@@ -587,8 +516,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       try {
         await is();
       } catch (e) {
-        console.error("Kart kaydedilemedi", e);
-        kisaMesaj("Kaydedilemedi. Yeniden dene.");
+        console.error('Kart kaydedilemedi', e);
+        kisaMesaj('Kaydedilemedi. Yeniden dene.');
       } finally {
         setCalisiyor(false);
       }
@@ -598,8 +527,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
 
   const kaydet = () => {
     if (tasarimHedefi && tasarim) {
-      if (tasarim.ad.trim() === "") {
-        setHata("Önce çeşidin adını yaz.");
+      if (tasarim.ad.trim() === '') {
+        setHata('Önce çeşidin adını yaz.');
         return;
       }
       void calistir(async () => {
@@ -611,7 +540,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           ikon: tasarim.ikon,
           aciklama: tasarim.aciklama.trim(),
           baslik: durum.baslik.trim(),
-          baslikIpucu: durum.baslik.trim() ? "" : durum.baslikIpucu.trim(),
+          baslikIpucu: durum.baslik.trim() ? '' : durum.baslikIpucu.trim(),
           saat: durum.zamanlama.saat,
           tekrar: durum.zamanlama.tekrar,
           bloklar: durum.bloklar
@@ -626,12 +555,12 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       });
       return;
     }
-    if (durum.baslik.trim() === "") {
-      setHata("Önce bir başlık yaz.");
+    if (durum.baslik.trim() === '') {
+      setHata('Önce bir başlık yaz.');
       return;
     }
     if (duzenleme && bolmeSorusuGerekirMi(duzenleme.kart, duzenleme.gun)) {
-      setSoru({ tur: "kaydet" });
+      setSoru({ tur: 'kaydet' });
       return;
     }
     void uygulaKaydet(null);
@@ -648,10 +577,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           kisa: t.kisa,
           saat: t.saat,
           // Hatırlatma burada sorulmaz; kayıtta varsa korunur.
-          hatirlatma: gecerliHatirlatma(
-            kutuphaneHedefi.icerik.hatirlatma,
-            t.saat,
-          ),
+          hatirlatma: gecerliHatirlatma(kutuphaneHedefi.icerik.hatirlatma, t.saat),
           tekrar: t.tekrar,
           bloklar: bloklar.map(blokKopyasi),
           ...(durum.sabitler.length ? { sabitler: [...durum.sabitler] } : {}),
@@ -670,16 +596,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           bloklar: bloklar.map(blokKopyasi),
           cesit: durum.cesit,
         };
-        if (sablon.kart)
-          await programKartiYaz(kapi, { ...sablon.kart, ...icerik });
-        else
-          await programKartiEkle(
-            kapi,
-            sablon.program.id,
-            icerik,
-            sablon.bugunGun,
-            yeniKimlik,
-          );
+        if (sablon.kart) await programKartiYaz(kapi, { ...sablon.kart, ...icerik });
+        else await programKartiEkle(kapi, sablon.program.id, icerik, sablon.bugunGun, yeniKimlik);
         onSonuc?.({});
       } else if (!duzenleme) {
         const kart = yeniKart(yeniKimlik(), {
@@ -688,33 +606,23 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           cesit: durum.cesit,
         });
         await yeniKartKaydet(kapi, kart, bloklar, yeniKimlik);
-        const notId = hedef.tur === "yeni" ? hedef.taslak?.notId : undefined;
+        const notId = hedef.tur === 'yeni' ? hedef.taslak?.notId : undefined;
         if (notId) {
           await notSil(kapi, notId);
-          kisaMesaj("Not karta çevrildi");
+          kisaMesaj('Not karta çevrildi');
         }
         onSonuc?.({});
       } else {
-        const sonuc = duzenle(
-          duzenleme.kart,
-          duzenleme.gun,
-          tanim(),
-          secim,
-          yeniKimlik,
-        );
+        const sonuc = duzenle(duzenleme.kart, duzenleme.gun, tanim(), secim, yeniKimlik);
         await islemleriUygula(kapi, sonuc.islemler, bloklar, yeniKimlik);
-        const eklenen = sonuc.islemler.find((i) => i.tur === "kartEkle");
+        const eklenen = sonuc.islemler.find((i) => i.tur === 'kartEkle');
         // Uygulanan programın kartı: programdaki karşılığı da değişir ("yalnız bu gün" hariç).
-        if (programBagCoz(duzenleme.kart.bag) && secim !== "yalnizBuGun") {
-          await programaYansit(
-            kapi,
-            oku,
-            eklenen?.tur === "kartEkle" ? eklenen.kart.id : duzenleme.kart.id,
-          );
+        if (programBagCoz(duzenleme.kart.bag) && secim !== 'yalnizBuGun') {
+          await programaYansit(kapi, oku, eklenen?.tur === 'kartEkle' ? eklenen.kart.id : duzenleme.kart.id);
         }
         if (sonuc.mesaj) kisaMesaj(sonuc.mesaj);
         onSonuc?.({
-          yeniKartId: eklenen?.tur === "kartEkle" ? eklenen.kart.id : undefined,
+          yeniKartId: eklenen?.tur === 'kartEkle' ? eklenen.kart.id : undefined,
         });
       }
       // P-54: videoya alınan paylaşımlar Gelenler'den kalkar.
@@ -723,27 +631,27 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     });
 
   const vazgec: OnaySecenegi = {
-    etiket: "Vazgeç",
-    tur: "yazi",
+    etiket: 'Vazgeç',
+    tur: 'yazi',
     onPress: () => setSoru(null),
   };
   const onay = (() => {
     if (!soru || !duzenleme) return null;
     const s = bolmeSecenekleri(duzenleme.gun);
-    if (soru.tur === "kaydet") {
+    if (soru.tur === 'kaydet') {
       return {
-        baslik: "Değişiklik hangi günlere uygulansın?",
+        baslik: 'Değişiklik hangi günlere uygulansın?',
         aciklama: s.not,
         secenekler: [
           {
             etiket: s.yalnizBuGun,
-            tur: "ikincil" as const,
-            onPress: () => void uygulaKaydet("yalnizBuGun"),
+            tur: 'ikincil' as const,
+            onPress: () => void uygulaKaydet('yalnizBuGun'),
           },
           {
             etiket: s.buGunVeSonrasi,
-            tur: "ikincil" as const,
-            onPress: () => void uygulaKaydet("buGunVeSonrasi"),
+            tur: 'ikincil' as const,
+            onPress: () => void uygulaKaydet('buGunVeSonrasi'),
           },
           vazgec,
         ],
@@ -765,18 +673,14 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           cesitSorusu
             ? undefined
             : {
-                etiket: tasarimHedefi ? "Yayınla" : "Kaydet",
+                etiket: tasarimHedefi ? 'Yayınla' : 'Kaydet',
                 onPress: () => void kaydet(),
                 pasif: calisiyor,
               }
         }
       >
         {cesitSorusu ? (
-          <CesitSecici
-            cesitler={tumCesitler()}
-            onSec={cesitSec}
-            oncelikli={sablon?.program.alanlar}
-          />
+          <CesitSecici cesitler={tumCesitler()} onSec={cesitSec} oncelikli={sablon?.program.alanlar} />
         ) : (
           <>
             {tasarim && (
@@ -793,20 +697,14 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               <View style={stiller.baslikSatiri}>
                 {/* P-49: "Ne yapacaksın?" kalktı (bilgi kartı da var); solda varsa kartın çeşidi. */}
                 {tasarim ? (
-                  <Yazi
-                    kalinlik="kalin"
-                    style={stiller.esnek}
-                    numberOfLines={2}
-                  >
+                  <Yazi kalinlik="kalin" style={stiller.esnek} numberOfLines={2}>
                     Kartın başlığı (boşsa kişi yazar)
                   </Yazi>
                 ) : (
                   <View style={[stiller.esnek, stiller.cesitAdi]}>
                     <Ionicons
                       name={
-                        (secilenCesit?.ikon as
-                          | React.ComponentProps<typeof Ionicons>["name"]
-                          | null) ?? "leaf-outline"
+                        (secilenCesit?.ikon as React.ComponentProps<typeof Ionicons>['name'] | null) ?? 'leaf-outline'
                       }
                       size={20}
                       color={renk.ikincil}
@@ -837,14 +735,14 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                       etiket="Başlık ve zaman: seçenekler"
                       onPress={() => {
                         Keyboard.dismiss();
-                        setMenu({ tur: "baslik" });
+                        setMenu({ tur: 'baslik' });
                       }}
                     />
                   ) : undefined
                 }
               />
             )}
-            {(!parca || parca === "baslik") && (
+            {(!parca || parca === 'baslik') && (
               <>
                 <GirisAlani
                   etiket="Kartın başlığı"
@@ -854,94 +752,63 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                     guncelle({ baslik });
                     if (hata) setHata(null);
                   }}
-                  placeholder={
-                    (!tasarim && durum.baslikIpucu) || VARSAYILAN_IPUCU
-                  }
+                  placeholder={(!tasarim && durum.baslikIpucu) || VARSAYILAN_IPUCU}
                   hata={tasarim ? null : hata}
                   returnKeyType="done"
-                  autoFocus={
-                    !duzenleme && !sablon?.kart && !kalip && ilk.baslik === ""
-                  }
+                  autoFocus={!duzenleme && !sablon?.kart && !kalip && ilk.baslik === ''}
                 />
-                {tasarim ? (
-                  durum.baslik.trim() === "" && (
-                    <GirisAlani
-                      etiket="Başlık ipucu (isteğe bağlı)"
-                      value={durum.baslikIpucu}
-                      onChangeText={(baslikIpucu) => guncelle({ baslikIpucu })}
-                      placeholder="Örneğin: Mercimek çorbası"
-                      returnKeyType="done"
-                    />
-                  )
-                ) : (
-                  <View style={stiller.aciklama}>
-                    {/* P-66: açıklama da bir öğe: başlık satırı ve ⋯ (kur ekranında). */}
-                    {kur && !parca && (
-                      <View style={stiller.ogeUst}>
-                        <Ionicons
-                          name="reader-outline"
-                          size={22}
-                          color={renk.ana}
-                        />
-                        <Yazi kalinlik="kalin" style={stiller.esnek}>
-                          Açıklama
-                        </Yazi>
-                        {durum.sabitler.includes("aciklama") && (
-                          <Ionicons
-                            name="lock-closed-outline"
-                            size={16}
-                            color={renk.soluk}
-                            accessibilityLabel="Kart açıkken değiştirilemez"
-                          />
+                {tasarim
+                  ? durum.baslik.trim() === '' && (
+                      <GirisAlani
+                        etiket="Başlık ipucu (isteğe bağlı)"
+                        value={durum.baslikIpucu}
+                        onChangeText={(baslikIpucu) => guncelle({ baslikIpucu })}
+                        placeholder="Örneğin: Mercimek çorbası"
+                        returnKeyType="done"
+                      />
+                    )
+                  : aciklamaVar && (
+                      <View style={stiller.aciklama}>
+                        {/* P-66: açıklama da bir öğe: başlık satırı ve ⋯ (kur ekranında). */}
+                        {kur && !parca && (
+                          <View style={stiller.ogeUst}>
+                            <Ionicons name="reader-outline" size={22} color={renk.ana} />
+                            <Yazi kalinlik="kalin" style={stiller.esnek}>
+                              Açıklama
+                            </Yazi>
+                            {durum.sabitler.includes('aciklama') && (
+                              <Ionicons
+                                name="lock-closed-outline"
+                                size={16}
+                                color={renk.soluk}
+                                accessibilityLabel="Kart açıkken değiştirilemez"
+                              />
+                            )}
+                            <SimgeDugmesi
+                              ikon="ellipsis-horizontal"
+                              etiket="Açıklama: seçenekler"
+                              onPress={() => {
+                                Keyboard.dismiss();
+                                setMenu({ tur: 'aciklama' });
+                              }}
+                            />
+                          </View>
                         )}
-                        <SimgeDugmesi
-                          ikon="ellipsis-horizontal"
-                          etiket="Açıklama: seçenekler"
-                          onPress={() => {
-                            Keyboard.dismiss();
-                            setMenu({ tur: "aciklama" });
-                          }}
+                        <ZenginMetinAlani
+                          etiket="Açıklama"
+                          deger={durum.kisa}
+                          onDegis={(kisa) => guncelle({ kisa })}
+                          ipucu="Açıklama (isteğe bağlı)"
+                          kisa
                         />
                       </View>
                     )}
-                    <ZenginMetinAlani
-                      etiket="Açıklama"
-                      deger={durum.kisa}
-                      onDegis={(kisa) => guncelle({ kisa })}
-                      ipucu="Açıklama (isteğe bağlı)"
-                      kisa
-                    />
-                  </View>
-                )}
               </>
             )}
 
-            {/* P-67: süre ve hatırlatma zaman satırında; burada yalnız "+ Karta ekle". */}
-            {!parca &&
-              kur &&
-              eklenecekParcaVarMi({
-                uzman,
-                haric: secHaric,
-                mevcut: durum.bloklar.map((b) => b.tur),
-              }) && (
-                <Dugme
-                  tur="ikincil"
-                  yaziRengi={renk.ana}
-                  etiket="+ Karta ekle"
-                  erisimIpucu="Liste, video, talimat, ölçüm…"
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setBlokSeciciAcik(true);
-                  }}
-                />
-              )}
             <>
               {!parca && kur && durum.bloklar.length > 0 && (
-                <Yazi
-                  tur="bolumBasligi"
-                  accessibilityRole="header"
-                  style={stiller.bolumBasligi}
-                >
+                <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumBasligi}>
                   Kartın içinde
                 </Yazi>
               )}
@@ -955,20 +822,16 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                           ? undefined
                           : () => {
                               Keyboard.dismiss();
-                              setMenu({ tur: "blok", id: b.id });
+                              setMenu({ tur: 'blok', id: b.id });
                             }
                       }
                       blok={listeAyarla(b)}
                       onDegis={(yeni) => blokDegis(i, yeni)}
                       onKaldir={() => blokKaldir(i)}
                       cokGunlu={cokGunlu}
-                      onGelendenAlindi={(id) =>
-                        setAlinanPaylasilanlar((a) => [...a, id])
-                      }
+                      onGelendenAlindi={(id) => setAlinanPaylasilanlar((a) => [...a, id])}
                       onListeSecimi={(tur) => {
-                        setOtomatikListeler(
-                          (s) => new Set([...s].filter((x) => x !== b.id)),
-                        );
+                        setOtomatikListeler((s) => new Set([...s].filter((x) => x !== b.id)));
                         blokDegis(i, { ...b, tur });
                       }}
                     />
@@ -976,21 +839,33 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               )}
             </>
 
+            {/* P-68: "+ Karta ekle" yerine kartın altında ikon şeridi. */}
+            {!parca && (
+              <ParcaSeridi
+                {...seritOgeleri({
+                  aciklamaVar,
+                  aciklamaOlur: !tasarim,
+                  uzman,
+                  haric: secHaric,
+                  mevcut: durum.bloklar.map((b) => b.tur),
+                })}
+                onSec={parcaEkle}
+                onDaha={() => {
+                  Keyboard.dismiss();
+                  setBlokSeciciAcik(true);
+                }}
+              />
+            )}
+
             {tasarim && (
               <View style={stiller.yayinSatiri}>
                 <View style={stiller.esnek}>
                   <Yazi kalinlik="kalin">Yayında</Yazi>
                   <Yazi tur="ikincil">
-                    {tasarim.aktif
-                      ? 'Herkesin "Ne tür bir kart?" listesinde.'
-                      : "Gizli; yalnız tasarımcılar görür."}
+                    {tasarim.aktif ? 'Herkesin "Ne tür bir kart?" listesinde.' : 'Gizli; yalnız tasarımcılar görür.'}
                   </Yazi>
                 </View>
-                <AcKapa
-                  acik={tasarim.aktif}
-                  onDegis={(aktif) => tasarimGuncelle({ aktif })}
-                  etiket="Yayında"
-                />
+                <AcKapa acik={tasarim.aktif} onDegis={(aktif) => tasarimGuncelle({ aktif })} etiket="Yayında" />
               </View>
             )}
             {tasarim && durum.zamanlama.tekrar && (
@@ -998,8 +873,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 <View style={stiller.esnek}>
                   <Yazi kalinlik="kalin">Seri sayılsın</Yazi>
                   <Yazi tur="ikincil">
-                    Art arda yapılan günler sayılır (alışkanlıklarda). Öğün,
-                    tartı gibi kartlarda gerekmez.
+                    Art arda yapılan günler sayılır (alışkanlıklarda). Öğün, tartı gibi kartlarda gerekmez.
                   </Yazi>
                 </View>
                 <AcKapa
@@ -1015,7 +889,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               <Dugme
                 tur="ikincil"
                 yaziRengi={renk.ana}
-                etiket="Kur: parça ekle, süre, hatırlatma"
+                etiket="Kur: ayarlar ve sıra"
+                erisimIpucu="Neyin kart açıkken değişebileceği, parçaların sırası"
                 onPress={() => {
                   Keyboard.dismiss();
                   setKur(true);
@@ -1029,12 +904,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 etiket="Programdan çıkar"
                 onPress={() =>
                   void calistir(async () => {
-                    await programKartiSil(
-                      kapi,
-                      sablon.kart!.id,
-                      sablon.bugunGun,
-                    );
-                    kisaMesaj("Programdan çıkarıldı");
+                    await programKartiSil(kapi, sablon.kart!.id, sablon.bugunGun);
+                    kisaMesaj('Programdan çıkarıldı');
                     onSonuc?.({ silindi: true });
                     onKapat();
                   })
@@ -1047,7 +918,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
 
       <ZamanSayfasi
         gorunur={zamanBolum !== null}
-        bolum={zamanBolum ?? "tarih"}
+        bolum={zamanBolum ?? 'tarih'}
         onKapat={() => setZamanBolum(null)}
         deger={durum.zamanlama}
         bugunGun={bugunGun}
@@ -1064,56 +935,50 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         }
       />
 
-      {menu?.tur === "baslik" && (
+      {menu?.tur === 'baslik' && (
         <ElemanMenusu
           baslik="Başlık ve zaman"
           anahtarlar={[
-            sabitAnahtari("baslik", "Başlık"),
-            sabitAnahtari("tarih", "Tarih ve süre"),
-            sabitAnahtari("saat", "Saat ve hatırlatma"),
+            sabitAnahtari('baslik', 'Başlık'),
+            sabitAnahtari('tarih', 'Tarih ve süre'),
+            sabitAnahtari('saat', 'Saat ve hatırlatma'),
           ]}
           onKapat={() => setMenu(null)}
         />
       )}
-      {menu?.tur === "aciklama" && (
+      {menu?.tur === 'aciklama' && (
         <ElemanMenusu
           baslik="Açıklama"
-          anahtarlar={sabitAyari ? [sabitAnahtari("aciklama", "Açıklama")] : []}
-          onSil={durum.kisa ? () => guncelle({ kisa: "" }) : undefined}
-          silEtiketi="Açıklamayı sil"
+          anahtarlar={sabitAyari ? [sabitAnahtari('aciklama', 'Açıklama')] : []}
+          onSil={() => {
+            guncelle({ kisa: '' });
+            setAciklamaVar(false);
+          }}
+          silEtiketi="Karttan kaldır"
           onKapat={() => setMenu(null)}
         />
       )}
-      {menu?.tur === "blok" &&
+      {menu?.tur === 'blok' &&
         (() => {
           const i = durum.bloklar.findIndex((b) => b.id === menu.id);
           const b = durum.bloklar[i];
           if (!b) return null;
           return (
             <ElemanMenusu
-              baslik={
-                b.ad
-                  ? `${BLOK_TURLERI[b.tur].ad} · ${b.ad}`
-                  : BLOK_TURLERI[b.tur].ad
-              }
+              baslik={b.ad ? `${BLOK_TURLERI[b.tur].ad} · ${b.ad}` : BLOK_TURLERI[b.tur].ad}
               anahtarlar={
                 sabitAyari && ayarliParcaMi(b.tur)
                   ? [
                       {
                         etiket: BLOK_TURLERI[b.tur].ad,
                         acik: !b.sabit,
-                        onDegis: (acik: boolean) =>
-                          blokDegis(i, { ...b, sabit: !acik }),
+                        onDegis: (acik: boolean) => blokDegis(i, { ...b, sabit: !acik }),
                       },
                     ]
                   : []
               }
               onYukari={i > 0 ? () => blokTasi(b.id, -1) : undefined}
-              onAsagi={
-                i < durum.bloklar.length - 1
-                  ? () => blokTasi(b.id, 1)
-                  : undefined
-              }
+              onAsagi={i < durum.bloklar.length - 1 ? () => blokTasi(b.id, 1) : undefined}
               onSil={() => blokKaldir(i)}
               silEtiketi="Karttan kaldır"
               onKapat={() => setMenu(null)}
@@ -1123,15 +988,12 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
 
       <BlokSecici
         haric={secHaric}
-        mevcut={durum.bloklar.map((b) => b.tur)}
+        mevcut={[...durum.bloklar.map((b) => b.tur), ...SERIT_PARCALARI]}
         uzman={uzman}
         gorunur={blokSeciciAcik}
         onKapat={() => setBlokSeciciAcik(false)}
         onSec={(tur) => {
-          const yeni = bosBlok(tur);
-          if (tur === "liste")
-            setOtomatikListeler((s) => new Set([...s, yeni.id]));
-          setDurum((d) => ({ ...d, bloklar: [...d.bloklar, yeni] }));
+          parcaEkle(tur);
           setBlokSeciciAcik(false);
         }}
       />
@@ -1158,7 +1020,7 @@ function TasarimAlani({
         placeholder="Örneğin: Tartı"
         hata={hata}
         returnKeyType="done"
-        autoFocus={tasarim.ad === ""}
+        autoFocus={tasarim.ad === ''}
       />
       <GirisAlani
         etiket="Kısa açıklama (listede adın altında)"
@@ -1188,27 +1050,15 @@ function TasarimAlani({
               onPress={() => onDegis({ ikon })}
               accessibilityRole="button"
               accessibilityState={{ selected: secili }}
-              accessibilityLabel={`Simge ${ikon.replace("-outline", "")}`}
-              style={({ pressed }) => [
-                stiller.simge,
-                secili && stiller.simgeSecili,
-                pressed && { opacity: 0.7 },
-              ]}
+              accessibilityLabel={`Simge ${ikon.replace('-outline', '')}`}
+              style={({ pressed }) => [stiller.simge, secili && stiller.simgeSecili, pressed && { opacity: 0.7 }]}
             >
-              <Ionicons
-                name={ikon}
-                size={24}
-                color={secili ? renk.yuzey : renk.ana}
-              />
+              <Ionicons name={ikon} size={24} color={secili ? renk.yuzey : renk.ana} />
             </Pressable>
           );
         })}
       </View>
-      <Yazi
-        tur="bolumBasligi"
-        accessibilityRole="header"
-        style={stiller.bolumBasligi}
-      >
+      <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.bolumBasligi}>
         Kart
       </Yazi>
     </>
@@ -1222,11 +1072,7 @@ export function useKartFormu(onSonuc?: (sonuc: KartFormuSonucu) => void) {
     hedef: KartFormuHedefi;
     acik: boolean;
   } | null>(null);
-  const ac = useCallback(
-    (hedef: KartFormuHedefi) =>
-      setForm((f) => ({ no: (f?.no ?? 0) + 1, hedef, acik: true })),
-    [],
-  );
+  const ac = useCallback((hedef: KartFormuHedefi) => setForm((f) => ({ no: (f?.no ?? 0) + 1, hedef, acik: true })), []);
   const oge = form ? (
     <KartFormu
       key={form.no}
@@ -1248,20 +1094,20 @@ const stiller = StyleSheet.create({
     backgroundColor: renk.yuzey,
     paddingHorizontal: olcu.kartIci,
     paddingVertical: 10,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
   bolumBasligi: { marginTop: 8 },
   esnek: { flex: 1 },
   baslikSatiri: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
     marginBottom: -4,
   },
-  cesitAdi: { flexDirection: "row", alignItems: "center", gap: 6 },
-  haplar: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  cesitAdi: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  haplar: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   simge: {
     width: 48,
     height: 48,
@@ -1269,15 +1115,15 @@ const stiller = StyleSheet.create({
     borderWidth: 1,
     borderColor: renk.cizgi,
     backgroundColor: renk.yuzey,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   simgeSecili: { backgroundColor: renk.ana, borderColor: renk.ana },
   aciklama: { gap: 8 },
-  ogeUst: { flexDirection: "row", alignItems: "center", gap: 8 },
+  ogeUst: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   yayinSatiri: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
     marginTop: 8,
   },
