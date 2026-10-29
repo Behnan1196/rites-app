@@ -238,8 +238,8 @@ export function ZamanSayfasi({
   deger: Zamanlama;
   bugunGun: Gun;
   onDegis: (z: Zamanlama) => void;
-  /** P-57: hangi ayar: tarih ve saat (sağ üstteki rozet), süre ya da hatırlatma (şerit). */
-  bolum?: 'tarih' | 'sure' | 'hatirlatma';
+  /** P-67: hangi ayar: tarih, saat, süre ya da hatırlatma (zaman satırındaki haplar). */
+  bolum?: ZamanBolumu;
   /** Takvimden gün seçildi (tarihsiz plan adımı tarih kazanır). */
   onTarihSec: (z: Zamanlama) => void;
   tarihYok?: boolean;
@@ -253,22 +253,28 @@ export function ZamanSayfasi({
     <AltSayfa
       gorunur={gorunur}
       onKapat={onKapat}
-      baslik={bolum === 'sure' ? 'Süre' : bolum === 'hatirlatma' ? 'Hatırlatma' : 'Ne zaman?'}
+      baslik={
+        bolum === 'sure'
+          ? 'Süre'
+          : bolum === 'hatirlatma'
+            ? 'Hatırlatma'
+            : bolum === 'saat'
+              ? 'Saat'
+              : programGunu
+                ? 'Programın günü'
+                : deger.tekrar
+                  ? 'Başlangıç'
+                  : 'Tarih'
+      }
       sagKapat="Tamam"
     >
       {bolum === 'tarih' && !kalip && !gunGizle && (
         <View style={stiller.bolum}>
-          <Yazi kalinlik="kalin" accessibilityRole="header">
-            {programGunu ? 'Programın günü' : deger.tekrar ? 'Başlangıç' : 'Tarih'}
-          </Yazi>
           <ZamanlamaPaneli acik="tarih" onDegis={onTarihSec} {...ortak} />
         </View>
       )}
-      {bolum === 'tarih' && (
+      {bolum === 'saat' && (
         <View style={stiller.bolum}>
-          <Yazi kalinlik="kalin" accessibilityRole="header">
-            Saat
-          </Yazi>
           <ZamanlamaPaneli acik="saat" onDegis={onDegis} {...ortak} />
         </View>
       )}
@@ -288,6 +294,100 @@ export function ZamanSayfasi({
         </View>
       )}
     </AltSayfa>
+  );
+}
+
+export type ZamanBolumu = 'tarih' | 'saat' | 'sure' | 'hatirlatma';
+
+/**
+ * Zaman satırı (P-67): Tarih · Saat · Süre · Hatırlatma hapları; her biri kendi küçük sayfasını
+ * açar. Kart görünümünde ve Kur'da aynı. İzni olmayan hap kilitli görünür, dokunulmaz.
+ */
+export function ZamanHaplari({
+  deger,
+  onAc,
+  tarihYok = false,
+  programGunu = null,
+  kalip = false,
+  gunGizle = false,
+  tarihIzni = true,
+  saatIzni = true,
+  sag,
+}: {
+  deger: Zamanlama;
+  onAc: (bolum: ZamanBolumu) => void;
+  tarihYok?: boolean;
+  programGunu?: ProgramGunu | null;
+  /** Çeşit tasarımı ve kütüphane: tarih ve hatırlatma yok. */
+  kalip?: boolean;
+  gunGizle?: boolean;
+  /** Tarih ve süre değişebilir mi. */
+  tarihIzni?: boolean;
+  /** Saat ve hatırlatma değişebilir mi. */
+  saatIzni?: boolean;
+  /** Satırın sonunda (Kur'da ⋯). */
+  sag?: React.ReactNode;
+}) {
+  const hap = (
+    bolum: ZamanBolumu,
+    ikon: IkonAdi,
+    metin: string,
+    etiket: string,
+    ayarli: boolean,
+    izin: boolean,
+  ) => (
+    <Pressable
+      key={bolum}
+      onPress={() => onAc(bolum)}
+      disabled={!izin}
+      accessibilityRole={izin ? 'button' : 'text'}
+      accessibilityLabel={`${etiket}: ${metin}${izin ? '' : ', değiştirilemez'}`}
+      style={({ pressed }) => [
+        stiller.seritHap,
+        ayarli && izin && stiller.seritHapAyarli,
+        !izin && stiller.hapKilitli,
+        pressed && { opacity: 0.7 },
+      ]}
+    >
+      <Ionicons name={izin ? ikon : 'lock-closed-outline'} size={17} color={ayarli && izin ? renk.ana : renk.ikincil} />
+      <Yazi
+        kalinlik="kalin"
+        renk={ayarli && izin ? renk.ana : renk.ikincil}
+        numberOfLines={1}
+        style={stiller.seritYazi}
+      >
+        {metin}
+      </Yazi>
+    </Pressable>
+  );
+  const gunMetni = tarihYok
+    ? 'Tarih yok'
+    : programGunu
+      ? programGunuMetni(programGunu, deger.tarih)
+      : kisaTarih(deger.tarih);
+  return (
+    <View style={stiller.hapSatiri}>
+      {!kalip && !gunGizle && hap('tarih', 'calendar-outline', gunMetni, 'Tarih', true, tarihIzni)}
+      {hap('saat', 'time-outline', deger.saat ?? 'Saat yok', 'Saat', deger.saat !== null, saatIzni)}
+      {hap(
+        'sure',
+        'repeat',
+        sureSeridiMetni(deger.tekrar, !!programGunu),
+        'Süre',
+        deger.tekrar !== null,
+        tarihIzni,
+      )}
+      {!kalip &&
+        hap(
+          'hatirlatma',
+          deger.alarm && deger.hatirlatma ? 'alarm-outline' : 'notifications-outline',
+          hatirlatmaSeridiMetni(deger),
+          'Hatırlatma',
+          deger.hatirlatma !== null,
+          saatIzni,
+        )}
+      {sag}
+    </View>
   );
 }
 
@@ -976,6 +1076,8 @@ const stiller = StyleSheet.create({
   },
   bolum: { gap: 10, marginBottom: 8 },
   serit: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  hapSatiri: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' },
+  hapKilitli: { backgroundColor: 'transparent', borderStyle: 'dashed' },
   seritHap: {
     flexDirection: 'row',
     alignItems: 'center',

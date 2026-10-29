@@ -58,7 +58,7 @@ import { BLOK_TURLERI } from './blokTurleri';
 import { BlokSecici } from './BlokSecici';
 import { CesitSecici } from './CesitSecici';
 import { useUzman } from '../useUzman';
-import { ZamanRozeti, ZamanSayfasi, ZamanSeridi, type ProgramGunu, type Zamanlama } from './Zamanlama';
+import { ZamanHaplari, ZamanSayfasi, type ProgramGunu, type ZamanBolumu, type Zamanlama } from './Zamanlama';
 
 export type KartFormuHedefi =
   /**
@@ -362,7 +362,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const [hata, setHata] = useState<string | null>(null);
   // P-47: zaman sağ üstteki rozetten açılan sayfada.
   // P-57: rozet → tarih ve saat; şerit → süre ya da hatırlatma.
-  const [zamanBolum, setZamanBolum] = useState<'tarih' | 'sure' | 'hatirlatma' | null>(null);
+  const [zamanBolum, setZamanBolum] = useState<ZamanBolumu | null>(null);
   const [blokSeciciAcik, setBlokSeciciAcik] = useState(hedef.tur === 'duzenle' && !!hedef.blokEkle);
   // P-36: yeni kartta "Karta bir şey ekle" kapalı gelir (kartların çoğu başlık ve zamandan ibaret).
   const [soru, setSoru] = useState<Soru | null>(null);
@@ -454,10 +454,15 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     });
   /** Görünümde sabit ayarı yalnız ajanda kartında ve kütüphanede (program ve çeşit tasarımında yok). */
   const sabitAyari = !tasarim && !sablon;
+  // P-67: eski 'zaman' (tarih ve saat birlikte) ayrı iki alana açılır.
+  const acilmisSabitler = (): SabitAlan[] =>
+    durum.sabitler.includes('zaman')
+      ? [...durum.sabitler.filter((x) => x !== 'zaman' && x !== 'tarih' && x !== 'saat'), 'tarih', 'saat']
+      : durum.sabitler;
   const sabitAnahtari = (alan: SabitAlan, etiket: string) => ({
     etiket,
-    acik: !durum.sabitler.includes(alan),
-    onDegis: (acik: boolean) => guncelle({ sabitler: sabitDegistir(durum.sabitler, alan, !acik) }),
+    acik: !acilmisSabitler().includes(alan),
+    onDegis: (acik: boolean) => guncelle({ sabitler: sabitDegistir(acilmisSabitler(), alan, !acik) }),
   });
 
   const tanim = (): KartTanimi => ({
@@ -658,7 +663,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 }}
               />
             )}
-            {!parca && (
+            {!parca && (tasarim || !!secilenCesit) && (
               <View style={stiller.baslikSatiri}>
                 {/* P-49: "Ne yapacaksın?" kalktı (bilgi kartı da var); solda varsa kartın çeşidi. */}
                 {tasarim ? (
@@ -667,45 +672,45 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                   </Yazi>
                 ) : (
                   <View style={[stiller.esnek, stiller.cesitAdi]}>
-                    {!!secilenCesit && (
-                      <>
-                        <Ionicons
-                          name={
-                            (secilenCesit.ikon as React.ComponentProps<typeof Ionicons>['name'] | null) ??
-                            'leaf-outline'
-                          }
-                          size={20}
-                          color={renk.ikincil}
-                        />
-                        <Yazi tur="etiket" kalinlik="kalin" numberOfLines={1}>
-                          {secilenCesit.ad}
-                        </Yazi>
-                      </>
-                    )}
+                    <Ionicons
+                      name={
+                        (secilenCesit?.ikon as React.ComponentProps<typeof Ionicons>['name'] | null) ?? 'leaf-outline'
+                      }
+                      size={20}
+                      color={renk.ikincil}
+                    />
+                    <Yazi tur="etiket" kalinlik="kalin" numberOfLines={1}>
+                      {secilenCesit?.ad}
+                    </Yazi>
                   </View>
                 )}
-                <ZamanRozeti
-                  deger={durum.zamanlama}
-                  tarihYok={durum.tarihsiz}
-                  programGunu={programGunu}
-                  gunGizle={gunGizle}
-                  kalip={kalip}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setZamanBolum('tarih');
-                  }}
-                />
-                {kur && sabitAyari && (
-                  <SimgeDugmesi
-                    ikon="ellipsis-horizontal"
-                    etiket="Başlık ve zaman: seçenekler"
-                    onPress={() => {
-                      Keyboard.dismiss();
-                      setMenu({ tur: 'baslik' });
-                    }}
-                  />
-                )}
               </View>
+            )}
+            {/* P-67: zaman satırı: Tarih · Saat · Süre · Hatırlatma; ⋯ başlık ve zaman izinleri. */}
+            {!parca && (
+              <ZamanHaplari
+                deger={durum.zamanlama}
+                tarihYok={durum.tarihsiz}
+                programGunu={programGunu}
+                gunGizle={gunGizle}
+                kalip={kalip}
+                onAc={(b) => {
+                  Keyboard.dismiss();
+                  setZamanBolum(b);
+                }}
+                sag={
+                  kur && sabitAyari ? (
+                    <SimgeDugmesi
+                      ikon="ellipsis-horizontal"
+                      etiket="Başlık ve zaman: seçenekler"
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        setMenu({ tur: 'baslik' });
+                      }}
+                    />
+                  ) : undefined
+                }
+              />
             )}
             {(!parca || parca === 'baslik') && (
               <>
@@ -771,21 +776,14 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               </>
             )}
 
-            {/* P-57: ikinci şerit: Süre · Hatırlatma · + Karta ekle. */}
+            {/* P-67: süre ve hatırlatma zaman satırında; burada yalnız "+ Karta ekle". */}
             {!parca && kur && (
-              <ZamanSeridi
-                deger={durum.zamanlama}
-                programda={!!programGunu}
-                kalip={kalip}
-                onSure={() => {
-                  Keyboard.dismiss();
-                  setZamanBolum('sure');
-                }}
-                onHatirlatma={() => {
-                  Keyboard.dismiss();
-                  setZamanBolum('hatirlatma');
-                }}
-                onEkle={() => {
+              <Dugme
+                tur="ikincil"
+                yaziRengi={renk.ana}
+                etiket="+ Karta ekle"
+                erisimIpucu="Liste, video, talimat, ölçüm…"
+                onPress={() => {
                   Keyboard.dismiss();
                   setBlokSeciciAcik(true);
                 }}
@@ -899,7 +897,11 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       {menu?.tur === 'baslik' && (
         <ElemanMenusu
           baslik="Başlık ve zaman"
-          anahtarlar={[sabitAnahtari('baslik', 'Başlık'), sabitAnahtari('zaman', 'Tarih ve saat')]}
+          anahtarlar={[
+            sabitAnahtari('baslik', 'Başlık'),
+            sabitAnahtari('tarih', 'Tarih ve süre'),
+            sabitAnahtari('saat', 'Saat ve hatırlatma'),
+          ]}
           onKapat={() => setMenu(null)}
         />
       )}

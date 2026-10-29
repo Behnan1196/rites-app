@@ -1,7 +1,10 @@
-import { baslikDegisir, parcaDegisir, sabitDegistir, zamanDegisimi } from '../gorunumDegisimi';
+import { baslikDegisir, parcaDegisir, saatDegisir, sabitDegistir, tarihDegisir } from '../gorunumDegisimi';
 import { verilenKarti } from '../kartVerme';
 import { kartIcerigi, kutuphanedenKart } from '../kutuphane';
 import { kartPaketi } from '../paylasim';
+
+const zamanDegisimi = (k: Parameters<typeof tarihDegisir>[0]) =>
+  tarihDegisir(k) ? 'tam' : saatDegisir(k) ? 'saat' : 'yok';
 
 describe('Görünümde değişim (P-65)', () => {
   const kendi = { kilitli: false, sabitler: null };
@@ -24,6 +27,16 @@ describe('Görünümde değişim (P-65)', () => {
     expect(zamanDegisimi({ kilitli: true, sabitler: null })).toBe('saat');
     expect(baslikDegisir({ kilitli: true, sabitler: null })).toBe(false);
     expect(parcaDegisir({ kilitli: true, sabitler: null }, { tur: 'video' })).toBe(false);
+  });
+  it('P-67: tarih ve saat ayrı', () => {
+    expect([
+      tarihDegisir({ kilitli: false, sabitler: ['tarih'] }),
+      saatDegisir({ kilitli: false, sabitler: ['tarih'] }),
+    ]).toEqual([false, true]);
+    expect([
+      tarihDegisir({ kilitli: false, sabitler: ['saat'] }),
+      saatDegisir({ kilitli: false, sabitler: ['saat'] }),
+    ]).toEqual([true, false]);
   });
   it('anahtar', () => {
     expect(sabitDegistir([], 'zaman', true)).toEqual(['zaman']);

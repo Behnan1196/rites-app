@@ -27,10 +27,10 @@ import { Dugme } from '@/bilesen/Dugme';
 import { useBulusmalar } from '@/bilesen/gruplar/Bulusmalar';
 import { GorusmeyeKatil } from '@/bilesen/gruplar/BulusmaKarti';
 import { useKartVer } from '@/bilesen/gruplar/KartVerSayfasi';
-import { BirakSorusu, VerilenZamanSayfasi } from '@/bilesen/gruplar/VerilenKartParcalari';
+import { BirakSorusu } from '@/bilesen/gruplar/VerilenKartParcalari';
 import { BlokUygulama } from '@/bilesen/kart/BlokUygulama';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
-import { KartZamanRozeti } from '@/bilesen/kart/KartZamani';
+import { KartZamanSatiri } from '@/bilesen/kart/KartZamani';
 import { MaddeEkle, SatirIciBaslik, SatirIciZengin } from '@/bilesen/kart/SatirIci';
 import { VideolarDuzenleyici } from '@/bilesen/kart/Videolar';
 import { blokVideolari, videolarBlogu } from '@/mantik/video';
@@ -84,7 +84,6 @@ export default function KartGorunumu() {
   const oturum = useOturum();
   const kartVer = useKartVer();
   const { bulusmalar } = useBulusmalar();
-  const [zamanBolum, setZamanBolum] = useState<'tarih' | 'hatirlatma' | null>(null);
   const [birakSorusu, setBirakSorusu] = useState(false);
 
   const form = useKartFormu((sonuc) => {
@@ -189,23 +188,20 @@ export default function KartGorunumu() {
         <View style={stiller.kart}>
           {serit && <View style={[stiller.kaynakSeridi, { backgroundColor: serit }]} />}
           <View style={[stiller.bolum, stiller.baslikAlani]}>
-            <View style={stiller.ustSatir}>
-              <View style={[stiller.esnek, stiller.cesitAdi]}>
-                {!!cesit && (
-                  <>
-                    <Ionicons
-                      name={(cesit.ikon as React.ComponentProps<typeof Ionicons>['name'] | null) ?? 'leaf-outline'}
-                      size={20}
-                      color={renk.ikincil}
-                    />
-                    <Yazi tur="etiket" kalinlik="kalin" numberOfLines={1}>
-                      {cesit.ad}
-                    </Yazi>
-                  </>
-                )}
+            {!!cesit && (
+              <View style={stiller.cesitAdi}>
+                <Ionicons
+                  name={(cesit.ikon as React.ComponentProps<typeof Ionicons>['name'] | null) ?? 'leaf-outline'}
+                  size={20}
+                  color={renk.ikincil}
+                />
+                <Yazi tur="etiket" kalinlik="kalin" numberOfLines={1}>
+                  {cesit.ad}
+                </Yazi>
               </View>
-              <KartZamanRozeti kart={kart} bloklar={bloklar} gun={gun} />
-            </View>
+            )}
+            {/* P-67: zaman satırı: Tarih · Saat · Süre · Hatırlatma (izinler ayrı). */}
+            <KartZamanSatiri kart={kart} bloklar={bloklar} gun={gun} />
             <View style={stiller.baslikSatiri}>
               {isaretlenir && (
                 <Pressable
@@ -361,7 +357,7 @@ export default function KartGorunumu() {
         {kart.kilitli && (
           <Yazi tur="ikincil">
             {verilenId
-              ? `${kart.gelenKimden || 'Bir yakının'} verdi. İçeriğini o belirler; saatini sağ üstten değiştirebilirsin. Yaptım bilgin ona gider.`
+              ? `${kart.gelenKimden || 'Bir yakının'} verdi. Değiştirmene izin verdiği alanları doğrudan düzeltebilirsin. Yaptım bilgin ona gider.`
               : 'Koçundan gelen kart paylaşılamaz; kendi kütüphanene kaydedebilirsin.'}
           </Yazi>
         )}
@@ -388,11 +384,6 @@ export default function KartGorunumu() {
               : []),
             ...(verilenId
               ? [
-                  {
-                    etiket: 'Hatırlatma',
-                    ikon: 'notifications-outline' as const,
-                    onPress: () => setZamanBolum('hatirlatma'),
-                  },
                   {
                     etiket: 'Bırak',
                     ikon: 'close-circle-outline' as const,
@@ -426,7 +417,6 @@ export default function KartGorunumu() {
       )}
       {form.oge}
       {kartVer.oge}
-      {zamanBolum && <VerilenZamanSayfasi kart={kart} bolum={zamanBolum} onKapat={() => setZamanBolum(null)} />}
       {birakSorusu && verilenId && (
         <BirakSorusu
           kart={kart}

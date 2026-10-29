@@ -579,3 +579,10 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Kur ekranında her öğenin başlık satırı ve ⋯ menüsü:** açıklama dahil (Açıklama: "Kart açıkken değiştirilebilir" ve Açıklamayı sil); parçalar: değiştirilebilir anahtarı (içerik parçalarında), **↑ Yukarı · ↓ Aşağı**, **Karttan kaldır**. Başlık satırında (zaman rozetinin yanında) tek ⋯: Başlık · Tarih ve saat anahtarları. Formun altındaki "Kart görünümünde değiştirilebilsin" bölümü ve parçaların altındaki "Bunu kaldır" kalktı. Açıklama yerinde kalır (taşınmaz). — Ürün sahibi (P-66); açıklamanın taşınmaması: Öneri
 - **Yeni kart kartın kendisi gibi açılır:** "Basit kart" ya da parçasız çeşitte yalnız başlık, zaman rozeti ve açıklama; altta **Kur: parça ekle, süre, hatırlatma** formu genişletir. Parçalı çeşitte doğrudan Kur. Üstte Vazgeç · Kaydet. — Ürün sahibi (P-66)
 - P-65'teki görünümde "Değiştir" düğmesi ve formun altındaki anahtar bölümü bu kararla değişti; sabit ayarları (`kart.sabitler`, `blok.sabit`) aynen geçerli, açıklama ayrı bir alan oldu (`aciklama`). — Not
+
+## Zaman satırı: Tarih · Saat · Süre · Hatırlatma (29 Ekim)
+
+- Tekrar (süre) ve hatırlatma artık yalnız Kur'da değil: kartın üstünde ve yeni kart formunda **zaman satırı**, dört hap: **Tarih · Saat · Süre · Hatırlatma**. Her hap kendi küçük sayfasını açar (Tarih sayfasında yalnız takvim, Saat sayfasında Saatli · Saat yok). Kart görünümünde de aynı satır; değişiklik kendiliğinden kaydedilir, tekrarlı kartın sonraki gününde eskisi gibi sorulur. Geçici yerleşim. — Ürün sahibi (P-67)
+- **Tarih ve saat izinleri ayrı:** başlık satırındaki ⋯ menüsünde **Başlık · Tarih ve süre · Saat ve hatırlatma** anahtarları. Kapalı olan hap görünümde kilitli (kilit simgesi, kesik çizgi, dokunulmaz). — Ürün sahibi (P-67); süre tarihle, hatırlatma saatle birlikte: Öneri
+- Eski kayıttaki tek "Tarih ve saat" kilidi ikisi birden kilitli sayılır; Kur'da açılınca iki anahtara ayrılır. Eski verilen kartta (ayar yok) yine yalnız saat ve hatırlatma. — Öneri
+- Kart görünümünün ⋯ menüsündeki ayrı "Hatırlatma" kalktı (satırda). Formun altındaki zaman şeridi yerine **+ Karta ekle**. — Öneri

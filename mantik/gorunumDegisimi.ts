@@ -14,10 +14,23 @@ function eskiKilitli(kart: KartBilgisi): boolean {
   return kart.kilitli && (kart.sabitler === null || kart.sabitler === undefined);
 }
 
-/** Zaman rozeti: 'tam' (tarih ve saat) · 'saat' · 'yok'. */
-export function zamanDegisimi(kart: KartBilgisi): 'tam' | 'saat' | 'yok' {
-  if (eskiKilitli(kart)) return 'saat';
-  return kart.sabitler?.includes('zaman') ? 'yok' : 'tam';
+/**
+ * P-67: tarih ve saat izinleri ayrı. Süre (tekrar) tarihle, hatırlatma saatle birlikte.
+ * Eski kayıttaki 'zaman' ikisini birden sabitler; eski verilen kartta yalnız saat değişir.
+ */
+export function tarihDegisir(kart: KartBilgisi): boolean {
+  if (eskiKilitli(kart)) return false;
+  return !kart.sabitler?.includes('tarih') && !kart.sabitler?.includes('zaman');
+}
+
+export function saatDegisir(kart: KartBilgisi): boolean {
+  if (eskiKilitli(kart)) return true;
+  return !kart.sabitler?.includes('saat') && !kart.sabitler?.includes('zaman');
+}
+
+/** Eski verilen / koç kartı (görünüm ayarı yok): saati yalnız kart satırına yazılır. */
+export function eskiVerilenMi(kart: KartBilgisi): boolean {
+  return eskiKilitli(kart);
 }
 
 export function baslikDegisir(kart: KartBilgisi): boolean {

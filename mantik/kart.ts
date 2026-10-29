@@ -164,7 +164,8 @@ export interface Blok {
 }
 
 /** P-65: kart görünümünde değiştirilemeyen kart alanları. */
-export type SabitAlan = 'zaman' | 'baslik' | 'aciklama';
+/** P-67: 'tarih' (süre de) ve 'saat' (hatırlatma da) ayrı; 'zaman' eski kayıtta ikisi birden. */
+export type SabitAlan = 'tarih' | 'saat' | 'zaman' | 'baslik' | 'aciklama';
 
 /** Kartın bir gündeki durumu. Yoksa boş kabul edilir (`05` §2). */
 export interface Kayit {
