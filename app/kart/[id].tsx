@@ -31,6 +31,10 @@ import { BirakSorusu, VerilenZamanSayfasi } from '@/bilesen/gruplar/VerilenKartP
 import { BlokUygulama } from '@/bilesen/kart/BlokUygulama';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { KartZamanRozeti } from '@/bilesen/kart/KartZamani';
+import { MaddeEkle, SatirIciBaslik, SatirIciZengin } from '@/bilesen/kart/SatirIci';
+import { VideolarDuzenleyici } from '@/bilesen/kart/Videolar';
+import { blokVideolari, videolarBlogu } from '@/mantik/video';
+import { programBagCoz } from '@/mantik/program';
 import { useKartSil } from '@/bilesen/kart/KartSil';
 import { useKutuphaneyeKaydet } from '@/bilesen/kutuphane/KaydetSayfasi';
 import { usePaylas } from '@/bilesen/paylasim/PaylasSayfasi';
@@ -47,13 +51,21 @@ import { seriSayilirMi, sonYediGunMetni } from '@/mantik/karakter';
 import { ARAC_BLOKLARI, bosKayit, type Kart, type Kayit } from '@/mantik/kart';
 import { bagCoz } from '@/mantik/bulusma';
 import { verilenBagCoz } from '@/mantik/kartVerme';
-import { ayarliParcaMi, baslikDegisir, parcaDegisir } from '@/mantik/gorunumDegisimi';
+import { aciklamaDegisir, ayarliParcaMi, baslikDegisir, parcaDegisir } from '@/mantik/gorunumDegisimi';
 import { kartPaketi } from '@/mantik/paylasim';
 import { useOturum } from '@/sunucu/oturum';
 import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
-import { isaretle, kartAyrinti, kartKayitlari, kartSeriSayYaz, kayitDegistir } from '@/veri/kartlar';
-import { karttanProgramaEkle, programOku } from '@/veri/programlar';
+import {
+  blokIcerikYaz,
+  isaretle,
+  kartAyrinti,
+  kartKayitlari,
+  kartMetniYaz,
+  kartSeriSayYaz,
+  kayitDegistir,
+} from '@/veri/kartlar';
+import { karttanProgramaEkle, programaYansit, programOku } from '@/veri/programlar';
 import { ProgramSecSayfasi } from '@/bilesen/yasam/ProgramSayfalari';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { yeniKimlik } from '@/veri/kimlik';
@@ -135,8 +147,14 @@ export default function KartGorunumu() {
   const bulusmaId = bagCoz(kart.bag)?.id;
   const gorusme = bulusmaId ? bulusmalar.find((b) => b.id === bulusmaId)?.baglanti : undefined;
   const duzenleAc = (blokEkle = false) => form.ac({ tur: 'duzenle', kart, bloklar, gun, blokEkle });
-  /** P-65: görünümden tek parça (ya da başlık ve açıklama). */
-  const parcaAc = (parca: string) => form.ac({ tur: 'duzenle', kart, bloklar, gun, parca });
+  /** P-66: görünümde doğrudan düzeltme; içerik kartındır (bütün günler). Programın kartıysa programa da yansır. */
+  const icerikKaydet = (is: Promise<void>) =>
+    void is
+      .then(() => (programBagCoz(kart.bag) ? programaYansit(kapi, oku, kart.id) : undefined))
+      .catch((e: unknown) => {
+        console.error('Kaydedilemedi', e);
+        kisaMesaj('Kaydedilemedi. Yeniden dene.');
+      });
   const seriDegis = (seriSay: boolean) =>
     void kartSeriSayYaz(kapi, kart.id, seriSay).catch((e: unknown) => console.error('Kaydedilemedi', e));
   // P-38: tek yerleşim: önce "Ne yapacaksın" (talimat, video, liste, zamanlayıcı…), sonra o günün kaydı.
@@ -160,7 +178,9 @@ export default function KartGorunumu() {
           </Yazi>
         </Pressable>
         <View style={stiller.ustSag}>
-          {duzenlenir && <Dugme tur="yazi" etiket="Düzenle" onPress={() => duzenleAc()} />}
+          {duzenlenir && (
+            <Dugme tur="yazi" etiket="Kur" erisimIpucu="Parça ekle, sırala, ayarlar" onPress={() => duzenleAc()} />
+          )}
           <SimgeDugmesi ikon="ellipsis-horizontal" etiket="Diğer işlemler" onPress={() => setMenuAcik(true)} />
         </View>
       </View>
@@ -203,18 +223,18 @@ export default function KartGorunumu() {
                   </View>
                 </Pressable>
               )}
-              <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.esnek}>
-                {kart.baslik}
-              </Yazi>
               {baslikDegisir(kart) ? (
-                <Dugme
-                  tur="yazi"
-                  etiket="Değiştir"
-                  erisimIpucu="Başlık ve açıklama"
-                  onPress={() => parcaAc('baslik')}
+                <SatirIciBaslik
+                  baslik={kart.baslik}
+                  onKaydet={(baslik) => icerikKaydet(kartMetniYaz(kapi, kart.id, { baslik }))}
                 />
               ) : (
-                <SabitSimgesi />
+                <>
+                  <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.esnek}>
+                    {kart.baslik}
+                  </Yazi>
+                  <SabitSimgesi />
+                </>
               )}
             </View>
             {!!meta && (
@@ -236,7 +256,16 @@ export default function KartGorunumu() {
                 </Yazi>
               </Pressable>
             )}
-            <ZenginMetin metin={kart.kisa} />
+            {aciklamaDegisir(kart) ? (
+              <SatirIciZengin
+                metin={kart.kisa}
+                etiket="Açıklama"
+                bosIpucu="+ Açıklama ekle"
+                onKaydet={(kisa) => icerikKaydet(kartMetniYaz(kapi, kart.id, { kisa }))}
+              />
+            ) : (
+              <ZenginMetin metin={kart.kisa} />
+            )}
             {!!gorusme && <GorusmeyeKatil baglanti={gorusme} />}
           </View>
 
@@ -283,15 +312,32 @@ export default function KartGorunumu() {
                             <Yazi kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
                               {ad}
                             </Yazi>
-                            {ayarliParcaMi(b.tur) &&
-                              (parcaDegisir(kart, b) ? (
-                                <Dugme tur="yazi" etiket="Değiştir" erisimIpucu={ad} onPress={() => parcaAc(b.id)} />
-                              ) : (
-                                <SabitSimgesi />
-                              ))}
+                            {ayarliParcaMi(b.tur) && !parcaDegisir(kart, b) && <SabitSimgesi />}
                           </View>
                         )}
-                        <BlokUygulama blok={b} gun={gun} kayit={kayit} kayitlar={kayitlar} onKayit={kayitDegis} />
+                        {/* P-66: kuran açık bıraktıysa talimat ve video yerinde düzeltilir, listeye madde eklenir. */}
+                        {parcaDegisir(kart, b) && b.tur === 'talimat' ? (
+                          <SatirIciZengin
+                            metin={b.metin}
+                            etiket="Talimat"
+                            bosIpucu="+ Talimat yaz"
+                            onKaydet={(metin) => icerikKaydet(blokIcerikYaz(kapi, b.id, { metin }))}
+                          />
+                        ) : parcaDegisir(kart, b) && b.tur === 'video' ? (
+                          <VideolarDuzenleyici
+                            videolar={blokVideolari(b)}
+                            onDegis={(v) => icerikKaydet(blokIcerikYaz(kapi, b.id, videolarBlogu(v)))}
+                          />
+                        ) : (
+                          <BlokUygulama blok={b} gun={gun} kayit={kayit} kayitlar={kayitlar} onKayit={kayitDegis} />
+                        )}
+                        {parcaDegisir(kart, b) && (b.tur === 'liste' || b.tur === 'adimlar') && (
+                          <MaddeEkle
+                            onEkle={(madde) =>
+                              icerikKaydet(blokIcerikYaz(kapi, b.id, { maddeler: [...b.maddeler, madde] }))
+                            }
+                          />
+                        )}
                       </View>
                     );
                   })}

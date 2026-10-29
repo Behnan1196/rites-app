@@ -1,7 +1,8 @@
 // Kart formunda kartın içindeki bir parçanın kutusu (K-6): adı ve türüne göre
 // alanlar; en altta küçük "Bunu kaldır". P-36 (24 Ekim, sade): "Kayıt / İçerik"
 // etiketi ve sıralama okları kalktı. P-50: talimat biçimli metin; liste ve proje adımları
-// onay kutulu editörde (her satır bir madde).
+// onay kutulu editörde (her satır bir madde). P-66: başlık satırında ⋯ (kart açıkken
+// değiştirilebilir, yukarı, aşağı, sil); görünümde sabitse küçük kilit. "Bunu kaldır" ⋯'ye taşındı.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
@@ -13,6 +14,7 @@ import { blokVideolari, videolarBlogu } from '@/mantik/video';
 import type { BlokTaslagi } from '@/veri/kartlar';
 
 import { Dugme } from '../Dugme';
+import { SimgeDugmesi } from '../SimgeDugmesi';
 import { ZenginMetinAlani } from '../ZenginMetin';
 import { VideolarDuzenleyici } from './Videolar';
 import { ArtiEksi, Bolum, SecenekHapi } from '../Secim';
@@ -30,6 +32,8 @@ interface Ozellikler {
   onListeSecimi?: (tur: 'liste' | 'adimlar') => void;
   /** Videoya Gelenler'den alındı (P-54). */
   onGelendenAlindi?: (id: string) => void;
+  /** P-66: başlık satırındaki ⋯; varsa "Bunu kaldır" gösterilmez (menüde Sil). */
+  onMenu?: () => void;
 }
 
 export function BlokDuzenleyici({
@@ -39,6 +43,7 @@ export function BlokDuzenleyici({
   cokGunlu = false,
   onListeSecimi,
   onGelendenAlindi,
+  onMenu,
 }: Ozellikler) {
   const tur = BLOK_TURLERI[blok.tur];
   const degis = (alanlar: Partial<BlokTaslagi>) => onDegis({ ...blok, ...alanlar });
@@ -63,9 +68,20 @@ export function BlokDuzenleyici({
 
   return (
     <Bolum>
-      <View style={stiller.ad} accessibilityRole="header">
-        <Ionicons name={tur.ikon} size={22} color={tur.kayit ? renk.vurguYazi : renk.ana} />
-        <Yazi kalinlik="kalin">{tur.ad}</Yazi>
+      <View style={stiller.ust}>
+        <View style={stiller.ad} accessibilityRole="header">
+          <Ionicons name={tur.ikon} size={22} color={tur.kayit ? renk.vurguYazi : renk.ana} />
+          <Yazi kalinlik="kalin">{tur.ad}</Yazi>
+          {!!blok.sabit && (
+            <Ionicons
+              name="lock-closed-outline"
+              size={16}
+              color={renk.soluk}
+              accessibilityLabel="Kart açıkken değiştirilemez"
+            />
+          )}
+        </View>
+        {onMenu && <SimgeDugmesi ikon="ellipsis-horizontal" etiket={`${tur.ad}: seçenekler`} onPress={onMenu} />}
       </View>
 
       {blok.tur === 'talimat' && (
@@ -216,17 +232,19 @@ export function BlokDuzenleyici({
         </>
       )}
       {blok.tur === 'gelfoto' && <Yazi tur="ikincil">Kartı uygularken fotoğraf çekip gelişimini kaydedeceksin.</Yazi>}
-      <Pressable
-        onPress={onKaldir}
-        accessibilityRole="button"
-        accessibilityLabel={`${tur.ad}: bunu karttan kaldır`}
-        hitSlop={8}
-        style={({ pressed }) => [stiller.kaldir, pressed && { opacity: 0.6 }]}
-      >
-        <Yazi tur="etiket" renk={renk.hata}>
-          Bunu kaldır
-        </Yazi>
-      </Pressable>
+      {!onMenu && (
+        <Pressable
+          onPress={onKaldir}
+          accessibilityRole="button"
+          accessibilityLabel={`${tur.ad}: bunu karttan kaldır`}
+          hitSlop={8}
+          style={({ pressed }) => [stiller.kaldir, pressed && { opacity: 0.6 }]}
+        >
+          <Yazi tur="etiket" renk={renk.hata}>
+            Bunu kaldır
+          </Yazi>
+        </Pressable>
+      )}
     </Bolum>
   );
 }

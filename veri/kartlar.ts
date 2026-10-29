@@ -599,3 +599,35 @@ export function kartZamaniYaz(
     );
   });
 }
+
+// ---- Görünümde doğrudan düzeltme (pilot 29 Ekim, P-66) -----------------------------
+// İçerik kartındır: tekrarlı kartta da bütün günlere uygulanır (soru yok).
+
+/** Başlık ya da açıklama. */
+export function kartMetniYaz(
+  kapi: Kapi,
+  kartId: string,
+  d: { baslik?: string; kisa?: string },
+  simdi: string = new Date().toISOString(),
+): Promise<void> {
+  return kapi.yaz(['kart'], async (y) => {
+    if (d.baslik !== undefined && d.baslik.trim())
+      await y.calistir('UPDATE kart SET baslik = ?, guncelleme = ? WHERE id = ?', [d.baslik.trim(), simdi, kartId]);
+    if (d.kisa !== undefined)
+      await y.calistir('UPDATE kart SET kisa = ?, guncelleme = ? WHERE id = ?', [d.kisa, simdi, kartId]);
+  });
+}
+
+/** Bir parçanın içeriği (talimat metni, liste maddeleri, videolar). */
+export function blokIcerikYaz(
+  kapi: Kapi,
+  blokId: string,
+  d: { metin?: string; maddeler?: string[]; ad?: string },
+): Promise<void> {
+  return kapi.yaz(['kart'], async (y) => {
+    if (d.metin !== undefined) await y.calistir('UPDATE blok SET metin = ? WHERE id = ?', [d.metin, blokId]);
+    if (d.maddeler !== undefined)
+      await y.calistir('UPDATE blok SET maddeler = ? WHERE id = ?', [JSON.stringify(d.maddeler), blokId]);
+    if (d.ad !== undefined) await y.calistir('UPDATE blok SET ad = ? WHERE id = ?', [d.ad, blokId]);
+  });
+}

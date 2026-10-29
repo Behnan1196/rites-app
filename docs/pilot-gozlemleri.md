@@ -340,3 +340,8 @@ Sonuç: → kararlar.md (Sade saat seçimi); görünümde değiştirilebilirlik 
 Ne dedi: (P-64'ün devamı) görünümde neyin değiştirilemeyeceğini düzenleme modunda söylemek. Kararlar: kilit ayarı herkeste; varsayılan hepsi açık; verilen kartta verenin ayarı geçerli.
 Nerede: Kart formu, kart görünümü
 Sonuç: → kararlar.md (Kartı tasarlayan, görünümde neyin değişeceğini seçer)
+
+### P-66 · 29 Ekim 2026 · Behnan
+Ne dedi: "Karta basınca açılan görünümde ayrıca Değiştir butonuna ihtiyaç duymadan doğrudan düzeltebilsin, eğer kurulumda açık bırakılmışsa. Sorun şu ki kullanıcı kart ekle dediğinde kurulum modunda mı gelecek, yoksa varsayılan alanlarla çalışacaksa kur diyene kadar bir şey gözükmesin. Kur ekranı ile ilgili olarak da açıklama dahil içindeki elemanların bir başlık satırı ve ⋯ gibi bir menüsü olsun; burada değiştirmeye izin, sil ve taşı (yukarı aşağı) olabilir." Kararlar: yeni kart kartın kendisi; kendiliğinden kayıt; başlık satırında tek ⋯; tekrarlıda içerik bütün günlere.
+Nerede: Kart görünümü, kart formu (Kur), yeni kart
+Sonuç: → kararlar.md (Kur ve kullan)

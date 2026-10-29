@@ -24,6 +24,11 @@ export function baslikDegisir(kart: KartBilgisi): boolean {
   return !eskiKilitli(kart) && !kart.sabitler?.includes('baslik');
 }
 
+/** P-66: açıklama ayrı bir öğe. */
+export function aciklamaDegisir(kart: KartBilgisi): boolean {
+  return !eskiKilitli(kart) && !kart.sabitler?.includes('aciklama');
+}
+
 /** Görünümde "Değiştir" ayarı olabilen parçalar (içerik). */
 export function ayarliParcaMi(tur: Blok['tur']): boolean {
   return (ICERIK_BLOKLARI as readonly string[]).includes(tur);
