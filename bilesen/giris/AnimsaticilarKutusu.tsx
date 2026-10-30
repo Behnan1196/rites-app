@@ -136,11 +136,8 @@ const stiller = StyleSheet.create({
   ustSatir: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   sakin: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 76 },
   dikey: { gap: 10 },
-  sureSatiri: {
-    borderTopWidth: 1,
-    borderTopColor: renk.satirCizgi,
-    paddingTop: 8,
-  },
+  // P-71: zamanlayıcının kendi renkli alanı var; ayırma çizgisi gerekmez.
+  sureSatiri: { marginTop: 2 },
   esnek: { flex: 1 },
   alt: { fontSize: 18 },
   calan: { borderColor: renk.hata, borderWidth: 2, gap: 12 },

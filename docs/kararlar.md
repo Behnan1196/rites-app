@@ -609,3 +609,6 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Tek satır:** dururken süre · **Başlat** · ⚙; çalışırken geri sayım · **Duraklat / Devam** · ✕ (İptal). — Ürün sahibi (P-70); çalışırken tek satır: Öneri
 - **Bildirim modunda bir kez:** süre dolunca bir kez ses ve bildirim gelir, zamanlayıcı kendiliğinden biter (Giriş'te "Şimdi çalıyor" ve 1 dk ertele olmaz). Telefonda alarm yoksa alarm seçimi de böyle çalışır. Alarm modunda durdurana kadar çalar, erteleme yerinde. — Ürün sahibi (P-70)
 - Zamanlayıcının "hızlı anımsatıcı" olduğunun belli edilmesi sonra. — Not
+- **⚙ açılınca en üstte Süre** (saat · dakika · saniye çarkları); kapatınca saklanır. Zamanlayıcı çalışırken bu bölüm yok. — Ürün sahibi (P-71)
+- **"Zamanlayıcı" rakamların üstünde, kalın;** zamanlayıcının alanı Anımsatıcılar'dan ayrı (açık yeşil) zeminde; çalışırken yanında "· 10 dk · çalışıyor" / "· Duraklatıldı". — Ürün sahibi (P-71); renk ve durum yazısı: Öneri
+- **Zamanlayıcı yalnız Giriş'te;** Anımsatıcılar ekranında yok (çalışırken de). — Ürün sahibi (P-71)

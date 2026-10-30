@@ -5,7 +5,9 @@
 // - Dururken: süre · Başlat · ⚙. Süreye dokununca rakamlar saat : dakika : saniye çarklarına
 //   döner; altta Tamam · Başlat · ⚙ ("Ayarla" düğmesi yok; P-70).
 // - Çalışırken: geri sayım · Duraklat / Devam · İptal (✕). Alt yazı "Duraklatıldı" olur.
-// - ⚙: süre dolunca (alarm / bildirim), ses. Kadran kalktı; 1 saat sınırı yok (en çok 23:59:59).
+// - ⚙: en üstte süre (çarklar; P-71), süre dolunca (alarm / bildirim), ses. Kadran kalktı; 1 saat
+//   sınırı yok (en çok 23:59:59).
+// - P-71: rakamların üstünde kalın "Zamanlayıcı" yazısı; alan Anımsatıcılar'dan ayrı renkte.
 // - Bildirimle çalan zamanlayıcı bir kez çalar ve kendiliğinden biter (ertelemesi yok).
 //
 // En son ayarlanan süre gelir (ilk seferde 5 dk). Ad süredir ("5 dk"). Biri çalışırken
@@ -96,8 +98,20 @@ function Panel({ ayar, sure, simdiMs }: { ayar: ZamanlayiciAyari; sure: Animsati
     void ayarYaz(kapi, 'zamanlayici', { ...ayar, sonMs: ms }).catch(hataGoster);
   };
 
+  /** ⚙ kapanınca: orada süre değiştiyse saklanır. */
+  const ayarKapat = () => {
+    setAyarAcik(false);
+    if (!sure && ms !== ayar.sonMs) void ayarYaz(kapi, 'zamanlayici', { ...ayar, sonMs: ms }).catch(hataGoster);
+  };
+
   const ayarSayfasi = (
-    <AltSayfa gorunur={ayarAcik} onKapat={() => setAyarAcik(false)} baslik="Zamanlayıcı" sagKapat="Kapat">
+    <AltSayfa gorunur={ayarAcik} onKapat={ayarKapat} baslik="Zamanlayıcı" sagKapat="Kapat">
+      {!sure && (
+        <>
+          <Yazi kalinlik="kalin">Süre</Yazi>
+          <SureCarklari ms={ms} onDegis={setMs} />
+        </>
+      )}
       <Yazi kalinlik="kalin">Süre dolunca</Yazi>
       <View style={stiller.haplar}>
         <SecenekHapi etiket="Alarm" secili={ayar.cal === 'alarm'} onPress={() => ayarDegis({ cal: 'alarm' })} />
@@ -125,40 +139,28 @@ function Panel({ ayar, sure, simdiMs }: { ayar: ZamanlayiciAyari; sure: Animsati
     <YuvarlakDugme ikon="settings-outline" etiket="Zamanlayıcı ayarları" onPress={() => setAyarAcik(true)} />
   );
 
+  // P-71: rakamların üstünde kalın "Zamanlayıcı"; çalışırken durumu yanında.
+  const durum = sure ? (duraklatildiMi(sure) ? 'Duraklatıldı' : `${sure.ad} · çalışıyor`) : null;
+  const etiket = (
+    <View style={stiller.etiketSatiri}>
+      <Ionicons name="timer-outline" size={18} color={renk.anaKoyu} />
+      <Yazi kalinlik="kalin" renk={renk.anaKoyu} style={stiller.etiket}>
+        Zamanlayıcı
+      </Yazi>
+      {!!durum && (
+        <Yazi tur="etiket" renk={renk.anaKoyu} numberOfLines={1} style={stiller.esnek}>
+          {`· ${durum}`}
+        </Yazi>
+      )}
+    </View>
+  );
+
   // Ayarlarken: rakamlar çarka döner (saat : dakika : saniye); altta Tamam · Başlat · ⚙.
   if (ayarlaniyor && !sure) {
-    const { sa, dk, sn } = sureParcalari(ms);
     return (
-      <View style={stiller.panel}>
-        <View style={stiller.carklar}>
-          <Cark
-            deger={sa}
-            adet={24}
-            onDegis={(y) => setMs(parcalardanMs(y, dk, sn))}
-            etiket="Zamanlayıcı, saat"
-            birim="saat"
-          />
-          <Yazi kalinlik="kalin" style={stiller.ikiNokta}>
-            :
-          </Yazi>
-          <Cark
-            deger={dk}
-            adet={60}
-            onDegis={(y) => setMs(parcalardanMs(sa, y, sn))}
-            etiket="Zamanlayıcı, dakika"
-            birim="dakika"
-          />
-          <Yazi kalinlik="kalin" style={stiller.ikiNokta}>
-            :
-          </Yazi>
-          <Cark
-            deger={sn}
-            adet={60}
-            onDegis={(y) => setMs(parcalardanMs(sa, dk, y))}
-            etiket="Zamanlayıcı, saniye"
-            birim="saniye"
-          />
-        </View>
+      <View style={[stiller.panel, stiller.alan]}>
+        {etiket}
+        <SureCarklari ms={ms} onDegis={setMs} />
         <View style={stiller.satir}>
           <Dugme tur="ikincil" etiket="Tamam" onPress={tamam} style={stiller.esnekDugme} />
           <Dugme
@@ -176,72 +178,105 @@ function Panel({ ayar, sure, simdiMs }: { ayar: ZamanlayiciAyari; sure: Animsati
 
   const durdu = !!sure && duraklatildiMi(sure);
   const gosterilen = sure ? kalanMs(sure, simdiMs) : ms;
-  // Alt yazının yeri hep ayrılır (P-44: "Duraklatıldı" gelince yükseklik değişmesin).
   const altYazi = sure ? (durdu ? 'Duraklatıldı' : `${sure.ad} · çalışıyor`) : 'Zamanlayıcı';
   const rakam = (
-    <>
-      <Yazi
-        kalinlik="kalin"
-        renk={durdu ? renk.ikincil : renk.yazi}
-        style={stiller.rakam}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-      >
-        {geriSayimMetni(gosterilen)}
-      </Yazi>
-      <Yazi tur="etiket" numberOfLines={1}>
-        {altYazi}
-      </Yazi>
-    </>
+    <Yazi
+      kalinlik="kalin"
+      renk={durdu ? renk.ikincil : renk.yazi}
+      style={stiller.rakam}
+      numberOfLines={1}
+      adjustsFontSizeToFit
+    >
+      {geriSayimMetni(gosterilen)}
+    </Yazi>
   );
 
   return (
-    <View style={stiller.satir}>
-      {sure ? (
-        <View
-          style={stiller.esnek}
-          accessible
-          accessibilityLabel={`${altYazi}, ${zamanlayiciSuresiMetni(gosterilen)} kaldı`}
-        >
-          {rakam}
-        </View>
-      ) : (
-        <Pressable
-          onPress={() => setAyarlaniyor(true)}
-          accessibilityRole="button"
-          accessibilityLabel={`Zamanlayıcı, ${zamanlayiciSuresiMetni(ms)}`}
-          accessibilityHint="Süreyi ayarlamak için dokun"
-          style={({ pressed }) => [stiller.esnek, pressed && { opacity: 0.6 }]}
-        >
-          {rakam}
-        </Pressable>
-      )}
-      {sure ? (
-        <>
-          <Dugme
-            etiket={durdu ? 'Devam' : 'Duraklat'}
-            onPress={() =>
-              void (durdu ? zamanlayiciDevam(kapi, sure.id) : zamanlayiciDuraklat(kapi, sure.id)).catch(hataGoster)
-            }
-            style={stiller.dugme}
-          />
-          <YuvarlakDugme
-            ikon="close"
-            etiket="Zamanlayıcıyı iptal et"
-            onPress={() =>
-              void animsaticiSil(kapi, sure.id)
-                .then(() => kisaMesaj(`İptal edildi: ${sure.ad}`))
-                .catch(hataGoster)
-            }
-          />
-        </>
-      ) : (
-        <>
-          <Dugme etiket="Başlat" onPress={() => void baslat()} pasif={calisiyor || ms <= 0} style={stiller.dugme} />
-          {ayarDugmesi}
-        </>
-      )}
+    <View style={[stiller.panel, stiller.alan]}>
+      {etiket}
+      <View style={stiller.satir}>
+        {sure ? (
+          <View
+            style={stiller.esnek}
+            accessible
+            accessibilityLabel={`${altYazi}, ${zamanlayiciSuresiMetni(gosterilen)} kaldı`}
+          >
+            {rakam}
+          </View>
+        ) : (
+          <Pressable
+            onPress={() => setAyarlaniyor(true)}
+            accessibilityRole="button"
+            accessibilityLabel={`Zamanlayıcı, ${zamanlayiciSuresiMetni(ms)}`}
+            accessibilityHint="Süreyi ayarlamak için dokun"
+            style={({ pressed }) => [stiller.esnek, pressed && { opacity: 0.6 }]}
+          >
+            {rakam}
+          </Pressable>
+        )}
+        {sure ? (
+          <>
+            <Dugme
+              etiket={durdu ? 'Devam' : 'Duraklat'}
+              onPress={() =>
+                void (durdu ? zamanlayiciDevam(kapi, sure.id) : zamanlayiciDuraklat(kapi, sure.id)).catch(hataGoster)
+              }
+              style={stiller.dugme}
+            />
+            <YuvarlakDugme
+              ikon="close"
+              etiket="Zamanlayıcıyı iptal et"
+              onPress={() =>
+                void animsaticiSil(kapi, sure.id)
+                  .then(() => kisaMesaj(`İptal edildi: ${sure.ad}`))
+                  .catch(hataGoster)
+              }
+            />
+          </>
+        ) : (
+          <>
+            <Dugme etiket="Başlat" onPress={() => void baslat()} pasif={calisiyor || ms <= 0} style={stiller.dugme} />
+            {ayarDugmesi}
+          </>
+        )}
+      </View>
       {ayarSayfasi}
+    </View>
+  );
+}
+
+/** Saat : dakika : saniye çarkları (rakamların yerinde ve ⚙'de). */
+function SureCarklari({ ms, onDegis }: { ms: number; onDegis: (ms: number) => void }) {
+  const { sa, dk, sn } = sureParcalari(ms);
+  return (
+    <View style={stiller.carklar}>
+      <Cark
+        deger={sa}
+        adet={24}
+        onDegis={(y) => onDegis(parcalardanMs(y, dk, sn))}
+        etiket="Zamanlayıcı, saat"
+        birim="saat"
+      />
+      <Yazi kalinlik="kalin" style={stiller.ikiNokta}>
+        :
+      </Yazi>
+      <Cark
+        deger={dk}
+        adet={60}
+        onDegis={(y) => onDegis(parcalardanMs(sa, y, sn))}
+        etiket="Zamanlayıcı, dakika"
+        birim="dakika"
+      />
+      <Yazi kalinlik="kalin" style={stiller.ikiNokta}>
+        :
+      </Yazi>
+      <Cark
+        deger={sn}
+        adet={60}
+        onDegis={(y) => onDegis(parcalardanMs(sa, dk, y))}
+        etiket="Zamanlayıcı, saniye"
+        birim="saniye"
+      />
     </View>
   );
 }
@@ -270,13 +305,16 @@ function YuvarlakDugme({
 
 const stiller = StyleSheet.create({
   panel: { gap: 10 },
-  satir: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 60 },
+  alan: { backgroundColor: renk.anaAcik, borderRadius: 14, padding: 12, gap: 6 },
+  etiketSatiri: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  etiket: { fontSize: 16, letterSpacing: 0.3 },
+  satir: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 56 },
   esnek: { flex: 1, minWidth: 0 },
   yuvarlak: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: renk.zemin,
+    backgroundColor: renk.yuzey,
     alignItems: 'center',
     justifyContent: 'center',
   },

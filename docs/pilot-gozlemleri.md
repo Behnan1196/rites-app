@@ -365,3 +365,8 @@ Sonuç: → kararlar.md (Sade parça başlıkları)
 Ne dedi: "Giriş sayfasında Anımsatıcı ve zamanlayıcıya bakalım. Zamanlayıcının hızlı bir anımsatıcı olduğunu belli etmemiz lazım, önce sadeleştirelim: 1. Sadece dijital olsun ve 1 saat ile sınırlı olmak zorunda değiliz artık. 2. Ayarlama dijital rakamların üstüne basınca yapılabilsin. 3. Bu durumda Ayarla butonu kalkıyor, başlat ve options düğmeleri de mümkünse aynı satırda olsun. 4. Bildirimleri erteleme şansımız yok, bildirim modunda sadece bir kere bildirim gelip otomatik dursun."
 Nerede: Giriş · Anımsatıcılar kutusu, Anımsatıcılar ekranı
 Sonuç: → kararlar.md (Sade zamanlayıcı)
+
+### P-71 · 30 Ekim 2026 · Behnan
+Ne dedi: "Ayar düğmesi sanki saat ayarı da yapacak gibi duruyor, o zaman onu açtığımızda en üstte de ayar yapabilelim. Zamanlayıcının farklı durması konusunda, saatin altında yazan zamanlayıcı yazısını saatin üstüne bold olarak ve arka planı farklı renkte koyabiliriz. Anımsatıcıları açtığımızda zamanlayıcının orada da gözükmesi gerekir mi?" Karar: hiç görünmesin.
+Nerede: Giriş · zamanlayıcı, Anımsatıcılar ekranı
+Sonuç: → kararlar.md (Sade zamanlayıcı)
