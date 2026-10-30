@@ -601,3 +601,11 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 
 - **"Kartın içinde" (Kur) ve "Ne yapacaksın" (kart görünümü) başlıkları kalktı;** açıklama zaten yukarıda. Günün kaydı bölümünün başlığı (Bugün / gün) kalır. — Ürün sahibi (P-69); gün başlığının kalması: Öneri
 - **Listede simge ve "Liste" yazısı yok:** Kur'da başlık satırında liste adı alanı ve ⋯; kartta yalnız (varsa) liste adı. Liste simgesi maddelerin kutularıyla karışmasın diye her yerde (şerit, Daha) satırlı liste simgesi oldu. Öbür parçaların (video, talimat, ölçüm…) başlığı şimdilik yerinde. — Ürün sahibi (P-69); öbür parçalar: Öneri
+
+## Sade zamanlayıcı (30 Ekim)
+
+- **Yalnız dijital:** kadran ve ⚙'deki Görünüm seçimi kalktı. **1 saat sınırı yok;** süre saat : dakika : saniye, en çok 23:59:59. — Ürün sahibi (P-70); 23:59:59: Öneri
+- **Süreye dokununca ayarlanır:** rakamlar yerinde üç çarka döner (saat · dakika · saniye); altta **Tamam · Başlat · ⚙**. "Ayarla" düğmesi kalktı. — Ürün sahibi (P-70); ayarlarken Tamam: Öneri
+- **Tek satır:** dururken süre · **Başlat** · ⚙; çalışırken geri sayım · **Duraklat / Devam** · ✕ (İptal). — Ürün sahibi (P-70); çalışırken tek satır: Öneri
+- **Bildirim modunda bir kez:** süre dolunca bir kez ses ve bildirim gelir, zamanlayıcı kendiliğinden biter (Giriş'te "Şimdi çalıyor" ve 1 dk ertele olmaz). Telefonda alarm yoksa alarm seçimi de böyle çalışır. Alarm modunda durdurana kadar çalar, erteleme yerinde. — Ürün sahibi (P-70)
+- Zamanlayıcının "hızlı anımsatıcı" olduğunun belli edilmesi sonra. — Not

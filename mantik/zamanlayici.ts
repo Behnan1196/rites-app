@@ -9,41 +9,14 @@
 
 import type { Animsatici } from './animsatici';
 
-/** Kadran açılınca (P-32). */
+/** İlk açılışta gelen süre. */
 export const VARSAYILAN_ZAMANLAYICI_DK = 5;
-/** Kadranın bir tam turu (P-32: zamanlayıcı en çok 1 saat; uzun işler saatli anımsatıcıyla). */
-export const KADRAN_DK = 60;
-/** Zamanlayıcıda ertele (dakika; alarmda ve Giriş'te aynı; P-31). */
+/** P-70: 1 saat sınırı kalktı; en çok 23:59:59. */
+export const ZAMANLAYICI_EN_COK_MS = (24 * 3600 - 1) * 1000;
+/** Zamanlayıcıda ertele (dakika; yalnız alarmda; P-31). */
 export const ZAMANLAYICI_ERTELEME = 1;
 
 export type ZamanlayiciAlanlari = Pick<Animsatici, 'bitis' | 'toplamMs' | 'duraklama'>;
-
-// ---- Kadran (P-32) -------------------------------------------------------------
-
-/**
- * Kadranın merkezine göre dokunulan nokta → dakika (0…60, kesirli). Tepe 0,
- * saat yönünde artar; ekran koordinatında y aşağı doğrudur.
- */
-export function kadranAcisiDakika(dx: number, dy: number): number {
-  const derece = (Math.atan2(dx, -dy) * 180) / Math.PI;
-  return (((derece + 360) % 360) / 360) * KADRAN_DK;
-}
-
-/**
- * Çevirirken yeni değer (tam dakika). Tepeden geçerken sıçramaz: 60'tan sonra
- * 60'ta, 0'dan geriye 0'da kalır.
- */
-export function kadranDegeri(onceki: number, ham: number): number {
-  const ceyrek = KADRAN_DK / 4;
-  if (onceki >= KADRAN_DK - ceyrek && ham < ceyrek) return KADRAN_DK;
-  if (onceki <= ceyrek && ham > KADRAN_DK - ceyrek) return 0;
-  return Math.min(KADRAN_DK, Math.max(0, Math.round(ham)));
-}
-
-/** Halkaya dokununca (sürüklemeden): o dakikaya atlar; tepenin hemen solu 60. */
-export function kadranDokunusu(ham: number): number {
-  return Math.min(KADRAN_DK, Math.max(0, Math.round(ham)));
-}
 
 const iki = (n: number) => String(n).padStart(2, '0');
 
@@ -108,14 +81,13 @@ export function zamanlayiciAltMetni(a: ZamanlayiciAlanlari, simdiMs: number): st
   return '';
 }
 
-// ---- Giriş'teki tek zamanlayıcının ayarı (P-42) ------------------------------------
+// ---- Giriş'teki tek zamanlayıcının ayarı (P-42, P-70) --------------------------------
 
 /**
- * Giriş'te tek zamanlayıcı vardır; ayarları ⚙'den: görünüm (kadran / dijital çark),
- * nasıl çalsın (alarm / bildirim), ses. Son kurulan süre hatırlanır.
+ * Giriş'te tek zamanlayıcı vardır; ayarları ⚙'den: nasıl çalsın (alarm / bildirim), ses.
+ * Son kurulan süre hatırlanır. P-70: yalnız dijital (kadran kalktı; eski `gorunum` okunmaz).
  */
 export interface ZamanlayiciAyari {
-  gorunum: 'kadran' | 'dijital';
   cal: 'alarm' | 'bildirim';
   /** `mantik/sesler` adı; null: telefonun sesi. */
   ses: string | null;
@@ -123,10 +95,7 @@ export interface ZamanlayiciAyari {
   sonMs: number;
 }
 
-export const ZAMANLAYICI_EN_COK_MS = KADRAN_DK * 60_000;
-
 export const VARSAYILAN_ZAMANLAYICI: ZamanlayiciAyari = {
-  gorunum: 'kadran',
   cal: 'alarm',
   ses: null,
   sonMs: VARSAYILAN_ZAMANLAYICI_DK * 60_000,
@@ -138,25 +107,43 @@ export function zamanlayiciAyariCoz(x: unknown): ZamanlayiciAyari {
   const v = VARSAYILAN_ZAMANLAYICI;
   const ms = typeof a.sonMs === 'number' && Number.isFinite(a.sonMs) ? Math.round(a.sonMs / 1000) * 1000 : v.sonMs;
   return {
-    gorunum: a.gorunum === 'dijital' ? 'dijital' : 'kadran',
     cal: a.cal === 'bildirim' ? 'bildirim' : 'alarm',
     ses: typeof a.ses === 'string' && a.ses ? a.ses : null,
     sonMs: ms >= 1000 && ms <= ZAMANLAYICI_EN_COK_MS ? ms : v.sonMs,
   };
 }
 
-/** Kadran tam dakika gösterir: süre en yakın dakikaya (en az 1). */
-export function kadranDakikasi(ms: number): number {
-  return Math.min(KADRAN_DK, Math.max(1, Math.round(ms / 60_000)));
+/** Çarkların saat, dakika ve saniyesi → ms (en çok 23:59:59). */
+export function parcalardanMs(sa: number, dk: number, sn: number): number {
+  const t = Math.max(0, sa) * 3600 + Math.max(0, dk) * 60 + Math.max(0, sn);
+  return Math.min(ZAMANLAYICI_EN_COK_MS, t * 1000);
 }
 
-/** Dijital çarkın dakika ve saniyesi → ms (en çok 60:00). */
-export function carkMs(dk: number, sn: number): number {
-  return Math.min(ZAMANLAYICI_EN_COK_MS, Math.max(0, dk) * 60_000 + Math.max(0, sn) * 1000);
+/** ms → çarkların saat, dakika ve saniyesi. */
+export function sureParcalari(ms: number): { sa: number; dk: number; sn: number } {
+  const t = Math.round(Math.max(0, Math.min(ZAMANLAYICI_EN_COK_MS, ms)) / 1000);
+  return { sa: Math.floor(t / 3600), dk: Math.floor((t % 3600) / 60), sn: t % 60 };
 }
 
-/** ms → çarkın dakika ve saniyesi. */
-export function carkDegeri(ms: number): { dk: number; sn: number } {
-  const t = Math.max(0, Math.min(ZAMANLAYICI_EN_COK_MS, Math.round(ms / 1000) * 1000)) / 1000;
-  return { dk: Math.floor(t / 60), sn: t % 60 };
+/** Bildirimin çaldıktan sonra kalan bu kadar beklenir (telefonun saati ile aradaki pay). */
+const BITIS_PAYI_MS = 5000;
+
+/**
+ * P-70: bildirimle çalan zamanlayıcı bir kez çalar ve kendiliğinden biter (ertelemesi yok,
+ * "Şimdi çalıyor" olmaz): süresi geçmiş olanlar silinir. Alarmlı olan durdurulana kadar kalır.
+ */
+export function bitenBildirimZamanlayicilari(
+  animsaticilar: readonly Pick<Animsatici, 'id' | 'bitis' | 'alarm' | 'duraklama'>[],
+  simdiMs: number,
+): string[] {
+  return animsaticilar
+    .filter(
+      (a) => !!a.bitis && !a.alarm && !duraklatildiMi(a) && new Date(a.bitis).getTime() + BITIS_PAYI_MS <= simdiMs,
+    )
+    .map((a) => a.id);
+}
+
+/** Bildirimle çalan zamanlayıcı mı (Giriş'te "Şimdi çalıyor" olmaz). */
+export function bildirimliZamanlayiciMi(a: Pick<Animsatici, 'bitis' | 'alarm'>): boolean {
+  return !!a.bitis && !a.alarm;
 }

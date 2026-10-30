@@ -4,12 +4,21 @@
 // (halka, Duraklat / Devam, İptal). P-32: başlık satırının sağındaki
 // zamanlayıcı simgesi kutunun içinde kadranı açar. P-42: tek zamanlayıcı, +1 dk yok.
 // P-43: zamanlayıcı her zaman görünür (simge yok): `ZamanlayiciPaneli`.
+// P-70: bildirimle çalan zamanlayıcı "Şimdi çalıyor" olmaz; bir kez çalar, kendiliğinden silinir.
 
 import { router } from 'expo-router';
+import { useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { erteleMetni, girisOzeti, kalanMetni } from '@/mantik/animsatici';
-import { duraklatildiMi, zamanlayiciSurerMi } from '@/mantik/zamanlayici';
+import {
+  bildirimliZamanlayiciMi,
+  bitenBildirimZamanlayicilari,
+  duraklatildiMi,
+  zamanlayiciSurerMi,
+} from '@/mantik/zamanlayici';
+import { animsaticiSil } from '@/veri/animsaticilar';
+import { useVeri } from '@/veri/VeriSaglayici';
 import { useSaniye } from '@/veri/useSimdi';
 
 import { useAnimsatmalar } from '../animsatici/useAnimsatmalar';
@@ -29,10 +38,21 @@ export function AnimsaticilarKutusu() {
   // Çalışan (duraklatılmamış) zamanlayıcı varsa saniyede bir tazelenir.
   const sayanVar = animsaticilar.some((a) => a.bitis && !duraklatildiMi(a));
   const simdiMs = useSaniye(sayanVar);
+  const { kapi } = useVeri();
+  const bitenler = bitenBildirimZamanlayicilari(animsaticilar, simdiMs).join(',');
+  useEffect(() => {
+    if (!bitenler) return;
+    for (const id of bitenler.split(','))
+      void animsaticiSil(kapi, id).catch((e: unknown) => console.error('Zamanlayıcı silinemedi', e));
+  }, [bitenler, kapi]);
   if (yukleniyor) return null;
   // Saati gelmiş ama saniyesi dolmamış zamanlayıcı henüz "çalıyor" sayılmaz.
   const { calan } = girisOzeti(
-    animsatmalar.filter((m) => !(m.animsatici.bitis && new Date(m.animsatici.bitis).getTime() > simdiMs)),
+    animsatmalar.filter(
+      (m) =>
+        !bildirimliZamanlayiciMi(m.animsatici) &&
+        !(m.animsatici.bitis && new Date(m.animsatici.bitis).getTime() > simdiMs),
+    ),
   );
   // Sıradaki / kalan yalnız "Saatinde"lerden; zamanlayıcılar ayrı satırda.
   const { siradaki, kalan } = girisOzeti(animsatmalar.filter((m) => !m.animsatici.bitis));

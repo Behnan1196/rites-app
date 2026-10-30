@@ -1,15 +1,12 @@
 import { alarmPlani } from '../alarm';
 import { bildirimPlani, bugununAnimsatmalari, type Animsatici } from '../animsatici';
 import {
-  carkDegeri,
-  carkMs,
+  bitenBildirimZamanlayicilari,
   geriSayimMetni,
   ilerleme,
   kalanMs,
-  kadranAcisiDakika,
-  kadranDegeri,
-  kadranDakikasi,
-  kadranDokunusu,
+  parcalardanMs,
+  sureParcalari,
   VARSAYILAN_ZAMANLAYICI,
   zamanlayiciAltMetni,
   zamanlayiciAyariCoz,
@@ -33,22 +30,6 @@ const z: Animsatici = {
 };
 
 describe('zamanlayıcı', () => {
-  it('kadran: açı dakikaya, tepeden geçerken sıçramaz', () => {
-    expect(kadranAcisiDakika(0, -10)).toBeCloseTo(0);
-    expect(kadranAcisiDakika(10, 0)).toBeCloseTo(15);
-    expect(kadranAcisiDakika(0, 10)).toBeCloseTo(30);
-    expect(kadranAcisiDakika(-10, 0)).toBeCloseTo(45);
-    expect(kadranDegeri(5, 7.4)).toBe(7);
-    expect(kadranDegeri(58, 1)).toBe(60);
-    expect(kadranDegeri(60, 2)).toBe(60);
-    expect(kadranDegeri(2, 59)).toBe(0);
-    expect(kadranDegeri(0, 58)).toBe(0);
-    expect(kadranDegeri(50, 44)).toBe(44);
-    expect(kadranDokunusu(12.2)).toBe(12);
-    expect(kadranDokunusu(59.8)).toBe(60);
-    expect(kadranDokunusu(0.3)).toBe(0);
-  });
-
   it('geri sayım saniyeyi yukarı yuvarlar', () => {
     expect(geriSayimMetni(300_000)).toBe('05:00');
     expect(geriSayimMetni(8_200)).toBe('00:09');
@@ -101,28 +82,40 @@ describe('zamanlayıcı', () => {
   });
 });
 
-describe('Giriş zamanlayıcısının ayarı (P-42)', () => {
-  it('varsayılan: kadran, alarm, telefonun sesi, 5 dk', () => {
+describe('Giriş zamanlayıcısının ayarı (P-42, P-70)', () => {
+  it('varsayılan: alarm, telefonun sesi, 5 dk', () => {
     expect(zamanlayiciAyariCoz(null)).toEqual(VARSAYILAN_ZAMANLAYICI);
-    expect(VARSAYILAN_ZAMANLAYICI).toEqual({ gorunum: 'kadran', cal: 'alarm', ses: null, sonMs: 300_000 });
+    expect(VARSAYILAN_ZAMANLAYICI).toEqual({ cal: 'alarm', ses: null, sonMs: 300_000 });
   });
 
-  it('bozuk alanlar varsayılana döner; son süre en çok 60 dk', () => {
-    expect(zamanlayiciAyariCoz({ gorunum: 'x', cal: 'bildirim', ses: 'can', sonMs: 4_000_000 })).toEqual({
-      gorunum: 'kadran',
+  it('bozuk alanlar varsayılana döner; 1 saatten uzun olur, en çok 23:59:59', () => {
+    expect(zamanlayiciAyariCoz({ gorunum: 'kadran', cal: 'bildirim', ses: 'can', sonMs: 4_000_000 })).toEqual({
       cal: 'bildirim',
       ses: 'can',
-      sonMs: 300_000,
+      sonMs: 4_000_000,
     });
-    expect(zamanlayiciAyariCoz({ gorunum: 'dijital', sonMs: 90_400 }).sonMs).toBe(90_000);
+    expect(zamanlayiciAyariCoz({ sonMs: 90_400 }).sonMs).toBe(90_000);
+    expect(zamanlayiciAyariCoz({ sonMs: 90_000_000 }).sonMs).toBe(300_000);
   });
 
-  it('kadran tam dakika (en az 1), çark dakika ve saniye', () => {
-    expect(kadranDakikasi(90_000)).toBe(2);
-    expect(kadranDakikasi(10_000)).toBe(1);
-    expect(carkMs(2, 30)).toBe(150_000);
-    expect(carkMs(60, 30)).toBe(3_600_000);
-    expect(carkDegeri(150_000)).toEqual({ dk: 2, sn: 30 });
-    expect(carkDegeri(3_600_000)).toEqual({ dk: 60, sn: 0 });
+  it('çarklar: saat, dakika, saniye', () => {
+    expect(parcalardanMs(1, 30, 5)).toBe(5_405_000);
+    expect(sureParcalari(5_405_000)).toEqual({ sa: 1, dk: 30, sn: 5 });
+    expect(parcalardanMs(30, 0, 0)).toBe((24 * 3600 - 1) * 1000);
+    expect(geriSayimMetni(5_405_000)).toBe('1:30:05');
+  });
+});
+
+describe('Bildirimli zamanlayıcı bir kez çalar (P-70)', () => {
+  const bitis = new Date(T0).toISOString();
+  it('süresi geçen bildirimli zamanlayıcı silinir; alarmlı ve duraklatılmış kalır', () => {
+    const liste = [
+      { id: 'b', bitis, alarm: false, duraklama: null },
+      { id: 'a', bitis, alarm: true, duraklama: null },
+      { id: 'd', bitis, alarm: false, duraklama: 60_000 },
+      { id: 's', bitis: null, alarm: false, duraklama: null },
+    ];
+    expect(bitenBildirimZamanlayicilari(liste, T0 + 1000)).toEqual([]);
+    expect(bitenBildirimZamanlayicilari(liste, T0 + 6000)).toEqual(['b']);
   });
 });
