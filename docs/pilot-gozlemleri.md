@@ -390,3 +390,8 @@ Sonuç: → kararlar.md (Görünümde Bitti yok, listenin başlığı)
 Ne dedi: "Açıklama alanının bir başlık kısmı (header) olsun, orada açıklama yazsın, sağında da 2 ikon, biri Aa ve basıldığında formatlama şeridi görünsün, normalde görünmesin. Bir de açıklamada hiçbir şey girilmemişse veya silinmişse bileşen kalkmasın, şu an kapatılmış gibi alt şeride gidiyor. '...'yı menü için ayırdım, belki bir süre sonra Kur'a gerek kalmayacak."
 Nerede: Kart görünümü
 Sonuç: → kararlar.md (Açıklama başlık satırlı öğe)
+
+### P-76 · 30 Ekim 2026 · Behnan
+Ne dedi: "Tamam diğerlerine de başlık satırını uygulayalım. Acaba alttaki şerit ekranın en altına sabitlenebilir mi, kart boş olsa da görsel açıdan iyi olur."
+Nerede: Kart görünümü
+Sonuç: → kararlar.md (Her parçanın başlık satırı; şerit ekranın altında)

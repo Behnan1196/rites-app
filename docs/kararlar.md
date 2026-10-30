@@ -636,3 +636,10 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Kart görünümünde açıklama bir öğe:** başlık satırı "Açıklama", sağında **Aa** ve **⋯**. Aa biçim çubuğunu (K, İ, liste…) açar / kapar; normalde gizli. ⋯ menü: **Karttan kaldır** (şeride döner). — Ürün sahibi (P-75)
 - **Boş açıklama kartta kalır:** şeritten eklenip boş bırakılan ya da içi silinen açıklama yerinde durur ("Yazmak için dokun"); yalnız ⋯ → Karttan kaldır ile kalkar. Kur'da kaydedilen kayıtlı kartta da boş açıklama kalır; yeni kartta boş açıklama kaydedilmez (sade kart). Veri: boş açıklama `BOS_ACIKLAMA` işareti (boş HTML), şema değişmedi. — Ürün sahibi (P-75); yeni kartta boşun kaydedilmemesi ve işaret: Öneri
 - ⋯ öğe menüleri için; zamanla Kur'a gerek kalmayabilir (öğe ayarları görünümde). — Not
+
+## Her parçanın başlık satırı; şerit ekranın altında (30 Ekim)
+
+- **Kart görünümünde her parçanın başlık satırı:** simge · ad · (kilit) · **⋯** (listede simge yok; adı ya da "Liste", dokununca yazılır). Kayıt parçalarının (ölçüm, puan…) başlık satırı yalnız kendi kartında görünür (⋯ için). — Ürün sahibi (P-76); kayıt parçaları: Öneri
+- **⋯ menüsü (Kur'daki gibi, görünümde):** "Kart açıkken değiştirilebilir" anahtarı (içerik parçaları ve açıklama), **↑ Yukarı · ↓ Aşağı** (kartta görünen aynı bölümdeki komşuyla), **Karttan kaldır**. Değişiklik bütün günlere (tekrarlı kartta da), programın kartıysa programa da yansır. — Ürün sahibi (P-76); ayrıntılar: Öneri
+- **Parça şeridi ekranın altına sabit:** kart kısa ya da boşken de altta; içerik kayarken yerinde kalır. — Ürün sahibi (P-76)
+- Boş video parçasında koyu kutu yok; yalnız "+ Video ekle" (Kur'da da). — Öneri

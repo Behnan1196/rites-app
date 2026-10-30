@@ -658,3 +658,39 @@ export function blokEkle(
     );
   });
 }
+
+// ---- Kart görünümünde öğe menüsü (P-76): sil, sırala, kart açıkken değişebilir ----------
+
+/** Parçayı karttan kaldırır. */
+export function blokSil(kapi: Kapi, blokId: string): Promise<void> {
+  return kapi.yaz(['kart'], (y) => y.calistir('DELETE FROM blok WHERE id = ?', [blokId]));
+}
+
+/** İki parçanın yerini değiştirir (görünümde Yukarı / Aşağı; aynı bölümdeki komşuyla). */
+export function bloklarinYeriniDegistir(kapi: Kapi, kartId: string, a: string, b: string): Promise<void> {
+  return kapi.yaz(['kart'], async (y) => {
+    const ids = (await y.hepsi<{ id: string }>('SELECT id FROM blok WHERE kart_id = ? ORDER BY sira', [kartId])).map(
+      (s) => s.id,
+    );
+    const i = ids.indexOf(a);
+    const j = ids.indexOf(b);
+    if (i < 0 || j < 0) return;
+    [ids[i], ids[j]] = [ids[j]!, ids[i]!];
+    for (const [sira, id] of ids.entries()) await y.calistir('UPDATE blok SET sira = ? WHERE id = ?', [sira, id]);
+  });
+}
+
+/** Parça kart açıkken değişebilir mi (`blok.sabit` tersi). */
+export function blokSabitYaz(kapi: Kapi, blokId: string, sabit: boolean): Promise<void> {
+  return kapi.yaz(['kart'], (y) => y.calistir('UPDATE blok SET sabit = ? WHERE id = ?', [sabit ? 1 : 0, blokId]));
+}
+
+/** Kartın görünümde değişmeyen alanları (başlık, açıklama, tarih, saat). */
+export function kartSabitleriYaz(kapi: Kapi, kartId: string, sabitler: readonly SabitAlan[]): Promise<void> {
+  return kapi.yaz(['kart'], (y) =>
+    y.calistir('UPDATE kart SET sabitler = ? WHERE id = ?', [
+      sabitler.length ? JSON.stringify(sabitler) : null,
+      kartId,
+    ]),
+  );
+}

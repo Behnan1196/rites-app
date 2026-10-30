@@ -57,7 +57,14 @@ import { gorunurMu } from '@/mantik/gorunurluk';
 import { ARAC_BLOKLARI, bosKayit, type Kayit } from '@/mantik/kart';
 import { bagCoz } from '@/mantik/bulusma';
 import { verilenBagCoz } from '@/mantik/kartVerme';
-import { aciklamaDegisir, ayarliParcaMi, baslikDegisir, parcaDegisir, saatDegisir } from '@/mantik/gorunumDegisimi';
+import {
+  aciklamaDegisir,
+  ayarliParcaMi,
+  baslikDegisir,
+  parcaDegisir,
+  saatDegisir,
+  sabitDegistir,
+} from '@/mantik/gorunumDegisimi';
 import { kartPaketi } from '@/mantik/paylasim';
 import { useOturum } from '@/sunucu/oturum';
 import { type Gun } from '@/mantik/tarih';
@@ -65,6 +72,10 @@ import { useSorgu } from '@/veri/kancalar';
 import {
   blokEkle,
   blokIcerikYaz,
+  blokSabitYaz,
+  blokSil,
+  bloklarinYeriniDegistir,
+  kartSabitleriYaz,
   isaretle,
   kartAyrinti,
   kartKayitlari,
@@ -94,6 +105,8 @@ export default function KartGorunumu() {
   // P-72: kartın altındaki şerit: açıklama yerinde yazılır, hatırlatma zaman sayfasında.
   const [aciklamaYaziliyor, setAciklamaYaziliyor] = useState(false);
   const [aciklamaMenusu, setAciklamaMenusu] = useState(false);
+  /** P-76: parçanın ⋯ menüsü (görünümde): değişebilir, Yukarı / Aşağı, Karttan kaldır. */
+  const [blokMenusu, setBlokMenusu] = useState<string | null>(null);
   const zamanAcici = useRef<KartZamaniAcici>(null);
   const uzman = useUzman();
 
@@ -312,38 +325,42 @@ export default function KartGorunumu() {
                     const r = tur.kayit ? renk.vurguYazi : renk.ana;
                     return (
                       <View key={`${b.id}-${gun}`} style={stiller.parca}>
-                        {/* Kayıt parçalarının kendi adı var ("Su", "Enerjim", soru); tür başlığı tekrar olmasın. */}
-                        {/* P-74: listenin başlığı hep var: adı ya da "Liste"; değişebiliyorsa dokununca yazılır. */}
-                        {!tur.kayit && listeMi && (
+                        {/* P-76: her parçanın başlık satırı: simge · ad · (kilit) · ⋯. Listede simge yok; adı
+                            ya da "Liste", dokununca yazılır (P-74). Kayıt parçalarının kendi adı var; başlıkları
+                            yalnız kendi kartında (⋯ için). */}
+                        {(!tur.kayit || duzenlenir) && (
                           <View style={stiller.blokBasligi}>
-                            {parcaDegisir(kart, b) ? (
+                            {listeMi && parcaDegisir(kart, b) ? (
                               <SatirIciAd
                                 ad={b.ad}
                                 ipucu="Liste"
                                 onKaydet={(yeni) => icerikKaydet(blokIcerikYaz(kapi, b.id, { ad: yeni }))}
                               />
                             ) : (
-                              <Yazi kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
-                                {ad || 'Liste'}
-                              </Yazi>
+                              <>
+                                {!listeMi && (
+                                  <View
+                                    style={[
+                                      stiller.blokSimgesi,
+                                      { backgroundColor: tur.kayit ? renk.vurguAcik : renk.anaAcik },
+                                    ]}
+                                  >
+                                    <Ionicons name={tur.ikon} size={18} color={r} />
+                                  </View>
+                                )}
+                                <Yazi kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
+                                  {ad || 'Liste'}
+                                </Yazi>
+                              </>
                             )}
                             {sabitSimge && <SabitSimgesi />}
-                          </View>
-                        )}
-                        {!tur.kayit && !listeMi && (
-                          <View style={stiller.blokBasligi}>
-                            <View
-                              style={[
-                                stiller.blokSimgesi,
-                                { backgroundColor: tur.kayit ? renk.vurguAcik : renk.anaAcik },
-                              ]}
-                            >
-                              <Ionicons name={tur.ikon} size={18} color={r} />
-                            </View>
-                            <Yazi kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
-                              {ad}
-                            </Yazi>
-                            {sabitSimge && <SabitSimgesi />}
+                            {duzenlenir && (
+                              <SimgeDugmesi
+                                ikon="ellipsis-horizontal"
+                                etiket={`${ad || tur.ad}: seçenekler`}
+                                onPress={() => setBlokMenusu(b.id)}
+                              />
+                            )}
                           </View>
                         )}
                         {/* P-66: kuran açık bıraktıysa talimat ve video yerinde düzeltilir, listeye madde eklenir. */}
@@ -375,28 +392,6 @@ export default function KartGorunumu() {
                 </View>
               ),
           )}
-
-          {/* P-72: Kur'daki şerit kartın kendisinde de: Hatırlatma · Açıklama · Liste · Fotoğraf · Video (· Daha). */}
-          <View style={stiller.seritAlani}>
-            <ParcaSeridi
-              {...(duzenlenir
-                ? seritOgeleri({
-                    aciklamaVar: aciklamaVarMi(kart.kisa) || aciklamaYaziliyor || !aciklamaDegisir(kart),
-                    uzman,
-                    mevcut: bloklar.map((b) => b.tur),
-                  })
-                : { ogeler: [], daha: false })}
-              onSec={(o) => void parcaEkle(o)}
-              onDaha={() => duzenleAc(true)}
-              hatirlatma={{
-                metin: seritHatirlatmaMetni(kart),
-                ayarli: kart.hatirlatma !== null,
-                alarm: !!kart.alarm,
-                izin: saatDegisir(kart),
-                onPress: () => zamanAcici.current?.ac('hatirlatma'),
-              }}
-            />
-          </View>
         </View>
 
         {kart.kilitli && (
@@ -407,11 +402,75 @@ export default function KartGorunumu() {
           </Yazi>
         )}
       </ScrollView>
+      {/* P-72 / P-76: parça şeridi ekranın altına sabit (kart boşken de yerinde). */}
+      <View style={[stiller.seritAlani, { paddingBottom: Math.max(kenar.bottom, 12) }]}>
+        <ParcaSeridi
+          {...(duzenlenir
+            ? seritOgeleri({
+                aciklamaVar: aciklamaVarMi(kart.kisa) || aciklamaYaziliyor || !aciklamaDegisir(kart),
+                uzman,
+                mevcut: bloklar.map((b) => b.tur),
+              })
+            : { ogeler: [], daha: false })}
+          onSec={(o) => void parcaEkle(o)}
+          onDaha={() => duzenleAc(true)}
+          hatirlatma={{
+            metin: seritHatirlatmaMetni(kart),
+            ayarli: kart.hatirlatma !== null,
+            alarm: !!kart.alarm,
+            izin: saatDegisir(kart),
+            onPress: () => zamanAcici.current?.ac('hatirlatma'),
+          }}
+        />
+      </View>
 
+      {blokMenusu &&
+        (() => {
+          const b = bloklar.find((x) => x.id === blokMenusu);
+          if (!b) return null;
+          // Yukarı / Aşağı: kartta görünen aynı bölümdeki komşuyla.
+          const bolum = BLOK_TURLERI[b.tur].kayit && !ARAC_BLOKLARI.includes(b.tur) ? kaydedilecekler : yapilacaklar;
+          const i = bolum.findIndex((x) => x.id === b.id);
+          const once = bolum[i - 1];
+          const sonra = bolum[i + 1];
+          const tasi = (diger: string) => icerikKaydet(bloklarinYeriniDegistir(kapi, kart.id, b.id, diger));
+          const ad = (b.tur === 'liste' || b.tur === 'adimlar') && b.ad ? b.ad : BLOK_TURLERI[b.tur].ad;
+          return (
+            <ElemanMenusu
+              baslik={ad}
+              anahtarlar={
+                ayarliParcaMi(b.tur)
+                  ? [
+                      {
+                        etiket: BLOK_TURLERI[b.tur].ad,
+                        acik: !b.sabit,
+                        onDegis: (acik) => icerikKaydet(blokSabitYaz(kapi, b.id, !acik)),
+                      },
+                    ]
+                  : []
+              }
+              onYukari={once ? () => tasi(once.id) : undefined}
+              onAsagi={sonra ? () => tasi(sonra.id) : undefined}
+              onSil={() => {
+                setBlokMenusu(null);
+                icerikKaydet(blokSil(kapi, b.id));
+              }}
+              silEtiketi="Karttan kaldır"
+              onKapat={() => setBlokMenusu(null)}
+            />
+          );
+        })()}
       {aciklamaMenusu && (
         <ElemanMenusu
           baslik="Açıklama"
-          anahtarlar={[]}
+          anahtarlar={[
+            {
+              etiket: 'Açıklama',
+              acik: !(kart.sabitler ?? []).includes('aciklama'),
+              onDegis: (acik) =>
+                icerikKaydet(kartSabitleriYaz(kapi, kart.id, sabitDegistir(kart.sabitler ?? [], 'aciklama', !acik))),
+            },
+          ]}
           onSil={() => {
             setAciklamaMenusu(false);
             setAciklamaYaziliyor(false);
@@ -545,7 +604,7 @@ const stiller = StyleSheet.create({
   kaynakSeridi: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 6 },
   bolum: { paddingHorizontal: olcu.kartIci + 4, paddingVertical: 16, gap: 12 },
   cizgili: { borderTopWidth: 1, borderTopColor: renk.satirCizgi },
-  seritAlani: { paddingHorizontal: olcu.kartIci, paddingBottom: olcu.kartIci },
+  seritAlani: { paddingHorizontal: olcu.ekranKenari, paddingTop: 8, backgroundColor: renk.zemin },
   ustSatir: { flexDirection: 'row', alignItems: 'center', gap: 8, marginRight: -6 },
   cesitAdi: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   esnek: { flex: 1 },

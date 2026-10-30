@@ -280,7 +280,8 @@ export function VideolarDuzenleyici({
   return (
     <View style={stiller.kap}>
       <Secici adet={videolar.length} secili={i} onSec={setSecili} />
-      {video ? <VideoOynat video={video} /> : <View style={stiller.koyu} accessibilityLabel="Video yok" />}
+      {/* P-76: boşken koyu kutu yok; yalnız "+ Video ekle". */}
+      {!!video && <VideoOynat video={video} />}
       <View style={stiller.dugmeler}>
         {!!video && (
           <Pressable
