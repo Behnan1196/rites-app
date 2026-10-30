@@ -1,4 +1,13 @@
-import { htmlMaddeleri, htmldenDuz, htmlMi, maddelerdenHtml, metinDoluMu, metniHtml } from '../zenginMetin';
+import {
+  aciklamaVarMi,
+  BOS_ACIKLAMA,
+  htmlMaddeleri,
+  htmldenDuz,
+  htmlMi,
+  maddelerdenHtml,
+  metinDoluMu,
+  metniHtml,
+} from '../zenginMetin';
 
 describe('biçimli metin (P-50)', () => {
   it('düz metin HTML değildir; editöre paragraf olarak gider', () => {
@@ -30,5 +39,15 @@ describe('biçimli metin (P-50)', () => {
   it('boş paragraflar boş sayılır', () => {
     expect(metinDoluMu('<html><br><p></p></html>')).toBe(false);
     expect(metinDoluMu('<html><p>a</p></html>')).toBe(true);
+  });
+});
+
+describe('Boş açıklama kartta kalır (P-75)', () => {
+  it('işaret: var ama boş', () => {
+    expect(aciklamaVarMi(BOS_ACIKLAMA)).toBe(true);
+    expect(metinDoluMu(BOS_ACIKLAMA)).toBe(false);
+    expect(htmldenDuz(BOS_ACIKLAMA)).toBe('');
+    expect(aciklamaVarMi('')).toBe(false);
+    expect(aciklamaVarMi('Su iç')).toBe(true);
   });
 });

@@ -191,5 +191,6 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Kütüphane: `react-native-enriched-html` (yeni mimari; iOS, Android, web). Editör `EnrichedTextInput` (denetimsiz; `onChangeHtml`), görünüm `EnrichedText`. Bileşenler: `bilesen/ZenginMetin.tsx` (`ZenginMetinAlani`, `ZenginMetin`).
 - Saklanan değer editörün HTML'i: `<html><p>…</p><ul><li>…</li></ul><ol>…</ol><ul data-type="checkbox"><li checked>…</li></ul></html>`. `<html>` ile başlamayan metin düz metindir (eski kartlar). Yardımcılar `mantik/zenginMetin.ts`: `metniHtml`, `htmldenDuz` (arama, kısa gösterim), `htmlMaddeleri` / `maddelerdenHtml` (liste editörü ↔ `blok.maddeler`).
 - Alanlar: `kart.kisa`, `program_kart.kisa`, talimat bloğunun `metin`i. Veritabanı değişmedi. Liste ve proje adımlarında `maddeler` düz metin kalır.
+- P-75: `kart.kisa` boş dize = açıklama yok; `BOS_ACIKLAMA` (`<html><p></p></html>`) = kartta duran boş açıklama (`aciklamaVarMi`). Gösterilen her yerde `metinDoluMu` ile boş sayılır.
 - Editör açılışta kendi biçimine çevirirken `onChangeHtml` gönderebilir; kişi alana dokunmadan gelen değişiklik yok sayılır (form "değişti" sanmasın).
 

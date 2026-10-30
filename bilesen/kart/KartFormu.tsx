@@ -33,7 +33,7 @@ import {
 import { seriVarsayilani, type KartTaslagi } from '@/mantik/karakter';
 import type { KartIcerigi } from '@/mantik/kutuphane';
 import { gunEkle, gunFarki, type Gun } from '@/mantik/tarih';
-import { htmlMaddeleri, maddelerdenHtml } from '@/mantik/zenginMetin';
+import { BOS_ACIKLAMA, htmlMaddeleri, maddelerdenHtml, metinDoluMu } from '@/mantik/zenginMetin';
 import type { TasarimCesidi } from '@/sunucu/cesit';
 import { islemleriUygula, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
@@ -507,7 +507,16 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
 
   const tanim = (): KartTanimi => ({
     baslik: durum.baslik.trim(),
-    kisa: durum.kisa.trim(),
+    // P-75: kayıtlı kartta açıklama boş da olsa kalır (kaldırılmadıkça); yeni kartta boşsa yok.
+    kisa: tasarim
+      ? durum.kisa.trim()
+      : !aciklamaVar
+        ? ''
+        : metinDoluMu(durum.kisa)
+          ? durum.kisa.trim()
+          : duzenleme
+            ? BOS_ACIKLAMA
+            : '',
     tarih: durum.tarihsiz ? null : durum.zamanlama.tarih,
     tarihsiz: durum.tarihsiz,
     saat: durum.zamanlama.saat,

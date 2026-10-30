@@ -8,7 +8,7 @@
 // görünümde sistem yazı tipi kullanılır (Atkinson'un kalını ayrı bir aile).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import {
   EnrichedText,
@@ -62,6 +62,8 @@ export function ZenginMetinAlani({
   kisa = false,
   otomatikOdak = false,
   onOdakDegis,
+  cubukGizli = false,
+  odakIstegi = 0,
 }: {
   deger: string;
   onDegis: (html: string) => void;
@@ -76,6 +78,10 @@ export function ZenginMetinAlani({
   otomatikOdak?: boolean;
   /** P-74: odak girince / çıkınca (kart görünümünde editör çıkınca kapanır). */
   onOdakDegis?: (odak: boolean) => void;
+  /** P-75: biçim çubuğu gizli (kart görünümünde "Aa" ile açılır). */
+  cubukGizli?: boolean;
+  /** P-75: artınca editör yeniden odaklanır (Aa'ya basınca odak kaçmasın). */
+  odakIstegi?: number;
 }) {
   const ref = useRef<EnrichedTextInputInstance>(null);
   const [ilk] = useState(() => metniHtml(deger));
@@ -86,6 +92,9 @@ export function ZenginMetinAlani({
   const dokunuldu = useRef(false);
   const odakGoster = useOdakGoster();
   const kutu = useRef<View>(null);
+  useEffect(() => {
+    if (odakIstegi > 0) ref.current?.focus();
+  }, [odakIstegi]);
 
   const bicimle = (ad: string) => {
     const r = ref.current;
@@ -133,7 +142,7 @@ export function ZenginMetinAlani({
     },
   ];
 
-  const cubuk = !liste && (
+  const cubuk = !liste && !cubukGizli && (
     <View style={stiller.cubuk} accessibilityRole="toolbar">
       {dugmeler.map((d) => (
         <Pressable

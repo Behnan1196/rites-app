@@ -630,3 +630,9 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 
 - **Kart görünümünde açıklama ve talimat editöründe "Bitti" yok:** editör açılınca yazmaya hazır gelir; dışarı dokununca (alandan çıkınca) kaydedilip kapanır. Araç çubuğuna (K, İ, liste…) basmak editörü kapatmaz. — Ürün sahibi (P-74); çıkınca kapanma: Öneri
 - **Listenin başlığı hep var:** adı ya da "Liste"; değiştirilebiliyorsa başlığa dokununca yazılır, çıkınca kaydedilir. Değişmeyen listede adı ya da "Liste". — Ürün sahibi (P-74)
+
+## Açıklama başlık satırlı öğe (30 Ekim)
+
+- **Kart görünümünde açıklama bir öğe:** başlık satırı "Açıklama", sağında **Aa** ve **⋯**. Aa biçim çubuğunu (K, İ, liste…) açar / kapar; normalde gizli. ⋯ menü: **Karttan kaldır** (şeride döner). — Ürün sahibi (P-75)
+- **Boş açıklama kartta kalır:** şeritten eklenip boş bırakılan ya da içi silinen açıklama yerinde durur ("Yazmak için dokun"); yalnız ⋯ → Karttan kaldır ile kalkar. Kur'da kaydedilen kayıtlı kartta da boş açıklama kalır; yeni kartta boş açıklama kaydedilmez (sade kart). Veri: boş açıklama `BOS_ACIKLAMA` işareti (boş HTML), şema değişmedi. — Ürün sahibi (P-75); yeni kartta boşun kaydedilmemesi ve işaret: Öneri
+- ⋯ öğe menüleri için; zamanla Kur'a gerek kalmayabilir (öğe ayarları görünümde). — Not

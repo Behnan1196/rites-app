@@ -36,9 +36,10 @@ import { ParcaSeridi } from '@/bilesen/kart/ParcaSeridi';
 import { seritHatirlatmaMetni } from '@/bilesen/kart/Zamanlama';
 import { useUzman } from '@/bilesen/useUzman';
 import { seritOgeleri, type SeritOgesi } from '@/mantik/parcaSecimi';
-import { metinDoluMu } from '@/mantik/zenginMetin';
+import { aciklamaVarMi, BOS_ACIKLAMA, metinDoluMu } from '@/mantik/zenginMetin';
 import { dosyayiSakla } from '@/veri/dosyalar';
-import { MaddeEkle, SatirIciAd, SatirIciBaslik, SatirIciZengin } from '@/bilesen/kart/SatirIci';
+import { AciklamaAlani, MaddeEkle, SatirIciAd, SatirIciBaslik, SatirIciZengin } from '@/bilesen/kart/SatirIci';
+import { ElemanMenusu } from '@/bilesen/kart/ElemanMenusu';
 import { VideolarDuzenleyici } from '@/bilesen/kart/Videolar';
 import { blokVideolari, videolarBlogu } from '@/mantik/video';
 import { programBagCoz } from '@/mantik/program';
@@ -50,7 +51,6 @@ import { BLOK_TURLERI } from '@/bilesen/kart/blokTurleri';
 import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { kaynakAnahtari, kaynakTuru } from '@/mantik/kaynak';
 import { Yazi } from '@/bilesen/Yazi';
-import { ZenginMetin } from '@/bilesen/ZenginMetin';
 import { gunBasligi } from '@/mantik/ajanda';
 import { cesitBul } from '@/mantik/cesit';
 import { gorunurMu } from '@/mantik/gorunurluk';
@@ -93,6 +93,7 @@ export default function KartGorunumu() {
   const [birakSorusu, setBirakSorusu] = useState(false);
   // P-72: kartın altındaki şerit: açıklama yerinde yazılır, hatırlatma zaman sayfasında.
   const [aciklamaYaziliyor, setAciklamaYaziliyor] = useState(false);
+  const [aciklamaMenusu, setAciklamaMenusu] = useState(false);
   const zamanAcici = useRef<KartZamaniAcici>(null);
   const uzman = useUzman();
 
@@ -165,7 +166,9 @@ export default function KartGorunumu() {
   /** P-72: şeritten parça: açıklama yerinde yazılır; fotoğraf önce seçilir; öbürleri boş eklenir. */
   const parcaEkle = async (o: SeritOgesi) => {
     if (o === 'aciklama') {
+      // P-75: boş da olsa kartta kalır.
       setAciklamaYaziliyor(true);
+      if (!aciklamaVarMi(kart.kisa)) icerikKaydet(kartMetniYaz(kapi, kart.id, { kisa: BOS_ACIKLAMA }));
       return;
     }
     if (o === 'foto') {
@@ -270,18 +273,18 @@ export default function KartGorunumu() {
                 </Yazi>
               </Pressable>
             )}
-            {aciklamaDegisir(kart) ? (
-              <SatirIciZengin
+            {/* P-75: açıklama başlık satırlı öğe (Açıklama · Aa · ⋯); boşken de yerinde kalır. */}
+            {(aciklamaVarMi(kart.kisa) || aciklamaYaziliyor) && (
+              <AciklamaAlani
                 key={aciklamaYaziliyor ? 'yaziliyor' : 'durgun'}
                 metin={kart.kisa}
-                etiket="Açıklama"
-                bosIpucu={duzenlenir ? null : '+ Açıklama ekle'}
                 ilkDuzenleme={aciklamaYaziliyor}
-                onBitti={() => setAciklamaYaziliyor(false)}
-                onKaydet={(kisa) => icerikKaydet(kartMetniYaz(kapi, kart.id, { kisa }))}
+                degisir={aciklamaDegisir(kart)}
+                onKaydet={(kisa) =>
+                  icerikKaydet(kartMetniYaz(kapi, kart.id, { kisa: metinDoluMu(kisa) ? kisa : BOS_ACIKLAMA }))
+                }
+                onMenu={duzenlenir ? () => setAciklamaMenusu(true) : undefined}
               />
-            ) : (
-              <ZenginMetin metin={kart.kisa} />
             )}
             {!!gorusme && <GorusmeyeKatil baglanti={gorusme} />}
           </View>
@@ -378,7 +381,7 @@ export default function KartGorunumu() {
             <ParcaSeridi
               {...(duzenlenir
                 ? seritOgeleri({
-                    aciklamaVar: metinDoluMu(kart.kisa) || aciklamaYaziliyor || !aciklamaDegisir(kart),
+                    aciklamaVar: aciklamaVarMi(kart.kisa) || aciklamaYaziliyor || !aciklamaDegisir(kart),
                     uzman,
                     mevcut: bloklar.map((b) => b.tur),
                   })
@@ -405,6 +408,19 @@ export default function KartGorunumu() {
         )}
       </ScrollView>
 
+      {aciklamaMenusu && (
+        <ElemanMenusu
+          baslik="Açıklama"
+          anahtarlar={[]}
+          onSil={() => {
+            setAciklamaMenusu(false);
+            setAciklamaYaziliyor(false);
+            icerikKaydet(kartMetniYaz(kapi, kart.id, { kisa: '' }));
+          }}
+          silEtiketi="Karttan kaldır"
+          onKapat={() => setAciklamaMenusu(false)}
+        />
+      )}
       {menuAcik && (
         <AcilirMenu
           ust={kenar.top + 52}

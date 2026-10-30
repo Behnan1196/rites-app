@@ -385,3 +385,8 @@ Sonuç: → kararlar.md (Zaman şeridi; kartta seri kutusu yok); alışkanlık e
 Ne dedi: "Ben genelde eski adıyla görünüm modunda çalışıyorum, sadece başlığını yazıp kaydettiğim kartta. 1. Açıklama kısmında Bitti düğmesi olması şart mı? 2. Liste başlıksız olunca kötü duruyor, değiştirilebilir bir Liste yazısı olsa."
 Nerede: Kart görünümü
 Sonuç: → kararlar.md (Görünümde Bitti yok, listenin başlığı)
+
+### P-75 · 30 Ekim 2026 · Behnan
+Ne dedi: "Açıklama alanının bir başlık kısmı (header) olsun, orada açıklama yazsın, sağında da 2 ikon, biri Aa ve basıldığında formatlama şeridi görünsün, normalde görünmesin. Bir de açıklamada hiçbir şey girilmemişse veya silinmişse bileşen kalkmasın, şu an kapatılmış gibi alt şeride gidiyor. '...'yı menü için ayırdım, belki bir süre sonra Kur'a gerek kalmayacak."
+Nerede: Kart görünümü
+Sonuç: → kararlar.md (Açıklama başlık satırlı öğe)

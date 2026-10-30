@@ -2,15 +2,18 @@
 // başlık yazı gibi görünür, dokununca yazılır; açıklama ve talimat dokununca yerinde
 // biçimli editöre döner; listeye altta madde eklenir. Kayıt kendiliğinden (alandan çıkınca);
 // "Değiştir" düğmesi yok. P-74: editörde "Bitti" yok (dışarı dokununca kapanır); listenin adı
-// başlıkta yazı gibi ("Liste"), dokununca yazılır.
+// başlıkta yazı gibi ("Liste"), dokununca yazılır. P-75: açıklama başlık satırlı öğe (Aa · ⋯).
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
+import { metinDoluMu } from '@/mantik/zenginMetin';
+
+import { SimgeDugmesi } from '../SimgeDugmesi';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
 import { ZenginMetin, ZenginMetinAlani } from '../ZenginMetin';
-import { metinDoluMu } from '@/mantik/zenginMetin';
 
 /** Başlık: yazı gibi; dokununca yazılır, çıkınca kaydedilir (boş bırakılırsa eskisi kalır). */
 export function SatirIciBaslik({ baslik, onKaydet }: { baslik: string; onKaydet: (yeni: string) => void }) {
@@ -156,6 +159,157 @@ export function SatirIciAd({ ad, ipucu, onKaydet }: { ad: string; ipucu: string;
   );
 }
 
+/**
+ * P-75: kart görünümünde açıklama bir öğe: başlık satırı ("Açıklama" · Aa · ⋯). Aa biçim çubuğunu
+ * açar (normalde gizli); ⋯ menü (Karttan kaldır). Boşken de yerinde kalır ("Yazmak için dokun").
+ * Dokununca yerinde editör; dışarı dokununca kaydedilir.
+ */
+export function AciklamaAlani({
+  metin,
+  ilkDuzenleme = false,
+  degisir,
+  onKaydet,
+  onMenu,
+}: {
+  metin: string;
+  ilkDuzenleme?: boolean;
+  /** Kart açıkken değişebilir mi (kuranın ayarı). */
+  degisir: boolean;
+  onKaydet: (yeni: string) => void;
+  onMenu?: () => void;
+}) {
+  const [duzenle, setDuzenle] = useState(ilkDuzenleme && degisir);
+  const [cubuk, setCubuk] = useState(false);
+  const [odakIstegi, setOdakIstegi] = useState(0);
+  const [taslak, setTaslak] = useState(metin);
+  const taslakRef = useRef(metin);
+  const ilkRef = useRef(metin);
+  const kaydetRef = useRef(onKaydet);
+  useEffect(() => {
+    kaydetRef.current = onKaydet;
+  });
+  const kapanis = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const duzenleRef = useRef(duzenle);
+  useEffect(() => {
+    duzenleRef.current = duzenle;
+  });
+  // Ekrandan çıkarken editör açıksa yazılan kaybolmasın.
+  useEffect(
+    () => () => {
+      if (kapanis.current) clearTimeout(kapanis.current);
+      if (duzenleRef.current && taslakRef.current !== ilkRef.current) kaydetRef.current(taslakRef.current);
+    },
+    [],
+  );
+  const ac = () => {
+    setTaslak(metin);
+    taslakRef.current = metin;
+    ilkRef.current = metin;
+    setDuzenle(true);
+  };
+  const kapat = () => {
+    if (kapanis.current) clearTimeout(kapanis.current);
+    kapanis.current = null;
+    setDuzenle(false);
+    duzenleRef.current = false;
+    setCubuk(false);
+    if (taslakRef.current !== ilkRef.current) onKaydet(taslakRef.current);
+    ilkRef.current = taslakRef.current;
+  };
+  const odakDegis = (odak: boolean) => {
+    if (kapanis.current) clearTimeout(kapanis.current);
+    kapanis.current = null;
+    if (odak) return;
+    kapanis.current = setTimeout(() => {
+      kapanis.current = null;
+      kapat();
+    }, 400);
+  };
+  const dolu = metinDoluMu(duzenle ? taslak : metin);
+  return (
+    <View style={stiller.aciklama}>
+      <View style={stiller.aciklamaUst}>
+        <Ionicons name="reader-outline" size={20} color={renk.ana} />
+        <Yazi kalinlik="kalin" style={stiller.esnek}>
+          Açıklama
+        </Yazi>
+        {!degisir && (
+          <Ionicons
+            name="lock-closed-outline"
+            size={16}
+            color={renk.soluk}
+            accessibilityLabel="Kart açıkken değiştirilemez"
+          />
+        )}
+        {degisir && (
+          <Pressable
+            onPress={() => {
+              // Editörden çıkış sayılmasın: çubuk açılır, editör açık kalır.
+              if (kapanis.current) clearTimeout(kapanis.current);
+              kapanis.current = null;
+              if (!duzenle) ac();
+              else setOdakIstegi((n) => n + 1);
+              setCubuk((c) => !c);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Biçimlendirme"
+            accessibilityState={{ selected: cubuk }}
+            hitSlop={4}
+            style={({ pressed }) => [stiller.aa, cubuk && stiller.aaAcik, pressed && { opacity: 0.6 }]}
+          >
+            <Yazi kalinlik="kalin" renk={cubuk ? renk.yuzey : renk.ana} style={stiller.aaYazi}>
+              Aa
+            </Yazi>
+          </Pressable>
+        )}
+        {onMenu && (
+          <SimgeDugmesi
+            ikon="ellipsis-horizontal"
+            etiket="Açıklama: seçenekler"
+            onPress={() => {
+              // Menüden önce yazılan kaydedilir (kaldırınca geri gelmesin).
+              if (duzenleRef.current) kapat();
+              onMenu();
+            }}
+          />
+        )}
+      </View>
+      {duzenle ? (
+        <ZenginMetinAlani
+          etiket="Açıklama"
+          deger={taslak}
+          onDegis={(y) => {
+            taslakRef.current = y;
+            setTaslak(y);
+          }}
+          ipucu="Açıklama"
+          kisa
+          otomatikOdak
+          cubukGizli={!cubuk}
+          odakIstegi={odakIstegi}
+          onOdakDegis={odakDegis}
+        />
+      ) : (
+        <Pressable
+          onPress={degisir ? ac : undefined}
+          disabled={!degisir}
+          accessibilityRole={degisir ? 'button' : 'text'}
+          accessibilityLabel={dolu ? 'Açıklama. Değiştirmek için dokun' : 'Açıklama boş. Yazmak için dokun'}
+          style={({ pressed }) => [stiller.dokun, pressed && { opacity: 0.7 }]}
+        >
+          {dolu ? (
+            <ZenginMetin metin={metin} />
+          ) : (
+            <Yazi tur="ikincil" renk={renk.soluk}>
+              Yazmak için dokun
+            </Yazi>
+          )}
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
 /** Listeye madde ekleme satırı. */
 export function MaddeEkle({ onEkle }: { onEkle: (metin: string) => void }) {
   const [metin, setMetin] = useState('');
@@ -190,6 +344,19 @@ const stiller = StyleSheet.create({
     paddingHorizontal: 0,
   },
   dokun: { minHeight: 32, justifyContent: 'center', alignItems: 'flex-start' },
+  aciklama: { gap: 6 },
+  aciklamaUst: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  esnek: { flex: 1 },
+  aa: {
+    minWidth: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  aaAcik: { backgroundColor: renk.ana },
+  aaYazi: { fontSize: 18 },
   ad: { flex: 1, fontSize: boyut.govde, color: renk.ana, paddingVertical: 4, paddingHorizontal: 0 },
   editor: { gap: 8 },
   ekle: {

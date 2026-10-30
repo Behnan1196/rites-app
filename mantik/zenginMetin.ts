@@ -82,3 +82,14 @@ export function maddelerdenHtml(maddeler: readonly string[]): string {
 export function metinDoluMu(metin: string | null | undefined): boolean {
   return htmldenDuz(metin) !== '';
 }
+
+/**
+ * P-75: kartta duran ama boş açıklama (kart görünümünde şeritten eklenip boş bırakılan ya da
+ * silinen). Boş dize: açıklama yok (şeritte). Gösterilen her yerde `metinDoluMu` ile boş sayılır.
+ */
+export const BOS_ACIKLAMA = '<html><p></p></html>';
+
+/** Kartta açıklama alanı var mı (boş da olabilir). */
+export function aciklamaVarMi(kisa: string | null | undefined): boolean {
+  return !!kisa && kisa.trim() !== '';
+}
