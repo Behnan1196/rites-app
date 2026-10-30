@@ -60,6 +60,8 @@ export function ZenginMetinAlani({
   etiket,
   liste = false,
   kisa = false,
+  otomatikOdak = false,
+  onOdakDegis,
 }: {
   deger: string;
   onDegis: (html: string) => void;
@@ -70,6 +72,10 @@ export function ZenginMetinAlani({
   liste?: boolean;
   /** Tek iki satırlık alan (açıklama). */
   kisa?: boolean;
+  /** P-74: açılınca yazmaya hazır (kart görünümünde yerinde düzeltme). */
+  otomatikOdak?: boolean;
+  /** P-74: odak girince / çıkınca (kart görünümünde editör çıkınca kapanır). */
+  onOdakDegis?: (odak: boolean) => void;
 }) {
   const ref = useRef<EnrichedTextInputInstance>(null);
   const [ilk] = useState(() => metniHtml(deger));
@@ -89,6 +95,8 @@ export function ZenginMetinAlani({
     else if (ad === 'madde') r.toggleUnorderedList();
     else if (ad === 'numara') r.toggleOrderedList();
     else if (ad === 'kutu') r.toggleCheckboxList(false);
+    // Araç çubuğuna basınca odak kaçtıysa geri gelsin (kart görünümünde editör kapanmasın).
+    if (onOdakDegis) r.focus();
   };
 
   const dugmeler: {
@@ -168,8 +176,13 @@ export function ZenginMetinAlani({
           dokunuldu.current = true;
           setOdak(true);
           odakGoster(kutu.current);
+          onOdakDegis?.(true);
         }}
-        onBlur={() => setOdak(false)}
+        onBlur={() => {
+          setOdak(false);
+          onOdakDegis?.(false);
+        }}
+        autoFocus={otomatikOdak}
         onChangeState={(e) => setDurum(e.nativeEvent)}
         // P-52: metin seçince çıkan menüde de Kalın / İtalik.
         contextMenuItems={

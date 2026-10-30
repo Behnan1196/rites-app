@@ -380,3 +380,8 @@ Sonuç: → kararlar.md (Ajandada sade yeni kart, şerit kartın kendisinde)
 Ne dedi: "Biraz ekranı toparlamamız lazım. Zamanlama bilgileri chip değil de bir şerit gibi olsa daha güzel durabilir. Eğer süre bir günden fazla ise sadece onu belirtsin, seçili günler varsa alt satırda gösterilebilir. Bir süre varsa çıkan Kayıt: ve seri gösterimi kartta olmayabilir, eğer bir alışkanlık oturtmak istiyorsak o alışkanlıkların gidişatını gösteren ayrı bir ekran yapabiliriz."
 Nerede: Kart görünümü, yeni kart / Kur
 Sonuç: → kararlar.md (Zaman şeridi; kartta seri kutusu yok); alışkanlık ekranı açık
+
+### P-74 · 30 Ekim 2026 · Behnan
+Ne dedi: "Ben genelde eski adıyla görünüm modunda çalışıyorum, sadece başlığını yazıp kaydettiğim kartta. 1. Açıklama kısmında Bitti düğmesi olması şart mı? 2. Liste başlıksız olunca kötü duruyor, değiştirilebilir bir Liste yazısı olsa."
+Nerede: Kart görünümü
+Sonuç: → kararlar.md (Görünümde Bitti yok, listenin başlığı)

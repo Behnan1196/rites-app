@@ -38,7 +38,7 @@ import { useUzman } from '@/bilesen/useUzman';
 import { seritOgeleri, type SeritOgesi } from '@/mantik/parcaSecimi';
 import { metinDoluMu } from '@/mantik/zenginMetin';
 import { dosyayiSakla } from '@/veri/dosyalar';
-import { MaddeEkle, SatirIciBaslik, SatirIciZengin } from '@/bilesen/kart/SatirIci';
+import { MaddeEkle, SatirIciAd, SatirIciBaslik, SatirIciZengin } from '@/bilesen/kart/SatirIci';
 import { VideolarDuzenleyici } from '@/bilesen/kart/Videolar';
 import { blokVideolari, videolarBlogu } from '@/mantik/video';
 import { programBagCoz } from '@/mantik/program';
@@ -310,11 +310,20 @@ export default function KartGorunumu() {
                     return (
                       <View key={`${b.id}-${gun}`} style={stiller.parca}>
                         {/* Kayıt parçalarının kendi adı var ("Su", "Enerjim", soru); tür başlığı tekrar olmasın. */}
-                        {!tur.kayit && listeMi && (!!ad || sabitSimge) && (
+                        {/* P-74: listenin başlığı hep var: adı ya da "Liste"; değişebiliyorsa dokununca yazılır. */}
+                        {!tur.kayit && listeMi && (
                           <View style={stiller.blokBasligi}>
-                            <Yazi kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
-                              {ad}
-                            </Yazi>
+                            {parcaDegisir(kart, b) ? (
+                              <SatirIciAd
+                                ad={b.ad}
+                                ipucu="Liste"
+                                onKaydet={(yeni) => icerikKaydet(blokIcerikYaz(kapi, b.id, { ad: yeni }))}
+                              />
+                            ) : (
+                              <Yazi kalinlik="kalin" renk={r} style={stiller.blokAdi} numberOfLines={1}>
+                                {ad || 'Liste'}
+                              </Yazi>
+                            )}
                             {sabitSimge && <SabitSimgesi />}
                           </View>
                         )}

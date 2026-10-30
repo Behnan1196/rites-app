@@ -625,3 +625,8 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Zaman bilgisi hap değil, bölmeli tek şerit:** Tarih | Saat | Süre (açık gri zemin, ince ayırıcılar); her bölme kendi sayfasını açar, kilitli bölme soluk ve kilitli. Kur'da ⋯ şeridin sağında. — Ürün sahibi (P-73)
 - **Süre yalnız süreyi söyler:** "Bir gün" · "21 gün" · "Süresiz" (programda "Program boyunca"). Seçili günler varsa şeridin altında ikinci satır: "Pzt · Çar · Cum" / "Hafta içi" / "Hafta sonu"; her günse satır yok. Kart görünümündeki "Her gün" satırı kalktı. — Ürün sahibi (P-73)
 - **Kart görünümünde "Kayıt: …" ve seri kutusu (son 7 gün, seri, "Seriyi göster/gösterme") yok.** Alışkanlıkların gidişatı için ayrı bir ekran düşünülecek. Günün kayıt parçalarının (ölçüm, puan…) gün başlığı yerinde. — Ürün sahibi (P-73)
+
+## Görünümde Bitti yok, listenin başlığı (30 Ekim)
+
+- **Kart görünümünde açıklama ve talimat editöründe "Bitti" yok:** editör açılınca yazmaya hazır gelir; dışarı dokununca (alandan çıkınca) kaydedilip kapanır. Araç çubuğuna (K, İ, liste…) basmak editörü kapatmaz. — Ürün sahibi (P-74); çıkınca kapanma: Öneri
+- **Listenin başlığı hep var:** adı ya da "Liste"; değiştirilebiliyorsa başlığa dokununca yazılır, çıkınca kaydedilir. Değişmeyen listede adı ya da "Liste". — Ürün sahibi (P-74)

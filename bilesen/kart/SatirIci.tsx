@@ -1,12 +1,12 @@
 // Kart görünümünde doğrudan düzeltme (pilot 29 Ekim, P-66). Kartı kuran açık bıraktıysa:
 // başlık yazı gibi görünür, dokununca yazılır; açıklama ve talimat dokununca yerinde
-// biçimli editöre döner ("Bitti"); listeye altta madde eklenir. Kayıt kendiliğinden
-// (alandan çıkınca / Bitti); "Değiştir" düğmesi yok.
+// biçimli editöre döner; listeye altta madde eklenir. Kayıt kendiliğinden (alandan çıkınca);
+// "Değiştir" düğmesi yok. P-74: editörde "Bitti" yok (dışarı dokununca kapanır); listenin adı
+// başlıkta yazı gibi ("Liste"), dokununca yazılır.
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
-import { Dugme } from '../Dugme';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
 import { ZenginMetin, ZenginMetinAlani } from '../ZenginMetin';
@@ -63,6 +63,26 @@ export function SatirIciZengin({
 }) {
   const [duzenle, setDuzenle] = useState(ilkDuzenleme);
   const [taslak, setTaslak] = useState(metin);
+  const taslakRef = useRef(metin);
+  const kapanis = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (kapanis.current) clearTimeout(kapanis.current);
+    },
+    [],
+  );
+  /** P-74: editörden çıkınca (biraz bekleyip; araç çubuğuna basınca odak geri gelir) kaydedip kapanır. */
+  const odakDegis = (odak: boolean) => {
+    if (kapanis.current) clearTimeout(kapanis.current);
+    kapanis.current = null;
+    if (odak) return;
+    kapanis.current = setTimeout(() => {
+      kapanis.current = null;
+      setDuzenle(false);
+      if (taslakRef.current !== metin) onKaydet(taslakRef.current);
+      onBitti?.();
+    }, 400);
+  };
   if (!duzenle) {
     const dolu = metinDoluMu(metin);
     if (!dolu && bosIpucu === null) return null;
@@ -70,6 +90,7 @@ export function SatirIciZengin({
       <Pressable
         onPress={() => {
           setTaslak(metin);
+          taslakRef.current = metin;
           setDuzenle(true);
         }}
         accessibilityRole="button"
@@ -88,19 +109,50 @@ export function SatirIciZengin({
   }
   return (
     <View style={stiller.editor}>
-      <ZenginMetinAlani etiket={etiket} deger={taslak} onDegis={setTaslak} ipucu={etiket} kisa />
-      <Dugme
-        tur="ikincil"
-        yaziRengi={renk.ana}
-        etiket="Bitti"
-        onPress={() => {
-          setDuzenle(false);
-          if (taslak !== metin) onKaydet(taslak);
-          onBitti?.();
+      <ZenginMetinAlani
+        etiket={etiket}
+        deger={taslak}
+        onDegis={(y) => {
+          taslakRef.current = y;
+          setTaslak(y);
         }}
-        style={stiller.bitti}
+        ipucu={etiket}
+        kisa
+        otomatikOdak
+        onOdakDegis={odakDegis}
       />
     </View>
+  );
+}
+
+/** P-74: parçanın adı (liste): yazı gibi; boşken soluk "Liste". Dokununca yazılır, çıkınca kaydedilir. */
+export function SatirIciAd({ ad, ipucu, onKaydet }: { ad: string; ipucu: string; onKaydet: (yeni: string) => void }) {
+  const [metin, setMetin] = useState(ad);
+  const [onceki, setOnceki] = useState(ad);
+  if (ad !== onceki) {
+    setOnceki(ad);
+    setMetin(ad);
+  }
+  const bitir = () => {
+    const t = metin.trim();
+    if (t !== ad) onKaydet(t);
+  };
+  return (
+    <TextInput
+      accessibilityLabel={`${ipucu} adı`}
+      accessibilityHint="Değiştirmek için dokun"
+      value={metin}
+      onChangeText={setMetin}
+      onEndEditing={bitir}
+      onBlur={bitir}
+      onSubmitEditing={bitir}
+      returnKeyType="done"
+      submitBehavior="blurAndSubmit"
+      placeholder={ipucu}
+      placeholderTextColor={renk.ana}
+      selectionColor={renk.ana}
+      style={[stiller.ad, yazi('kalin')]}
+    />
   );
 }
 
@@ -137,9 +189,9 @@ const stiller = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 0,
   },
-  dokun: { minHeight: 32, justifyContent: 'center' },
+  dokun: { minHeight: 32, justifyContent: 'center', alignItems: 'flex-start' },
+  ad: { flex: 1, fontSize: boyut.govde, color: renk.ana, paddingVertical: 4, paddingHorizontal: 0 },
   editor: { gap: 8 },
-  bitti: { alignSelf: 'flex-end' },
   ekle: {
     minHeight: 48,
     borderWidth: 1,
