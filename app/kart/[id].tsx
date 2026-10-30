@@ -51,17 +51,16 @@ import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { kaynakAnahtari, kaynakTuru } from '@/mantik/kaynak';
 import { Yazi } from '@/bilesen/Yazi';
 import { ZenginMetin } from '@/bilesen/ZenginMetin';
-import { gunBasligi, yapilanGunler } from '@/mantik/ajanda';
+import { gunBasligi } from '@/mantik/ajanda';
 import { cesitBul } from '@/mantik/cesit';
-import { gorunurMu, seri, seriMetni, son7Gun, tekrarMetni, type SeritGunu } from '@/mantik/gorunurluk';
-import { seriSayilirMi, sonYediGunMetni } from '@/mantik/karakter';
-import { ARAC_BLOKLARI, bosKayit, type Kart, type Kayit } from '@/mantik/kart';
+import { gorunurMu } from '@/mantik/gorunurluk';
+import { ARAC_BLOKLARI, bosKayit, type Kayit } from '@/mantik/kart';
 import { bagCoz } from '@/mantik/bulusma';
 import { verilenBagCoz } from '@/mantik/kartVerme';
 import { aciklamaDegisir, ayarliParcaMi, baslikDegisir, parcaDegisir, saatDegisir } from '@/mantik/gorunumDegisimi';
 import { kartPaketi } from '@/mantik/paylasim';
 import { useOturum } from '@/sunucu/oturum';
-import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
+import { type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import {
   blokEkle,
@@ -70,7 +69,6 @@ import {
   kartAyrinti,
   kartKayitlari,
   kartMetniYaz,
-  kartSeriSayYaz,
   kayitDegistir,
 } from '@/veri/kartlar';
 import { karttanProgramaEkle, programaYansit, programOku } from '@/veri/programlar';
@@ -148,8 +146,6 @@ export default function KartGorunumu() {
   // Ajandadaki gibi: kendi kartında şerit yok; program, grup, gelen… kartında kaynağın rengi.
   const kaynak = kaynakTuru(kaynakAnahtari(kart));
   const serit = kaynak === 'kendim' ? null : kaynakRenk[kaynak].serit;
-  // P-63: tarih ve saat sağ üstteki rozette; burada yalnız tekrar.
-  const meta = kart.tekrar ? tekrarMetni(kart.tekrar) : null;
   const cesit = cesitBul(kart.cesit ?? null);
   const isaretlenir = gorunurMu(kart, gun, bugunGun);
   const duzenlenir = !kart.kilitli;
@@ -184,8 +180,6 @@ export default function KartGorunumu() {
     const tur = o === 'liste' && !kart.tekrar ? 'adimlar' : o;
     icerikKaydet(blokEkle(kapi, kart.id, { id: yeniKimlik(), tur }));
   };
-  const seriDegis = (seriSay: boolean) =>
-    void kartSeriSayYaz(kapi, kart.id, seriSay).catch((e: unknown) => console.error('Kaydedilemedi', e));
   // P-38: tek yerleşim: önce "Ne yapacaksın" (talimat, video, liste, zamanlayıcı…), sonra o günün kaydı.
   const yapilacaklar = bloklar.filter((b) => !BLOK_TURLERI[b.tur].kayit || ARAC_BLOKLARI.includes(b.tur));
   const kaydedilecekler = bloklar.filter((b) => BLOK_TURLERI[b.tur].kayit && !ARAC_BLOKLARI.includes(b.tur));
@@ -263,12 +257,6 @@ export default function KartGorunumu() {
                 </>
               )}
             </View>
-            {!!meta && (
-              <View style={stiller.metaSatiri}>
-                <Ionicons name="repeat-outline" size={18} color={renk.ikincil} />
-                <Yazi tur="ikincil">{meta}</Yazi>
-              </View>
-            )}
             {!!program && (
               <Pressable
                 onPress={() => router.push({ pathname: '/yasam/program/[id]', params: { id: program.id } })}
@@ -298,19 +286,7 @@ export default function KartGorunumu() {
             {!!gorusme && <GorusmeyeKatil baglanti={gorusme} />}
           </View>
 
-          {kart.tekrar && (
-            <View style={[stiller.bolum, stiller.cizgili]}>
-              <SeriKutusu
-                kart={kart}
-                gun={gun}
-                bugunGun={bugunGun}
-                kayitlar={kayitlar}
-                seriVar={seriSayilirMi(kart, bloklar)}
-                onSeriDegis={duzenlenir ? seriDegis : undefined}
-              />
-            </View>
-          )}
-
+          {/* P-73: Kayıt ve seri kutusu kartta yok; alışkanlıkların gidişatı ayrı ekranda düşünülecek. */}
           {[
             // P-69: "Ne yapacaksın" başlığı yok (açıklama da yukarıda); günün kaydında gün başlığı kalır.
             { baslik: '', liste: yapilacaklar },
@@ -507,85 +483,6 @@ function SabitSimgesi() {
   );
 }
 
-function SeriKutusu({
-  kart,
-  gun,
-  bugunGun,
-  kayitlar,
-  seriVar,
-  onSeriDegis,
-}: {
-  kart: Kart;
-  gun: Gun;
-  bugunGun: Gun;
-  kayitlar: readonly Kayit[];
-  /** P-35: seri sayılmayan kartta seri yerine "Son 7 günde N kez". */
-  seriVar: boolean;
-  /** P-36: kuralın istisnası burada ("Seriyi gösterme" / "Seriyi göster"); formda anahtar yok. */
-  onSeriDegis?: (seriSay: boolean) => void;
-}) {
-  const yapilan = yapilanGunler(kayitlar);
-  const serit = son7Gun(kart, gun, yapilan, bugunGun);
-  return (
-    <View style={stiller.seri}>
-      <Yazi kalinlik="kalin">{`Kayıt: ${gunBasligi(gun, bugunGun)}`}</Yazi>
-      <View style={stiller.serit}>
-        {serit.map((s) => (
-          <SeritHucresi key={s.gun} s={s} acilan={s.gun === gun} bugunGun={bugunGun} />
-        ))}
-      </View>
-      <Yazi kalinlik="kalin" renk={renk.ana}>
-        {seriVar ? seriMetni(seri(kart, yapilan, bugunGun)) : sonYediGunMetni(serit)}
-      </Yazi>
-      {onSeriDegis && (
-        <Pressable
-          onPress={() => onSeriDegis(!seriVar)}
-          accessibilityRole="button"
-          hitSlop={8}
-          style={({ pressed }) => [stiller.seriAnahtari, pressed && { opacity: 0.6 }]}
-        >
-          <Yazi tur="etiket" renk={renk.ikincil}>
-            {seriVar ? 'Seriyi gösterme' : 'Seriyi göster'}
-          </Yazi>
-        </Pressable>
-      )}
-    </View>
-  );
-}
-
-const SERIT_ETIKETI: Record<SeritGunu['durum'], string> = {
-  yapildi: 'yapıldı',
-  yapilmadi: 'yapılmadı',
-  gelecek: 'henüz gelmedi',
-  yok: 'kart yok',
-};
-
-function SeritHucresi({ s, acilan, bugunGun }: { s: SeritGunu; acilan: boolean; bugunGun: Gun }) {
-  return (
-    <View style={stiller.hucre} accessible accessibilityLabel={`${uzunTarih(s.gun)}: ${SERIT_ETIKETI[s.durum]}`}>
-      <View
-        style={[
-          stiller.daire,
-          s.durum === 'yapildi' && stiller.daireDolu,
-          (s.durum === 'yapilmadi' || s.durum === 'gelecek') && stiller.daireBos,
-        ]}
-      >
-        {s.durum === 'yapildi' && <Ionicons name="checkmark" size={20} color={renk.yuzey} />}
-        {s.durum === 'yapilmadi' && <Yazi renk={renk.soluk}>–</Yazi>}
-        {s.durum === 'yok' && <Yazi renk={renk.pasif}>·</Yazi>}
-      </View>
-      <Yazi
-        tur="etiket"
-        kalinlik={acilan ? 'kalin' : 'normal'}
-        renk={acilan ? renk.yazi : renk.ikincil}
-        maxFontSizeMultiplier={1.2}
-      >
-        {s.gun === bugunGun ? 'Bugün' : gunKisa(s.gun)}
-      </Yazi>
-    </View>
-  );
-}
-
 const stiller = StyleSheet.create({
   ustSag: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   planEtiketi: {
@@ -624,7 +521,6 @@ const stiller = StyleSheet.create({
   bolum: { paddingHorizontal: olcu.kartIci + 4, paddingVertical: 16, gap: 12 },
   cizgili: { borderTopWidth: 1, borderTopColor: renk.satirCizgi },
   seritAlani: { paddingHorizontal: olcu.kartIci, paddingBottom: olcu.kartIci },
-  metaSatiri: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   ustSatir: { flexDirection: 'row', alignItems: 'center', gap: 8, marginRight: -6 },
   cesitAdi: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   esnek: { flex: 1 },
@@ -648,11 +544,4 @@ const stiller = StyleSheet.create({
   blokAdi: { flex: 1 },
   anaBolum: { gap: 16 },
   parca: { gap: 10 },
-  seriAnahtari: { alignSelf: 'flex-start', minHeight: 36, justifyContent: 'center' },
-  seri: { gap: 10 },
-  serit: { flexDirection: 'row', justifyContent: 'space-between' },
-  hucre: { alignItems: 'center', gap: 4, flex: 1 },
-  daire: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  daireDolu: { backgroundColor: renk.ana },
-  daireBos: { borderWidth: 2, borderColor: renk.cizgi, backgroundColor: renk.yuzey },
 });

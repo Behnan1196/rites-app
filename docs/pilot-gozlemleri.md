@@ -375,3 +375,8 @@ Sonuç: → kararlar.md (Sade zamanlayıcı)
 Ne dedi: "Ajanda da + ya bastığımızda, normal kullanıcıda doğrudan yeni kartı açsın. Yukarıda zaman chipleri var, bunlar tek satıra sığmalı, bunun için belki bildirimi aşağı alabiliriz yani en alttaki kart bileşenleri şeridine. Ve kart bileşenleri şeridi, kaydettiğimiz kartı açtığımızda da en altta olsun ve çalışsın, buradan alan eklemekte farklılıklar olabilir onlara bakarız."
 Nerede: Ajandam +, yeni kart, kart görünümü
 Sonuç: → kararlar.md (Ajandada sade yeni kart, şerit kartın kendisinde)
+
+### P-73 · 30 Ekim 2026 · Behnan
+Ne dedi: "Biraz ekranı toparlamamız lazım. Zamanlama bilgileri chip değil de bir şerit gibi olsa daha güzel durabilir. Eğer süre bir günden fazla ise sadece onu belirtsin, seçili günler varsa alt satırda gösterilebilir. Bir süre varsa çıkan Kayıt: ve seri gösterimi kartta olmayabilir, eğer bir alışkanlık oturtmak istiyorsak o alışkanlıkların gidişatını gösteren ayrı bir ekran yapabiliriz."
+Nerede: Kart görünümü, yeni kart / Kur
+Sonuç: → kararlar.md (Zaman şeridi; kartta seri kutusu yok); alışkanlık ekranı açık

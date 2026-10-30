@@ -300,8 +300,10 @@ export function ZamanSayfasi({
 export type ZamanBolumu = 'tarih' | 'saat' | 'sure' | 'hatirlatma';
 
 /**
- * Zaman satırı (P-67, P-72): Tarih · Saat · Süre hapları tek satırda (hatırlatma kartın altındaki şeritte); her biri kendi küçük sayfasını
- * açar. Kart görünümünde ve Kur'da aynı. İzni olmayan hap kilitli görünür, dokunulmaz.
+ * Zaman şeridi (P-67, P-72, P-73): hap değil, bölmeli tek şerit: Tarih | Saat | Süre (hatırlatma
+ * kartın altındaki parça şeridinde). Her bölme kendi küçük sayfasını açar; kart görünümünde ve
+ * Kur'da aynı. Süre yalnız süreyi söyler ("21 gün", "Süresiz"); seçili günler varsa şeridin
+ * altında ikinci satırda ("Pzt · Çar · Cum", "Hafta içi"). İzni olmayan bölme kilitli, dokunulmaz.
  */
 export function ZamanHaplari({
   deger,
@@ -325,27 +327,34 @@ export function ZamanHaplari({
   tarihIzni?: boolean;
   /** Saat ve hatırlatma değişebilir mi. */
   saatIzni?: boolean;
-  /** Satırın sonunda (Kur'da ⋯). */
+  /** Şeridin sağında (Kur'da ⋯). */
   sag?: React.ReactNode;
 }) {
-  const hap = (bolum: ZamanBolumu, ikon: IkonAdi, metin: string, etiket: string, ayarli: boolean, izin: boolean) => (
+  const bolme = (
+    bolum: ZamanBolumu,
+    ikon: IkonAdi,
+    metin: string,
+    etiket: string,
+    ayarli: boolean,
+    izin: boolean,
+    ilk: boolean,
+  ) => (
     <Pressable
       key={bolum}
       onPress={() => onAc(bolum)}
       disabled={!izin}
       accessibilityRole={izin ? 'button' : 'text'}
       accessibilityLabel={`${etiket}: ${metin}${izin ? '' : ', değiştirilemez'}`}
-      style={({ pressed }) => [
-        stiller.seritHap,
-        ayarli && izin && stiller.seritHapAyarli,
-        !izin && stiller.hapKilitli,
-        pressed && { opacity: 0.7 },
-      ]}
+      style={({ pressed }) => [stiller.zamanBolme, !ilk && stiller.bolmeCizgisi, pressed && { opacity: 0.6 }]}
     >
-      <Ionicons name={izin ? ikon : 'lock-closed-outline'} size={17} color={ayarli && izin ? renk.ana : renk.ikincil} />
+      <Ionicons
+        name={izin ? ikon : 'lock-closed-outline'}
+        size={17}
+        color={!izin ? renk.soluk : ayarli ? renk.ana : renk.ikincil}
+      />
       <Yazi
         kalinlik="kalin"
-        renk={ayarli && izin ? renk.ana : renk.ikincil}
+        renk={!izin ? renk.soluk : ayarli ? renk.ana : renk.ikincil}
         numberOfLines={1}
         style={stiller.seritYazi}
       >
@@ -358,24 +367,57 @@ export function ZamanHaplari({
     : programGunu
       ? programGunuMetni(programGunu, deger.tarih)
       : kisaTarih(deger.tarih);
+  const tarihVar = !kalip && !gunGizle;
+  const gunler = deger.tekrar ? gunSatiriMetni(deger.tekrar) : null;
   return (
-    <View style={stiller.hapSatiri}>
-      {!kalip && !gunGizle && hap('tarih', 'calendar-outline', gunMetni, 'Tarih', true, tarihIzni)}
-      {hap('saat', 'time-outline', deger.saat ?? 'Saat yok', 'Saat', deger.saat !== null, saatIzni)}
-      {hap('sure', 'repeat', sureSeridiMetni(deger.tekrar, !!programGunu), 'Süre', deger.tekrar !== null, tarihIzni)}
-      {sag}
+    <View style={stiller.zamanSeridiKap}>
+      <View style={stiller.hapSatiri}>
+        <View style={stiller.zamanSeridi}>
+          {tarihVar && bolme('tarih', 'calendar-outline', gunMetni, 'Tarih', true, tarihIzni, true)}
+          {bolme('saat', 'time-outline', deger.saat ?? 'Saat yok', 'Saat', deger.saat !== null, saatIzni, !tarihVar)}
+          {bolme(
+            'sure',
+            'repeat',
+            sureSeridiMetni(deger.tekrar, !!programGunu),
+            'Süre',
+            deger.tekrar !== null,
+            tarihIzni,
+            false,
+          )}
+        </View>
+        {sag}
+      </View>
+      {!!gunler && (
+        <Pressable
+          onPress={() => onAc('sure')}
+          disabled={!tarihIzni}
+          accessibilityRole={tarihIzni ? 'button' : 'text'}
+          accessibilityLabel={`Günler: ${gunler}`}
+          style={({ pressed }) => [stiller.gunSatiri, pressed && { opacity: 0.6 }]}
+        >
+          <Ionicons name="calendar-clear-outline" size={15} color={renk.ikincil} />
+          <Yazi tur="etiket" kalinlik="kalin" renk={renk.ikincil} numberOfLines={1}>
+            {gunler}
+          </Yazi>
+        </Pressable>
+      )}
     </View>
   );
 }
 
-/** Şeritteki süre: "Bir gün" · "30 gün" · "Süresiz" (programda "Program boyunca"). */
+/** Şeritteki süre (P-73: yalnız süre): "Bir gün" · "21 gün" · "Süresiz" (programda "Program boyunca"). */
 export function sureSeridiMetni(tekrar: Tekrar | null, programda = false): string {
   if (!tekrar) return 'Bir gün';
+  if (programda) return 'Program boyunca';
+  return tekrar.gunSayisi !== null ? `${tekrar.gunSayisi} gün` : 'Süresiz';
+}
+
+/** P-73: şeridin altındaki gün satırı; her günse yok: "Hafta içi" · "Pzt · Çar · Cum". */
+export function gunSatiriMetni(tekrar: Tekrar): string | null {
+  if (tekrar.desen === 'haftaici') return 'Hafta içi';
+  if (tekrar.desen === 'haftasonu') return 'Hafta sonu';
   const gunler = seciliGunler(tekrar);
-  // Her gün değilse günler de (en çok üç gün; yoksa gün sayısı): "Pzt · Süresiz".
-  const ek = gunler.length === 7 ? '' : gunler.length <= 3 ? `${gunler.join(' ')} · ` : `Haftada ${gunler.length} · `;
-  if (programda) return `${ek}Program boyunca`;
-  return `${ek}${tekrar.gunSayisi !== null ? `${tekrar.gunSayisi} gün` : 'Süresiz'}`;
+  return gunler.length === 7 ? null : gunler.join(' · ');
 }
 
 /** Şeritteki hatırlatma: "Yok" · "Saatinde" · "1 gün önce". */
@@ -1055,6 +1097,27 @@ const stiller = StyleSheet.create({
   serit: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   // P-72: tek satır (hatırlatma kartın altındaki şeritte); uzun yazı kısalır.
   hapSatiri: { flexDirection: 'row', gap: 6, alignItems: 'center' },
+  // P-73: bölmeli zaman şeridi.
+  zamanSeridiKap: { gap: 6 },
+  zamanSeridi: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    minHeight: 46,
+    borderRadius: 14,
+    backgroundColor: renk.bolumluZemin,
+  },
+  zamanBolme: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    paddingHorizontal: 6,
+  },
+  bolmeCizgisi: { borderLeftWidth: 1, borderLeftColor: renk.cizgi },
+  gunSatiri: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', minHeight: 28 },
   hapKilitli: { backgroundColor: 'transparent', borderStyle: 'dashed' },
   seritHap: {
     flexDirection: 'row',

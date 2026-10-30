@@ -619,3 +619,9 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Zaman hapları tek satır: Tarih · Saat · Süre.** Hatırlatma kartın altındaki şeridin başında; değeri yazılır ("15 dk önce"), dokununca hatırlatma sayfası açılır. Haplar biraz sıkılaştı; uzun yazı kısalır. — Ürün sahibi (P-72)
 - **Şerit kayıtlı kartın görünümünde de en altta ve çalışır:** Hatırlatma · Açıklama · Liste · Fotoğraf · Video (uzmanda Daha). Açıklama yerinde editörle açılır; liste ve video boş eklenir (liste tek seferlik kartta işaretleri kalan liste); fotoğraf önce galeriden seçilir; Daha Kur'u parça seçici açık getirir (ölçüm gibi ayarlı parçalar Kur'da kurulur). Boş kartın "+ Karta bir şey ekle" düğmesi ve görünümdeki "+ Açıklama ekle" yazısı kalktı. Verilen kartta şeritte yalnız hatırlatma (izin yoksa kilitli). — Ürün sahibi (P-72); ayrıntılar: Öneri
 - Şeritte ikon çoğalınca yazı küçülür (telefonda sığar; tek satır). — Öneri
+
+## Zaman şeridi; kartta seri kutusu yok (30 Ekim)
+
+- **Zaman bilgisi hap değil, bölmeli tek şerit:** Tarih | Saat | Süre (açık gri zemin, ince ayırıcılar); her bölme kendi sayfasını açar, kilitli bölme soluk ve kilitli. Kur'da ⋯ şeridin sağında. — Ürün sahibi (P-73)
+- **Süre yalnız süreyi söyler:** "Bir gün" · "21 gün" · "Süresiz" (programda "Program boyunca"). Seçili günler varsa şeridin altında ikinci satır: "Pzt · Çar · Cum" / "Hafta içi" / "Hafta sonu"; her günse satır yok. Kart görünümündeki "Her gün" satırı kalktı. — Ürün sahibi (P-73)
+- **Kart görünümünde "Kayıt: …" ve seri kutusu (son 7 gün, seri, "Seriyi göster/gösterme") yok.** Alışkanlıkların gidişatı için ayrı bir ekran düşünülecek. Günün kayıt parçalarının (ölçüm, puan…) gün başlığı yerinde. — Ürün sahibi (P-73)
