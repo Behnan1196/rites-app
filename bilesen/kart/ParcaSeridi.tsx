@@ -1,6 +1,8 @@
 // Kartın altındaki parça şeridi (pilot 29 Ekim, P-68): "+ Karta ekle" yerine hafif koyu
 // zeminli bir şeritte ikonlar: kartta olmayan Açıklama · Liste · Fotoğraf · Video; uzmanda öbür
 // parçalar için "Daha". Basınca parça kartın içine eklenir; eklenen ikon şeritten kalkar.
+// P-72: zaman hapları tek satıra sığsın diye Hatırlatma şeridin başında (değeriyle: "15 dk önce");
+// şerit kayıtlı kartın görünümünde de var.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
@@ -19,34 +21,77 @@ function ogeBilgisi(o: SeritOgesi): { ad: string; ikon: IkonAdi } {
   return { ad: BLOK_TURLERI[o].ad, ikon: BLOK_TURLERI[o].ikon };
 }
 
+/** P-72: şeridin başındaki hatırlatma (kartın ayarı; eklenen bir parça değil). */
+export interface SeritHatirlatmasi {
+  /** "Hatırlatma" ya da değeri ("15 dk önce"). */
+  metin: string;
+  ayarli: boolean;
+  alarm: boolean;
+  /** Kart açıkken değişebilir mi (verenin ayarı). */
+  izin: boolean;
+  onPress: () => void;
+}
+
 export function ParcaSeridi({
   ogeler,
   daha,
   onSec,
   onDaha,
+  hatirlatma,
 }: {
   ogeler: readonly SeritOgesi[];
   daha: boolean;
   onSec: (o: SeritOgesi) => void;
   onDaha: () => void;
+  hatirlatma?: SeritHatirlatmasi;
 }) {
-  if (ogeler.length === 0 && !daha) return null;
-  const dugme = (anahtar: string, ad: string, ikon: IkonAdi, onPress: () => void, ipucu: string) => (
-    <Pressable
-      key={anahtar}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={ipucu}
-      style={({ pressed }) => [stiller.dugme, pressed && { opacity: 0.6 }]}
-    >
-      <Ionicons name={ikon} size={24} color={renk.ana} />
-      <Yazi tur="etiket" kalinlik="kalin" renk={renk.ikincil} numberOfLines={1} maxFontSizeMultiplier={1.2}>
-        {ad}
-      </Yazi>
-    </Pressable>
-  );
+  if (ogeler.length === 0 && !daha && !hatirlatma) return null;
+  const dugme = (
+    anahtar: string,
+    ad: string,
+    ikon: IkonAdi,
+    onPress: () => void,
+    ipucu: string,
+    secenek: { ayarli?: boolean; izin?: boolean } = {},
+  ) => {
+    const izin = secenek.izin ?? true;
+    const r = secenek.ayarli && izin ? renk.ana : renk.ikincil;
+    return (
+      <Pressable
+        key={anahtar}
+        onPress={onPress}
+        disabled={!izin}
+        accessibilityRole={izin ? 'button' : 'text'}
+        accessibilityLabel={izin ? ipucu : `${ipucu}, değiştirilemez`}
+        style={({ pressed }) => [stiller.dugme, pressed && { opacity: 0.6 }]}
+      >
+        <Ionicons name={izin ? ikon : 'lock-closed-outline'} size={22} color={izin ? renk.ana : renk.soluk} />
+        <Yazi
+          tur="etiket"
+          kalinlik="kalin"
+          renk={r}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.75}
+          maxFontSizeMultiplier={1.2}
+          style={stiller.ad}
+        >
+          {ad}
+        </Yazi>
+      </Pressable>
+    );
+  };
   return (
     <View style={stiller.serit} accessibilityRole="toolbar" accessibilityLabel="Karta ekle">
+      {hatirlatma &&
+        dugme(
+          'hatirlatma',
+          hatirlatma.metin,
+          hatirlatma.ayarli && hatirlatma.alarm ? 'alarm-outline' : 'notifications-outline',
+          hatirlatma.onPress,
+          `Hatırlatma: ${hatirlatma.ayarli ? hatirlatma.metin : 'yok'}`,
+          { ayarli: hatirlatma.ayarli, izin: hatirlatma.izin },
+        )}
       {ogeler.map((o) => {
         const b = ogeBilgisi(o);
         return dugme(o, b.ad, b.ikon, () => onSec(o), `${b.ad} ekle`);
@@ -57,9 +102,9 @@ export function ParcaSeridi({
 }
 
 const stiller = StyleSheet.create({
+  // P-72: tek satır; ikon sayısı artınca yazı küçülür (en çok 6: Hatırlatma … Daha).
   serit: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     backgroundColor: renk.bolumluZemin,
     borderRadius: olcu.kose.kart,
     paddingVertical: 6,
@@ -67,12 +112,13 @@ const stiller = StyleSheet.create({
     marginTop: 4,
   },
   dugme: {
-    flexGrow: 1,
-    flexBasis: 64,
+    flex: 1,
+    minWidth: 0,
     minHeight: 60,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
-    paddingHorizontal: 4,
+    paddingHorizontal: 1,
   },
+  ad: { fontSize: 12, lineHeight: 16 },
 });

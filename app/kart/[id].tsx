@@ -18,7 +18,8 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -30,7 +31,13 @@ import { useKartVer } from '@/bilesen/gruplar/KartVerSayfasi';
 import { BirakSorusu } from '@/bilesen/gruplar/VerilenKartParcalari';
 import { BlokUygulama } from '@/bilesen/kart/BlokUygulama';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
-import { KartZamanSatiri } from '@/bilesen/kart/KartZamani';
+import { KartZamanSatiri, type KartZamaniAcici } from '@/bilesen/kart/KartZamani';
+import { ParcaSeridi } from '@/bilesen/kart/ParcaSeridi';
+import { seritHatirlatmaMetni } from '@/bilesen/kart/Zamanlama';
+import { useUzman } from '@/bilesen/useUzman';
+import { seritOgeleri, type SeritOgesi } from '@/mantik/parcaSecimi';
+import { metinDoluMu } from '@/mantik/zenginMetin';
+import { dosyayiSakla } from '@/veri/dosyalar';
 import { MaddeEkle, SatirIciBaslik, SatirIciZengin } from '@/bilesen/kart/SatirIci';
 import { VideolarDuzenleyici } from '@/bilesen/kart/Videolar';
 import { blokVideolari, videolarBlogu } from '@/mantik/video';
@@ -51,12 +58,13 @@ import { seriSayilirMi, sonYediGunMetni } from '@/mantik/karakter';
 import { ARAC_BLOKLARI, bosKayit, type Kart, type Kayit } from '@/mantik/kart';
 import { bagCoz } from '@/mantik/bulusma';
 import { verilenBagCoz } from '@/mantik/kartVerme';
-import { aciklamaDegisir, ayarliParcaMi, baslikDegisir, parcaDegisir } from '@/mantik/gorunumDegisimi';
+import { aciklamaDegisir, ayarliParcaMi, baslikDegisir, parcaDegisir, saatDegisir } from '@/mantik/gorunumDegisimi';
 import { kartPaketi } from '@/mantik/paylasim';
 import { useOturum } from '@/sunucu/oturum';
 import { gunKisa, uzunTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import {
+  blokEkle,
   blokIcerikYaz,
   isaretle,
   kartAyrinti,
@@ -85,6 +93,10 @@ export default function KartGorunumu() {
   const kartVer = useKartVer();
   const { bulusmalar } = useBulusmalar();
   const [birakSorusu, setBirakSorusu] = useState(false);
+  // P-72: kartın altındaki şerit: açıklama yerinde yazılır, hatırlatma zaman sayfasında.
+  const [aciklamaYaziliyor, setAciklamaYaziliyor] = useState(false);
+  const zamanAcici = useRef<KartZamaniAcici>(null);
+  const uzman = useUzman();
 
   const form = useKartFormu((sonuc) => {
     if (sonuc.silindi) router.back();
@@ -154,6 +166,24 @@ export default function KartGorunumu() {
         console.error('Kaydedilemedi', e);
         kisaMesaj('Kaydedilemedi. Yeniden dene.');
       });
+  /** P-72: şeritten parça: açıklama yerinde yazılır; fotoğraf önce seçilir; öbürleri boş eklenir. */
+  const parcaEkle = async (o: SeritOgesi) => {
+    if (o === 'aciklama') {
+      setAciklamaYaziliyor(true);
+      return;
+    }
+    if (o === 'foto') {
+      const sonuc = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 });
+      const secilen = sonuc.canceled ? undefined : sonuc.assets[0];
+      if (!secilen) return;
+      const dosya = await dosyayiSakla(secilen.uri, secilen.fileName ?? undefined);
+      icerikKaydet(blokEkle(kapi, kart.id, { id: yeniKimlik(), tur: 'foto', dosya }));
+      return;
+    }
+    // Tek seferlik kartta işaretleri kalan liste (formdaki gibi).
+    const tur = o === 'liste' && !kart.tekrar ? 'adimlar' : o;
+    icerikKaydet(blokEkle(kapi, kart.id, { id: yeniKimlik(), tur }));
+  };
   const seriDegis = (seriSay: boolean) =>
     void kartSeriSayYaz(kapi, kart.id, seriSay).catch((e: unknown) => console.error('Kaydedilemedi', e));
   // P-38: tek yerleşim: önce "Ne yapacaksın" (talimat, video, liste, zamanlayıcı…), sonra o günün kaydı.
@@ -201,7 +231,7 @@ export default function KartGorunumu() {
               </View>
             )}
             {/* P-67: zaman satırı: Tarih · Saat · Süre · Hatırlatma (izinler ayrı). */}
-            <KartZamanSatiri kart={kart} bloklar={bloklar} gun={gun} />
+            <KartZamanSatiri ref={zamanAcici} kart={kart} bloklar={bloklar} gun={gun} />
             <View style={stiller.baslikSatiri}>
               {isaretlenir && (
                 <Pressable
@@ -254,9 +284,12 @@ export default function KartGorunumu() {
             )}
             {aciklamaDegisir(kart) ? (
               <SatirIciZengin
+                key={aciklamaYaziliyor ? 'yaziliyor' : 'durgun'}
                 metin={kart.kisa}
                 etiket="Açıklama"
-                bosIpucu="+ Açıklama ekle"
+                bosIpucu={duzenlenir ? null : '+ Açıklama ekle'}
+                ilkDuzenleme={aciklamaYaziliyor}
+                onBitti={() => setAciklamaYaziliyor(false)}
                 onKaydet={(kisa) => icerikKaydet(kartMetniYaz(kapi, kart.id, { kisa }))}
               />
             ) : (
@@ -355,17 +388,27 @@ export default function KartGorunumu() {
               ),
           )}
 
-          {duzenlenir && bloklar.length === 0 && (
-            <View style={[stiller.bolum, stiller.cizgili]}>
-              <Dugme
-                tur="ikincil"
-                yaziRengi={renk.ana}
-                etiket="+ Karta bir şey ekle"
-                erisimIpucu="Liste, video, talimat, ölçüm…"
-                onPress={() => duzenleAc(true)}
-              />
-            </View>
-          )}
+          {/* P-72: Kur'daki şerit kartın kendisinde de: Hatırlatma · Açıklama · Liste · Fotoğraf · Video (· Daha). */}
+          <View style={stiller.seritAlani}>
+            <ParcaSeridi
+              {...(duzenlenir
+                ? seritOgeleri({
+                    aciklamaVar: metinDoluMu(kart.kisa) || aciklamaYaziliyor || !aciklamaDegisir(kart),
+                    uzman,
+                    mevcut: bloklar.map((b) => b.tur),
+                  })
+                : { ogeler: [], daha: false })}
+              onSec={(o) => void parcaEkle(o)}
+              onDaha={() => duzenleAc(true)}
+              hatirlatma={{
+                metin: seritHatirlatmaMetni(kart),
+                ayarli: kart.hatirlatma !== null,
+                alarm: !!kart.alarm,
+                izin: saatDegisir(kart),
+                onPress: () => zamanAcici.current?.ac('hatirlatma'),
+              }}
+            />
+          </View>
         </View>
 
         {kart.kilitli && (
@@ -580,6 +623,7 @@ const stiller = StyleSheet.create({
   kaynakSeridi: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 6 },
   bolum: { paddingHorizontal: olcu.kartIci + 4, paddingVertical: 16, gap: 12 },
   cizgili: { borderTopWidth: 1, borderTopColor: renk.satirCizgi },
+  seritAlani: { paddingHorizontal: olcu.kartIci, paddingBottom: olcu.kartIci },
   metaSatiri: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   ustSatir: { flexDirection: 'row', alignItems: 'center', gap: 8, marginRight: -6 },
   cesitAdi: { flexDirection: 'row', alignItems: 'center', gap: 6 },

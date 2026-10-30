@@ -370,3 +370,8 @@ Sonuç: → kararlar.md (Sade zamanlayıcı)
 Ne dedi: "Ayar düğmesi sanki saat ayarı da yapacak gibi duruyor, o zaman onu açtığımızda en üstte de ayar yapabilelim. Zamanlayıcının farklı durması konusunda, saatin altında yazan zamanlayıcı yazısını saatin üstüne bold olarak ve arka planı farklı renkte koyabiliriz. Anımsatıcıları açtığımızda zamanlayıcının orada da gözükmesi gerekir mi?" Karar: hiç görünmesin.
 Nerede: Giriş · zamanlayıcı, Anımsatıcılar ekranı
 Sonuç: → kararlar.md (Sade zamanlayıcı)
+
+### P-72 · 30 Ekim 2026 · Behnan
+Ne dedi: "Ajanda da + ya bastığımızda, normal kullanıcıda doğrudan yeni kartı açsın. Yukarıda zaman chipleri var, bunlar tek satıra sığmalı, bunun için belki bildirimi aşağı alabiliriz yani en alttaki kart bileşenleri şeridine. Ve kart bileşenleri şeridi, kaydettiğimiz kartı açtığımızda da en altta olsun ve çalışsın, buradan alan eklemekte farklılıklar olabilir onlara bakarız."
+Nerede: Ajandam +, yeni kart, kart görünümü
+Sonuç: → kararlar.md (Ajandada sade yeni kart, şerit kartın kendisinde)

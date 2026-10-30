@@ -612,3 +612,10 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **⚙ açılınca en üstte Süre** (saat · dakika · saniye çarkları); kapatınca saklanır. Zamanlayıcı çalışırken bu bölüm yok. — Ürün sahibi (P-71)
 - **"Zamanlayıcı" rakamların üstünde, kalın;** zamanlayıcının alanı Anımsatıcılar'dan ayrı (açık yeşil) zeminde; çalışırken yanında "· 10 dk · çalışıyor" / "· Duraklatıldı". — Ürün sahibi (P-71); renk ve durum yazısı: Öneri
 - **Zamanlayıcı yalnız Giriş'te;** Anımsatıcılar ekranında yok (çalışırken de). — Ürün sahibi (P-71)
+
+## Ajandada sade yeni kart, şerit kartın kendisinde (30 Ekim)
+
+- **Normal kullanıcıda Ajandam'daki + doğrudan yeni kartı açar;** "Ne tür bir kart?" (çeşitler) yalnız uzmanda ve programa kart eklerken. — Ürün sahibi (P-72); program: Öneri
+- **Zaman hapları tek satır: Tarih · Saat · Süre.** Hatırlatma kartın altındaki şeridin başında; değeri yazılır ("15 dk önce"), dokununca hatırlatma sayfası açılır. Haplar biraz sıkılaştı; uzun yazı kısalır. — Ürün sahibi (P-72)
+- **Şerit kayıtlı kartın görünümünde de en altta ve çalışır:** Hatırlatma · Açıklama · Liste · Fotoğraf · Video (uzmanda Daha). Açıklama yerinde editörle açılır; liste ve video boş eklenir (liste tek seferlik kartta işaretleri kalan liste); fotoğraf önce galeriden seçilir; Daha Kur'u parça seçici açık getirir (ölçüm gibi ayarlı parçalar Kur'da kurulur). Boş kartın "+ Karta bir şey ekle" düğmesi ve görünümdeki "+ Açıklama ekle" yazısı kalktı. Verilen kartta şeritte yalnız hatırlatma (izin yoksa kilitli). — Ürün sahibi (P-72); ayrıntılar: Öneri
+- Şeritte ikon çoğalınca yazı küçülür (telefonda sığar; tek satır). — Öneri

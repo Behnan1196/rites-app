@@ -5,7 +5,7 @@
 // sonrası". Eski verilen kartta (görünüm ayarı yok) yalnız saat ve hatırlatma.
 
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useImperativeHandle, useState, type Ref } from 'react';
 
 import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
 import { eskiVerilenMi, saatDegisir, tarihDegisir } from '@/mantik/gorunumDegisimi';
@@ -45,8 +45,23 @@ function ayniMi(a: Zamanlama, b: Zamanlama): boolean {
   );
 }
 
+/** P-72: kartın altındaki şerit hatırlatma sayfasını buradan açar. */
+export interface KartZamaniAcici {
+  ac: (b: ZamanBolumu) => void;
+}
+
 /** Zaman satırı ve sayfaları (kart yüklendikten sonra çizilir). */
-export function KartZamanSatiri({ kart, bloklar, gun }: { kart: Kart; bloklar: readonly Blok[]; gun: Gun }) {
+export function KartZamanSatiri({
+  kart,
+  bloklar,
+  gun,
+  ref,
+}: {
+  kart: Kart;
+  bloklar: readonly Blok[];
+  gun: Gun;
+  ref?: Ref<KartZamaniAcici>;
+}) {
   const { kapi, oku } = useVeri();
   const bugunGun = useBugun();
   const kisaMesaj = useKisaMesaj();
@@ -61,6 +76,7 @@ export function KartZamanSatiri({ kart, bloklar, gun }: { kart: Kart; bloklar: r
     setTarihsiz(kart.tarihsiz);
     setBolum(b);
   };
+  useImperativeHandle(ref, () => ({ ac }));
 
   const hata = (e: unknown) => {
     console.error('Kart kaydedilemedi', e);

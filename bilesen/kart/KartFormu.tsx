@@ -60,7 +60,14 @@ import { BlokSecici } from './BlokSecici';
 import { ParcaSeridi } from './ParcaSeridi';
 import { CesitSecici } from './CesitSecici';
 import { useUzman } from '../useUzman';
-import { ZamanHaplari, ZamanSayfasi, type ProgramGunu, type ZamanBolumu, type Zamanlama } from './Zamanlama';
+import {
+  seritHatirlatmaMetni,
+  ZamanHaplari,
+  ZamanSayfasi,
+  type ProgramGunu,
+  type ZamanBolumu,
+  type Zamanlama,
+} from './Zamanlama';
 
 export type KartFormuHedefi =
   /**
@@ -366,7 +373,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
 
   const [ilk, setIlk] = useState(() => ilkDurum(hedef));
   // P-41: yeni kartta önce "Ne tür bir kart?" (paylaşımdan / nottan gelen ve çeşidi belli olanda sorulmaz).
-  const [cesitSorusu, setCesitSorusu] = useState(
+  const [cesitSorusuAcik, setCesitSorusu] = useState(
     () =>
       tumCesitler().length > 0 &&
       ((hedef.tur === 'yeni' && !hedef.taslak && !hedef.cesit) || (hedef.tur === 'sablon' && !hedef.kart)),
@@ -376,7 +383,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   // P-47: zaman sağ üstteki rozetten açılan sayfada.
   // P-57: rozet → tarih ve saat; şerit → süre ya da hatırlatma.
   const [zamanBolum, setZamanBolum] = useState<ZamanBolumu | null>(null);
-  const [blokSeciciAcik, setBlokSeciciAcik] = useState(false);
+  // P-72: kart görünümündeki şeritten "Daha" Kur'u seçici açık gelir.
+  const [blokSeciciAcik, setBlokSeciciAcik] = useState(hedef.tur === 'duzenle' && !!hedef.blokEkle);
   // P-36: yeni kartta "Karta bir şey ekle" kapalı gelir (kartların çoğu başlık ve zamandan ibaret).
   const [soru, setSoru] = useState<Soru | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
@@ -405,6 +413,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   // P-51: uzman görünümü (çeşit tasarımı her zaman uzman); normal kullanıcıda gün düzeni yok.
   const uzmanAyari = useUzman();
   const uzman = uzmanAyari || !!tasarim;
+  // P-72: normal kullanıcıda Ajandam'daki + doğrudan yeni kartı açar ("Ne tür bir kart?" yalnız uzmanda ve programda).
+  const cesitSorusu = cesitSorusuAcik && (uzman || hedef.tur === 'sablon');
   const secHaric: BlokTuru[] = tasarim ? ['foto', 'dosya'] : [];
   const cokGunlu = durum.zamanlama.tekrar !== null;
   /** Bu formda eklenen, davranışı kişinin seçmediği listeler: süreye göre (bir gün → kalır). */
@@ -849,6 +859,20 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                   Keyboard.dismiss();
                   setBlokSeciciAcik(true);
                 }}
+                hatirlatma={
+                  kalip
+                    ? undefined
+                    : {
+                        metin: seritHatirlatmaMetni(durum.zamanlama),
+                        ayarli: durum.zamanlama.hatirlatma !== null,
+                        alarm: !!durum.zamanlama.alarm,
+                        izin: true,
+                        onPress: () => {
+                          Keyboard.dismiss();
+                          setZamanBolum('hatirlatma');
+                        },
+                      }
+                }
               />
             )}
 

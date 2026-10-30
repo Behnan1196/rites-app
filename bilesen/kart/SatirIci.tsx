@@ -49,17 +49,23 @@ export function SatirIciZengin({
   etiket,
   bosIpucu,
   onKaydet,
+  ilkDuzenleme = false,
+  onBitti,
 }: {
   metin: string;
   etiket: string;
-  /** Boşken görünen davet: "+ Açıklama ekle". */
-  bosIpucu: string;
+  /** Boşken görünen davet: "+ Açıklama ekle"; null: boşken hiç görünmez (P-72: şeritten eklenir). */
+  bosIpucu: string | null;
   onKaydet: (yeni: string) => void;
+  /** P-72: şeritten eklenince editör açık gelir. */
+  ilkDuzenleme?: boolean;
+  onBitti?: () => void;
 }) {
-  const [duzenle, setDuzenle] = useState(false);
+  const [duzenle, setDuzenle] = useState(ilkDuzenleme);
   const [taslak, setTaslak] = useState(metin);
   if (!duzenle) {
     const dolu = metinDoluMu(metin);
+    if (!dolu && bosIpucu === null) return null;
     return (
       <Pressable
         onPress={() => {
@@ -67,7 +73,7 @@ export function SatirIciZengin({
           setDuzenle(true);
         }}
         accessibilityRole="button"
-        accessibilityLabel={dolu ? `${etiket}. Değiştirmek için dokun` : bosIpucu}
+        accessibilityLabel={dolu ? `${etiket}. Değiştirmek için dokun` : (bosIpucu ?? etiket)}
         style={({ pressed }) => [stiller.dokun, pressed && { opacity: 0.7 }]}
       >
         {dolu ? (
@@ -90,6 +96,7 @@ export function SatirIciZengin({
         onPress={() => {
           setDuzenle(false);
           if (taslak !== metin) onKaydet(taslak);
+          onBitti?.();
         }}
         style={stiller.bitti}
       />

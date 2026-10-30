@@ -561,9 +561,7 @@ export function kartSeriSayYaz(kapi: Kapi, kartId: string, seriSay: boolean): Pr
 // ---- Verilen kartlar (pilot 29 Ekim, P-62) -------------------------------------------
 
 /** `verilen:` bağlı kartlar ve "Yaptım" denen günleri (eşitleme için). */
-export async function verilenYerelKartlar(
-  oku: Okuyucu,
-): Promise<{ id: string; bag: string | null; yapilan: Gun[] }[]> {
+export async function verilenYerelKartlar(oku: Okuyucu): Promise<{ id: string; bag: string | null; yapilan: Gun[] }[]> {
   const satirlar = await oku.hepsi<{ id: string; bag: string | null; tarih: string | null }>(
     `SELECT k.id, k.bag, r.tarih FROM kart k
      LEFT JOIN kayit r ON r.kart_id = k.id AND r.yapildi = 1
@@ -629,5 +627,34 @@ export function blokIcerikYaz(
     if (d.maddeler !== undefined)
       await y.calistir('UPDATE blok SET maddeler = ? WHERE id = ?', [JSON.stringify(d.maddeler), blokId]);
     if (d.ad !== undefined) await y.calistir('UPDATE blok SET ad = ? WHERE id = ?', [d.ad, blokId]);
+  });
+}
+
+/**
+ * P-72: kart görünümündeki şeritten parça ekleme: boş (ya da fotoğrafı seçilmiş) parça kartın
+ * sonuna eklenir. İçerik kartındır (bütün günler).
+ */
+export function blokEkle(
+  kapi: Kapi,
+  kartId: string,
+  b: { id: string; tur: BlokTuru; ad?: string; dosya?: string | null },
+): Promise<void> {
+  return kapi.yaz(['kart'], async (y) => {
+    const son = await y.ilk<{ sira: number | null }>('SELECT MAX(sira) AS sira FROM blok WHERE kart_id = ?', [kartId]);
+    await y.calistir(
+      'INSERT INTO blok (id, kart_id, sira, tur, ad, metin, birim, dakika, maddeler, dosya, durum, sabit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 0)',
+      [
+        b.id,
+        kartId,
+        (son?.sira ?? -1) + 1,
+        b.tur,
+        b.ad ?? '',
+        '',
+        '',
+        b.tur === 'sayac' ? 10 : null,
+        '[]',
+        b.dosya ?? null,
+      ],
+    );
   });
 }

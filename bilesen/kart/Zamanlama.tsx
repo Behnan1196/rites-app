@@ -300,7 +300,7 @@ export function ZamanSayfasi({
 export type ZamanBolumu = 'tarih' | 'saat' | 'sure' | 'hatirlatma';
 
 /**
- * Zaman satırı (P-67): Tarih · Saat · Süre · Hatırlatma hapları; her biri kendi küçük sayfasını
+ * Zaman satırı (P-67, P-72): Tarih · Saat · Süre hapları tek satırda (hatırlatma kartın altındaki şeritte); her biri kendi küçük sayfasını
  * açar. Kart görünümünde ve Kur'da aynı. İzni olmayan hap kilitli görünür, dokunulmaz.
  */
 export function ZamanHaplari({
@@ -328,14 +328,7 @@ export function ZamanHaplari({
   /** Satırın sonunda (Kur'da ⋯). */
   sag?: React.ReactNode;
 }) {
-  const hap = (
-    bolum: ZamanBolumu,
-    ikon: IkonAdi,
-    metin: string,
-    etiket: string,
-    ayarli: boolean,
-    izin: boolean,
-  ) => (
+  const hap = (bolum: ZamanBolumu, ikon: IkonAdi, metin: string, etiket: string, ayarli: boolean, izin: boolean) => (
     <Pressable
       key={bolum}
       onPress={() => onAc(bolum)}
@@ -369,23 +362,7 @@ export function ZamanHaplari({
     <View style={stiller.hapSatiri}>
       {!kalip && !gunGizle && hap('tarih', 'calendar-outline', gunMetni, 'Tarih', true, tarihIzni)}
       {hap('saat', 'time-outline', deger.saat ?? 'Saat yok', 'Saat', deger.saat !== null, saatIzni)}
-      {hap(
-        'sure',
-        'repeat',
-        sureSeridiMetni(deger.tekrar, !!programGunu),
-        'Süre',
-        deger.tekrar !== null,
-        tarihIzni,
-      )}
-      {!kalip &&
-        hap(
-          'hatirlatma',
-          deger.alarm && deger.hatirlatma ? 'alarm-outline' : 'notifications-outline',
-          hatirlatmaSeridiMetni(deger),
-          'Hatırlatma',
-          deger.hatirlatma !== null,
-          saatIzni,
-        )}
+      {hap('sure', 'repeat', sureSeridiMetni(deger.tekrar, !!programGunu), 'Süre', deger.tekrar !== null, tarihIzni)}
       {sag}
     </View>
   );
@@ -1076,14 +1053,15 @@ const stiller = StyleSheet.create({
   },
   bolum: { gap: 10, marginBottom: 8 },
   serit: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  hapSatiri: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' },
+  // P-72: tek satır (hatırlatma kartın altındaki şeritte); uzun yazı kısalır.
+  hapSatiri: { flexDirection: 'row', gap: 6, alignItems: 'center' },
   hapKilitli: { backgroundColor: 'transparent', borderStyle: 'dashed' },
   seritHap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     minHeight: 44,
-    paddingHorizontal: 12,
+    paddingHorizontal: 9,
     borderRadius: 22,
     borderWidth: 1,
     borderColor: renk.cizgi,
@@ -1172,3 +1150,8 @@ const stiller = StyleSheet.create({
     color: renk.yazi,
   },
 });
+
+/** P-72: kartın altındaki şeritte hatırlatma: "Hatırlatma" ya da değeri. */
+export function seritHatirlatmaMetni(z: Pick<Zamanlama, 'hatirlatma'>): string {
+  return z.hatirlatma ? hatirlatmaSeridiMetni(z) : 'Hatırlatma';
+}
