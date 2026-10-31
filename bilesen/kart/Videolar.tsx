@@ -5,6 +5,9 @@
 // Vazgeç · Ekle. Video eklenince oynatılabilir halde görünür; altında ⚙ (seçilen videoyu
 // düzenle) ve "+ Video ekle". P-54: eklerken "Gelenlerden al": YouTube'dan Rites'a paylaşılan
 // videolar listelenir, seçilen bu karta eklenir (kart kaydedilince Gelenler'den kalkar).
+// P-80 (31 Ekim): eklerken Gelenler üstte ve açık, satırın tamamı "Ekle"; bağlantı formu altta
+// ("Bağlantıyı ekle"), klavye kendiliğinden açılmaz. Instagram videosunun altında "Instagram'da aç"
+// (gömülü oynatıcı bazı telefonlarda başlayıp duruyor).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
@@ -51,7 +54,25 @@ export function VideoOynat({ video }: { video: Video }) {
   const gecerli = /^https?:\/\//i.test(video.adres);
   // P-55: Instagram gönderisi / reel'i de kartın içinde (başla / bitiş yok).
   const insta = gomuluOynatmaVar ? instagramGomme(video.adres) : null;
-  if (insta) return <GomuluSayfa key={insta} adres={insta} />;
+  if (insta)
+    return (
+      <View style={stiller.kap}>
+        <GomuluSayfa key={insta} adres={insta} />
+        <Pressable
+          onPress={() => void Linking.openURL(video.adres)}
+          accessibilityRole="link"
+          accessibilityLabel="Videoyu Instagram uygulamasında aç"
+          hitSlop={6}
+          style={({ pressed }) => [stiller.disariAc, pressed && { opacity: 0.6 }]}
+        >
+          <Ionicons name="logo-instagram" size={20} color={renk.ana} />
+          <Yazi kalinlik="kalin" renk={renk.ana}>
+            {"Instagram'da aç"}
+          </Yazi>
+          <Ionicons name="open-outline" size={16} color={renk.ana} />
+        </Pressable>
+      </View>
+    );
   if (yt)
     return (
       <YoutubeOynatici
@@ -123,13 +144,11 @@ export function VideolarDuzenleyici({
   const paylasilanlar = (useSorgu(['paylasilan'], (o) => paylasilanlariOku(o), []).veri ?? []).filter(
     (p) => !alinanlar.includes(p.id) && !videolar.some((v) => v.adres === p.adres),
   );
-  const [gelenlerAcik, setGelenlerAcik] = useState(false);
   const gelendenAl = (p: Paylasilan) => {
     onDegis([...videolar, { adres: p.adres, baslik: p.baslik, bas: adrestekiBaslangic(p.adres), bit: null }]);
     setSecili(videolar.length);
     setAlinanlar((a) => [...a, p.id]);
     onGelendenAlindi?.(p.id);
-    setGelenlerAcik(false);
     setMod(null);
   };
   const [secili, setSecili] = useState(0);
@@ -143,7 +162,6 @@ export function VideolarDuzenleyici({
     const v = m === 'ekle' ? null : videolar[m];
     setTaslak(v ? { adres: v.adres, baslik: v.baslik, bas: sureYaz(v.bas), bit: sureYaz(v.bit) } : bosTaslak);
     setHata(null);
-    setGelenlerAcik(false);
     setMod(m);
   };
 
@@ -196,16 +214,61 @@ export function VideolarDuzenleyici({
     />
   );
 
+  // P-80: eklerken Gelenler varsa önce onlar (satırın tamamı "Ekle"); bağlantı formu altta,
+  // kendi "Bağlantıyı ekle" düğmesiyle ve klavye kendiliğinden açılmadan (klavye Gelenler'i örtmesin).
+  const gelenVar = mod === 'ekle' && paylasilanlar.length > 0;
+  const gelenlerListesi = gelenVar && (
+    <View style={stiller.gelenler}>
+      <View style={stiller.gelenlerBaslik}>
+        <Ionicons name="mail-open-outline" size={20} color={renk.ana} />
+        <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.esnek}>
+          {`Gelenlerden seç (${paylasilanlar.length})`}
+        </Yazi>
+      </View>
+      {paylasilanlar.map((p) => (
+        <Pressable
+          key={p.id}
+          onPress={() => gelendenAl(p)}
+          accessibilityRole="button"
+          accessibilityLabel={`Bu karta ekle: ${p.baslik}`}
+          style={({ pressed }) => [stiller.gelen, pressed && { opacity: 0.7 }]}
+        >
+          <Ionicons
+            name={instagramGomme(p.adres) ? 'logo-instagram' : youtubeMu(p.adres) ? 'logo-youtube' : 'link-outline'}
+            size={22}
+            color={renk.ikincil}
+          />
+          <View style={stiller.esnek}>
+            <Yazi numberOfLines={2}>{p.baslik}</Yazi>
+            <Yazi tur="etiket" numberOfLines={1}>{`${kaynakAdi(p.adres)}'dan paylaştın`}</Yazi>
+          </View>
+          <View style={stiller.ekleHapi}>
+            <Ionicons name="add" size={18} color={renk.yuzey} />
+            <Yazi kalinlik="kalin" renk={renk.yuzey} style={stiller.ekleYazi}>
+              Ekle
+            </Yazi>
+          </View>
+        </Pressable>
+      ))}
+    </View>
+  );
+
   if (mod !== null)
     return (
       <View style={stiller.kap}>
         <Secici adet={videolar.length} secili={i} onSec={() => undefined} />
+        {gelenlerListesi}
+        {gelenVar && (
+          <Yazi tur="etiket" kalinlik="kalin" style={stiller.ya}>
+            ya da bağlantıyı yapıştır
+          </Yazi>
+        )}
         <View style={[stiller.koyu, stiller.form]}>
           {alan('adres', 'Bağlantı adresi', {
             keyboardType: 'url',
             autoCapitalize: 'none',
             autoCorrect: false,
-            autoFocus: mod === 'ekle',
+            autoFocus: mod === 'ekle' && !gelenVar,
           })}
           {alan('baslik', 'Başlık (isteğe bağlı)')}
           {/* P-55: başla / bitiş yalnız YouTube'da (Instagram'da verilemez). */}
@@ -227,51 +290,16 @@ export function VideolarDuzenleyici({
             {hata}
           </Yazi>
         )}
-        {mod === 'ekle' && paylasilanlar.length > 0 && (
-          <View style={stiller.gelenler}>
-            <Pressable
-              onPress={() => setGelenlerAcik((a) => !a)}
-              accessibilityRole="button"
-              accessibilityState={{ expanded: gelenlerAcik }}
-              style={({ pressed }) => [stiller.gelenlerBaslik, pressed && { opacity: 0.7 }]}
-            >
-              <Ionicons name="mail-open-outline" size={20} color={renk.ana} />
-              <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.esnek}>
-                {`Gelenlerden al (${paylasilanlar.length})`}
-              </Yazi>
-              <Ionicons name={gelenlerAcik ? 'chevron-up' : 'chevron-down'} size={20} color={renk.soluk} />
-            </Pressable>
-            {gelenlerAcik &&
-              paylasilanlar.map((p) => (
-                <Pressable
-                  key={p.id}
-                  onPress={() => gelendenAl(p)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Bu karta al: ${p.baslik}`}
-                  style={({ pressed }) => [stiller.gelen, pressed && { opacity: 0.7 }]}
-                >
-                  <Ionicons
-                    name={
-                      instagramGomme(p.adres) ? 'logo-instagram' : youtubeMu(p.adres) ? 'logo-youtube' : 'link-outline'
-                    }
-                    size={22}
-                    color={renk.ikincil}
-                  />
-                  <View style={stiller.esnek}>
-                    <Yazi numberOfLines={2}>{p.baslik}</Yazi>
-                    <Yazi tur="etiket" numberOfLines={1}>{`${kaynakAdi(p.adres)}'dan paylaştın`}</Yazi>
-                  </View>
-                  <Ionicons name="add-circle-outline" size={24} color={renk.ana} />
-                </Pressable>
-              ))}
-          </View>
-        )}
         <View style={stiller.dugmeler}>
           {typeof mod === 'number' && (
             <Dugme tur="tehlike" etiket="Videoyu kaldır" onPress={kaldir} style={stiller.solda} />
           )}
           <Dugme tur="yazi" etiket="Vazgeç" onPress={() => setMod(null)} />
-          <Dugme etiket={mod === 'ekle' ? 'Ekle' : 'Kaydet'} onPress={tamam} style={stiller.kucuk} />
+          <Dugme
+            etiket={mod === 'ekle' ? (gelenVar ? 'Bağlantıyı ekle' : 'Ekle') : 'Kaydet'}
+            onPress={tamam}
+            style={stiller.kucuk}
+          />
         </View>
       </View>
     );
@@ -346,6 +374,7 @@ const stiller = StyleSheet.create({
     justifyContent: 'center',
   },
   secici: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  disariAc: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-end', minHeight: 40 },
   gelenler: {
     borderWidth: 1,
     borderColor: renk.cizgi,
@@ -353,7 +382,18 @@ const stiller = StyleSheet.create({
     backgroundColor: renk.yuzey,
     overflow: 'hidden',
   },
-  gelenlerBaslik: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: 12 },
+  gelenlerBaslik: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44, paddingHorizontal: 12 },
+  ekleHapi: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    minHeight: 36,
+    paddingHorizontal: 12,
+    borderRadius: 18,
+    backgroundColor: renk.ana,
+  },
+  ekleYazi: { fontSize: 15 },
+  ya: { textAlign: 'center', color: renk.ikincil },
   gelen: {
     flexDirection: 'row',
     alignItems: 'center',

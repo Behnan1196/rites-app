@@ -667,3 +667,8 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Öneri kartları saatsiz ve eski etiketsiz:** saat kişinin seçimi; Egzersiz / Ölçüm / Bilgi / Rutin gösterilmez (öneride "Alışkanlık önerisi · Beslenme · Her gün"); açıklaması boş kartta talimat açıklamaya taşınır. — Ürün sahibi (P-79); talimatın taşınması: Öneri
 - **Öneriler Kütüphanem'den ayrı:** Yaşam Tarzım'da Kütüphanem'in altında **Rites önerileri** satırı ve ekranı (Programlar · Alışkanlık önerileri, alan süzgeci, gizlenenler altta). Kütüphanem yalnız kişinin programları ve kaydettiği kartlar; altta "Rites önerileri ›". Alan ekranlarındaki öneriler yerinde. — Ürün sahibi (P-79)
 - Sadeleştirme uygulamada yapılır (`sadeKatalog`); sunucudaki içerik değişmedi, SQL gerekmez. Uzman katalogu yenilediğinde de aynı kural geçerli. — Not
+
+## Video eklerken Gelenler; Instagram'da aç (31 Ekim)
+
+- **Video eklerken Gelenler üstte ve açık:** "Gelenlerden seç (N)"; her satırın tamamı dokunulur, sağında belirgin **+ Ekle**. Altında "ya da bağlantıyı yapıştır" ve bağlantı formu; formun düğmeleri **Vazgeç · Bağlantıyı ekle**. Gelenler varken klavye kendiliğinden açılmaz (bağlantı alanına dokununca açılır); Gelen yoksa eskisi gibi açılır. — Ürün sahibi (P-80); düzen: Öneri
+- **Instagram videosunun altında "Instagram'da aç"** (uygulamada açar): gömülü oynatıcı bazı telefonlarda başlayıp hemen duruyor; Instagram'ın kendi küçük düğmesi neredeyse görünmüyor. YouTube'da yok. — Ürün sahibi (P-80)

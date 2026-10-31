@@ -410,3 +410,8 @@ Sonuç: → kararlar.md (Alışkanlıklar ayrı yerde; ajanda rahatlar)
 Ne dedi: "Telefonda Rites hesabını silerek verileri sıfırlamak ve belirli senaryolarla ilerlemek istiyorum. Yaşam tarzındaki Rites önerileri (gereksiz kalmış olabilir) ve Kütüphane kullanımını da gözden geçirmek." Kararlar: tek kartlı programlar alışkanlık önerisi; tekrarlı öneri kartı alışkanlık olarak eklenir; öneri kartları saatsiz, etiketsiz; öneriler Kütüphanem'den ayrı.
 Nerede: Yaşam Tarzım, Kütüphanem, öneri ekranı
 Sonuç: → kararlar.md (Rites önerileri sade ve ayrı); deneme senaryoları sıfırlamadan sonra
+
+### P-80 · 31 Ekim 2026 · Behnan
+Ne dedi: "Çoklu video oynatıcımıza bakalım: 1. Video ekle'de Gelenlerden al varsa klavye bazı kontrollerin üzerinde kalıyor. 2. Alttaki Vazgeç ve Ekle düğmeleri, Gelenlerden al'ı açarsam yanıltıcı oluyor; listedeki küçük +'ya basmam gerektiği belli olmuyor. 3. Başka bir telefonda Instagram videosunu yarım saniye başlatıp duruyor gibi; YouTube için kaldırdığımız uygulamada oynat seçeneğini Instagram için koymamız gerekecek."
+Nerede: Kart görünümü ve Kur'da video parçası
+Sonuç: → kararlar.md (Video eklerken Gelenler; Instagram'da aç)
