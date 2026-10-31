@@ -58,6 +58,8 @@ interface KartSatiri {
   sira: number;
   bag?: string | null;
   sabitler?: string | null;
+  aliskanlik?: number | null;
+  ajandada?: number | null;
   blok_sayisi?: number;
   adim_maddeler?: string | null;
   adim_durum?: string | null;
@@ -125,6 +127,8 @@ export function kartSatirdan(s: KartSatiri): KartOzeti {
     sira: s.sira,
     bag: s.bag ?? null,
     ...(s.sabitler ? { sabitler: json<SabitAlan[] | null>(s.sabitler, null) } : {}),
+    ...(s.aliskanlik ? { aliskanlik: true } : {}),
+    ...(s.ajandada === 0 || s.ajandada === 1 ? { ajandada: s.ajandada === 1 } : {}),
     blokSayisi: s.blok_sayisi ?? 0,
     adimlar: s.adim_maddeler
       ? ilerleme(adimDurumu(json<unknown>(s.adim_durum ?? null, null), json<string[]>(s.adim_maddeler, []).length))
@@ -163,7 +167,7 @@ function kayitSatirdan(s: KayitSatiri): Kayit {
 }
 
 const KART_ALANLARI =
-  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, seri_say, cesit, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag, sabitler';
+  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, seri_say, cesit, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag, sabitler, aliskanlik, ajandada';
 
 function kartDegerleri(k: Kart): SqlDeger[] {
   return [
@@ -189,6 +193,8 @@ function kartDegerleri(k: Kart): SqlDeger[] {
     k.sira,
     k.bag,
     k.sabitler ? JSON.stringify(k.sabitler) : null,
+    k.aliskanlik ? 1 : 0,
+    k.ajandada === null || k.ajandada === undefined ? null : k.ajandada ? 1 : 0,
   ];
 }
 
@@ -725,4 +731,18 @@ export function kartSabitleriYaz(kapi: Kapi, kartId: string, sabitler: readonly 
       kartId,
     ]),
   );
+}
+
+// ---- Alışkanlıklar (P-78) -------------------------------------------------------------
+
+/** Kartı alışkanlık olarak izle / izlemeyi bırak; ajandada görünmesi varsayılana döner. */
+export function aliskanlikYaz(kapi: Kapi, kartId: string, aliskanlik: boolean): Promise<void> {
+  return kapi.yaz(['kart'], (y) =>
+    y.calistir('UPDATE kart SET aliskanlik = ?, ajandada = NULL WHERE id = ?', [aliskanlik ? 1 : 0, kartId]),
+  );
+}
+
+/** Alışkanlık ajandada da görünsün mü. */
+export function ajandadaYaz(kapi: Kapi, kartId: string, ajandada: boolean): Promise<void> {
+  return kapi.yaz(['kart'], (y) => y.calistir('UPDATE kart SET ajandada = ? WHERE id = ?', [ajandada ? 1 : 0, kartId]));
 }

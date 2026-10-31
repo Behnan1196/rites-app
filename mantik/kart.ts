@@ -127,6 +127,10 @@ export interface Kart {
    * hepsi değişir; ancak eski verilen / koç kartında (kilitli) yalnız saat değişir.
    */
   sabitler?: SabitAlan[] | null;
+  /** P-78: alışkanlık olarak izlenir (Giriş → Devam edenler); programın tekrarlı kartı zaten öyle. */
+  aliskanlik?: boolean;
+  /** P-78: ajandada görünür mü; null / yok: varsayılan (alışkanlık görünmez, öbürleri görünür). */
+  ajandada?: boolean | null;
 }
 
 export const ICERIK_BLOKLARI = ['talimat', 'video', 'liste', 'adimlar', 'foto', 'dosya'] as const;

@@ -651,3 +651,11 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Başlık ve zaman izinleri:** sağ üstteki ⋯ menüsünde **Başlık ve zaman izinleri** (Başlık · Tarih ve süre · Saat ve hatırlatma). Zaman şeridinin yanına konmadı (şerit kısalıyordu). — Ürün sahibi (P-77); yeri: Öneri
 - Menüdeki kapalı anahtarın açıklaması "Yalnız Kur ile değişir" yerine "Kart açıkken değiştirilemez". — Öneri
 - Kur düğmesi şimdilik yerinde; kart görünümünün sadeleştirilmesinde ele alınacak. — Not
+
+## Alışkanlıklar ayrı yerde; ajanda rahatlar (31 Ekim)
+
+- **Alışkanlık:** tekrarlı kart, kişi "Alışkanlık olarak izle" dediyse (kartın sağ üst ⋯ menüsü) ya da programın tekrarlı kartıysa. — Ürün sahibi (P-78)
+- **Yeri Giriş → Devam edenler:** programların altında bugünün alışkanlıkları: Yaptım kutusu, ad, kısa gidişat ("3 gün üst üste · 12/21. gün", "Son 7 günde 2 kez"; programınkinde program adı). En çok 5; altta **Alışkanlıklar ve gidişat ›**. — Ürün sahibi (P-78); sayı ve yazılar: Öneri
+- **Gidişat ekranı (Alışkanlıklar):** her süren alışkanlık bir kutuda: ad (dokununca kart), tekrar ve program, son 4 haftanın şeridi (yapıldı · yapılmadı · günü değil; bugün çerçeveli), seri, "Son 4 haftada 9/12", süreli olanda "12/21. gün", **Ajandada göster** anahtarı. Üstte **+ Alışkanlık ekle** (her gün, süresiz açılan yeni kart; "Yeni alışkanlık"). Kartlardan kaldırılan seri gösterimi (P-73) burada. — Ürün sahibi (P-78); düzen: Öneri
+- **Ajandada varsayılan olarak görünmez** (programın tekrarlı kartları da); her alışkanlıkta "Ajandada göster" ile görünür (gidişat ekranında ve kartın ⋯ menüsünde). Hatırlatmaları sürer. "Alışkanlıktan çıkar" kartı yeniden ajandaya alır. — Ürün sahibi (P-78)
+- Tek başına alışkanlığa yaşam alanı verme ve gidişat ekranında alana göre kümeleme sonra. — Not

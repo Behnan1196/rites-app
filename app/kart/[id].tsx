@@ -36,6 +36,7 @@ import { ParcaSeridi } from '@/bilesen/kart/ParcaSeridi';
 import { ParcaAyarSayfasi } from '@/bilesen/kart/ParcaAyarSayfasi';
 import { BlokSecici } from '@/bilesen/kart/BlokSecici';
 import { SERIT_PARCALARI } from '@/mantik/parcaSecimi';
+import { ajandadaMi, aliskanlikMi, programKartiMi } from '@/mantik/aliskanlik';
 import type { ParcaTaslagi } from '@/mantik/blokTaslak';
 import { seritHatirlatmaMetni } from '@/bilesen/kart/Zamanlama';
 import { useUzman } from '@/bilesen/useUzman';
@@ -76,6 +77,8 @@ import { useSorgu } from '@/veri/kancalar';
 import {
   blokEkle,
   blokIcerikYaz,
+  ajandadaYaz,
+  aliskanlikYaz,
   blokSabitYaz,
   blokYaz,
   blokSil,
@@ -563,6 +566,34 @@ export default function KartGorunumu() {
               ikon: 'bookmark-outline',
               onPress: () => kutuphane.ac({ tur: 'kart', kart, bloklar, alanlar: program?.alanlar ?? [] }),
             },
+            // P-78: tekrarlı kart alışkanlık olarak izlenir (Giriş → Devam edenler); programın kartı zaten öyle.
+            ...(duzenlenir && kart.tekrar && !programKartiMi(kart)
+              ? [
+                  {
+                    etiket: kart.aliskanlik ? 'Alışkanlıktan çıkar' : 'Alışkanlık olarak izle',
+                    ikon: 'leaf-outline' as const,
+                    onPress: () =>
+                      icerikKaydet(
+                        aliskanlikYaz(kapi, kart.id, !kart.aliskanlik).then(() =>
+                          kisaMesaj(
+                            kart.aliskanlik
+                              ? 'Artık alışkanlık değil; ajandada görünür'
+                              : 'Alışkanlık: Giriş → Devam edenler’de; ajandada görünmez',
+                          ),
+                        ),
+                      ),
+                  },
+                ]
+              : []),
+            ...(aliskanlikMi(kart)
+              ? [
+                  {
+                    etiket: ajandadaMi(kart) ? 'Ajandada gösterme' : 'Ajandada göster',
+                    ikon: 'calendar-outline' as const,
+                    onPress: () => icerikKaydet(ajandadaYaz(kapi, kart.id, !ajandadaMi(kart))),
+                  },
+                ]
+              : []),
             // P-77: başlık ve zaman izinleri (Kur'daki başlık satırı ⋯'nin yerine; şerit kısalmasın).
             ...(duzenlenir
               ? [

@@ -75,7 +75,8 @@ export type KartFormuHedefi =
    * "Karta çevir" denen not (P-35: metni talimat, sesi dosya bloğu olur; kart
    * kaydedilince not silinir).
    */
-  | { tur: 'yeni'; gun: Gun; taslak?: KartTaslagi; cesit?: KartCesidi }
+  /** P-78: `aliskanlik`: Alışkanlıklar'dan yeni alışkanlık (her gün, alışkanlık olarak izlenir). */
+  | { tur: 'yeni'; gun: Gun; taslak?: KartTaslagi; cesit?: KartCesidi; aliskanlik?: boolean }
   | {
       tur: 'duzenle';
       kart: Kart;
@@ -293,7 +294,7 @@ function ilkDurum(hedef: KartFormuHedefi): FormDurumu {
         saat: null,
         hatirlatma: null,
         alarm: false,
-        tekrar: null,
+        tekrar: hedef.aliskanlik ? { gunSayisi: null, gunler: null, desen: 'hergun' } : null,
       },
       bloklar: taslakBloklari(hedef.taslak),
       seriSay: null,
@@ -355,7 +356,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const [cesitSorusuAcik, setCesitSorusu] = useState(
     () =>
       tumCesitler().length > 0 &&
-      ((hedef.tur === 'yeni' && !hedef.taslak && !hedef.cesit) || (hedef.tur === 'sablon' && !hedef.kart)),
+      ((hedef.tur === 'yeni' && !hedef.taslak && !hedef.cesit && !hedef.aliskanlik) ||
+        (hedef.tur === 'sablon' && !hedef.kart)),
   );
   const [durum, setDurum] = useState<FormDurumu>(ilk);
   const [hata, setHata] = useState<string | null>(null);
@@ -427,7 +429,9 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
             : 'Programa yeni kart'
           : duzenleme
             ? 'Kartı kur'
-            : 'Yeni kart';
+            : hedef.tur === 'yeni' && hedef.aliskanlik
+              ? 'Yeni alışkanlık'
+              : 'Yeni kart';
 
   const guncelle = (alanlar: Partial<FormDurumu>) => setDurum((d) => ({ ...d, ...alanlar }));
   const tasarimGuncelle = (alanlar: Partial<TasarimAlanlari>) =>
@@ -598,10 +602,12 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
         else await programKartiEkle(kapi, sablon.program.id, icerik, sablon.bugunGun, yeniKimlik);
         onSonuc?.({});
       } else if (!duzenleme) {
+        const t = tanim();
         const kart = yeniKart(yeniKimlik(), {
-          ...tanim(),
+          ...t,
           sira: 0,
           cesit: durum.cesit,
+          ...(hedef.tur === 'yeni' && hedef.aliskanlik && t.tekrar ? { aliskanlik: true } : {}),
         });
         await yeniKartKaydet(kapi, kart, bloklar, yeniKimlik);
         const notId = hedef.tur === 'yeni' ? hedef.taslak?.notId : undefined;

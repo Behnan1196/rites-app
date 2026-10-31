@@ -1,5 +1,6 @@
 // Ajandam gün görünümü için saf yardımcılar (`05` §8, A-2, A-2b, A-8, K-12).
 
+import { ajandadaMi } from './aliskanlik';
 import { gorunurMu } from './gorunurluk';
 import type { HatirlatmaSecimi, Kart, Kayit } from './kart';
 import { goreliTarih, gunEkle, haftaGunu, uzunTarih, type Gun } from './tarih';
@@ -10,7 +11,10 @@ import { goreliTarih, gunEkle, haftaGunu, uzunTarih, type Gun } from './tarih';
  * yerine; kartlar uzun basıp sürüklenerek sıralanır).
  */
 export function gununKartlari<T extends Kart>(kartlar: readonly T[], gun: Gun, bugunGun: Gun): T[] {
-  return kartlar.filter((k) => gorunurMu(k, gun, bugunGun)).sort((a, b) => a.sira - b.sira || a.id.localeCompare(b.id));
+  // P-78: ajandada gösterilmeyen alışkanlıklar Giriş → Devam edenler'de.
+  return kartlar
+    .filter((k) => gorunurMu(k, gun, bugunGun) && ajandadaMi(k))
+    .sort((a, b) => a.sira - b.sira || a.id.localeCompare(b.id));
 }
 
 /**

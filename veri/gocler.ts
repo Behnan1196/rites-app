@@ -336,6 +336,13 @@ export const GOCLER: readonly Goc[] = [
     sql: `ALTER TABLE blok ADD COLUMN sabit INTEGER NOT NULL DEFAULT 0;
           ALTER TABLE kart ADD COLUMN sabitler TEXT;`,
   },
+  {
+    // Alışkanlıklar (pilot 31 Ekim, P-78): kart alışkanlık olarak izlenir mi (1 / 0) ve ajandada
+    // görünür mü (1 / 0; NULL: varsayılan: alışkanlık ajandada görünmez, öbür kartlar görünür).
+    surum: 25,
+    sql: `ALTER TABLE kart ADD COLUMN aliskanlik INTEGER NOT NULL DEFAULT 0;
+          ALTER TABLE kart ADD COLUMN ajandada INTEGER;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

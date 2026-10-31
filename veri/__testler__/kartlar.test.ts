@@ -9,6 +9,7 @@ import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
 import {
   blokMetinleri, gunYapilanlari, isaretle, islemleriUygula, kartAyrinti, kartKayitlari, kayitDegistir, kayitVarMi, tumKartlar,
   bagliKart, bagliKartlar, kartlariSil, kartZamaniYaz, siralariYaz, verilenYerelKartlar, yeniKartKaydet, type BlokTaslagi,
+  aliskanlikYaz, ajandadaYaz,
 } from '../kartlar';
 import { yayinOlustur } from '../yayin';
 import { sqljsVeriTabani } from './sqljsVeriTabani';
@@ -229,5 +230,24 @@ describe('grup etkinliğine bağlı kartlar (pilot 18 Ekim)', () => {
     const a = (await kartAyrinti(oku, 'v1'))!;
     expect([a.kart.saat, a.kart.baslik, a.kart.kilitli, a.kart.bag, a.bloklar.length]).toEqual(['07:30', 'Yatağını topla', true, 'verilen:a', 1]);
     expect(await gunYapilanlari(oku, '2026-10-27')).toEqual(new Set(['v1']));
+  });
+
+  it('P-78: alışkanlık ve ajandada yazılır, okunur; düzenlemede korunur', async () => {
+    const k = yeniKart('a1', { baslik: 'Su iç', tarih: '2026-10-31', tekrar: her() });
+    await yeniKartKaydet(kapi, k, [], idUret);
+    expect((await kartAyrinti(oku, 'a1'))!.kart.aliskanlik).toBeUndefined();
+    await aliskanlikYaz(kapi, 'a1', true);
+    let a = (await kartAyrinti(oku, 'a1'))!.kart;
+    expect([a.aliskanlik, a.ajandada]).toEqual([true, undefined]);
+    await ajandadaYaz(kapi, 'a1', true);
+    a = (await kartAyrinti(oku, 'a1'))!.kart;
+    expect(a.ajandada).toBe(true);
+    const s = duzenle(a, '2026-10-31', tanim(a, { baslik: 'Su iç (2 L)' }), null, idUret);
+    await islemleriUygula(kapi, s.islemler, [], idUret);
+    a = (await kartAyrinti(oku, 'a1'))!.kart;
+    expect([a.baslik, a.aliskanlik, a.ajandada]).toEqual(['Su iç (2 L)', true, true]);
+    await aliskanlikYaz(kapi, 'a1', false);
+    a = (await kartAyrinti(oku, 'a1'))!.kart;
+    expect([a.aliskanlik, a.ajandada]).toEqual([undefined, undefined]);
   });
 });
