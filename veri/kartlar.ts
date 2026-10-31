@@ -637,26 +637,58 @@ export function blokIcerikYaz(
 export function blokEkle(
   kapi: Kapi,
   kartId: string,
-  b: { id: string; tur: BlokTuru; ad?: string; dosya?: string | null },
+  b: {
+    id: string;
+    tur: BlokTuru;
+    ad?: string;
+    metin?: string;
+    birim?: string;
+    dakika?: number | null;
+    maddeler?: readonly string[];
+    dosya?: string | null;
+    sabit?: boolean;
+  },
 ): Promise<void> {
   return kapi.yaz(['kart'], async (y) => {
     const son = await y.ilk<{ sira: number | null }>('SELECT MAX(sira) AS sira FROM blok WHERE kart_id = ?', [kartId]);
     await y.calistir(
-      'INSERT INTO blok (id, kart_id, sira, tur, ad, metin, birim, dakika, maddeler, dosya, durum, sabit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 0)',
+      'INSERT INTO blok (id, kart_id, sira, tur, ad, metin, birim, dakika, maddeler, dosya, durum, sabit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)',
       [
         b.id,
         kartId,
         (son?.sira ?? -1) + 1,
         b.tur,
         b.ad ?? '',
-        '',
-        '',
-        b.tur === 'sayac' ? 10 : null,
-        '[]',
+        b.metin ?? '',
+        b.birim ?? '',
+        b.dakika !== undefined ? b.dakika : b.tur === 'sayac' ? 10 : null,
+        JSON.stringify(b.maddeler ?? []),
         b.dosya ?? null,
+        b.sabit ? 1 : 0,
       ],
     );
   });
+}
+
+/** P-77: kart görünümündeki parça ayar sayfası: parçanın bütün alanları (sıra ve kart aynı kalır). */
+export function blokYaz(kapi: Kapi, b: BlokTaslagi): Promise<void> {
+  return kapi.yaz(['kart'], (y) =>
+    y.calistir(
+      'UPDATE blok SET tur = ?, ad = ?, metin = ?, birim = ?, dakika = ?, maddeler = ?, dosya = ?, durum = ?, sabit = ? WHERE id = ?',
+      [
+        b.tur,
+        b.ad,
+        b.metin,
+        b.birim,
+        b.dakika,
+        JSON.stringify(b.maddeler),
+        b.dosya,
+        b.tur === 'adimlar' && b.durum ? JSON.stringify(b.durum) : null,
+        b.sabit ? 1 : 0,
+        b.id,
+      ],
+    ),
+  );
 }
 
 // ---- Kart görünümünde öğe menüsü (P-76): sil, sırala, kart açıkken değişebilir ----------

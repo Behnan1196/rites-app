@@ -56,11 +56,14 @@ export function KartZamanSatiri({
   bloklar,
   gun,
   ref,
+  sag,
 }: {
   kart: Kart;
   bloklar: readonly Blok[];
   gun: Gun;
   ref?: Ref<KartZamaniAcici>;
+  /** P-77: şeridin sağında ⋯ (başlık ve zaman izinleri). */
+  sag?: React.ReactNode;
 }) {
   const { kapi, oku } = useVeri();
   const bugunGun = useBugun();
@@ -144,6 +147,7 @@ export function KartZamanSatiri({
         tarihIzni={tarihDegisir(kart)}
         saatIzni={saatDegisir(kart)}
         onAc={ac}
+        sag={sag}
       />
       <ZamanSayfasi
         gorunur={bolum !== null}

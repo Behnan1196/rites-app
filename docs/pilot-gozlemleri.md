@@ -395,3 +395,8 @@ Sonuç: → kararlar.md (Açıklama başlık satırlı öğe)
 Ne dedi: "Tamam diğerlerine de başlık satırını uygulayalım. Acaba alttaki şerit ekranın en altına sabitlenebilir mi, kart boş olsa da görsel açıdan iyi olur."
 Nerede: Kart görünümü
 Sonuç: → kararlar.md (Her parçanın başlık satırı; şerit ekranın altında)
+
+### P-77 · 31 Ekim 2026 · Behnan
+Ne dedi: "Bence onları da taşıyıp, sonra kartın görünümünün sadeleştirilmesi için çalışmalara devam etmemiz iyi olur." (Kur'da kalanlar: ayarlı parçaların kurulumu, başlık ve zaman izinleri, liste maddelerini düzeltme / silme.)
+Nerede: Kart görünümü
+Sonuç: → kararlar.md (Kur'daki son işler kartın içinde)

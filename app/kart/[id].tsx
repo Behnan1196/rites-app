@@ -33,6 +33,10 @@ import { BlokUygulama } from '@/bilesen/kart/BlokUygulama';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { KartZamanSatiri, type KartZamaniAcici } from '@/bilesen/kart/KartZamani';
 import { ParcaSeridi } from '@/bilesen/kart/ParcaSeridi';
+import { ParcaAyarSayfasi } from '@/bilesen/kart/ParcaAyarSayfasi';
+import { BlokSecici } from '@/bilesen/kart/BlokSecici';
+import { SERIT_PARCALARI } from '@/mantik/parcaSecimi';
+import type { ParcaTaslagi } from '@/mantik/blokTaslak';
 import { seritHatirlatmaMetni } from '@/bilesen/kart/Zamanlama';
 import { useUzman } from '@/bilesen/useUzman';
 import { seritOgeleri, type SeritOgesi } from '@/mantik/parcaSecimi';
@@ -54,7 +58,7 @@ import { Yazi } from '@/bilesen/Yazi';
 import { gunBasligi } from '@/mantik/ajanda';
 import { cesitBul } from '@/mantik/cesit';
 import { gorunurMu } from '@/mantik/gorunurluk';
-import { ARAC_BLOKLARI, bosKayit, type Kayit } from '@/mantik/kart';
+import { ARAC_BLOKLARI, bosKayit, type BlokTuru, type Kayit, type SabitAlan } from '@/mantik/kart';
 import { bagCoz } from '@/mantik/bulusma';
 import { verilenBagCoz } from '@/mantik/kartVerme';
 import {
@@ -73,6 +77,7 @@ import {
   blokEkle,
   blokIcerikYaz,
   blokSabitYaz,
+  blokYaz,
   blokSil,
   bloklarinYeriniDegistir,
   kartSabitleriYaz,
@@ -88,6 +93,9 @@ import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { yeniKimlik } from '@/veri/kimlik';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
+
+/** P-77: kart görünümünde ayar sayfası olan parçalar (talimat ve video yerinde düzeltilir). */
+const AYARLI: readonly BlokTuru[] = ['liste', 'adimlar', 'olcum', 'adet', 'puan', 'gunnot', 'sayac', 'dosya', 'foto'];
 
 export default function KartGorunumu() {
   const { id, gun: gunParam, geri } = useLocalSearchParams<{ id: string; gun?: string; geri?: string }>();
@@ -107,6 +115,10 @@ export default function KartGorunumu() {
   const [aciklamaMenusu, setAciklamaMenusu] = useState(false);
   /** P-76: parçanın ⋯ menüsü (görünümde): değişebilir, Yukarı / Aşağı, Karttan kaldır. */
   const [blokMenusu, setBlokMenusu] = useState<string | null>(null);
+  /** P-77: Kur'a gitmeden: parça ayarı (yeni ya da var olan), Daha seçicisi, başlık ve zaman izinleri. */
+  const [parcaAyari, setParcaAyari] = useState<{ blok: ParcaTaslagi; yeni: boolean } | null>(null);
+  const [seciciAcik, setSeciciAcik] = useState(false);
+  const [zamanMenusu, setZamanMenusu] = useState(false);
   const zamanAcici = useRef<KartZamaniAcici>(null);
   const uzman = useUzman();
 
@@ -176,6 +188,21 @@ export default function KartGorunumu() {
         console.error('Kaydedilemedi', e);
         kisaMesaj('Kaydedilemedi. Yeniden dene.');
       });
+  /** P-77: Daha'dan parça: ayarı olan (ölçüm, puan, zamanlayıcı…) önce kurulur; öbürleri doğrudan eklenir. */
+  const dahadanEkle = (tur: BlokTuru) => {
+    const yeni: ParcaTaslagi = {
+      id: yeniKimlik(),
+      tur,
+      ad: '',
+      metin: '',
+      birim: '',
+      dakika: tur === 'sayac' ? 10 : null,
+      maddeler: [],
+      dosya: null,
+    };
+    if (AYARLI.includes(tur)) setParcaAyari({ blok: yeni, yeni: true });
+    else icerikKaydet(blokEkle(kapi, kart.id, yeni));
+  };
   /** P-72: şeritten parça: açıklama yerinde yazılır; fotoğraf önce seçilir; öbürleri boş eklenir. */
   const parcaEkle = async (o: SeritOgesi) => {
     if (o === 'aciklama') {
@@ -413,7 +440,7 @@ export default function KartGorunumu() {
               })
             : { ogeler: [], daha: false })}
           onSec={(o) => void parcaEkle(o)}
-          onDaha={() => duzenleAc(true)}
+          onDaha={() => setSeciciAcik(true)}
           hatirlatma={{
             metin: seritHatirlatmaMetni(kart),
             ayarli: kart.hatirlatma !== null,
@@ -455,11 +482,57 @@ export default function KartGorunumu() {
                 setBlokMenusu(null);
                 icerikKaydet(blokSil(kapi, b.id));
               }}
+              onDuzenle={AYARLI.includes(b.tur) ? () => setParcaAyari({ blok: b, yeni: false }) : undefined}
+              duzenleEtiketi={b.tur === 'liste' || b.tur === 'adimlar' ? 'Maddeleri düzenle' : 'Ayarla'}
               silEtiketi="Karttan kaldır"
               onKapat={() => setBlokMenusu(null)}
             />
           );
         })()}
+      {zamanMenusu &&
+        (() => {
+          // Eski kayıttaki tek "zaman" kilidi tarih ve saate açılır.
+          const acilmis = (kart.sabitler ?? []).flatMap((x): SabitAlan[] => (x === 'zaman' ? ['tarih', 'saat'] : [x]));
+          const anahtar = (alan: SabitAlan, etiket: string) => ({
+            etiket,
+            acik: !acilmis.includes(alan),
+            onDegis: (acik: boolean) =>
+              icerikKaydet(kartSabitleriYaz(kapi, kart.id, sabitDegistir(acilmis, alan, !acik))),
+          });
+          return (
+            <ElemanMenusu
+              baslik="Başlık ve zaman"
+              anahtarlar={[
+                anahtar('baslik', 'Başlık'),
+                anahtar('tarih', 'Tarih ve süre'),
+                anahtar('saat', 'Saat ve hatırlatma'),
+              ]}
+              onKapat={() => setZamanMenusu(false)}
+            />
+          );
+        })()}
+      <BlokSecici
+        gorunur={seciciAcik}
+        uzman={uzman}
+        mevcut={[...bloklar.map((b) => b.tur), ...SERIT_PARCALARI]}
+        onKapat={() => setSeciciAcik(false)}
+        onSec={(tur) => {
+          setSeciciAcik(false);
+          dahadanEkle(tur);
+        }}
+      />
+      {parcaAyari && (
+        <ParcaAyarSayfasi
+          blok={parcaAyari.blok}
+          yeni={parcaAyari.yeni}
+          cokGunlu={!!kart.tekrar}
+          onKaydet={(t) => {
+            const { id, ...alanlar } = t;
+            icerikKaydet(parcaAyari.yeni ? blokEkle(kapi, kart.id, { id, ...alanlar }) : blokYaz(kapi, t));
+          }}
+          onKapat={() => setParcaAyari(null)}
+        />
+      )}
       {aciklamaMenusu && (
         <ElemanMenusu
           baslik="Açıklama"
@@ -490,6 +563,16 @@ export default function KartGorunumu() {
               ikon: 'bookmark-outline',
               onPress: () => kutuphane.ac({ tur: 'kart', kart, bloklar, alanlar: program?.alanlar ?? [] }),
             },
+            // P-77: başlık ve zaman izinleri (Kur'daki başlık satırı ⋯'nin yerine; şerit kısalmasın).
+            ...(duzenlenir
+              ? [
+                  {
+                    etiket: 'Başlık ve zaman izinleri',
+                    ikon: 'lock-open-outline' as const,
+                    onPress: () => setZamanMenusu(true),
+                  },
+                ]
+              : []),
             ...(!kart.planId && !kart.bag && !kart.kilitli
               ? [
                   {

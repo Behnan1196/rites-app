@@ -643,3 +643,11 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **⋯ menüsü (Kur'daki gibi, görünümde):** "Kart açıkken değiştirilebilir" anahtarı (içerik parçaları ve açıklama), **↑ Yukarı · ↓ Aşağı** (kartta görünen aynı bölümdeki komşuyla), **Karttan kaldır**. Değişiklik bütün günlere (tekrarlı kartta da), programın kartıysa programa da yansır. — Ürün sahibi (P-76); ayrıntılar: Öneri
 - **Parça şeridi ekranın altına sabit:** kart kısa ya da boşken de altta; içerik kayarken yerinde kalır. — Ürün sahibi (P-76)
 - Boş video parçasında koyu kutu yok; yalnız "+ Video ekle" (Kur'da da). — Öneri
+
+## Kur'daki son işler kartın içinde (31 Ekim)
+
+- **Ayarlı parçalar kartın içinde kurulur:** uzmanda şeritteki **Daha** artık Kur'u değil parça seçicisini açar. Ölçüm, sayarak, puan, günün notu, zamanlayıcı ve dosya önce küçük bir ayar sayfasında kurulur (Vazgeç · Ekle); talimat, kronometre, gelişim fotoğrafı doğrudan eklenir. Var olan parçanın ⋯ menüsünde **Ayarla** aynı sayfayı açar (Kur'daki parça düzenleyicisi). — Ürün sahibi (P-77); ayrıntılar: Öneri
+- **Liste maddeleri kartın içinde düzeltilir ve silinir:** listenin ⋯ menüsünde **Maddeleri düzenle** (Kur'daki onay kutulu editör, liste adı ve "her gün baştan / işaretler kalsın" seçimi ile). — Ürün sahibi (P-77)
+- **Başlık ve zaman izinleri:** sağ üstteki ⋯ menüsünde **Başlık ve zaman izinleri** (Başlık · Tarih ve süre · Saat ve hatırlatma). Zaman şeridinin yanına konmadı (şerit kısalıyordu). — Ürün sahibi (P-77); yeri: Öneri
+- Menüdeki kapalı anahtarın açıklaması "Yalnız Kur ile değişir" yerine "Kart açıkken değiştirilemez". — Öneri
+- Kur düğmesi şimdilik yerinde; kart görünümünün sadeleştirilmesinde ele alınacak. — Not

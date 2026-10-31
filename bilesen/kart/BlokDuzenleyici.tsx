@@ -34,6 +34,8 @@ interface Ozellikler {
   onGelendenAlindi?: (id: string) => void;
   /** P-66: başlık satırındaki ⋯; varsa "Bunu kaldır" gösterilmez (menüde Sil). */
   onMenu?: () => void;
+  /** P-77: kart görünümündeki ayar sayfasında: kutu, başlık satırı ve "Bunu kaldır" yok (listede adı kalır). */
+  basliksiz?: boolean;
 }
 
 export function BlokDuzenleyici({
@@ -44,6 +46,7 @@ export function BlokDuzenleyici({
   onListeSecimi,
   onGelendenAlindi,
   onMenu,
+  basliksiz = false,
 }: Ozellikler) {
   const tur = BLOK_TURLERI[blok.tur];
   const degis = (alanlar: Partial<BlokTaslagi>) => onDegis({ ...blok, ...alanlar });
@@ -68,36 +71,39 @@ export function BlokDuzenleyici({
 
   // P-69: listede simge ve "Liste" yazısı yok; başlık satırında liste adı ve ⋯.
   const listeMi = blok.tur === 'liste' || blok.tur === 'adimlar';
+  const Kap = basliksiz ? DuzKap : Bolum;
   return (
-    <Bolum>
-      <View style={stiller.ust}>
-        <View style={[stiller.ad, listeMi && stiller.esnek]} accessibilityRole={listeMi ? undefined : 'header'}>
-          {listeMi ? (
-            <View style={stiller.esnek}>
-              <Alan
-                etiket="Liste adı"
-                deger={blok.ad}
-                onDegis={(ad) => degis({ ad })}
-                ipucu="Liste adı (isteğe bağlı)"
+    <Kap>
+      {(!basliksiz || listeMi) && (
+        <View style={stiller.ust}>
+          <View style={[stiller.ad, listeMi && stiller.esnek]} accessibilityRole={listeMi ? undefined : 'header'}>
+            {listeMi ? (
+              <View style={stiller.esnek}>
+                <Alan
+                  etiket="Liste adı"
+                  deger={blok.ad}
+                  onDegis={(ad) => degis({ ad })}
+                  ipucu="Liste adı (isteğe bağlı)"
+                />
+              </View>
+            ) : (
+              <>
+                <Ionicons name={tur.ikon} size={22} color={tur.kayit ? renk.vurguYazi : renk.ana} />
+                <Yazi kalinlik="kalin">{tur.ad}</Yazi>
+              </>
+            )}
+            {!!blok.sabit && (
+              <Ionicons
+                name="lock-closed-outline"
+                size={16}
+                color={renk.soluk}
+                accessibilityLabel="Kart açıkken değiştirilemez"
               />
-            </View>
-          ) : (
-            <>
-              <Ionicons name={tur.ikon} size={22} color={tur.kayit ? renk.vurguYazi : renk.ana} />
-              <Yazi kalinlik="kalin">{tur.ad}</Yazi>
-            </>
-          )}
-          {!!blok.sabit && (
-            <Ionicons
-              name="lock-closed-outline"
-              size={16}
-              color={renk.soluk}
-              accessibilityLabel="Kart açıkken değiştirilemez"
-            />
-          )}
+            )}
+          </View>
+          {onMenu && <SimgeDugmesi ikon="ellipsis-horizontal" etiket={`${tur.ad}: seçenekler`} onPress={onMenu} />}
         </View>
-        {onMenu && <SimgeDugmesi ikon="ellipsis-horizontal" etiket={`${tur.ad}: seçenekler`} onPress={onMenu} />}
-      </View>
+      )}
 
       {blok.tur === 'talimat' && (
         <ZenginMetinAlani
@@ -246,7 +252,7 @@ export function BlokDuzenleyici({
         </>
       )}
       {blok.tur === 'gelfoto' && <Yazi tur="ikincil">Kartı uygularken fotoğraf çekip gelişimini kaydedeceksin.</Yazi>}
-      {!onMenu && (
+      {!onMenu && !basliksiz && (
         <Pressable
           onPress={onKaldir}
           accessibilityRole="button"
@@ -259,8 +265,12 @@ export function BlokDuzenleyici({
           </Yazi>
         </Pressable>
       )}
-    </Bolum>
+    </Kap>
   );
+}
+
+function DuzKap({ children }: { children: React.ReactNode }) {
+  return <View style={stiller.duzKap}>{children}</View>;
 }
 
 function Alan({
@@ -296,6 +306,7 @@ function Alan({
 }
 
 const stiller = StyleSheet.create({
+  duzKap: { gap: 12 },
   ust: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   ad: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
   esnek: { flex: 1 },

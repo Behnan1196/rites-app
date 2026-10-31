@@ -24,6 +24,8 @@ export function ElemanMenusu({
   onSil,
   silEtiketi = 'Sil',
   onKapat,
+  onDuzenle,
+  duzenleEtiketi = 'Düzenle',
 }: {
   baslik: string;
   anahtarlar: readonly MenuAnahtari[];
@@ -32,14 +34,28 @@ export function ElemanMenusu({
   onSil?: () => void;
   silEtiketi?: string;
   onKapat: () => void;
+  /** P-77: kart görünümünde parçanın ayar sayfası ("Ayarla", "Maddeleri düzenle"). */
+  onDuzenle?: () => void;
+  duzenleEtiketi?: string;
 }) {
   return (
     <AltSayfa gorunur onKapat={onKapat} baslik={baslik} sagKapat="Tamam">
+      {onDuzenle && (
+        <Dugme
+          tur="ikincil"
+          yaziRengi={renk.ana}
+          etiket={duzenleEtiketi}
+          onPress={() => {
+            onKapat();
+            onDuzenle();
+          }}
+        />
+      )}
       {anahtarlar.map((a) => (
         <View key={a.etiket} style={stiller.satir}>
           <View style={stiller.esnek}>
             <Yazi>{a.etiket}</Yazi>
-            <Yazi tur="ikincil">{a.acik ? 'Kart açıkken değiştirilebilir' : 'Yalnız Kur ile değişir'}</Yazi>
+            <Yazi tur="ikincil">{a.acik ? 'Kart açıkken değiştirilebilir' : 'Kart açıkken değiştirilemez'}</Yazi>
           </View>
           <AcKapa acik={a.acik} onDegis={a.onDegis} etiket={`${a.etiket} kart açıkken değiştirilebilsin`} />
         </View>

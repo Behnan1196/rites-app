@@ -16,7 +16,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 
 import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
-import { adimDurumu, adimlariEsle } from '@/mantik/adimlar';
+import { formaBlok, kaydaBlok } from '@/mantik/blokTaslak';
 import { CESIT_SIMGELERI, cesitBul, cesitler as tumCesitler, yeniCesitKimligi } from '@/mantik/cesit';
 import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Kart, type SabitAlan } from '@/mantik/kart';
 import { SERIT_PARCALARI, seritOgeleri, type SeritOgesi } from '@/mantik/parcaSecimi';
@@ -33,7 +33,7 @@ import {
 import { seriVarsayilani, type KartTaslagi } from '@/mantik/karakter';
 import type { KartIcerigi } from '@/mantik/kutuphane';
 import { gunEkle, gunFarki, type Gun } from '@/mantik/tarih';
-import { BOS_ACIKLAMA, htmlMaddeleri, maddelerdenHtml, metinDoluMu } from '@/mantik/zenginMetin';
+import { BOS_ACIKLAMA, metinDoluMu } from '@/mantik/zenginMetin';
 import type { TasarimCesidi } from '@/sunucu/cesit';
 import { islemleriUygula, yeniKartKaydet, type BlokTaslagi } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
@@ -158,27 +158,6 @@ const VARSAYILAN_IPUCU = 'Kartın başlığı';
 
 let geciciNo = 0;
 const geciciKimlik = () => `yeni-${++geciciNo}`;
-
-/** Formda liste maddeleri `metin` içinde, her satırda bir madde olarak düzenlenir. */
-function formaBlok(b: Blok): BlokTaslagi {
-  const { kartId: _k, sira: _s, ...taslak } = b;
-  // P-50: liste maddeleri editörde onay kutulu liste (HTML).
-  return b.tur === 'liste' || b.tur === 'adimlar' ? { ...taslak, metin: maddelerdenHtml(b.maddeler) } : taslak;
-}
-
-function kaydaBlok(b: BlokTaslagi): BlokTaslagi {
-  if (b.tur !== 'liste' && b.tur !== 'adimlar') return b;
-  const maddeler = htmlMaddeleri(b.metin);
-  if (b.tur === 'liste') return { ...b, maddeler, metin: '' };
-  // Proje adımları: yapılmış adımlar metnine göre yapılmış kalır.
-  const eski = adimDurumu(b.durum, b.maddeler.length);
-  return {
-    ...b,
-    maddeler,
-    metin: '',
-    durum: adimlariEsle(b.maddeler, eski, maddeler),
-  };
-}
 
 function bosBlok(tur: BlokTuru): BlokTaslagi {
   return {
