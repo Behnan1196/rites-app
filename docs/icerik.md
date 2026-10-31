@@ -66,6 +66,8 @@ Kaldırılan alan, onu etiket olarak kullanan kişide adıyla görünmeye devam 
 
 Programın kartları `icerik_kart`ta tanımlı olmalı; bilinmeyen kart atlanır, hiç kartı kalmayan program görünmez. Tekrarlı kart programın son gününde kendiliğinden durur.
 
+P-79 (31 Ekim): uygulama katalogu sade gösterir (`mantik/katalog.ts` → `sadeKatalog`): tek kartlı program, programın süresini alan bir **alışkanlık önerisi** olur (program listesinde görünmez); öneri kartları saatsizdir; açıklaması boş kartın talimatı açıklamaya taşınır; `tur` gösterilmez. Sunucudaki tablolar değişmez.
+
 ## `icerik_cesit` — isimli kart çeşitleri (P-41)
 
 Boş kart kalıpları (Öğün listesi, Tartı, Su…). Uygulamadan **Ayarlar → Kart çeşitleri**'nde (yalnız tasarımcı hesaplar) kart formuyla yazılır; Table Editor'de de düzenlenebilir.

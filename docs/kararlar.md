@@ -659,3 +659,11 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Gidişat ekranı (Alışkanlıklar):** her süren alışkanlık bir kutuda: ad (dokununca kart), tekrar ve program, son 4 haftanın şeridi (yapıldı · yapılmadı · günü değil; bugün çerçeveli), seri, "Son 4 haftada 9/12", süreli olanda "12/21. gün", **Ajandada göster** anahtarı. Üstte **+ Alışkanlık ekle** (her gün, süresiz açılan yeni kart; "Yeni alışkanlık"). Kartlardan kaldırılan seri gösterimi (P-73) burada. — Ürün sahibi (P-78); düzen: Öneri
 - **Ajandada varsayılan olarak görünmez** (programın tekrarlı kartları da); her alışkanlıkta "Ajandada göster" ile görünür (gidişat ekranında ve kartın ⋯ menüsünde). Hatırlatmaları sürer. "Alışkanlıktan çıkar" kartı yeniden ajandaya alır. — Ürün sahibi (P-78)
 - Tek başına alışkanlığa yaşam alanı verme ve gidişat ekranında alana göre kümeleme sonra. — Not
+
+## Rites önerileri sade ve ayrı (31 Ekim)
+
+- **Tek kartlı öneri programları alışkanlık önerisi:** Su, Yürüyüş, Nefes, Şükran, Arama, İngilizce, İşi işte bırak, Gitar program listesinde görünmez; kartları programın süresini (ör. 21 gün) ve açıklamasını alır. Öneri programı olarak yalnız çok kartlılar kalır (Sabah hareketi, Uyku düzeni). — Ürün sahibi (P-79)
+- **Tekrarlı öneri kartı alışkanlık olarak eklenir:** öneri ekranında "Alışkanlık olarak ekle" (bugünden başlar, Giriş → Devam edenler; ajandada görünmez). — Ürün sahibi (P-79)
+- **Öneri kartları saatsiz ve eski etiketsiz:** saat kişinin seçimi; Egzersiz / Ölçüm / Bilgi / Rutin gösterilmez (öneride "Alışkanlık önerisi · Beslenme · Her gün"); açıklaması boş kartta talimat açıklamaya taşınır. — Ürün sahibi (P-79); talimatın taşınması: Öneri
+- **Öneriler Kütüphanem'den ayrı:** Yaşam Tarzım'da Kütüphanem'in altında **Rites önerileri** satırı ve ekranı (Programlar · Alışkanlık önerileri, alan süzgeci, gizlenenler altta). Kütüphanem yalnız kişinin programları ve kaydettiği kartlar; altta "Rites önerileri ›". Alan ekranlarındaki öneriler yerinde. — Ürün sahibi (P-79)
+- Sadeleştirme uygulamada yapılır (`sadeKatalog`); sunucudaki içerik değişmedi, SQL gerekmez. Uzman katalogu yenilediğinde de aynı kural geçerli. — Not

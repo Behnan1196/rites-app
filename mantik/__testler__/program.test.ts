@@ -248,8 +248,10 @@ describe('ilerleme ve gelişim', () => {
 });
 
 describe('Rites önerileri', () => {
-  it('her hazır paket bir öneri; kopyası hazır program', () => {
-    expect(oneriler().length).toBe(ALANLAR.reduce((t, a) => t + a.paketler.length, 0));
+  it('çok kartlı hazır paket bir öneri programı (P-79: tek kartlılar alışkanlık önerisi); kopyası hazır program', () => {
+    expect(oneriler().length).toBe(
+      ALANLAR.reduce((t, a) => t + a.paketler.filter((p) => p.etkinlikler.length > 1).length, 0),
+    );
     const o = oneriler().find((x) => x.id === 'ph1')!;
     expect(o.sure).toBe(28);
     const { program: p, kartlar } = onerdenProgram(o, kimlik, '2026-10-20T10:00:00Z');
@@ -264,8 +266,10 @@ describe('Rites önerileri', () => {
       ['Sabah esnemesi', p.id, 0],
       ['Tai chi, 8 hareket', p.id, 0],
     ]);
-    expect(kartlar[1]!.bloklar.map((b) => b.tur)).toEqual(['video', 'talimat']);
-    expect(kartlar[1]!.bloklar[1]!.metin).toBe(VIDEO_TALIMATI);
+    // P-79: talimat açıklamaya taşınır; öneri kartı saatsiz.
+    expect(kartlar[1]!.bloklar.map((b) => b.tur)).toEqual(['video']);
+    expect(kartlar[1]!.kisa).toBe(VIDEO_TALIMATI);
+    expect(kartlar[1]!.saat).toBeNull();
   });
   it('arama metni kartları da kapsar', () => {
     expect(programMetni(program(), [pkart()])).toContain('araştırma videosu');

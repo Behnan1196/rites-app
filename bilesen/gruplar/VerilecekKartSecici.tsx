@@ -23,7 +23,7 @@ export function VerilecekKartSecici({ onSec, onKapat }: { onSec: (p: KartPaketi)
   const kayitlar = useSorgu(['kutuphane'], (o) => kutuphaneyiOku(o), []).veri ?? [];
   const uyar = (metin: string) => !sorgu.trim() || trKucuk(metin).includes(trKucuk(sorgu.trim()));
   const benimkiler = kayitlar.filter((k) => uyar(`${k.baslik} ${etiketMetni(k)}`));
-  const oneriler = katalog().kartlar.filter((k) => uyar(`${k.baslik} ${k.alanlar.map(alanAdi).join(' ')} ${k.tur}`));
+  const oneriler = katalog().kartlar.filter((k) => uyar(`${k.baslik} ${k.alanlar.map(alanAdi).join(' ')}`));
 
   const satir = (anahtar: string, baslik: string, alt: string, paket: () => KartPaketi) => (
     <Pressable
@@ -49,9 +49,7 @@ export function VerilecekKartSecici({ onSec, onKapat }: { onSec: (p: KartPaketi)
       </Yazi>
       {kayitlar.length === 0 && (
         <Yazi tur="ikincil">
-          {
-            'Kütüphanende kart yok. Ajandandaki bir kartı vermek için kartı aç, ⋯ menüsünden "Birine ver" de.'
-          }
+          {'Kütüphanende kart yok. Ajandandaki bir kartı vermek için kartı aç, ⋯ menüsünden "Birine ver" de.'}
         </Yazi>
       )}
       {benimkiler.map((k) =>
@@ -63,7 +61,7 @@ export function VerilecekKartSecici({ onSec, onKapat }: { onSec: (p: KartPaketi)
         </Yazi>
       )}
       {oneriler.map((k) =>
-        satir(`o-${k.id}`, k.baslik, [...k.alanlar.map(alanAdi), k.tur].join(' · '), () => kartPaketi(k, k.bloklar)),
+        satir(`o-${k.id}`, k.baslik, k.alanlar.map(alanAdi).join(' · '), () => kartPaketi(k, k.bloklar)),
       )}
     </AltSayfa>
   );

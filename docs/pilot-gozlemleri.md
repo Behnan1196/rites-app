@@ -405,3 +405,8 @@ Sonuç: → kararlar.md (Kur'daki son işler kartın içinde)
 Ne dedi: "Serilerin, gelişimin gösterilmesi konusuna bakalım; asıl amaç alışkanlık yerleştirme ya da belirli süreli bir programı sıkı uygulama. Alışkanlık tipi kartlar ajandada fazla kalabalık bir görünüme neden oluyor. Alışkanlıkları diğer yazılımlarda olduğu gibi bir miktar ayrı tutabiliriz … Rites alışkanlık yerleştirmeyi yaşam tarzı alanlarına bağlamaya çalışıyor ve uygulanan programlar zaten ana ekranda bir widget olarak görünüyor … ajandayı rahatlatmak için alışveriş listesini Listeler'e taşıdım, alışkanlıklar da bu mantıkla gidecek ve ajandada göster seçeneği ile ajandayı gerektiğinde rahatlatırız." Kararlar: Devam edenler genişlesin; ajandada varsayılan kapalı; seçilen + programdakiler.
 Nerede: Giriş → Devam edenler, Alışkanlıklar ekranı, Ajandam, kart görünümü
 Sonuç: → kararlar.md (Alışkanlıklar ayrı yerde; ajanda rahatlar)
+
+### P-79 · 31 Ekim 2026 · Behnan
+Ne dedi: "Telefonda Rites hesabını silerek verileri sıfırlamak ve belirli senaryolarla ilerlemek istiyorum. Yaşam tarzındaki Rites önerileri (gereksiz kalmış olabilir) ve Kütüphane kullanımını da gözden geçirmek." Kararlar: tek kartlı programlar alışkanlık önerisi; tekrarlı öneri kartı alışkanlık olarak eklenir; öneri kartları saatsiz, etiketsiz; öneriler Kütüphanem'den ayrı.
+Nerede: Yaşam Tarzım, Kütüphanem, öneri ekranı
+Sonuç: → kararlar.md (Rites önerileri sade ve ayrı); deneme senaryoları sıfırlamadan sonra

@@ -8,6 +8,7 @@ import {
   katalogCoz,
   katalogDenensinMi,
   tekrarCoz,
+  sadeKatalog,
 } from '../katalog';
 import { oneriBul, oneriKartBul, oneriler } from '../program';
 
@@ -120,7 +121,7 @@ describe('şu anki katalog', () => {
       ['Duvar şınavı', 0],
       ['Su', 7],
     ]);
-    expect(ayniKatalog(katalog(), katalogCoz(ham)!)).toBe(true);
+    expect(ayniKatalog(katalog(), sadeKatalog(katalogCoz(ham)!))).toBe(true);
     expect(ayniKatalog(katalog(), gomuluKatalog())).toBe(false);
   });
   it('en çok 6 saatte bir indirilir', () => {
@@ -128,5 +129,23 @@ describe('şu anki katalog', () => {
     expect(katalogDenensinMi(null, simdi)).toBe(true);
     expect(katalogDenensinMi('2026-10-20T07:00:00Z', simdi)).toBe(false);
     expect(katalogDenensinMi('2026-10-20T05:59:00Z', simdi)).toBe(true);
+  });
+});
+
+describe('Sade öneriler (P-79)', () => {
+  it('tek kartlı program alışkanlık önerisi; kartlar saatsiz; talimat açıklamaya', () => {
+    const g = gomuluKatalog();
+    const s = sadeKatalog(g);
+    expect(s.programlar.every((p) => p.kartlar.length > 1)).toBe(true);
+    const su = s.kartlar.find((c) => c.id === 'b1')!;
+    const suProgrami = g.programlar.find((p) => p.kartlar.length === 1 && p.kartlar[0]!.kart === 'b1')!;
+    expect(su.sure).toBe(suProgrami.sure);
+    expect(su.tekrar?.gunSayisi).toBe(suProgrami.sure);
+    expect(s.kartlar.every((c) => c.saat === null)).toBe(true);
+    const bilgi = s.kartlar.find((c) => c.id === 'b2')!;
+    expect(bilgi.bloklar.some((b) => b.tur === 'talimat')).toBe(false);
+    expect(bilgi.kisa).not.toBe('');
+    // Programda olmayan kartın süresi yok.
+    expect(s.kartlar.find((c) => c.id === 'h4')!.sure).toBeUndefined();
   });
 });

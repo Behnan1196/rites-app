@@ -1,7 +1,8 @@
 // Rites önerisi (içerik kataloğundan; pilot 20 Ekim): program ya da kart.
 // Program: "Programlarıma ekle" (kopyası kişinin programı olur; öneri Kütüphanem'de
 // artık görünmez). Kart: "Bugün Ajandama ekle", "Programa ekle". İkisinde de
-// "Önerilerden gizle" / "Yeniden göster".
+// "Önerilerden gizle" / "Yeniden göster". P-79: tekrarlı öneri kartı "Alışkanlık olarak ekle"
+// (Giriş → Devam edenler'e düşer, ajandada görünmez); eski tür etiketi (Egzersiz, Bilgi…) yok.
 
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -16,6 +17,7 @@ import { renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { AlanSimgesi } from '@/bilesen/yasam/parcalar';
 import { ProgramSecSayfasi } from '@/bilesen/yasam/ProgramSayfalari';
+import { tekrarMetni } from '@/mantik/gorunurluk';
 import { kutuphanedenKart } from '@/mantik/kutuphane';
 import {
   alanlarMetni,
@@ -95,7 +97,11 @@ export default function OneriEkrani() {
             {program ? program.ad : kart!.baslik}
           </Yazi>
           <Yazi tur="ikincil">
-            {['Rites önerisi', alanlarMetni(alanlar), program ? sureMetni(program.sure) : kart!.tur]
+            {[
+              program ? 'Rites programı' : kart!.tekrar ? 'Alışkanlık önerisi' : 'Rites önerisi',
+              alanlarMetni(alanlar),
+              program ? sureMetni(program.sure) : kart!.tekrar ? tekrarMetni(kart!.tekrar) : null,
+            ]
               .filter(Boolean)
               .join(' · ')}
           </Yazi>
@@ -135,13 +141,17 @@ export default function OneriEkrani() {
         <>
           <KartIcerigiGorunumu c={{ ...kart, hatirlatma: null }} />
           <Dugme
-            etiket="Bugün Ajandama ekle"
+            etiket={kart.tekrar ? 'Alışkanlık olarak ekle' : 'Bugün Ajandama ekle'}
             pasif={calisiyor}
             onPress={() =>
               void calistir(async () => {
                 const a = kutuphanedenKart({ ...kart, hatirlatma: null }, bugunGun, yeniKimlik);
-                await yeniKartKaydet(kapi, a.kart, a.bloklar, yeniKimlik);
-                kisaMesaj(`Ajandama eklendi: ${kart.baslik}`);
+                // P-79: tekrarlıysa alışkanlık (Giriş → Devam edenler; ajandada görünmez).
+                const yeni = kart.tekrar ? { ...a.kart, aliskanlik: true } : a.kart;
+                await yeniKartKaydet(kapi, yeni, a.bloklar, yeniKimlik);
+                kisaMesaj(
+                  kart.tekrar ? `Alışkanlıklarına eklendi: ${kart.baslik}` : `Ajandama eklendi: ${kart.baslik}`,
+                );
               })
             }
           />
@@ -151,7 +161,11 @@ export default function OneriEkrani() {
             etiket="Programa ekle"
             onPress={() => setProgramSec((n) => n + 1)}
           />
-          <Yazi tur="ikincil">Ajandana ya da programına eklediğin kopya senindir; istediğin gibi değiştirirsin.</Yazi>
+          <Yazi tur="ikincil">
+            {kart.tekrar
+              ? 'Bugünden başlar; Giriş → Devam edenler’de işaretlersin, gidişatını Alışkanlıklar’da görürsün. Eklediğin kopya senindir.'
+              : 'Ajandana ya da programına eklediğin kopya senindir; istediğin gibi değiştirirsin.'}
+          </Yazi>
         </>
       )}
 

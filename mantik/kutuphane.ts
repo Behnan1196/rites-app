@@ -158,7 +158,7 @@ export function suzgecSecenekleri(
 }
 
 export const BOS_KUTUPHANE =
-  'Kendi kaydettiğin kart henüz yok; aşağıdakiler Rites önerileri. Bir kartı açıp "Kütüphaneye kaydet" dediğinde burada durur.';
+  'Kaydettiğin kart henüz yok. Bir kartı açıp ⋯ menüsünden "Kütüphaneye kaydet" dediğinde burada durur; ajandaya koymadan açıp düzeltebilirsin.';
 export const SUZGECTE_YOK = 'Bu süzgeçle kayıt yok.';
 
 /** Ayrıntıda blok satırı: "Liste: Malzemeler", "Talimat". */

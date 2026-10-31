@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { alanAdi } from '@/mantik/alanlar';
-import { gomuluKatalog, katalog, katalogAyarla, katalogCoz } from '@/mantik/katalog';
+import { gomuluKatalog, katalog, katalogAyarla, katalogCoz, sadeKatalog } from '@/mantik/katalog';
 
 import { ayarOku } from '../ayar';
 import { gocleriUygula } from '../gocler';
@@ -29,7 +29,7 @@ afterEach(() => katalogAyarla(null));
 
 it('saklı katalog yoksa uygulamayla gelen; indirilen saklanır ve açılışta yüklenir', async () => {
   expect(await sakliKataloguYukle(oku)).toBeNull();
-  expect(katalog()).toBe(gomuluKatalog());
+  expect(katalog()).toEqual(sadeKatalog(gomuluKatalog()));
   const yeni = katalogCoz({ alanlar: [{ anahtar: 'hareket', ad: 'Hareket ve güç' }] })!;
   await katalogKaydet(kapi, yeni, '2026-10-20T10:00:00Z');
   expect(duyurulan).toEqual([['ayar', 'kutuphane', 'plan']]);

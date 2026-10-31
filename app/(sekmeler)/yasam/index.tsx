@@ -168,7 +168,23 @@ export default function YasamTarzim() {
             </View>
             <View style={stiller.esnek}>
               <Yazi tur="kartBasligi">Kütüphanem</Yazi>
-              <Yazi tur="ikincil">{`${ozetler.length} program · ${kutuphaneSayiMetni(kayitSayisi.veri ?? 0)} · Rites önerileri`}</Yazi>
+              <Yazi tur="ikincil">{`${ozetler.length} program · ${kutuphaneSayiMetni(kayitSayisi.veri ?? 0)}`}</Yazi>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
+          </Pressable>
+          {/* P-79: öneriler Kütüphanem'den ayrı. */}
+          <Pressable
+            onPress={() => router.push('/yasam/oneriler')}
+            accessibilityRole="button"
+            accessibilityLabel="Rites önerileri, programlar ve alışkanlıklar"
+            style={({ pressed }) => [stiller.kutuphane, pressed && { opacity: 0.75 }]}
+          >
+            <View style={stiller.kutuphaneSimge}>
+              <Ionicons name="sparkles-outline" size={22} color={renk.ana} />
+            </View>
+            <View style={stiller.esnek}>
+              <Yazi tur="kartBasligi">Rites önerileri</Yazi>
+              <Yazi tur="ikincil">Denemek isteyebileceğin programlar ve alışkanlıklar</Yazi>
             </View>
             <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
           </Pressable>

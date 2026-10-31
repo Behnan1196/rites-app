@@ -65,6 +65,11 @@ export interface KatalogKart {
   tekrar: Tekrar | null;
   bloklar: KatalogBlogu[];
   tur: EtiketTuru;
+  /**
+   * P-79: alışkanlık önerisi (eskiden tek kartlı öneri programı): kaç gün (null: süresiz). Yalnız
+   * `katalog()`un sadeleştirdiği kartta; tekrarın `gunSayisi` da buna eşit.
+   */
+  sure?: number | null;
 }
 
 export interface KatalogProgram {
@@ -339,8 +344,47 @@ export function katalogAyarla(k: Katalog | null): void {
   etkin = k;
 }
 
+let sonHam: Katalog | null = null;
+let sonSade: Katalog | null = null;
+
+/** Şu anki katalog, kişiye gösterildiği gibi (P-79: `sadeKatalog`). */
 export function katalog(): Katalog {
-  return etkin ?? gomuluKatalog();
+  const ham = etkin ?? gomuluKatalog();
+  if (ham !== sonHam || !sonSade) {
+    sonHam = ham;
+    sonSade = sadeKatalog(ham);
+  }
+  return sonSade;
+}
+
+/**
+ * Rites önerilerinin sade hali (pilot 31 Ekim, P-79), içerik sunucuda değişmeden:
+ * - Tek kartlı öneri programı program değil, süreli **alışkanlık önerisi**dir: kartı programın
+ *   süresini (`sure`, tekrarın gün sayısı) ve açıklamasını alır; program listesinde görünmez.
+ * - Öneri kartları saatsizdir (saat kişinin seçimi).
+ * - Açıklaması boş kartta talimat parçası açıklamaya taşınır (normal kullanıcı açıklama kullanır).
+ */
+export function sadeKatalog(k: Katalog): Katalog {
+  const tekli = new Map<string, KatalogProgram>();
+  for (const p of k.programlar) if (p.kartlar.length === 1) tekli.set(p.kartlar[0]!.kart, p);
+  const kartlar = k.kartlar.map((c): KatalogKart => {
+    const p = tekli.get(c.id);
+    const talimat = !c.kisa.trim() ? c.bloklar.find((b) => b.tur === 'talimat' && b.metin.trim()) : undefined;
+    const kisa = c.kisa.trim() ? c.kisa : talimat ? talimat.metin : (p?.aciklama ?? '');
+    return {
+      ...c,
+      saat: null,
+      kisa,
+      bloklar: talimat ? c.bloklar.filter((b) => b !== talimat) : c.bloklar,
+      ...(p ? { sure: p.sure, tekrar: c.tekrar ? { ...c.tekrar, gunSayisi: p.sure } : c.tekrar } : {}),
+    };
+  });
+  const kartVar = new Set(kartlar.map((c) => c.id));
+  return {
+    ...k,
+    kartlar,
+    programlar: k.programlar.filter((p) => p.kartlar.filter((x) => kartVar.has(x.kart)).length > 1),
+  };
 }
 
 /** İki katalog aynı mı (indirilen yeni mi diye). */
