@@ -179,7 +179,7 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 
 - Biçim ve denetim `mantik/katalog.ts` (`katalogCoz`: bozuk / pasif öğe atlanır, programın bilinmeyen kartı atlanır, alansız katalog geçersiz). Uygulamayla gelen içerik `mantik/hazirIcerik.ts` → `gomuluKatalog()`. Şu anki katalog `katalog()`; `alanlar.ts` (hazır alanlar, simge, varsayılan açık) ve `program.ts` (`oneriler`, `oneriKartlari`) buradan okur.
 - Sunucu: `icerik_alan`, `icerik_kart`, `icerik_program` (`sema.sql`; RLS: `aktif` olanlar anon ve authenticated için okunur, yazma kapalı; `guncelleme` tetikleyiciyle). İlk içerik `sunucu/icerik.sql` (`npx tsx sunucu/icerik-uret.ts > sunucu/icerik.sql` ile uygulamayla gelenden üretilir; `on conflict do nothing`).
-- İndirme `sunucu/katalog.ts`; saklama `veri/katalog.ts` (`ayar`: `katalog`, `katalog_denendi`, `gizli_oneriler`); `bilesen/KatalogGuncelleyici.tsx` açılışta ve öne dönünce, en çok 6 saatte bir indirir; farklıysa kaydeder (`plan`, `kutuphane` konuları duyurulur, ekranlar tazelenir). Açılışta saklı katalog `VeriSaglayici`de yüklenir.
+- İndirme `sunucu/katalog.ts`; saklama `veri/katalog.ts` (`ayar`: `katalog`, `katalog_denendi`, `gizli_oneriler`); `bilesen/KatalogGuncelleyici.tsx` açılışta ve öne dönünce, en çok 6 saatte bir indirir (P-81: `ayar.katalog_surumu` uygulamanın `KATALOG_SURUMU`ndan farklıysa beklemeden); farklıysa kaydeder (`plan`, `kutuphane` konuları duyurulur, ekranlar tazelenir). Açılışta saklı katalog `VeriSaglayici`de yüklenir.
 - Kütüphanem'de öneri kartları kayıt biçimine çevrilir (`oneri:<id>`), aynı süzgeçten geçer; öneri ekranı `app/(sekmeler)/yasam/oneri/[id]` (`tur=kart` ya da program).
 
 ## Konuşma tanıma (sürüm 1.4.0)

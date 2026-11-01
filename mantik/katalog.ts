@@ -399,7 +399,18 @@ export function ayniKatalog(a: Katalog, b: Katalog): boolean {
 /** Katalog en çok bu kadar saatte bir indirilir. */
 export const KATALOG_ARALIGI_SAAT = 6;
 
-export function katalogDenensinMi(sonDeneme: string | null, simdi: Date = new Date()): boolean {
+/**
+ * P-81: uygulamanın katalog beklentisi değişince (yeni içerik, yeni alan) artar; telefondaki
+ * katalog başka sürümle indirildiyse 6 saat beklenmeden hemen yeniden indirilir.
+ */
+export const KATALOG_SURUMU = 2;
+
+export function katalogDenensinMi(
+  sonDeneme: string | null,
+  simdi: Date = new Date(),
+  indirilenSurum: number | null = KATALOG_SURUMU,
+): boolean {
+  if (indirilenSurum !== KATALOG_SURUMU) return true;
   if (!sonDeneme) return true;
   const t = Date.parse(sonDeneme);
   return !Number.isFinite(t) || simdi.getTime() - t >= KATALOG_ARALIGI_SAAT * 3600_000;

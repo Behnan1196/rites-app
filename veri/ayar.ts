@@ -28,6 +28,8 @@ export interface Ayarlar {
   katalog: unknown;
   /** Kataloğun en son indirilmeye çalışıldığı an (ISO). */
   katalog_denendi: string;
+  /** P-81: telefondaki katalog hangi KATALOG_SURUMU ile indirildi. */
+  katalog_surumu: number;
   /** Kütüphanem'de gizlenen öneriler (`p:<id>`, `k:<id>`). */
   gizli_oneriler: string[];
   /** Profil fotoğrafının telefondaki yolu (yalnız bu telefonda; sunucuya gitmez). */

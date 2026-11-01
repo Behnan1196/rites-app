@@ -7,6 +7,7 @@ import {
   katalogAyarla,
   katalogCoz,
   katalogDenensinMi,
+  KATALOG_SURUMU,
   tekrarCoz,
   sadeKatalog,
 } from '../katalog';
@@ -129,6 +130,12 @@ describe('şu anki katalog', () => {
     expect(katalogDenensinMi(null, simdi)).toBe(true);
     expect(katalogDenensinMi('2026-10-20T07:00:00Z', simdi)).toBe(false);
     expect(katalogDenensinMi('2026-10-20T05:59:00Z', simdi)).toBe(true);
+  });
+  it('P-81: uygulamanın katalog sürümü değişince 6 saat beklenmez', () => {
+    const simdi = new Date('2026-10-20T12:00:00Z');
+    expect(katalogDenensinMi('2026-10-20T11:00:00Z', simdi, null)).toBe(true);
+    expect(katalogDenensinMi('2026-10-20T11:00:00Z', simdi, KATALOG_SURUMU - 1)).toBe(true);
+    expect(katalogDenensinMi('2026-10-20T11:00:00Z', simdi, KATALOG_SURUMU)).toBe(false);
   });
 });
 
