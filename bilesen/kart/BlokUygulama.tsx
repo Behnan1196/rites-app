@@ -27,6 +27,7 @@ import { Yazi } from '../Yazi';
 import { VideolarGorunumu } from './Videolar';
 import { ZenginMetin } from '../ZenginMetin';
 
+import { BagliListeBlogu } from './BagliListe';
 import { BuyutulebilirFoto } from './BuyutulebilirFoto';
 
 interface Ozellikler {
@@ -48,6 +49,10 @@ export function BlokUygulama(o: Ozellikler) {
       return <ListeBlogu {...o} />;
     case 'adimlar':
       return <AdimlarBlogu blok={o.blok} gun={o.gun} />;
+    case 'bilgi':
+      return <BilgiListesi blok={o.blok} />;
+    case 'listebag':
+      return <BagliListeBlogu listeId={o.blok.metin} ad={o.blok.ad} />;
     case 'foto':
       return o.blok.dosya ? <BuyutulebilirFoto uri={o.blok.dosya} style={stiller.foto} etiket="Fotoğraf" /> : null;
     case 'dosya':
@@ -253,6 +258,20 @@ function PuanBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
 /** P-53: çoklu video ("Video 1 · Video 2"), seçilen gömülü oynar. */
 function VideoBlogu({ blok }: { blok: Blok }) {
   return <VideolarGorunumu videolar={blokVideolari(blok)} />;
+}
+
+/** P-83: işaretsiz liste (malzemeler, hatırlanacaklar). */
+function BilgiListesi({ blok }: { blok: Blok }) {
+  return (
+    <View style={stiller.liste}>
+      {blok.maddeler.map((madde, i) => (
+        <View key={`${i}-${madde}`} style={stiller.bilgiMaddesi}>
+          <Yazi renk={renk.ikincil}>•</Yazi>
+          <Yazi style={stiller.esnek}>{madde}</Yazi>
+        </View>
+      ))}
+    </View>
+  );
 }
 
 function ListeBlogu({ blok, kayit, onKayit }: Ozellikler) {
@@ -649,6 +668,7 @@ function GelisimFotografi({ blok, kayit, onKayit }: Ozellikler) {
 }
 
 const stiller = StyleSheet.create({
+  bilgiMaddesi: { flexDirection: 'row', gap: 10, paddingVertical: 4, alignItems: 'flex-start' },
   adimBaslik: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   cubuk: { height: 6, borderRadius: 3, backgroundColor: renk.satirCizgi, overflow: 'hidden' },
   cubukDolu: { height: 6, borderRadius: 3, backgroundColor: renk.ana },

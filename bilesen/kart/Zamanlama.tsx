@@ -232,6 +232,8 @@ export function ZamanSayfasi({
   kalip = false,
   gunGizle = false,
   bolum = 'tarih',
+  tarihIzni = true,
+  saatIzni = true,
 }: {
   gorunur: boolean;
   onKapat: () => void;
@@ -247,8 +249,49 @@ export function ZamanSayfasi({
   kalip?: boolean;
   /** P-51: normal kullanıcının program kartında gün seçilmez. */
   gunGizle?: boolean;
+  /** P-83 ('hepsi'): tarih ve süre değişebilir mi. */
+  tarihIzni?: boolean;
+  /** P-83 ('hepsi'): saat ve hatırlatma değişebilir mi. */
+  saatIzni?: boolean;
 }) {
   const ortak = { deger, bugunGun, onAc: () => undefined, tarihYok, programGunu, satirIci: true, tamamYok: true };
+  if (bolum === 'hepsi') {
+    // P-83: tek Zaman sayfası: tekrarlıda önce süre ve günler; tek seferlikte önce tarih.
+    const tarih = tarihIzni && !kalip && !gunGizle && (
+      <View key="tarih" style={stiller.bolum}>
+        <Yazi kalinlik="kalin">{deger.tekrar ? 'Başlangıç' : 'Tarih'}</Yazi>
+        <ZamanlamaPaneli acik="tarih" onDegis={onTarihSec} {...ortak} />
+      </View>
+    );
+    const sure = tarihIzni && (
+      <View key="sure" style={stiller.bolum}>
+        <Yazi kalinlik="kalin">Süre</Yazi>
+        <SureVeGunler
+          tekrar={deger.tekrar}
+          onDegis={(tekrar) => onDegis({ ...deger, tekrar })}
+          programda={!!programGunu}
+        />
+      </View>
+    );
+    const saat = saatIzni && (
+      <View key="saat" style={stiller.bolum}>
+        <Yazi kalinlik="kalin">Saat</Yazi>
+        <ZamanlamaPaneli acik="saat" onDegis={onDegis} {...ortak} />
+      </View>
+    );
+    const hatirlatma = saatIzni && !kalip && (
+      <View key="hatirlatma" style={stiller.bolum}>
+        <Yazi kalinlik="kalin">Hatırlatma</Yazi>
+        {deger.saat === null && <Yazi tur="ikincil">Saat seçersen saatinde ya da biraz önce de hatırlatabilir.</Yazi>}
+        <ZamanlamaPaneli acik="hatirlatma" onDegis={onDegis} {...ortak} />
+      </View>
+    );
+    return (
+      <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Zaman" sagKapat="Tamam">
+        {deger.tekrar ? [sure, saat, hatirlatma, tarih] : [tarih, saat, hatirlatma, sure]}
+      </AltSayfa>
+    );
+  }
   return (
     <AltSayfa
       gorunur={gorunur}
@@ -297,7 +340,64 @@ export function ZamanSayfasi({
   );
 }
 
-export type ZamanBolumu = 'tarih' | 'saat' | 'sure' | 'hatirlatma';
+export type ZamanBolumu = 'tarih' | 'saat' | 'sure' | 'hatirlatma' | 'hepsi';
+
+/**
+ * P-83 (1 Kasım): kartın başlığının altındaki tek, sessiz zaman satırı. Tek seferlikte
+ * "Bugün · 09:00", tekrarlıda "Her gün · 2/7. gün · 23:00" (tarih yazılmaz); hatırlatma varsa
+ * zil ve değeri. Dokununca tek Zaman sayfası. İkisi de değişemiyorsa kilitli, dokunulmaz.
+ */
+export function ZamanOzeti({
+  deger,
+  bugunGun,
+  tarihYok = false,
+  ilerleme = null,
+  izin = true,
+  onPress,
+}: {
+  deger: Zamanlama;
+  bugunGun: Gun;
+  tarihYok?: boolean;
+  /** Süreli tekrarda "2/7. gün". */
+  ilerleme?: string | null;
+  izin?: boolean;
+  onPress: () => void;
+}) {
+  const parcalar: string[] = [];
+  if (deger.tekrar) {
+    parcalar.push(gunSatiriMetni(deger.tekrar) ?? 'Her gün');
+    if (ilerleme) parcalar.push(ilerleme);
+    else if (deger.tekrar.gunSayisi === null) parcalar.push('Süresiz');
+  } else if (!tarihYok) {
+    parcalar.push(deger.tarih === bugunGun ? 'Bugün' : kisaTarih(deger.tarih));
+  } else parcalar.push('Tarih yok');
+  if (deger.saat) parcalar.push(deger.saat);
+  const metin = parcalar.join(' · ');
+  const hatirlatma = deger.hatirlatma ? hatirlatmaSeridiMetni(deger) : null;
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={!izin}
+      accessibilityRole={izin ? 'button' : 'text'}
+      accessibilityLabel={`Zaman: ${metin}${hatirlatma ? `, hatırlatma ${hatirlatma}` : ''}${izin ? '' : ', değiştirilemez'}`}
+      hitSlop={6}
+      style={({ pressed }) => [stiller.ozetSatiri, pressed && { opacity: 0.6 }]}
+    >
+      <Ionicons name={!izin ? 'lock-closed-outline' : deger.tekrar ? 'repeat' : 'calendar-outline'} size={16} color={renk.ikincil} />
+      <Yazi tur="ikincil" kalinlik="yariKalin" numberOfLines={1} style={stiller.ozetYazi}>
+        {metin}
+      </Yazi>
+      {!!hatirlatma && (
+        <>
+          <Ionicons name={deger.alarm ? 'alarm-outline' : 'notifications-outline'} size={16} color={renk.ikincil} />
+          <Yazi tur="ikincil" kalinlik="yariKalin" numberOfLines={1} style={stiller.ozetHatirlatma}>
+            {hatirlatma}
+          </Yazi>
+        </>
+      )}
+    </Pressable>
+  );
+}
 
 /**
  * Zaman şeridi (P-67, P-72, P-73): hap değil, bölmeli tek şerit: Tarih | Saat | Süre (hatırlatma
@@ -1097,6 +1197,9 @@ const stiller = StyleSheet.create({
   serit: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   // P-72: tek satır (hatırlatma kartın altındaki şeritte); uzun yazı kısalır.
   hapSatiri: { flexDirection: 'row', gap: 6, alignItems: 'center' },
+  ozetSatiri: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32, alignSelf: 'flex-start', maxWidth: '100%' },
+  ozetYazi: { flexShrink: 1 },
+  ozetHatirlatma: { flexShrink: 2 },
   // P-73: bölmeli zaman şeridi.
   zamanSeridiKap: { gap: 6 },
   zamanSeridi: {
@@ -1213,8 +1316,3 @@ const stiller = StyleSheet.create({
     color: renk.yazi,
   },
 });
-
-/** P-72: kartın altındaki şeritte hatırlatma: "Hatırlatma" ya da değeri. */
-export function seritHatirlatmaMetni(z: Pick<Zamanlama, 'hatirlatma'>): string {
-  return z.hatirlatma ? hatirlatmaSeridiMetni(z) : 'Hatırlatma';
-}

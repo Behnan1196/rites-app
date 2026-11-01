@@ -1,8 +1,8 @@
 // Kartın altındaki parça şeridi (pilot 29 Ekim, P-68): "+ Karta ekle" yerine hafif koyu
 // zeminli bir şeritte ikonlar: kartta olmayan Açıklama · Liste · Fotoğraf · Video; uzmanda öbür
 // parçalar için "Daha". Basınca parça kartın içine eklenir; eklenen ikon şeritten kalkar.
-// P-72: zaman hapları tek satıra sığsın diye Hatırlatma şeridin başında (değeriyle: "15 dk önce");
-// şerit kayıtlı kartın görünümünde de var.
+// P-83 (1 Kasım): şerit sabit değil; kartın sonundaki "+ Ekle"ye dokununca açılır. Hatırlatma
+// zaman satırının sayfasında.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
@@ -21,31 +21,18 @@ function ogeBilgisi(o: SeritOgesi): { ad: string; ikon: IkonAdi } {
   return { ad: BLOK_TURLERI[o].ad, ikon: BLOK_TURLERI[o].ikon };
 }
 
-/** P-72: şeridin başındaki hatırlatma (kartın ayarı; eklenen bir parça değil). */
-export interface SeritHatirlatmasi {
-  /** "Hatırlatma" ya da değeri ("15 dk önce"). */
-  metin: string;
-  ayarli: boolean;
-  alarm: boolean;
-  /** Kart açıkken değişebilir mi (verenin ayarı). */
-  izin: boolean;
-  onPress: () => void;
-}
-
 export function ParcaSeridi({
   ogeler,
   daha,
   onSec,
   onDaha,
-  hatirlatma,
 }: {
   ogeler: readonly SeritOgesi[];
   daha: boolean;
   onSec: (o: SeritOgesi) => void;
   onDaha: () => void;
-  hatirlatma?: SeritHatirlatmasi;
 }) {
-  if (ogeler.length === 0 && !daha && !hatirlatma) return null;
+  if (ogeler.length === 0 && !daha) return null;
   const dugme = (
     anahtar: string,
     ad: string,
@@ -83,15 +70,6 @@ export function ParcaSeridi({
   };
   return (
     <View style={stiller.serit} accessibilityRole="toolbar" accessibilityLabel="Karta ekle">
-      {hatirlatma &&
-        dugme(
-          'hatirlatma',
-          hatirlatma.metin,
-          hatirlatma.ayarli && hatirlatma.alarm ? 'alarm-outline' : 'notifications-outline',
-          hatirlatma.onPress,
-          `Hatırlatma: ${hatirlatma.ayarli ? hatirlatma.metin : 'yok'}`,
-          { ayarli: hatirlatma.ayarli, izin: hatirlatma.izin },
-        )}
       {ogeler.map((o) => {
         const b = ogeBilgisi(o);
         return dugme(o, b.ad, b.ikon, () => onSec(o), `${b.ad} ekle`);

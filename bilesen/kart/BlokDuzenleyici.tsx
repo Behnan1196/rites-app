@@ -20,6 +20,9 @@ import { VideolarDuzenleyici } from './Videolar';
 import { ArtiEksi, Bolum, SecenekHapi } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
+import { maddeliListeMi, type BlokTuru } from '@/mantik/kart';
+
+import { BagliListeSecici } from './BagliListe';
 import { BLOK_TURLERI } from './blokTurleri';
 
 interface Ozellikler {
@@ -29,7 +32,7 @@ interface Ozellikler {
   /** Kart birden çok gün sürüyor: listede "Her gün baştan / İşaretler kalsın" seçimi (P-51). */
   cokGunlu?: boolean;
   /** Kişi listenin davranışını seçti. */
-  onListeSecimi?: (tur: 'liste' | 'adimlar') => void;
+  onListeSecimi?: (tur: BlokTuru) => void;
   /** Videoya Gelenler'den alındı (P-54). */
   onGelendenAlindi?: (id: string) => void;
   /** P-66: başlık satırındaki ⋯; varsa "Bunu kaldır" gösterilmez (menüde Sil). */
@@ -70,14 +73,20 @@ export function BlokDuzenleyici({
   };
 
   // P-69: listede simge ve "Liste" yazısı yok; başlık satırında liste adı ve ⋯.
-  const listeMi = blok.tur === 'liste' || blok.tur === 'adimlar';
+  const listeMi = maddeliListeMi(blok.tur) || blok.tur === 'listebag';
+  /** P-83: listenin dört kullanımı; maddeli olanlar arasında maddeler kalır, bağlıya geçince boşalır. */
+  const listeTuruSec = (yeni: BlokTuru) => {
+    if (yeni === blok.tur) return;
+    if (maddeliListeMi(yeni) && maddeliListeMi(blok.tur)) onListeSecimi?.(yeni);
+    else degis({ tur: yeni, metin: '', ad: '', maddeler: [] });
+  };
   const Kap = basliksiz ? DuzKap : Bolum;
   return (
     <Kap>
       {(!basliksiz || listeMi) && (
         <View style={stiller.ust}>
           <View style={[stiller.ad, listeMi && stiller.esnek]} accessibilityRole={listeMi ? undefined : 'header'}>
-            {listeMi ? (
+            {listeMi && blok.tur !== 'listebag' ? (
               <View style={stiller.esnek}>
                 <Alan
                   etiket="Liste adı"
@@ -86,6 +95,10 @@ export function BlokDuzenleyici({
                   ipucu="Liste adı (isteğe bağlı)"
                 />
               </View>
+            ) : listeMi ? (
+              <Yazi kalinlik="kalin" style={stiller.esnek}>
+                Liste
+              </Yazi>
             ) : (
               <>
                 <Ionicons name={tur.ikon} size={22} color={tur.kayit ? renk.vurguYazi : renk.ana} />
@@ -121,33 +134,31 @@ export function BlokDuzenleyici({
           onGelendenAlindi={onGelendenAlindi}
         />
       )}
-      {(blok.tur === 'liste' || blok.tur === 'adimlar') && (
+      {listeMi && (
         <>
-          <ZenginMetinAlani
-            etiket="Maddeler"
-            deger={blok.metin}
-            onDegis={(metin) => degis({ metin })}
-            ipucu="Her satıra bir madde"
-            liste
-          />
-          {/* P-51: tek Liste. Bir günlük kartta işaretler kalır; birden çok gün sürende seçilir. */}
-          {cokGunlu ? (
-            <View style={stiller.yanYana}>
+          {/* P-83: listenin kullanımı: işaretler kalır · her gün baştan (çok günlü) · işaretsiz · Listeler'den. */}
+          <View style={stiller.turler} accessibilityRole="radiogroup" accessibilityLabel="Liste nasıl kullanılsın">
+            {LISTE_TURLERI.filter((t) => cokGunlu || t.tur !== 'liste').map((t) => (
               <SecenekHapi
-                etiket="Her gün baştan"
-                secili={blok.tur === 'liste'}
-                onPress={() => onListeSecimi?.('liste')}
-                style={stiller.esit}
+                key={t.tur}
+                etiket={t.ad}
+                altEtiket={t.aciklama}
+                secili={blok.tur === t.tur}
+                onPress={() => listeTuruSec(t.tur)}
+                style={stiller.turHapi}
               />
-              <SecenekHapi
-                etiket="İşaretler kalsın"
-                secili={blok.tur === 'adimlar'}
-                onPress={() => onListeSecimi?.('adimlar')}
-                style={stiller.esit}
-              />
-            </View>
+            ))}
+          </View>
+          {blok.tur === 'listebag' ? (
+            <BagliListeSecici listeId={blok.metin} onSec={(metin, ad) => degis({ metin, ad })} />
           ) : (
-            <Yazi tur="ikincil">İşaretlediklerin kalır; hepsi bitince kart yapıldı sayılır.</Yazi>
+            <ZenginMetinAlani
+              etiket="Maddeler"
+              deger={blok.metin}
+              onDegis={(metin) => degis({ metin })}
+              ipucu="Her satıra bir madde"
+              liste
+            />
           )}
         </>
       )}
@@ -305,7 +316,16 @@ function Alan({
   );
 }
 
+const LISTE_TURLERI: { tur: BlokTuru; ad: string; aciklama: string }[] = [
+  { tur: 'adimlar', ad: 'Adımlar', aciklama: 'İşaretlediğin kalır' },
+  { tur: 'liste', ad: 'Günlük kontrol', aciklama: 'Her gün baştan' },
+  { tur: 'bilgi', ad: 'Bilgi listesi', aciklama: 'İşaretsiz' },
+  { tur: 'listebag', ad: 'Listelerimden', aciklama: 'Alışveriş gibi' },
+];
+
 const stiller = StyleSheet.create({
+  turler: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  turHapi: { flexBasis: '47%', flexGrow: 1 },
   duzKap: { gap: 12 },
   ust: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   ad: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },

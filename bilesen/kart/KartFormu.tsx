@@ -61,8 +61,8 @@ import { ParcaSeridi } from './ParcaSeridi';
 import { CesitSecici } from './CesitSecici';
 import { useUzman } from '../useUzman';
 import {
-  seritHatirlatmaMetni,
   ZamanHaplari,
+  ZamanOzeti,
   ZamanSayfasi,
   type ProgramGunu,
   type ZamanBolumu,
@@ -364,6 +364,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   // P-47: zaman sağ üstteki rozetten açılan sayfada.
   // P-57: rozet → tarih ve saat; şerit → süre ya da hatırlatma.
   const [zamanBolum, setZamanBolum] = useState<ZamanBolumu | null>(null);
+  const [ekleAcik, setEkleAcik] = useState(false);
   // P-72: kart görünümündeki şeritten "Daha" Kur'u seçici açık gelir.
   const [blokSeciciAcik, setBlokSeciciAcik] = useState(hedef.tur === 'duzenle' && !!hedef.blokEkle);
   // P-36: yeni kartta "Karta bir şey ekle" kapalı gelir (kartların çoğu başlık ve zamandan ibaret).
@@ -720,8 +721,9 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                 )}
               </View>
             )}
-            {/* P-67: zaman satırı: Tarih · Saat · Süre · Hatırlatma; ⋯ başlık ve zaman izinleri. */}
-            {!parca && (
+            {/* P-67: zaman satırı: Tarih · Saat · Süre · Hatırlatma; ⋯ başlık ve zaman izinleri.
+                P-83: kendi kartında başlığın altında tek sessiz satır; program ve kalıpta şerit kalır. */}
+            {!parca && (kalip || !!programGunu) && (
               <ZamanHaplari
                 deger={durum.zamanlama}
                 tarihYok={durum.tarihsiz}
@@ -761,6 +763,31 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                   returnKeyType="done"
                   autoFocus={!duzenleme && !sablon?.kart && !kalip && ilk.baslik === ''}
                 />
+                {!parca && !kalip && !programGunu && (
+                  <View style={stiller.ozetSatiri}>
+                    <View style={stiller.esnek}>
+                      <ZamanOzeti
+                        deger={durum.zamanlama}
+                        bugunGun={bugunGun}
+                        tarihYok={durum.tarihsiz}
+                        onPress={() => {
+                          Keyboard.dismiss();
+                          setZamanBolum('hepsi');
+                        }}
+                      />
+                    </View>
+                    {kur && sabitAyari && (
+                      <SimgeDugmesi
+                        ikon="ellipsis-horizontal"
+                        etiket="Başlık ve zaman: seçenekler"
+                        onPress={() => {
+                          Keyboard.dismiss();
+                          setMenu({ tur: 'baslik' });
+                        }}
+                      />
+                    )}
+                  </View>
+                )}
                 {tasarim
                   ? durum.baslik.trim() === '' && (
                       <GirisAlani
@@ -838,8 +865,25 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               )}
             </>
 
-            {/* P-68: "+ Karta ekle" yerine kartın altında ikon şeridi. */}
-            {!parca && (
+            {/* P-68: "+ Karta ekle" yerine kartın altında ikon şeridi. P-83: önce yalnız "+ Ekle". */}
+            {!parca && !ekleAcik && (
+              <Pressable
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setEkleAcik(true);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Karta ekle: açıklama, liste, fotoğraf, video"
+                hitSlop={8}
+                style={({ pressed }) => [stiller.ekle, pressed && { opacity: 0.6 }]}
+              >
+                <Ionicons name="add" size={20} color={renk.ana} />
+                <Yazi kalinlik="kalin" renk={renk.ana}>
+                  Ekle
+                </Yazi>
+              </Pressable>
+            )}
+            {!parca && ekleAcik && (
               <ParcaSeridi
                 {...seritOgeleri({
                   aciklamaVar,
@@ -848,25 +892,15 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                   haric: secHaric,
                   mevcut: durum.bloklar.map((b) => b.tur),
                 })}
-                onSec={parcaEkle}
+                onSec={(o) => {
+                  setEkleAcik(false);
+                  parcaEkle(o);
+                }}
                 onDaha={() => {
                   Keyboard.dismiss();
+                  setEkleAcik(false);
                   setBlokSeciciAcik(true);
                 }}
-                hatirlatma={
-                  kalip
-                    ? undefined
-                    : {
-                        metin: seritHatirlatmaMetni(durum.zamanlama),
-                        ayarli: durum.zamanlama.hatirlatma !== null,
-                        alarm: !!durum.zamanlama.alarm,
-                        izin: true,
-                        onPress: () => {
-                          Keyboard.dismiss();
-                          setZamanBolum('hatirlatma');
-                        },
-                      }
-                }
               />
             )}
 
@@ -931,7 +965,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
 
       <ZamanSayfasi
         gorunur={zamanBolum !== null}
-        bolum={zamanBolum ?? 'tarih'}
+        bolum={zamanBolum ?? 'hepsi'}
         onKapat={() => setZamanBolum(null)}
         deger={durum.zamanlama}
         bugunGun={bugunGun}
@@ -1099,6 +1133,8 @@ export function useKartFormu(onSonuc?: (sonuc: KartFormuSonucu) => void) {
 }
 
 const stiller = StyleSheet.create({
+  ozetSatiri: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  ekle: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44, alignSelf: 'flex-start' },
   ekleSatiri: {
     minHeight: 60,
     borderRadius: olcu.kose.kart,

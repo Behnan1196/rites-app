@@ -1,5 +1,5 @@
-// Kart görünümünde zaman (P-63, P-67): Kur'daki gibi zaman satırı: Tarih · Saat · Süre ·
-// Hatırlatma hapları; her biri kendi küçük sayfasını açar. Kart buradan taşınır, saati,
+// Kart görünümünde zaman (P-63, P-67, P-83): başlığın altında tek, sessiz satır ("Bugün · 09:00 ·
+// 🔔 15 dk önce"); dokununca tek Zaman sayfası (tarih, saat, süre, hatırlatma alt alta). Kart buradan taşınır, saati,
 // süresi ve hatırlatması değişir. İzinler ayrı (P-67): tarih (ve süre), saat (ve hatırlatma).
 // Tekrarlı kartın sonraki bir gününde formdaki gibi sorulur: "Yalnız bu gün" · "Bu gün ve
 // sonrası". Eski verilen kartta (görünüm ayarı yok) yalnız saat ve hatırlatma.
@@ -9,6 +9,7 @@ import { useImperativeHandle, useState, type Ref } from 'react';
 
 import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
 import { eskiVerilenMi, saatDegisir, tarihDegisir } from '@/mantik/gorunumDegisimi';
+import { ilerleme } from '@/mantik/aliskanlik';
 import { gecerliHatirlatma, type Blok, type Kart } from '@/mantik/kart';
 import { programBagCoz } from '@/mantik/program';
 import { uzunTarih, type Gun } from '@/mantik/tarih';
@@ -21,7 +22,7 @@ import { useVeri } from '@/veri/VeriSaglayici';
 import { Katman } from '../Katman';
 import { useKisaMesaj } from '../KisaMesaj';
 import { OnayKutusu } from '../OnayKutusu';
-import { ZamanHaplari, ZamanSayfasi, type ZamanBolumu, type Zamanlama } from './Zamanlama';
+import { ZamanOzeti, ZamanSayfasi, type ZamanBolumu, type Zamanlama } from './Zamanlama';
 
 function zamanlamasi(kart: Kart, gun: Gun): Zamanlama {
   return {
@@ -45,7 +46,7 @@ function ayniMi(a: Zamanlama, b: Zamanlama): boolean {
   );
 }
 
-/** P-72: kartın altındaki şerit hatırlatma sayfasını buradan açar. */
+/** Zaman sayfasını dışarıdan açar (⋯ menüsü). */
 export interface KartZamaniAcici {
   ac: (b: ZamanBolumu) => void;
 }
@@ -56,14 +57,11 @@ export function KartZamanSatiri({
   bloklar,
   gun,
   ref,
-  sag,
 }: {
   kart: Kart;
   bloklar: readonly Blok[];
   gun: Gun;
   ref?: Ref<KartZamaniAcici>;
-  /** P-77: şeridin sağında ⋯ (başlık ve zaman izinleri). */
-  sag?: React.ReactNode;
 }) {
   const { kapi, oku } = useVeri();
   const bugunGun = useBugun();
@@ -139,19 +137,24 @@ export function KartZamanSatiri({
   };
 
   const s = bolmeSecenekleri(gun);
+  const tarihIzni = !eski && tarihDegisir(kart);
+  const saatIzni = saatDegisir(kart);
+  const il = ilerleme(kart, gun);
   return (
     <>
-      <ZamanHaplari
+      <ZamanOzeti
         deger={zamanlamasi(kart, gun)}
+        bugunGun={bugunGun}
         tarihYok={kart.tarihsiz}
-        tarihIzni={tarihDegisir(kart)}
-        saatIzni={saatDegisir(kart)}
-        onAc={ac}
-        sag={sag}
+        ilerleme={il && il.gun >= 1 ? `${il.gun}/${il.toplam}. gün` : null}
+        izin={tarihIzni || saatIzni}
+        onPress={() => ac('hepsi')}
       />
       <ZamanSayfasi
         gorunur={bolum !== null}
-        bolum={bolum ?? 'tarih'}
+        bolum={bolum ?? 'hepsi'}
+        tarihIzni={tarihIzni}
+        saatIzni={saatIzni}
         onKapat={kapat}
         deger={z}
         bugunGun={bugunGun}

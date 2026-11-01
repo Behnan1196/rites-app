@@ -69,6 +69,8 @@ const BLOK_ADI: Record<BlokTuru, string> = {
   video: 'Video',
   liste: 'Liste',
   adimlar: 'Proje adımları',
+  bilgi: 'Liste',
+  listebag: 'Bağlı liste',
   foto: 'Fotoğraf',
   dosya: 'Dosya',
   sayac: 'Zamanlayıcı',

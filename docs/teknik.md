@@ -195,3 +195,10 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - P-75: `kart.kisa` boş dize = açıklama yok; `BOS_ACIKLAMA` (`<html><p></p></html>`) = kartta duran boş açıklama (`aciklamaVarMi`). Gösterilen her yerde `metinDoluMu` ile boş sayılır.
 - Editör açılışta kendi biçimine çevirirken `onChangeHtml` gönderebilir; kişi alana dokunmadan gelen değişiklik yok sayılır (form "değişti" sanmasın).
 
+
+## Liste parçaları (P-83, 1 Kasım)
+
+- Blok türleri: `adimlar` (işaretler kalıcı, `durum`), `liste` (işaretler günün kaydında), `bilgi` (işaretsiz; yalnız `maddeler`), `listebag` (Listeler'deki bir listeye bağlantı: `metin` listenin kimliği, yerelse `y-` ile başlar; `ad` son bilinen adı). `mantik/kart.ts`: `LISTE_BLOKLARI`, `maddeliListeMi`. Veritabanı şeması değişmedi (`blok.tur` serbest metin).
+- `parcaSecimi`: dördü de "Liste" sayılır (kartta biri varsa şeritte Liste yok; Daha'da ayrı görünmez).
+- Düzenleyici (`BlokDuzenleyici`): maddeli türler arasında geçişte maddeler kalır; `listebag`e ya da ondan geçişte `metin`, `ad`, `maddeler` boşalır. Bağlı liste seçicisi ve kartta görünümü `bilesen/kart/BagliListe.tsx` (yerel listeler + paylaşılanlar; dokununca `/giris/liste/[id]`).
+- Eski sürüm uygulama `bilgi` / `listebag` parçasını tanımaz (paylaşılan kartta görünmez); pilotta herkes güncel.

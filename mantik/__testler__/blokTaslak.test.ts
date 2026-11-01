@@ -27,3 +27,30 @@ describe('Parça taslağı (P-77)', () => {
     expect(kaydaBlok(formaBlok(o))).toEqual(formaBlok(o));
   });
 });
+
+describe('P-83: bilgi listesi ve bağlı liste', () => {
+  it('bilgi listesinin maddeleri kaydedilir; bağlı listenin kimliği metinde kalır', () => {
+    const bilgi = formaBlok({
+      id: 'b',
+      tur: 'bilgi',
+      ad: '',
+      metin: '',
+      birim: '',
+      dakika: null,
+      maddeler: ['Un', 'Şeker'],
+      dosya: null,
+    });
+    expect(kaydaBlok(bilgi).maddeler).toEqual(['Un', 'Şeker']);
+    const bag = {
+      id: 'c',
+      tur: 'listebag' as const,
+      ad: 'Pazar',
+      metin: 'y-1',
+      birim: '',
+      dakika: null,
+      maddeler: [],
+      dosya: null,
+    };
+    expect(kaydaBlok(formaBlok(bag))).toEqual(bag);
+  });
+});

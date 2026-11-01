@@ -3,7 +3,7 @@
 // `maddeler`e döner. İşaretleri kalan listede yapılmış maddeler metnine göre yapılmış kalır.
 
 import { adimDurumu, adimlariEsle } from './adimlar';
-import type { Blok } from './kart';
+import { maddeliListeMi, type Blok } from './kart';
 import { htmlMaddeleri, maddelerdenHtml } from './zenginMetin';
 
 export type ParcaTaslagi = Omit<Blok, 'kartId' | 'sira'>;
@@ -12,14 +12,14 @@ export type ParcaTaslagi = Omit<Blok, 'kartId' | 'sira'>;
 export function formaBlok(b: Blok | ParcaTaslagi): ParcaTaslagi {
   const { kartId: _k, sira: _s, ...taslak } = b as Blok;
   // P-50: liste maddeleri editörde onay kutulu liste (HTML).
-  return b.tur === 'liste' || b.tur === 'adimlar' ? { ...taslak, metin: maddelerdenHtml(b.maddeler) } : taslak;
+  return maddeliListeMi(b.tur) ? { ...taslak, metin: maddelerdenHtml(b.maddeler) } : taslak;
 }
 
 /** Düzenleyici taslağı → kaydedilecek parça. */
 export function kaydaBlok<T extends ParcaTaslagi>(b: T): T {
-  if (b.tur !== 'liste' && b.tur !== 'adimlar') return b;
+  if (!maddeliListeMi(b.tur)) return b;
   const maddeler = htmlMaddeleri(b.metin);
-  if (b.tur === 'liste') return { ...b, maddeler, metin: '' };
+  if (b.tur !== 'adimlar') return { ...b, maddeler, metin: '' };
   const eski = adimDurumu(b.durum, b.maddeler.length);
   return { ...b, maddeler, metin: '', durum: adimlariEsle(b.maddeler, eski, maddeler) };
 }

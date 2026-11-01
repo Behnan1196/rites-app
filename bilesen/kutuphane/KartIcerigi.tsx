@@ -31,6 +31,7 @@ function BlokGorunumu({ b }: { b: KutuphaneBlogu }) {
       return <ZenginMetin metin={b.metin} />;
     case 'liste':
     case 'adimlar':
+    case 'bilgi':
       return (
         <Bolum>
           <Yazi kalinlik="kalin">{b.ad || 'Liste'}</Yazi>

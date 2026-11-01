@@ -425,3 +425,8 @@ Sonuç: → kararlar.md (Senaryo: kendi düzenini kurmak; öneriler kart kart)
 Ne dedi: "Rites önerilerinden Günde 8 bardak suyu açtım, dediğim gibi önce bunu ajandama eklemek istiyorum, bir program yapmak zorunda değilim. Seçenekler Alışkanlık olarak ekle, Programa ekle. Şu an alışkanlık değil, ajandama ekleyip süreyi de 1 hafta vereceğim ve kullanacağım."
 Nerede: Rites önerileri → öneri ekranı
 Sonuç: → kararlar.md (Öneri önce ajandaya)
+
+### P-83 · 1 Kasım 2026 · Behnan
+Ne dedi: "Karttaki zaman ve bileşenlerin yerleşimi konusunda önerin nedir, yeni alan ekleme konusunda alttaki şerit bence normal kullanıcı için gereksiz oldu gibi, eğer ilk kayıtta başlık ve açıklama geliyorsa, bir tek liste eklemek için bir şeride gerek yok, hmm bu arada ajanda kartında listenin kullanım ihtiyaçlarını ve çeşitlerini de irdeleyelim." Seçimler: zaman tek sessiz satır; kartın sonunda "+ Ekle"; sade parça başlıkları (Kur ⋯ menüsüne); listede Adımlar, Günlük kontrol, Bilgi listesi, Listeler'den bağla.
+Nerede: Kart görünümü ve Kur
+Sonuç: → kararlar.md (Kart yerleşimi sadeleşti; listenin dört kullanımı)

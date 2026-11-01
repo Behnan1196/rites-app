@@ -50,3 +50,13 @@ describe('Kartın altındaki şerit (P-68)', () => {
     ).toEqual(['liste', 'video']);
   });
 });
+
+describe('P-83: listenin biçimleri', () => {
+  it('Bilgi listesi ve bağlı liste ayrı parça değil; kartta varsa Liste şeritten kalkar', () => {
+    const s = secilebilirParcalar({ uzman: true });
+    expect(s.gorunen).not.toContain('bilgi');
+    expect(s.gorunen).not.toContain('listebag');
+    expect(seritOgeleri({ aciklamaVar: true, uzman: false, mevcut: ['listebag'] }).ogeler).toEqual(['foto', 'video']);
+    expect(seritOgeleri({ aciklamaVar: true, uzman: false, mevcut: ['bilgi'] }).ogeler).toEqual(['foto', 'video']);
+  });
+});

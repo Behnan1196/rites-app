@@ -694,3 +694,15 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 
 - **Öneri ekranında ana düğme "Ajandama ekle":** öneri sıradan bir kart olarak bugünden, süresiz ajandaya girer ve kart hemen açılır (süresi, günleri, saati orada ayarlanır; "Öneri ‹" ile geri). "Programa ekle" ikinci düğme. "Alışkanlık olarak ekle" öneri ekranında yok; alışkanlık sonra kartın ⋯ menüsünden ("Alışkanlık olarak izle"). P-79'daki "tekrarlı öneri alışkanlık olarak eklenir" kararı bununla değişti. — Ürün sahibi (P-82); kartın hemen açılması: Öneri
 - Rites önerileri ekranındaki bölüm adı "Alışkanlık önerileri" → **Kartlar**; alt başlık "Ajandana ekleyip deneyebileceğin kartlar." — Öneri
+
+## Kart yerleşimi sadeleşti; listenin dört kullanımı (1 Kasım)
+
+- **Zaman: başlığın altında tek, sessiz satır.** Tek seferlikte "Bugün · 09:00 · 🔔 15 dk önce"; tekrarlıda "Her gün / Pzt · Çar · Cum · 2/7. gün · 23:00" (tarih yazılmaz; süresizse "Süresiz"). Dokununca **tek Zaman sayfası**: Süre ve günler · Saat · Hatırlatma · Başlangıç (tek seferlikte Tarih başta). İzin verilmeyen bölümler sayfada görünmez; hiçbiri değişemiyorsa satır kilitli. Tarih | Saat | Süre şeridi ve şeritteki Hatırlatma kalktı. Program ve kalıp kurarken şerit yerinde. — Ürün sahibi (P-83); sıra ve metinler: Öneri
+- **Alttaki sabit şerit kalktı; kartın sonunda "+ Ekle".** Dokununca Açıklama · Liste · Fotoğraf · Video (uzmanda Daha) yerinde açılır; seçince kapanır. Kur formunda da aynı. — Ürün sahibi (P-83)
+- **Sade parça başlıkları:** "Bugün" başlığı ve "Sayarak", "Ölçüm" gibi tür başlıkları yok; parçalarda simge ve yuvarlak ⋯ yok. Parçanın menüsü adına dokununca (adın yanında küçük ⌄) ya da parçaya uzun basınca. Kayıt parçalarının (sayaç, ölçüm, puan…) adı kendi içinde; menüleri uzun basınca. Başka bir günün kaydında gün adı yazılır. — Ürün sahibi (P-83); kayıt parçalarında uzun basma: Öneri
+- **Kur, üst sağdaki ⋯ menüsünde** ("Kur: ayarlar ve sıra"). — Ürün sahibi (P-83)
+- **Kartta listenin dört kullanımı** (Liste'ye basınca önce seçilir; sonra listenin menüsünden "Liste: maddeler ve kullanım" ile değişir):
+  - **Adımlar:** işaretlediğin kalır (tek seferlik kartta varsayılan).
+  - **Günlük kontrol:** her gün baştan (yalnız tekrarlı kartta; tekrarlıda varsayılan).
+  - **Bilgi listesi:** işaretsiz madde listesi (malzemeler, hatırlanacaklar).
+  - **Listelerimden:** alışveriş gibi listeler Giriş → Listeler'de durur; kart yalnız ona bağlanır. Kartta listenin adı ve özeti ("3 alınacak"), dokununca liste açılır. Liste silinirse "… artık yok". — Ürün sahibi (P-83); adlar ve varsayılanlar: Öneri

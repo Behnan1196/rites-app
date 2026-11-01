@@ -13,6 +13,9 @@ export const BLOK_TURLERI: Record<BlokTuru, { ad: string; ikon: IkonAdi; kayit: 
   liste: { ad: 'Liste', ikon: 'list-outline', kayit: false },
   // P-51: tek Liste; işaretleri kalan liste (eski adıyla Proje adımları) de "Liste".
   adimlar: { ad: 'Liste', ikon: 'list-outline', kayit: false },
+  // P-83: işaretsiz liste ve Listeler'den bağlanan liste.
+  bilgi: { ad: 'Liste', ikon: 'list-outline', kayit: false },
+  listebag: { ad: 'Bağlı liste', ikon: 'link-outline', kayit: false },
   foto: { ad: 'Fotoğraf', ikon: 'image-outline', kayit: false },
   dosya: { ad: 'Dosya', ikon: 'document-outline', kayit: false },
   sayac: { ad: 'Zamanlayıcı', ikon: 'timer-outline', kayit: true },

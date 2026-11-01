@@ -133,7 +133,17 @@ export interface Kart {
   ajandada?: boolean | null;
 }
 
-export const ICERIK_BLOKLARI = ['talimat', 'video', 'liste', 'adimlar', 'foto', 'dosya'] as const;
+/**
+ * P-83 (1 Kasım): `bilgi` işaretsiz madde listesi (malzemeler, notlar); `listebag` Listeler'deki bir
+ * listeye bağlantı (`metin`: listenin kimliği, `ad`: son bilinen adı); liste kartta değil Listeler'de durur.
+ */
+export const ICERIK_BLOKLARI = ['talimat', 'video', 'liste', 'adimlar', 'bilgi', 'listebag', 'foto', 'dosya'] as const;
+/** P-83: kartta "Liste" denen dört kullanım. */
+export const LISTE_BLOKLARI: readonly BlokTuru[] = ['adimlar', 'liste', 'bilgi', 'listebag'];
+/** Maddeleri kartın içinde olan listeler. */
+export function maddeliListeMi(tur: BlokTuru): boolean {
+  return tur === 'liste' || tur === 'adimlar' || tur === 'bilgi';
+}
 export const KAYIT_BLOKLARI = ['sayac', 'kronometre', 'olcum', 'adet', 'puan', 'gunnot', 'gelfoto'] as const;
 /**
  * Kayıt üreten ama kartta "Ne yapacaksın" bölümünde duran araçlar (P-38): zamanlayıcı ve

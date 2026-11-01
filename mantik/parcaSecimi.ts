@@ -8,7 +8,7 @@ import { ARAC_BLOKLARI, ICERIK_BLOKLARI, KAYIT_BLOKLARI, type BlokTuru } from '.
 export const NORMAL_BLOKLAR: readonly BlokTuru[] = ['liste', 'foto', 'video'];
 
 function esi(t: BlokTuru): BlokTuru {
-  return t === 'adimlar' ? 'liste' : t;
+  return t === 'adimlar' || t === 'bilgi' || t === 'listebag' ? 'liste' : t;
 }
 
 export function secilebilirParcalar({
@@ -22,7 +22,8 @@ export function secilebilirParcalar({
 }): { gorunen: BlokTuru[]; kayit: BlokTuru[] } {
   const kartta = new Set(mevcut.map(esi));
   // P-51: tek Liste; "Proje adımları" ayrı seçenek değil.
-  const goster = (t: BlokTuru) => !haric.includes(t) && t !== 'adimlar' && !kartta.has(t);
+  // P-83: Bilgi listesi ve Listelerimden de Liste'nin biçimleri.
+  const goster = (t: BlokTuru) => !haric.includes(t) && esi(t) === t && !kartta.has(t);
   if (!uzman) return { gorunen: NORMAL_BLOKLAR.filter(goster), kayit: [] };
   return {
     gorunen: [...ICERIK_BLOKLARI, ...ARAC_BLOKLARI].filter(goster),
