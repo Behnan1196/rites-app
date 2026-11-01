@@ -435,3 +435,8 @@ Sonuç: → kararlar.md (Kart yerleşimi sadeleşti; listenin dört kullanımı)
 Ne dedi: "Sadelik güzel olmaya başladı. Sanırım Açıklama eskide kaldı, onu da uyarlayalım. Bir de +Ekle dediğimde gelen şeridi kapayamıyoruz"
 Nerede: Kart görünümü ve Kur
 Sonuç: → kararlar.md (Açıklama da sade başlıklı; şeritte Kapat)
+
+### P-85 · 1 Kasım 2026 · Behnan
+Ne dedi: "Liste bileşeninde Günlük kontrol tipini göremedim"
+Nerede: Kart görünümü → + Ekle → Liste
+Sonuç: → kararlar.md (Günlük kontrol tek seferlik kartta da seçilir). Sebep: seçenek yalnız tekrarlı kartta gösteriliyordu.
