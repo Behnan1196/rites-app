@@ -20,6 +20,7 @@ interface MaddeSatiri {
   yapildi: number;
   tarih: string | null;
   miktar: string;
+  yapildi_gun?: string | null;
   sira: number;
 }
 
@@ -30,6 +31,7 @@ const maddeSatirdan = (s: MaddeSatiri): YerelMadde => ({
   yapildi: s.yapildi === 1,
   tarih: s.tarih,
   miktar: s.miktar ?? '',
+  yapildiGun: s.yapildi_gun ?? null,
   sira: s.sira,
 });
 
@@ -43,7 +45,8 @@ export async function yerelListeleriOku(
   return (
     await oku.hepsi<YerelListe & { madde_sayisi: number; kalan: number }>(
       `SELECT l.*, (SELECT COUNT(*) FROM yerel_madde m WHERE m.liste = l.id) AS madde_sayisi,
-              (SELECT COUNT(*) FROM yerel_madde m WHERE m.liste = l.id AND m.yapildi = 0) AS kalan
+              (SELECT COUNT(*) FROM yerel_madde m WHERE m.liste = l.id AND (m.yapildi = 0
+                 OR (l.cesit = 'gunluk' AND COALESCE(m.yapildi_gun, '') <> date('now', 'localtime')))) AS kalan
        FROM yerel_liste l ORDER BY l.sira, l.olusturma`,
     )
   ).map(({ madde_sayisi, ...l }) => ({
@@ -177,9 +180,11 @@ export function yerelMaddeEkle(
 export function yerelMaddeDegistir(
   kapi: Kapi,
   id: string,
-  d: { yapildi?: boolean; tarih?: Gun | null; metin?: string; miktar?: string },
+  d: { yapildi?: boolean; yapildiGun?: Gun | null; tarih?: Gun | null; metin?: string; miktar?: string },
 ): Promise<void> {
   return kapi.yaz(['liste'], async (y) => {
+    if (d.yapildiGun !== undefined)
+      await y.calistir('UPDATE yerel_madde SET yapildi_gun = ? WHERE id = ?', [d.yapildiGun, id]);
     if (d.miktar !== undefined)
       await y.calistir('UPDATE yerel_madde SET miktar = ? WHERE id = ?', [d.miktar.trim(), id]);
     if (d.yapildi !== undefined)
@@ -193,7 +198,7 @@ export function yerelMaddeSil(kapi: Kapi, id: string): Promise<void> {
   return kapi.yaz(['liste'], (y) => y.calistir('DELETE FROM yerel_madde WHERE id = ?', [id]));
 }
 
-/** Alışveriş: "Alınanları temizle" (P-61). */
+/** Adımlar: "Yapılanları temizle" (P-61, P-86). */
 export function yerelYapilanlariSil(kapi: Kapi, liste: string): Promise<void> {
   return kapi.yaz(['liste'], (y) => y.calistir('DELETE FROM yerel_madde WHERE liste = ? AND yapildi = 1', [liste]));
 }

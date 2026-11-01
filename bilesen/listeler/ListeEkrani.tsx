@@ -1,6 +1,7 @@
 // Liste ekranı (GR-2, GR-4): ad, paylaşım çipleri, "Sen ve …", gruba açıksa not,
 // "Ekle ve Enter'a bas", maddeler (işaret kutusu, metin, "X ekledi", Kime/Ne zaman
-// etiketi). Maddeye dokununca madde sayfası. Kuran: Paylaşımı düzenle / Paylaşmayı bırak
+// etiketi). P-86: maddeye dokununca işaret; uzun basınca yerinde düzelt, sil, Adımlar'da
+// gün ve kişi (madde sayfası). Kuran: Paylaşımı düzenle / Paylaşmayı bırak
 // (P-60: liste maddeleriyle telefona döner, kişisel olur) / Listeyi sil; listeye kişi
 // olarak eklenen: Listeden ayrıl. Giriş → Listeler ve Ajandam'dan (sanal kart) açılır.
 
@@ -19,7 +20,7 @@ import {
   type Madde,
 } from '@/mantik/listeler';
 import { grupAdi } from '@/mantik/gruplar';
-import { cesitTanimi, maddeSirasi } from '@/mantik/listeCesidi';
+import { cesitTanimi, isaretliGorunur, maddeSirasi, tarihliMi } from '@/mantik/listeCesidi';
 import { paylasimdanYerele, yerelListeMi } from '@/mantik/yerelListe';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { listedenAyril, listeyiSil } from '@/sunucu/listeler';
@@ -40,7 +41,7 @@ import { OturumGerekli } from '../oturum/OturumGerekli';
 import { kaynakRenk, olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 import { ListeFormu } from './ListeFormu';
-import { CesitEylemi, HazirlikIlerlemesi, MaddeEkleAlani, MaddeSatiri } from './ListeParcalari';
+import { CesitEylemi, MaddeEkleAlani, MaddeSatiri } from './ListeParcalari';
 import { MaddeSayfasi } from './MaddeSayfasi';
 import { useListeler } from './useListeler';
 import { useMaddeler } from './useMaddeler';
@@ -65,6 +66,7 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
   const { gruplar } = useGruplar(oturum);
   const m = useMaddeler(id, ben);
   const [acikMadde, setAcikMadde] = useState<string | null>(null);
+  const [duzeltilen, setDuzeltilen] = useState<string | null>(null);
   const [duzenle, setDuzenle] = useState(0);
   const [soru, setSoru] = useState<'sil' | 'ayril' | 'birak' | null>(null);
 
@@ -74,8 +76,8 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
   const madde = m.maddeler?.find((x) => x.id === acikMadde) ?? null;
   const yapilanSayisi = maddeler?.filter((x) => x.yapildi).length ?? 0;
 
-  const ekle = (metin: string, miktar: string) => {
-    void m.ekle(metin, miktar).then((ok) => {
+  const ekle = (metin: string) => {
+    void m.ekle(metin).then((ok) => {
       if (!ok) kisaMesaj(`${BAGLANAMIYOR} (${metin})`);
       void yenile();
     });
@@ -86,7 +88,12 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
     void yenile();
   };
 
-  const isaretle = (x: Madde) => void m.degistir(x.id, { yapildi: !x.yapildi }).then(sonuc);
+  const isaretle = (x: Madde) => {
+    const yapildi = !isaretliGorunur(cesit, { yapildi: x.yapildi, yapildiGun: x.yapildi_gun }, bugunGun);
+    void m
+      .degistir(x.id, { yapildi, ...(cesit === 'gunluk' ? { yapildi_gun: yapildi ? bugunGun : null } : {}) })
+      .then(sonuc);
+  };
 
   const listeIsi = async (is: () => Promise<void>, mesaj: string) => {
     setSoru(null);
@@ -159,13 +166,7 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
             </Yazi>
           )}
 
-          {cesit === 'hazirlik' && maddeler && <HazirlikIlerlemesi toplam={maddeler.length} hazir={yapilanSayisi} />}
-
-          <MaddeEkleAlani
-            cesit={cesit}
-            listedekiler={(maddeler ?? []).filter((x) => !x.yapildi).map((x) => x.metin)}
-            onEkle={ekle}
-          />
+          <MaddeEkleAlani cesit={cesit} onEkle={ekle} />
 
           {maddeler && maddeler.length === 0 && <Yazi tur="ikincil">{BOS_LISTE}</Yazi>}
           {maddeler && maddeler.length > 0 && (
@@ -178,12 +179,21 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
                     key={x.id}
                     cesit={cesit}
                     metin={x.metin}
-                    miktar={x.miktar}
-                    yapildi={x.yapildi}
+                    yapildi={isaretliGorunur(cesit, { yapildi: x.yapildi, yapildiGun: x.yapildi_gun }, bugunGun)}
                     cizgili={i > 0}
                     erisimEki={etiket?.metin}
+                    duzeltiliyor={duzeltilen === x.id}
+                    onDuzelt={() => setDuzeltilen(x.id)}
+                    onDuzeltKapat={() => setDuzeltilen(null)}
+                    onKaydet={(metin) => void m.degistir(x.id, { metin }).then(sonuc)}
+                    onSil={() =>
+                      void m.sil(x.id).then((ok) => {
+                        sonuc(ok);
+                        if (ok) kisaMesaj(`Silindi: ${x.metin}`);
+                      })
+                    }
+                    onGun={tarihliMi(cesit) ? () => setAcikMadde(x.id) : undefined}
                     onIsaretle={() => isaretle(x)}
-                    onAc={() => setAcikMadde(x.id)}
                     etiketler={
                       (!!kim || etiket) && (
                         <View style={stiller.meta}>
@@ -218,10 +228,9 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
             onTemizle={() =>
               void m.yapilanlariTemizle().then((ok) => {
                 sonuc(ok);
-                if (ok) kisaMesaj('Alınanlar temizlendi');
+                if (ok) kisaMesaj('Yapılanlar temizlendi');
               })
             }
-            onBastan={() => void m.bastanBasla().then(sonuc)}
           />
 
           {yol?.tur === 'sahip' && (

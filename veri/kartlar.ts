@@ -1,6 +1,7 @@
 // Kartlar, bloklar ve günlük kayıtlar: okuma ve (yazma kapısı üzerinden) yazma.
 // Kimlik üretici dışarıdan verilir (uygulamada `yeniKimlik`, testte sıralı).
 
+import { adimDurumunuDuzelt, maddeleriDuzelt } from '@/mantik/maddeDuzeltme';
 import { htmldenDuz } from '@/mantik/zenginMetin';
 import { adimDurumu, adimiDegistir, ilerleme } from '@/mantik/adimlar';
 import type { KartIslemi, KayitAraligi } from '@/mantik/bolme';
@@ -633,6 +634,24 @@ export function blokIcerikYaz(
     if (d.maddeler !== undefined)
       await y.calistir('UPDATE blok SET maddeler = ? WHERE id = ?', [JSON.stringify(d.maddeler), blokId]);
     if (d.ad !== undefined) await y.calistir('UPDATE blok SET ad = ? WHERE id = ?', [d.ad, blokId]);
+  });
+}
+
+/**
+ * P-86: kartın listesinde bir maddeyi yerinde düzelt (`yeni`) ya da sil (null). Adımlar'da
+ * işaretler yerinde kalır; silinen adımın işareti de gider.
+ */
+export function blokMaddesiYaz(kapi: Kapi, blokId: string, i: number, yeni: string | null): Promise<void> {
+  return kapi.yaz(['kart'], async (y) => {
+    const b = await y.ilk<BlokSatiri>('SELECT * FROM blok WHERE id = ?', [blokId]);
+    if (!b) return;
+    const eskiler = json<string[]>(b.maddeler, []);
+    const maddeler = maddeleriDuzelt(eskiler, i, yeni);
+    await y.calistir('UPDATE blok SET maddeler = ? WHERE id = ?', [JSON.stringify(maddeler), blokId]);
+    if (b.tur === 'adimlar') {
+      const durum = adimDurumunuDuzelt(adimDurumu(json<unknown>(b.durum ?? null, null), eskiler.length), i, yeni);
+      await y.calistir('UPDATE blok SET durum = ? WHERE id = ?', [JSON.stringify(durum), blokId]);
+    }
   });
 }
 

@@ -33,7 +33,7 @@ export default function Listeler() {
   const ac = (id: string) => router.push({ pathname: '/giris/liste/[id]', params: { id } });
 
   return (
-    <EkranKabi geri="Giriş" baslik="Listeler" altBaslik="Yapılacaklar, alışveriş, hazırlıklar.">
+    <EkranKabi geri="Giriş" baslik="Listeler" altBaslik="Yapılacaklar, market, günlük kontroller, notlar.">
       {yereller.map((l) => (
         <Pressable
           key={l.id}

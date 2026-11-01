@@ -292,6 +292,16 @@ revoke insert, update on public.grup, public.grup_uye, public.liste, public.list
 revoke insert, update on public.madde from anon, authenticated;
 grant insert (liste, metin, ekleyen, kime, tarih, miktar) on public.madde to authenticated;
 grant update (yapildi, kime, tarih, miktar) on public.madde to authenticated;
+
+-- Liste çeşitleri (pilot 1 Kasım, P-86): kartla aynı üç çeşit: yapilacak (Adımlar), gunluk
+-- (Günlük kontrol: işaretin günü `yapildi_gun`), not (Bilgi listesi). Alışveriş ve Hazırlık
+-- Adımlar olur, miktarlar silinir. Madde metni yerinde düzeltilir.
+update public.liste set cesit = 'yapilacak' where cesit not in ('yapilacak', 'gunluk', 'not');
+alter table public.liste drop constraint if exists liste_cesit_check;
+alter table public.liste add constraint liste_cesit_check check (cesit in ('yapilacak', 'gunluk', 'not'));
+update public.madde set miktar = '' where miktar <> '';
+alter table public.madde add column if not exists yapildi_gun date;
+grant update (metin, yapildi_gun) on public.madde to authenticated;
 revoke all on public.kullanici, public.baglanti, public.davet, public.gelen from anon;
 revoke all on public.grup, public.grup_uye, public.liste, public.liste_erisim, public.madde from anon;
 

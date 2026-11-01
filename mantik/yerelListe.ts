@@ -35,8 +35,10 @@ export interface YerelMadde {
   metin: string;
   yapildi: boolean;
   tarih: Gun | null;
-  /** Alışverişte miktar ("2 kg"); yoksa boş (P-61). */
+  /** Eski alışveriş miktarı (P-61); P-86'dan beri kullanılmıyor. */
   miktar: string;
+  /** P-86: Günlük kontrolde işaretin günü (işaret yalnız o gün görünür). */
+  yapildiGun: Gun | null;
   sira: number;
 }
 

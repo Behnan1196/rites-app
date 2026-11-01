@@ -79,7 +79,13 @@ export async function maddeEkle(liste: string, ben: string, metin: string, mikta
 
 export async function maddeDegistir(
   id: string,
-  degisiklik: Partial<{ yapildi: boolean; kime: string | null; tarih: Gun | null; miktar: string }>,
+  degisiklik: Partial<{
+    yapildi: boolean;
+    yapildi_gun: Gun | null;
+    metin: string;
+    kime: string | null;
+    tarih: Gun | null;
+  }>,
 ): Promise<void> {
   const { error } = await sunucuGerekli().from('madde').update(degisiklik).eq('id', id);
   if (error) throw error;

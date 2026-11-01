@@ -440,3 +440,8 @@ Sonuç: → kararlar.md (Açıklama da sade başlıklı; şeritte Kapat)
 Ne dedi: "Liste bileşeninde Günlük kontrol tipini göremedim"
 Nerede: Kart görünümü → + Ekle → Liste
 Sonuç: → kararlar.md (Günlük kontrol tek seferlik kartta da seçilir). Sebep: seçenek yalnız tekrarlı kartta gösteriliyordu.
+
+### P-86 · 1 Kasım 2026 · Behnan
+Ne dedi: "3 çeşit listemiz oldu. 1. Eklediğimiz bir maddeyi nasıl değiştireceğiz veya sileceğiz. 2. Bence Girişteki listelerde bu üçünden oluşsun ve sade olsun. Alışveriş listesindeki miktarların hem kullanımı zor hem de isteyeceğimiz birimler her zaman olmayabiliyor, o tip bir liste yerine ileride tablo yapmayı deneyebiliriz, mesela 2 kolonlu" Seçimler: uzun bas, yerinde düzelt; kartla aynı üç çeşit; miktarlar silinsin; Listeler'de de uzun bas.
+Nerede: Kartın listeleri, Giriş → Listeler
+Sonuç: → kararlar.md (Listelerde üç çeşit; maddeyi yerinde düzeltme)

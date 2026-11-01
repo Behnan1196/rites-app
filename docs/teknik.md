@@ -202,3 +202,10 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - `parcaSecimi`: dördü de "Liste" sayılır (kartta biri varsa şeritte Liste yok; Daha'da ayrı görünmez).
 - Düzenleyici (`BlokDuzenleyici`): maddeli türler arasında geçişte maddeler kalır; `listebag`e ya da ondan geçişte `metin`, `ad`, `maddeler` boşalır. Bağlı liste seçicisi ve kartta görünümü `bilesen/kart/BagliListe.tsx` (yerel listeler + paylaşılanlar; dokununca `/giris/liste/[id]`).
 - Eski sürüm uygulama `bilgi` / `listebag` parçasını tanımaz (paylaşılan kartta görünmez); pilotta herkes güncel.
+
+## Listeler ve madde düzeltme (P-86, 1 Kasım)
+
+- `ListeCesidi`: `yapilacak` (Adımlar) · `gunluk` · `not` (Bilgi listesi); bilinmeyen / eski değer (`alisveris`, `hazirlik`) Adımlar sayılır (`cesitTanimi`). Günlük kontrolde işaret yalnız `yapildiGun` bugünse görünür (`isaretliGorunur`); işaretlerken gün yazılır.
+- Yerel göç 26: `yerel_madde.yapildi_gun`; eski çeşitler `yapilacak`, miktarlar boş. `yerelListeleriOku` günlükte bugün işaretlenmeyeni kalan sayar (`date('now','localtime')`).
+- Sunucu: `guncelleme-p86.sql` (ve `sema.sql`): `liste_cesit_check` üç değer, `madde.yapildi_gun date`, `grant update (metin, yapildi_gun)`. `miktar` sütunları duruyor (kullanılmıyor).
+- Kartta düzeltme: `veri/kartlar.ts` `blokMaddesiYaz(kapi, blokId, i, yeni | null)`; Adımlar'da durum dizisinden silinen adım çıkar, Günlük listede o günün işareti de (`mantik/maddeDuzeltme.ts`). Ortak bileşen `bilesen/MaddeDuzeltici.tsx`.

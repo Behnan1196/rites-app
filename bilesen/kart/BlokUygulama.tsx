@@ -27,6 +27,7 @@ import { Yazi } from '../Yazi';
 import { VideolarGorunumu } from './Videolar';
 import { ZenginMetin } from '../ZenginMetin';
 
+import { MaddeDuzeltici } from '../MaddeDuzeltici';
 import { BagliListeBlogu } from './BagliListe';
 import { BuyutulebilirFoto } from './BuyutulebilirFoto';
 
@@ -37,6 +38,8 @@ interface Ozellikler {
   kayitlar: readonly Kayit[];
   /** O günün kaydını değiştir. */
   onKayit: (degistir: (k: Kayit) => Kayit) => void;
+  /** P-86: maddeye uzun basınca yerinde düzelt (`yeni`) ya da sil (null); verilmezse düzeltilmez. */
+  onMaddeDuzelt?: (i: number, yeni: string | null) => void;
 }
 
 export function BlokUygulama(o: Ozellikler) {
@@ -48,9 +51,9 @@ export function BlokUygulama(o: Ozellikler) {
     case 'liste':
       return <ListeBlogu {...o} />;
     case 'adimlar':
-      return <AdimlarBlogu blok={o.blok} gun={o.gun} />;
+      return <AdimlarBlogu blok={o.blok} gun={o.gun} onMaddeDuzelt={o.onMaddeDuzelt} />;
     case 'bilgi':
-      return <BilgiListesi blok={o.blok} />;
+      return <BilgiListesi blok={o.blok} onMaddeDuzelt={o.onMaddeDuzelt} />;
     case 'listebag':
       return <BagliListeBlogu listeId={o.blok.metin} ad={o.blok.ad} />;
     case 'foto':
@@ -261,20 +264,38 @@ function VideoBlogu({ blok }: { blok: Blok }) {
 }
 
 /** P-83: işaretsiz liste (malzemeler, hatırlanacaklar). */
-function BilgiListesi({ blok }: { blok: Blok }) {
+function BilgiListesi({ blok, onMaddeDuzelt }: { blok: Blok; onMaddeDuzelt?: Ozellikler['onMaddeDuzelt'] }) {
+  const [duzelt, setDuzelt] = useState<number | null>(null);
   return (
     <View style={stiller.liste}>
-      {blok.maddeler.map((madde, i) => (
-        <View key={`${i}-${madde}`} style={stiller.bilgiMaddesi}>
-          <Yazi renk={renk.ikincil}>•</Yazi>
-          <Yazi style={stiller.esnek}>{madde}</Yazi>
-        </View>
-      ))}
+      {blok.maddeler.map((madde, i) =>
+        duzelt === i && onMaddeDuzelt ? (
+          <MaddeDuzeltici
+            key={`${i}-${madde}`}
+            metin={madde}
+            onKaydet={(yeni) => onMaddeDuzelt(i, yeni)}
+            onSil={() => onMaddeDuzelt(i, null)}
+            onKapat={() => setDuzelt(null)}
+          />
+        ) : (
+          <Pressable
+            key={`${i}-${madde}`}
+            onLongPress={onMaddeDuzelt ? () => setDuzelt(i) : undefined}
+            disabled={!onMaddeDuzelt}
+            accessibilityHint={onMaddeDuzelt ? 'Düzeltmek için uzun bas' : undefined}
+            style={stiller.bilgiMaddesi}
+          >
+            <Yazi renk={renk.ikincil}>•</Yazi>
+            <Yazi style={stiller.esnek}>{madde}</Yazi>
+          </Pressable>
+        ),
+      )}
     </View>
   );
 }
 
-function ListeBlogu({ blok, kayit, onKayit }: Ozellikler) {
+function ListeBlogu({ blok, kayit, onKayit, onMaddeDuzelt }: Ozellikler) {
+  const [duzelt, setDuzelt] = useState<number | null>(null);
   const isaretler = kayit.isaretler[blok.id] ?? [];
   const degistir = (i: number) =>
     onKayit((k) => {
@@ -286,10 +307,22 @@ function ListeBlogu({ blok, kayit, onKayit }: Ozellikler) {
     <View style={stiller.liste}>
       {blok.maddeler.map((madde, i) => {
         const isaretli = !!isaretler[i];
+        if (duzelt === i && onMaddeDuzelt)
+          return (
+            <MaddeDuzeltici
+              key={`${i}-${madde}`}
+              metin={madde}
+              onKaydet={(yeni) => onMaddeDuzelt(i, yeni)}
+              onSil={() => onMaddeDuzelt(i, null)}
+              onKapat={() => setDuzelt(null)}
+            />
+          );
         return (
           <Pressable
             key={`${i}-${madde}`}
             onPress={() => degistir(i)}
+            onLongPress={onMaddeDuzelt ? () => setDuzelt(i) : undefined}
+            accessibilityHint={onMaddeDuzelt ? 'Düzeltmek için uzun bas' : undefined}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: isaretli }}
             style={stiller.madde}
@@ -308,7 +341,16 @@ function ListeBlogu({ blok, kayit, onKayit }: Ozellikler) {
 }
 
 /** Proje adımları: işaretler kalıcı (güne bağlı değil); her adımın yapıldığı gün görünür. */
-function AdimlarBlogu({ blok, gun }: { blok: Blok; gun: Gun }) {
+function AdimlarBlogu({
+  blok,
+  gun,
+  onMaddeDuzelt,
+}: {
+  blok: Blok;
+  gun: Gun;
+  onMaddeDuzelt?: Ozellikler['onMaddeDuzelt'];
+}) {
+  const [duzelt, setDuzelt] = useState<number | null>(null);
   const { kapi } = useVeri();
   const kisaMesaj = useKisaMesaj();
   const durum = adimDurumu(blok.durum, blok.maddeler.length);
@@ -341,10 +383,22 @@ function AdimlarBlogu({ blok, gun }: { blok: Blok; gun: Gun }) {
       </View>
       {blok.maddeler.map((madde, i) => {
         const tarih = durum.yapilan[i];
+        if (duzelt === i && onMaddeDuzelt)
+          return (
+            <MaddeDuzeltici
+              key={`${i}-${madde}`}
+              metin={madde}
+              onKaydet={(yeni) => onMaddeDuzelt(i, yeni)}
+              onSil={() => onMaddeDuzelt(i, null)}
+              onKapat={() => setDuzelt(null)}
+            />
+          );
         return (
           <Pressable
             key={`${i}-${madde}`}
             onPress={() => degistir(i)}
+            onLongPress={onMaddeDuzelt ? () => setDuzelt(i) : undefined}
+            accessibilityHint={onMaddeDuzelt ? 'Düzeltmek için uzun bas' : undefined}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: !!tarih }}
             accessibilityLabel={tarih ? `${madde}, ${kisaTarih(tarih)} yapıldı` : madde}

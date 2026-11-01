@@ -32,8 +32,10 @@ export interface Madde {
   ekleyen: string | null;
   kime: string | null;
   tarih: Gun | null;
-  /** Alışverişte miktar (P-61); eski sunucuda yok. */
+  /** Eski alışveriş miktarı (P-61); P-86'dan beri kullanılmıyor. */
   miktar?: string;
+  /** P-86: Günlük kontrolde işaretin günü; eski sunucuda yok. */
+  yapildi_gun?: Gun | null;
   sira: number;
 }
 

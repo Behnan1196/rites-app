@@ -321,7 +321,7 @@ const LISTE_TURLERI: { tur: BlokTuru; ad: string; aciklama: string }[] = [
   { tur: 'adimlar', ad: 'Adımlar', aciklama: 'İşaretlediğin kalır' },
   { tur: 'liste', ad: 'Günlük kontrol', aciklama: 'Her gün baştan' },
   { tur: 'bilgi', ad: 'Bilgi listesi', aciklama: 'İşaretsiz' },
-  { tur: 'listebag', ad: 'Listelerimden', aciklama: 'Alışveriş gibi' },
+  { tur: 'listebag', ad: 'Listelerimden', aciklama: 'Market gibi listeler' },
 ];
 
 const stiller = StyleSheet.create({

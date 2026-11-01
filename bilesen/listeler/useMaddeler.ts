@@ -9,7 +9,6 @@ import { AppState } from 'react-native';
 import { maddeleriSirala, type Madde } from '@/mantik/listeler';
 import type { Gun } from '@/mantik/tarih';
 import {
-  isaretleriSil,
   maddeDegistir,
   maddeEkle,
   maddeleriDinle,
@@ -20,7 +19,13 @@ import {
 
 import { useBanaVerilenler } from './BanaVerilenler';
 
-type Degisiklik = Partial<{ yapildi: boolean; kime: string | null; tarih: Gun | null; miktar: string }>;
+type Degisiklik = Partial<{
+  yapildi: boolean;
+  yapildi_gun: Gun | null;
+  metin: string;
+  kime: string | null;
+  tarih: Gun | null;
+}>;
 
 export function useMaddeler(liste: string, ben: string | null) {
   const [maddeler, setMaddeler] = useState<Madde[] | null>(null);
@@ -107,17 +112,11 @@ export function useMaddeler(liste: string, ben: string | null) {
     [yaz],
   );
 
-  /** P-61: Alışveriş "Alınanları temizle". */
+  /** Adımlar: "Yapılanları temizle" (P-61, P-86). */
   const yapilanlariTemizle = useCallback(() => {
     setMaddeler((ms) => ms?.filter((m) => !m.yapildi) ?? null);
     return yaz(() => yapilanlariSil(liste));
   }, [liste, yaz]);
 
-  /** P-61: Hazırlık "Baştan başla". */
-  const bastanBasla = useCallback(() => {
-    setMaddeler((ms) => ms?.map((m) => ({ ...m, yapildi: false })) ?? null);
-    return yaz(() => isaretleriSil(liste));
-  }, [liste, yaz]);
-
-  return { maddeler, hata, yenile, ekle, degistir, sil, yapilanlariTemizle, bastanBasla };
+  return { maddeler, hata, yenile, ekle, degistir, sil, yapilanlariTemizle };
 }

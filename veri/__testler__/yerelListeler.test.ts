@@ -46,13 +46,13 @@ beforeEach(async () => {
 
 describe('Listelerim veri katmanı (P-58)', () => {
   it('liste ve maddeler; tarihli madde ajandaya', async () => {
-    const id = await yerelListeEkle(kapi, ' Market ', 'alisveris', idUret);
+    const id = await yerelListeEkle(kapi, ' Market ', 'yapilacak', idUret);
     expect(id.startsWith('y-')).toBe(true);
     await yerelMaddeEkle(kapi, id, 'Süt', '2 lt', idUret);
     await yerelMaddeEkle(kapi, id, 'Ekmek', '', idUret);
     const l = (await yerelListeOku(oku, id))!;
     expect(l.liste.ad).toBe('Market');
-    expect(l.liste.cesit).toBe('alisveris');
+    expect(l.liste.cesit).toBe('yapilacak');
     expect(l.maddeler.map((m) => m.miktar)).toEqual(['2 lt', '']);
     expect(l.maddeler.map((m) => m.metin)).toEqual(['Süt', 'Ekmek']);
     await yerelMaddeDegistir(kapi, l.maddeler[0]!.id, { yapildi: true });
@@ -65,11 +65,28 @@ describe('Listelerim veri katmanı (P-58)', () => {
     expect(await yerelListeleriOku(oku)).toEqual([]);
   });
 
+  it('P-86: günlük kontrolde dünkü işaret kalan sayılır; madde yerinde düzeltilir', async () => {
+    const id = await yerelListeEkle(kapi, 'Çıkmadan önce', 'gunluk', idUret);
+    await yerelMaddeEkle(kapi, id, 'Ocak', '', idUret);
+    await yerelMaddeEkle(kapi, id, 'Kapı', '', idUret);
+    const l = (await yerelListeOku(oku, id))!;
+    const d = new Date();
+    const bugun = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    await yerelMaddeDegistir(kapi, l.maddeler[0]!.id, { yapildi: true, yapildiGun: '2020-01-01' });
+    await yerelMaddeDegistir(kapi, l.maddeler[1]!.id, { yapildi: true, yapildiGun: bugun, metin: 'Kapıyı kilitle' });
+    expect((await yerelListeleriOku(oku))[0]).toMatchObject({ cesit: 'gunluk', maddeSayisi: 2, kalan: 1 });
+    const l2 = (await yerelListeOku(oku, id))!;
+    expect(l2.maddeler.map((m) => [m.metin, m.yapildiGun])).toEqual([
+      ['Ocak', '2020-01-01'],
+      ['Kapıyı kilitle', bugun],
+    ]);
+  });
+
   it('P-60: paylaşmayı bırakınca maddeleriyle kişisel liste kurulur', async () => {
     const id = await yerelListeKur(
       kapi,
       'Tatil',
-      'hazirlik',
+      'yapilacak',
       [
         { metin: 'Bilet', yapildi: true, tarih: null, miktar: '' },
         { metin: 'Valiz', yapildi: false, tarih: '2026-11-02', miktar: '' },

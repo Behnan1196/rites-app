@@ -343,6 +343,14 @@ export const GOCLER: readonly Goc[] = [
     sql: `ALTER TABLE kart ADD COLUMN aliskanlik INTEGER NOT NULL DEFAULT 0;
           ALTER TABLE kart ADD COLUMN ajandada INTEGER;`,
   },
+  {
+    // Listeler (pilot 1 Kasım, P-86): kartla aynı üç çeşit (yapilacak = Adımlar, gunluk, not);
+    // Alışveriş ve Hazırlık Adımlar oldu, miktarlar silindi; Günlük kontrolde işaretin günü.
+    surum: 26,
+    sql: `ALTER TABLE yerel_madde ADD COLUMN yapildi_gun TEXT;
+          UPDATE yerel_liste SET cesit = 'yapilacak' WHERE cesit NOT IN ('yapilacak', 'gunluk', 'not');
+          UPDATE yerel_madde SET miktar = '' WHERE miktar <> '';`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

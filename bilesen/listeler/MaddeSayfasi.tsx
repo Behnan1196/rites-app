@@ -1,5 +1,5 @@
-// Madde sayfası (GR-4): Ne kadar? (alışverişte, P-61), Kime? (Kimse / Sen / listenin
-// üyeleri), Ne zaman? (Tarih yok / Bugün / Yarın / tarih seç; Not listesinde ikisi de yok).
+// Madde sayfası (GR-4): Kime? (Kimse / Sen / listenin üyeleri), Ne zaman? (Tarih yok / Bugün /
+// Yarın / tarih seç). P-86: yalnız Adımlar'da; madde düzeltmesindeki gün düğmesiyle açılır.
 // Seçim anında kaydedilir; "Tamam" kapatır.
 
 import { StyleSheet, View } from 'react-native';
@@ -14,7 +14,6 @@ import { AyTakvimi } from '../AyTakvimi';
 import { Dugme } from '../Dugme';
 import { Bolum, SecenekHapi } from '../Secim';
 import { Yazi } from '../Yazi';
-import { MiktarBolumu } from './ListeParcalari';
 
 export function MaddeSayfasi({
   madde,
@@ -33,14 +32,13 @@ export function MaddeSayfasi({
   ben: string;
   ad: AdBulucu;
   bugunGun: Gun;
-  onDegis: (d: { kime?: string | null; tarih?: Gun | null; miktar?: string }) => void;
+  onDegis: (d: { kime?: string | null; tarih?: Gun | null }) => void;
   onSil: () => void;
   onKapat: () => void;
 }) {
   const zamanlar = zamanSecenekleri(bugunGun);
   return (
     <AltSayfa gorunur onKapat={onKapat} baslik={madde.metin} sagKapat="Tamam">
-      {cesit === 'alisveris' && <MiktarBolumu miktar={madde.miktar ?? ''} onDegis={(miktar) => onDegis({ miktar })} />}
       {tarihliMi(cesit) && (
         <>
           <Bolum>

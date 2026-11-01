@@ -124,20 +124,20 @@ esit('işaret herkes için', (await olarak(ali, () => q('select yapildi from mad
 await hataBekle('madde başka listeye taşınamaz', () => olarak(ali, () => q('update madde set liste = $1', [market])), 'permission denied');
 esit('kalan madde sayısı', (await tek(ayse, 'select listelerim() l')).l[0].kalan, 0);
 
-// Liste çeşitleri (P-61)
-esit('eski liste Yapılacaklar', (await tek(ayse, 'select listelerim() l')).l[0].cesit, 'yapilacak');
-await olarak(ayse, () => q(`select liste_duzenle($1, 'Market', array[$2]::uuid[], '{}', 'alisveris')`, [market, aile]));
-esit('çeşit değişir, paylaşım kalır', (await tek(ali, 'select listelerim() l')).l.map(x => [x.cesit, x.gruplar.length]), [['alisveris', 1]]);
+// Liste çeşitleri (P-61, P-86: yapilacak · gunluk · not)
+esit('eski liste Adımlar', (await tek(ayse, 'select listelerim() l')).l[0].cesit, 'yapilacak');
+await olarak(ayse, () => q(`select liste_duzenle($1, 'Market', array[$2]::uuid[], '{}', 'gunluk')`, [market, aile]));
+esit('çeşit değişir, paylaşım kalır', (await tek(ali, 'select listelerim() l')).l.map(x => [x.cesit, x.gruplar.length]), [['gunluk', 1]]);
 await olarak(ayse, () => q(`select liste_duzenle($1, 'Market', array[$2]::uuid[], '{}')`, [market, aile]));
-esit('çeşit verilmezse aynı kalır', (await tek(ayse, 'select listelerim() l')).l[0].cesit, 'alisveris');
-await olarak(ali, () => q(`insert into madde (liste, metin, ekleyen, miktar) values ($1, 'Domates', $2, '2 kg')`, [market, ali]));
-await olarak(ayse, () => q(`update madde set miktar = '3 kg' where metin = 'Domates'`));
-esit('miktar herkes için', (await olarak(ali, () => q(`select miktar from madde where metin = 'Domates'`))).rows[0].miktar, '3 kg');
-await hataBekle('bilinmeyen çeşit olmaz', () => olarak(ayse, () => q(`select liste_olustur('X', array[$1]::uuid[], '{}', 'baska')`, [aile])), 'check');
-const bavul = (await tek(ayse, `select liste_olustur('Bavul', array[$1]::uuid[], '{}', 'hazirlik') l`, [aile])).l;
-esit('yeni liste çeşidiyle', (await tek(ayse, 'select listelerim() l')).l.find(x => x.id === bavul).cesit, 'hazirlik');
+esit('çeşit verilmezse aynı kalır', (await tek(ayse, 'select listelerim() l')).l[0].cesit, 'gunluk');
+await olarak(ali, () => q(`insert into madde (liste, metin, ekleyen) values ($1, 'Domates', $2)`, [market, ali]));
+await olarak(ayse, () => q(`update madde set metin = 'Domates (2 kg)', yapildi = true, yapildi_gun = '2026-11-01' where metin = 'Domates'`));
+esit('düzeltme ve günlük işaret herkes için', (await olarak(ali, () => q(`select metin, yapildi_gun::text g from madde where metin like 'Domates%'`))).rows[0], { metin: 'Domates (2 kg)', g: '2026-11-01' });
+await hataBekle('eski çeşit (alışveriş) artık olmaz', () => olarak(ayse, () => q(`select liste_olustur('X', array[$1]::uuid[], '{}', 'alisveris')`, [aile])), 'check');
+const bavul = (await tek(ayse, `select liste_olustur('Kitaplar', array[$1]::uuid[], '{}', 'not') l`, [aile])).l;
+esit('yeni liste çeşidiyle', (await tek(ayse, 'select listelerim() l')).l.find(x => x.id === bavul).cesit, 'not');
 await olarak(ayse, () => q('delete from liste where id = $1', [bavul]));
-await olarak(ali, () => q(`delete from madde where metin = 'Domates'`));
+await olarak(ali, () => q(`delete from madde where metin like 'Domates%'`));
 
 // Liste yetkisi yalnız kuranda
 await hataBekle('paylaşımı yalnız kuran değiştirir', () => olarak(ali, () => q(`select liste_duzenle($1, 'X', '{}', '{}')`, [market])), 'yetki yok');

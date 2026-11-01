@@ -40,6 +40,7 @@ import type { ParcaTaslagi } from '@/mantik/blokTaslak';
 import { useUzman } from '@/bilesen/useUzman';
 import { seritOgeleri, type SeritOgesi } from '@/mantik/parcaSecimi';
 import { aciklamaVarMi, BOS_ACIKLAMA, metinDoluMu } from '@/mantik/zenginMetin';
+import { isaretleriDuzelt } from '@/mantik/maddeDuzeltme';
 import { dosyayiSakla } from '@/veri/dosyalar';
 import { AciklamaAlani, MaddeEkle, SatirIciBaslik, SatirIciZengin } from '@/bilesen/kart/SatirIci';
 import { ElemanMenusu } from '@/bilesen/kart/ElemanMenusu';
@@ -68,6 +69,7 @@ import { useSorgu } from '@/veri/kancalar';
 import {
   blokEkle,
   blokIcerikYaz,
+  blokMaddesiYaz,
   ajandadaYaz,
   aliskanlikYaz,
   blokSabitYaz,
@@ -419,7 +421,29 @@ export default function KartGorunumu() {
                             onDegis={(v) => icerikKaydet(blokIcerikYaz(kapi, b.id, videolarBlogu(v)))}
                           />
                         ) : (
-                          <BlokUygulama blok={b} gun={gun} kayit={kayit} kayitlar={kayitlar} onKayit={kayitDegis} />
+                          <BlokUygulama
+                            blok={b}
+                            gun={gun}
+                            kayit={kayit}
+                            kayitlar={kayitlar}
+                            onKayit={kayitDegis}
+                            onMaddeDuzelt={
+                              parcaDegisir(kart, b)
+                                ? (i, yeni) => {
+                                    icerikKaydet(blokMaddesiYaz(kapi, b.id, i, yeni));
+                                    // P-86: günlük listede silinen maddenin o günkü işareti de gider.
+                                    if (yeni === null && b.tur === 'liste')
+                                      kayitDegis((k) => ({
+                                        ...k,
+                                        isaretler: {
+                                          ...k.isaretler,
+                                          [b.id]: isaretleriDuzelt(k.isaretler[b.id] ?? [], i, null),
+                                        },
+                                      }));
+                                  }
+                                : undefined
+                            }
+                          />
                         )}
                         {parcaDegisir(kart, b) && listeMi && (
                           <MaddeEkle
