@@ -415,3 +415,8 @@ Sonuç: → kararlar.md (Rites önerileri sade ve ayrı); deneme senaryoları s�
 Ne dedi: "Çoklu video oynatıcımıza bakalım: 1. Video ekle'de Gelenlerden al varsa klavye bazı kontrollerin üzerinde kalıyor. 2. Alttaki Vazgeç ve Ekle düğmeleri, Gelenlerden al'ı açarsam yanıltıcı oluyor; listedeki küçük +'ya basmam gerektiği belli olmuyor. 3. Başka bir telefonda Instagram videosunu yarım saniye başlatıp duruyor gibi; YouTube için kaldırdığımız uygulamada oynat seçeneğini Instagram için koymamız gerekecek."
 Nerede: Kart görünümü ve Kur'da video parçası
 Sonuç: → kararlar.md (Video eklerken Gelenler; Instagram'da aç)
+
+### P-81 · 1 Kasım 2026 · Behnan
+Ne dedi: "Kart görünümünün sade durması için önce kullanım senaryolarına göre düşünebiliriz … yeni bir kullanıcı Rites önerilerine bakar, kendi ihtiyaçlarına göre ajandaya aktararak bir genel program oluşturabilir: günde 6-8 bardak su, sabah 10 dk tai chi, haftada en az 2 kez balık, saat 11'de yatmayı alışkanlık haline getirmek … su iç kartımız yeterli değil, su sayacı şeklinde olmalı; şükran kartı başka alan olmadan sade bir kart olmalı. Rites önerilerini gözden geçirip sırayla en uygun kartları yaratmalı … Kartın tepesine tarih yazmamıza gerek olmayabilir … altta bileşenleri ve bildirimi içeren şerit bottom-nav'a benziyor ve yanıltıcı … Kart yerleşimini ayrıca konuşacağız." Kararlar: süre yok, tek tek ajandaya; haftada N kez şimdilik yok; öneriler kart kart (sebze ve resim çıktı, programlar kalktı).
+Nerede: Rites önerileri, kart görünümü
+Sonuç: → kararlar.md (Senaryo: kendi düzenini kurmak; öneriler kart kart)

@@ -3,7 +3,7 @@
  */
 import { alanAdi } from '@/mantik/alanlar';
 import { yeniKart } from '@/mantik/kart';
-import { oneriler, onerdenProgram, type Program, type ProgramKarti } from '@/mantik/program';
+import { oneriKartBul, oneriKartIcerigi, onerdenProgram, type Oneri, type Program, type ProgramKarti } from '@/mantik/program';
 
 import { gocleriUygula } from '../gocler';
 import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
@@ -32,6 +32,17 @@ import {
 } from '../programlar';
 import { yayinOlustur } from '../yayin';
 import { sqljsVeriTabani } from './sqljsVeriTabani';
+
+/** P-81: katalogda hazır öneri programı kalmadı; denemeler için öneri kartlarından bir program. */
+const ornekOneri = (): Oneri => ({
+  id: 'ornek',
+  alanlar: ['hareket'],
+  ad: 'Sabah hareketi',
+  aciklama: '',
+  sure: 28,
+  kartlar: [oneriKartIcerigi(oneriKartBul('h3')!), oneriKartIcerigi(oneriKartBul('h2')!, 0, 1)],
+});
+
 
 const BUGUN = '2026-10-20';
 const herGun = { gunSayisi: null, gunler: null, desen: 'hergun' as const };
@@ -198,7 +209,7 @@ describe('programlar (gerçek SQLite)', () => {
   });
 
   it('Rites önerisinden program', async () => {
-    const { program: p, kartlar } = onerdenProgram(oneriler()[0]!, idUret, '2026-10-20T00:00:00Z');
+    const { program: p, kartlar } = onerdenProgram(ornekOneri(), idUret, '2026-10-20T00:00:00Z');
     await programKur(kapi, p, kartlar);
     expect((await programKartlariOku(oku, p.id)).length).toBe(kartlar.length);
   });

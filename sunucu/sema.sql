@@ -1525,6 +1525,8 @@ create table if not exists public.icerik_kart (
   aktif      boolean not null default true,
   guncelleme timestamptz not null default now()
 );
+-- P-81: kartla gelen hatırlatma ('saatinde', '15dk', '1sa' ya da 'ozel|0|22:30').
+alter table public.icerik_kart add column if not exists hatirlatma text;
 
 create table if not exists public.icerik_program (
   id         text primary key,

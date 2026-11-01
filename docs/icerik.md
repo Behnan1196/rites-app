@@ -66,7 +66,7 @@ Kaldırılan alan, onu etiket olarak kullanan kişide adıyla görünmeye devam 
 
 Programın kartları `icerik_kart`ta tanımlı olmalı; bilinmeyen kart atlanır, hiç kartı kalmayan program görünmez. Tekrarlı kart programın son gününde kendiliğinden durur.
 
-P-79 (31 Ekim): uygulama katalogu sade gösterir (`mantik/katalog.ts` → `sadeKatalog`): tek kartlı program, programın süresini alan bir **alışkanlık önerisi** olur (program listesinde görünmez); öneri kartları saatsizdir; açıklaması boş kartın talimatı açıklamaya taşınır; `tur` gösterilmez. Sunucudaki tablolar değişmez.
+P-79 (31 Ekim) / P-81 (1 Kasım): uygulama katalogu sade gösterir (`mantik/katalog.ts` → `sadeKatalog`): açıklaması boş kartın talimatı açıklamaya taşınır; tek kartlı program gösterilmez; `tur` gösterilmez. P-81: öneri kartları yeniden yazıldı (`mantik/hazirIcerik.ts`, 18 kart, süre ve hazır program yok); kart `hatirlatma` taşıyabilir (`icerik_kart.hatirlatma`: `saatinde`, `15dk`, `1sa`, `ozel|0|22:30`). Sunucudaki içerik `sunucu/guncelleme-p81.sql` ile yenilenir.
 
 ## `icerik_cesit` — isimli kart çeşitleri (P-41)
 

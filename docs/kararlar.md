@@ -672,3 +672,19 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 
 - **Video eklerken Gelenler üstte ve açık:** "Gelenlerden seç (N)"; her satırın tamamı dokunulur, sağında belirgin **+ Ekle**. Altında "ya da bağlantıyı yapıştır" ve bağlantı formu; formun düğmeleri **Vazgeç · Bağlantıyı ekle**. Gelenler varken klavye kendiliğinden açılmaz (bağlantı alanına dokununca açılır); Gelen yoksa eskisi gibi açılır. — Ürün sahibi (P-80); düzen: Öneri
 - **Instagram videosunun altında "Instagram'da aç"** (uygulamada açar): gömülü oynatıcı bazı telefonlarda başlayıp hemen duruyor; Instagram'ın kendi küçük düğmesi neredeyse görünmüyor. YouTube'da yok. — Ürün sahibi (P-80)
+
+## Senaryo: kendi düzenini kurmak; öneriler kart kart (1 Kasım)
+
+- **Yeni kullanıcının akışı:** süre yok; Rites önerilerinden kartları tek tek ajandaya alır, haftaya yerleştirir, uygular; beğendiği düzeni sonra bir programa çevirebilir ("bu kartlardan program yap" sonra). Toplu seçim ve ortak süre yok. — Ürün sahibi (P-81)
+- **"Haftada N kez" sıklığı şimdilik yok;** gün seçimiyle kurulur (Balık: Sal · Cum). — Ürün sahibi (P-81)
+- **Öneri kartları yeniden (22 → 18), tek iş, süre yok, saat yalnız işin kendisiyse, Yaptım yetiyorsa parça yok:**
+  - Hareket: **Sabah 10 dk tai chi** (video + 10 dk zamanlayıcı; esneme buraya katıldı) · **Yürüyüş** (Pzt Çar Cum, 30 dk) · **Direnç egzersizi** (Sal Cum, tekrar sayısı).
+  - Beslenme: **Günde 8 bardak su** (su sayacı) · **Balık ye** (Sal Cum, Yaptım; "Haftada en az iki kez.") · **Akşam 20:00’den sonra yeme** (Yaptım).
+  - Uyku: **23:00’te yat** (saat 23:00, 22:30'da hatırlatma; "Yarım saat önce ekranı kapat, ışıkları kıs."; Ekranı kapat buraya katıldı) · **Kaç saat uyudum?** (ölçüm).
+  - Zihin: **10 dk nefes** · **Kitap oku** (Yaptım). Anlam: **Şükran notu** (yalnız günün sorusu) · **Haftanın değerlendirmesi** (Pazar).
+  - Sosyal: **Bir yakınını ara** (Pzt Per) · **Haftalık buluşma** (Cmt). Öğrenme: **20 dk İngilizce** · **Yeni bir beceri** (Cmt, video). İş: **Mesai sonrası ekranı kapat** (hafta içi 19:00). Uğraş: **20 dk gitar**.
+  - Çıkanlar: Öğlene bir tabak sebze, Resim, Öğle arası kısa yürüyüş. — Ürün sahibi (P-81)
+- **Hazır öneri programı yok** (Sabah hareketi, Uyku düzeni ve tek kartlılar kalktı). — Ürün sahibi (P-81)
+- **Su sayacı:** hedefi 12 ya da daha az olan sayarak parçası simgeli (su ise damla): dokundukça dolar, son doluya dokununca bir azalır; hedefe ulaşınca kart kendiliğinden Yaptım, altına inince kalkar (elle verilen Yaptım başka zaman değişmez). Büyük hedefte − / + yerinde. — Ürün sahibi (P-81); ayrıntılar: Öneri
+- **Sunucu:** `icerik_kart.hatirlatma` sütunu; içerik `sunucu/guncelleme-p81.sql` ile yenilenir (Supabase → SQL Editor). Uygulama sütun olmadan da katalogu indirir. — Not
+- **Kartın tepesi (tarih, saat) ve alttaki şerit** (bottom-nav'a benziyor, yanıltıcı): kart yerleşimiyle birlikte konuşulacak. — Not

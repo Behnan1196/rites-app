@@ -362,11 +362,13 @@ const icerik = fs.readFileSync(new URL('./icerik.sql', import.meta.url), 'utf8')
 await ex(icerik);
 await ex(icerik); // yeniden çalıştırmak güvenli mi
 await q(`update icerik_kart set baslik = 'Su (yeni)' where id = 'b1'`);
-await q(`update icerik_kart set aktif = false where id = 'b2'`);
+await q(`update icerik_kart set aktif = false where id = 'b3'`);
 await ex('set role anon');
 esit('oturumsuz alanları okur', (await q('select count(*)::int n from icerik_alan')).rows[0].n, 9);
-esit('panelde değişen kart görünür, pasif görünmez', (await q(`select id, baslik from icerik_kart where id in ('b1','b2')`)).rows, [{ id: 'b1', baslik: 'Su (yeni)' }]);
-esit('programlar okunur', (await q('select count(*)::int n from icerik_program')).rows[0].n > 0, true);
+esit('panelde değişen kart görünür, pasif görünmez', (await q(`select id, baslik from icerik_kart where id in ('b1','b3')`)).rows, [{ id: 'b1', baslik: 'Su (yeni)' }]);
+// P-81: hazır öneri programı yok; tablo yine okunur.
+esit('programlar okunur', (await q('select count(*)::int n from icerik_program')).rows[0].n, 0);
+esit('kartla gelen hatırlatma', (await q(`select hatirlatma from icerik_kart where id = 'u2'`)).rows, [{ hatirlatma: 'ozel|0|22:30' }]);
 await hataBekle('oturumsuz içerik yazamaz', () => q(`insert into icerik_alan (anahtar, ad) values ('x', 'X')`), 'permission denied');
 await ex('reset role');
 await hataBekle('oturumlu içerik değiştiremez', () => olarak(ali, () => q(`update icerik_kart set baslik = 'x'`)), 'permission denied');

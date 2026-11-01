@@ -8,7 +8,15 @@
 // denetlenir; bozuk öğe atlanır, geri kalanı kullanılır.
 
 import { ALANLAR, HAZIR_CESITLER, type EtkinlikBlogu } from './hazirIcerik';
-import { ICERIK_BLOKLARI, KAYIT_BLOKLARI, type BlokTuru, type Tekrar } from './kart';
+import {
+  hatirlatmaCoz,
+  hatirlatmaYaz,
+  ICERIK_BLOKLARI,
+  KAYIT_BLOKLARI,
+  type BlokTuru,
+  type Hatirlatma,
+  type Tekrar,
+} from './kart';
 import { GUN_KISA, type GunKisa } from './tarih';
 
 // ---- Etiket türleri (Kütüphanem) ------------------------------------------------
@@ -65,11 +73,8 @@ export interface KatalogKart {
   tekrar: Tekrar | null;
   bloklar: KatalogBlogu[];
   tur: EtiketTuru;
-  /**
-   * P-79: alışkanlık önerisi (eskiden tek kartlı öneri programı): kaç gün (null: süresiz). Yalnız
-   * `katalog()`un sadeleştirdiği kartta; tekrarın `gunSayisi` da buna eşit.
-   */
-  sure?: number | null;
+  /** P-81: kartla gelen hatırlatma ("23:00'te yat": 22:30'da); yoksa null. */
+  hatirlatma?: Hatirlatma | null;
 }
 
 export interface KatalogProgram {
@@ -220,6 +225,14 @@ export function katalogCoz(ham: unknown): Katalog | null {
       baslik,
       kisa: metin(c.kisa),
       saat: saatCoz(c.saat),
+      // Sunucuda metin ('ozel|0|22:30'); telefonda saklı katalogda nesne olabilir.
+      hatirlatma: hatirlatmaCoz(
+        typeof c.hatirlatma === 'string'
+          ? c.hatirlatma
+          : c.hatirlatma && typeof c.hatirlatma === 'object'
+            ? hatirlatmaYaz(c.hatirlatma as Hatirlatma)
+            : null,
+      ),
       tekrar: c.tekrar === null || c.tekrar === undefined ? null : tekrarCoz(c.tekrar),
       bloklar,
       tur: turMu(c.tur) ? c.tur : turTahmini(bloklar),
@@ -273,8 +286,8 @@ function etkinlikBloklari(b: EtkinlikBlogu): KatalogBlogu[] {
     case 'sayac':
       return [{ ...bos('sayac'), dakika: b.dakika }];
     case 'video':
-      // Bağlantı yok (`09`); kişi Düzenle'den yapıştırır.
-      return [bos('video'), { ...bos('talimat'), metin: VIDEO_TALIMATI }];
+      // Bağlantı yok (`09`); kişi kendi videosunu ekler. P-81: yönerge kartın açıklamasında.
+      return [bos('video')];
     case 'olcum':
       return [{ ...bos('olcum'), ad: b.ad, birim: b.birim }];
     case 'talimat':
@@ -303,13 +316,14 @@ export function gomuluKatalog(): Katalog {
     })),
     kartlar: ALANLAR.flatMap((a) =>
       a.etkinlikler.map((e) => {
-        const bloklar = etkinlikBloklari(e.blok);
+        const bloklar = e.bloklar.flatMap(etkinlikBloklari);
         return {
           id: e.id,
           alanlar: [a.anahtar],
           baslik: e.baslik,
-          kisa: '',
+          kisa: e.kisa ?? '',
           saat: e.saat,
+          hatirlatma: e.hatirlatma ?? null,
           tekrar: { ...e.tekrar, gunler: e.tekrar.gunler ? [...e.tekrar.gunler] : null },
           bloklar,
           tur: e.tur ?? turTahmini(bloklar),
@@ -358,26 +372,16 @@ export function katalog(): Katalog {
 }
 
 /**
- * Rites önerilerinin sade hali (pilot 31 Ekim, P-79), içerik sunucuda değişmeden:
- * - Tek kartlı öneri programı program değil, süreli **alışkanlık önerisi**dir: kartı programın
- *   süresini (`sure`, tekrarın gün sayısı) ve açıklamasını alır; program listesinde görünmez.
- * - Öneri kartları saatsizdir (saat kişinin seçimi).
+ * Rites önerilerinin sade hali (pilot 31 Ekim, P-79; 1 Kasım, P-81), sunucudaki içerik ne olursa:
  * - Açıklaması boş kartta talimat parçası açıklamaya taşınır (normal kullanıcı açıklama kullanır).
+ * - Tek kartlı öneri programı gösterilmez (program kişinin kartlarından sonra kurulur; öneriler
+ *   tek tek ajandaya alınır, süresiz).
  */
 export function sadeKatalog(k: Katalog): Katalog {
-  const tekli = new Map<string, KatalogProgram>();
-  for (const p of k.programlar) if (p.kartlar.length === 1) tekli.set(p.kartlar[0]!.kart, p);
   const kartlar = k.kartlar.map((c): KatalogKart => {
-    const p = tekli.get(c.id);
     const talimat = !c.kisa.trim() ? c.bloklar.find((b) => b.tur === 'talimat' && b.metin.trim()) : undefined;
-    const kisa = c.kisa.trim() ? c.kisa : talimat ? talimat.metin : (p?.aciklama ?? '');
-    return {
-      ...c,
-      saat: null,
-      kisa,
-      bloklar: talimat ? c.bloklar.filter((b) => b !== talimat) : c.bloklar,
-      ...(p ? { sure: p.sure, tekrar: c.tekrar ? { ...c.tekrar, gunSayisi: p.sure } : c.tekrar } : {}),
-    };
+    if (!talimat) return c;
+    return { ...c, kisa: talimat.metin, bloklar: c.bloklar.filter((b) => b !== talimat) };
   });
   const kartVar = new Set(kartlar.map((c) => c.id));
   return {

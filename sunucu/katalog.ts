@@ -4,14 +4,16 @@
 
 import { sunucu } from './istemci';
 
-export const CESIT_SUTUNLARI = 'id, alan, ad, ikon, aciklama, baslik, baslik_ipucu, saat, tekrar, bloklar, seri, sira, aktif';
+export const CESIT_SUTUNLARI =
+  'id, alan, ad, ikon, aciklama, baslik, baslik_ipucu, saat, tekrar, bloklar, seri, sira, aktif';
 
 export async function katalogIndir(): Promise<unknown | null> {
   const s = sunucu;
   if (!s) return null;
   const [alanlar, kartlar, programlar] = await Promise.all([
     s.from('icerik_alan').select('anahtar, ad, aciklama, ikon, varsayilan_acik, sira'),
-    s.from('icerik_kart').select('id, alanlar, baslik, kisa, saat, tekrar, bloklar, tur, sira'),
+    // P-81: '*' (hatirlatma sütunu güncelleme çalıştırılmadan da iner).
+    s.from('icerik_kart').select('*'),
     s.from('icerik_program').select('id, alanlar, ad, aciklama, sure, kartlar, sira'),
   ]);
   const hata = alanlar.error ?? kartlar.error ?? programlar.error;

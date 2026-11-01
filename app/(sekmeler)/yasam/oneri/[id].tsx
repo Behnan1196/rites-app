@@ -139,13 +139,13 @@ export default function OneriEkrani() {
 
       {kart && (
         <>
-          <KartIcerigiGorunumu c={{ ...kart, hatirlatma: null }} />
+          <KartIcerigiGorunumu c={{ ...kart, hatirlatma: kart.hatirlatma ?? null }} />
           <Dugme
             etiket={kart.tekrar ? 'Alışkanlık olarak ekle' : 'Bugün Ajandama ekle'}
             pasif={calisiyor}
             onPress={() =>
               void calistir(async () => {
-                const a = kutuphanedenKart({ ...kart, hatirlatma: null }, bugunGun, yeniKimlik);
+                const a = kutuphanedenKart({ ...kart, hatirlatma: kart.hatirlatma ?? null }, bugunGun, yeniKimlik);
                 // P-79: tekrarlıysa alışkanlık (Giriş → Devam edenler; ajandada görünmez).
                 const yeni = kart.tekrar ? { ...a.kart, aliskanlik: true } : a.kart;
                 await yeniKartKaydet(kapi, yeni, a.bloklar, yeniKimlik);

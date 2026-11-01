@@ -9,6 +9,7 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { adimDurumu, ilerleme, ilerlemeMetni } from '@/mantik/adimlar';
 import { blokVideolari } from '@/mantik/video';
+import { adetDegeri, adetYaz, SIMGELI_EN_COK, simgeDokunusu } from '@/mantik/adet';
 import { oncekiDeger } from '@/mantik/ajanda';
 import { sesDosyasiMi } from '@/mantik/dosya';
 import type { Blok, Kayit } from '@/mantik/kart';
@@ -121,23 +122,69 @@ function Kronometre({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
   );
 }
 
-/** P-39: sayarak (su bardağı): büyük − ve +; isteğe bağlı günlük hedef (`dakika` alanında). */
+/**
+ * P-39: sayarak (su bardağı): büyük − ve +; isteğe bağlı günlük hedef (`dakika` alanında).
+ * P-81: hedef 12 ya da daha azsa simgeli sayaç (bardaklar dokundukça dolar; son doluya dokununca
+ * bir azalır). Hedefe ulaşınca kart kendiliğinden Yaptım.
+ */
 function AdetBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
-  const sayi = Number(kayit.degerler[blok.id] ?? 0) || 0;
+  const sayi = adetDegeri(kayit, blok.id);
   const hedef = blok.dakika && blok.dakika > 0 ? blok.dakika : null;
   // Art arda dokunuşlar kaybolmasın: değer kaydın son hâlinden hesaplanır.
-  const ekle = (fark: number) =>
-    onKayit((k) => ({
-      ...k,
-      degerler: { ...k.degerler, [blok.id]: String(Math.max(0, (Number(k.degerler[blok.id] ?? 0) || 0) + fark)) },
-    }));
+  const yaz = (hesap: (eski: number) => number) =>
+    onKayit((k) => adetYaz(k, blok.id, hesap(adetDegeri(k, blok.id)), hedef));
   const ad = blok.ad || 'Sayı';
+  const simgeli = !!hedef && hedef <= SIMGELI_EN_COK;
+  const su = /bardak|su\b/i.test(`${blok.birim} ${blok.ad}`);
+  if (simgeli) {
+    const tamam = sayi >= hedef!;
+    return (
+      <View style={stiller.olcumKap}>
+        <View style={stiller.simgeUst}>
+          <Yazi kalinlik="kalin" style={stiller.esnek}>
+            {ad}
+          </Yazi>
+          <Yazi kalinlik="kalin" renk={tamam ? renk.ana : renk.ikincil} accessibilityLiveRegion="polite">
+            {`${sayi} / ${hedef}${blok.birim ? ` ${blok.birim}` : ''}`}
+          </Yazi>
+        </View>
+        <View style={stiller.simgeler} accessibilityRole="adjustable" accessibilityLabel={`${ad}: ${sayi} / ${hedef}`}>
+          {Array.from({ length: Math.max(hedef!, sayi) }, (_, i) => {
+            const dolu = i < sayi;
+            return (
+              <Pressable
+                key={i}
+                onPress={() => yaz((eski) => simgeDokunusu(eski, i))}
+                accessibilityRole="button"
+                accessibilityLabel={`${ad}: ${i + 1}`}
+                hitSlop={4}
+                style={({ pressed }) => [stiller.simge, pressed && { opacity: 0.6 }]}
+              >
+                <Ionicons
+                  name={su ? (dolu ? 'water' : 'water-outline') : dolu ? 'ellipse' : 'ellipse-outline'}
+                  size={30}
+                  color={dolu ? (su ? renk.suDolu : renk.ana) : renk.pasif}
+                />
+              </Pressable>
+            );
+          })}
+        </View>
+        {sayi > hedef! && (
+          <Pressable onPress={() => yaz((e) => e - 1)} accessibilityRole="button" hitSlop={6}>
+            <Yazi tur="etiket" renk={renk.ikincil}>
+              Bir azalt
+            </Yazi>
+          </Pressable>
+        )}
+      </View>
+    );
+  }
   return (
     <View style={stiller.olcumKap}>
       <Yazi kalinlik="kalin">{ad}</Yazi>
       <View style={stiller.adetSatiri}>
         <Pressable
-          onPress={() => ekle(-1)}
+          onPress={() => yaz((e) => e - 1)}
           disabled={sayi === 0}
           accessibilityRole="button"
           accessibilityLabel={`${ad}: bir azalt`}
@@ -152,7 +199,7 @@ function AdetBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
           {!!blok.birim && <Yazi tur="ikincil">{blok.birim}</Yazi>}
         </View>
         <Pressable
-          onPress={() => ekle(1)}
+          onPress={() => yaz((e) => e + 1)}
           accessibilityRole="button"
           accessibilityLabel={`${ad}: bir ekle`}
           style={({ pressed }) => [stiller.adetDugme, stiller.adetArti, pressed && { opacity: 0.7 }]}
@@ -638,6 +685,9 @@ const stiller = StyleSheet.create({
   zamanlayiciDugme: { minWidth: 120 },
   zamanlayiciKap: { gap: 6 },
   adetSatiri: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  simgeUst: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  simgeler: { flexDirection: 'row', flexWrap: 'wrap', gap: 0 },
+  simge: { width: 36, height: 44, alignItems: 'center', justifyContent: 'center' },
   adetDugme: {
     width: 64,
     height: 64,

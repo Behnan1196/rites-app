@@ -2,6 +2,7 @@
 // içeriğini üretir: `npx tsx sunucu/icerik-uret.ts > sunucu/icerik.sql`.
 // Var olan satırlara dokunmaz (uzmanın değişiklikleri korunur).
 
+import { hatirlatmaYaz } from '../mantik/kart';
 import { gomuluKatalog } from '../mantik/katalog';
 
 const k = gomuluKatalog();
@@ -21,7 +22,7 @@ k.alanlar.forEach((a, i) =>
 satirlar.push('');
 k.kartlar.forEach((c, i) =>
   satirlar.push(
-    `insert into public.icerik_kart (id, alanlar, baslik, kisa, saat, tekrar, bloklar, tur, sira) values (${m(c.id)}, ${j(c.alanlar)}, ${m(c.baslik)}, ${m(c.kisa)}, ${m(c.saat)}, ${j(c.tekrar)}, ${j(c.bloklar.map(({ dosya: _d, ...b }) => b))}, ${m(c.tur)}, ${(i + 1) * 10}) on conflict (id) do nothing;`,
+    `insert into public.icerik_kart (id, alanlar, baslik, kisa, saat, hatirlatma, tekrar, bloklar, tur, sira) values (${m(c.id)}, ${j(c.alanlar)}, ${m(c.baslik)}, ${m(c.kisa)}, ${m(c.saat)}, ${m(hatirlatmaYaz(c.hatirlatma ?? null))}, ${j(c.tekrar)}, ${j(c.bloklar.map(({ dosya: _d, ...b }) => b))}, ${m(c.tur)}, ${(i + 1) * 10}) on conflict (id) do nothing;`,
   ),
 );
 satirlar.push('');

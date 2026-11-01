@@ -11,6 +11,8 @@ import {
   kartSirasi,
   kartZamanMetni,
   karttanIcerik,
+  oneriKartBul,
+  oneriKartIcerigi,
   oneriler,
   onerdenProgram,
   programBagCoz,
@@ -23,6 +25,7 @@ import {
   uygulamaOzeti,
   VIDEO_TALIMATI,
   yildizMetni,
+  type Oneri,
   type Program,
   type ProgramKarti,
 } from '../program';
@@ -248,12 +251,17 @@ describe('ilerleme ve gelişim', () => {
 });
 
 describe('Rites önerileri', () => {
-  it('çok kartlı hazır paket bir öneri programı (P-79: tek kartlılar alışkanlık önerisi); kopyası hazır program', () => {
-    expect(oneriler().length).toBe(
-      ALANLAR.reduce((t, a) => t + a.paketler.filter((p) => p.etkinlikler.length > 1).length, 0),
-    );
-    const o = oneriler().find((x) => x.id === 'ph1')!;
-    expect(o.sure).toBe(28);
+  it('P-81: hazır öneri programı yok; bir öneri programının kopyası hazır program', () => {
+    expect(oneriler()).toEqual([]);
+    expect(ALANLAR.every((a) => a.paketler.length === 0)).toBe(true);
+    const o: Oneri = {
+      id: 'ornek',
+      alanlar: ['hareket'],
+      ad: 'Sabah hareketi',
+      aciklama: '',
+      sure: 28,
+      kartlar: [oneriKartIcerigi(oneriKartBul('h3')!), oneriKartIcerigi(oneriKartBul('h2')!, 0, 1)],
+    };
     const { program: p, kartlar } = onerdenProgram(o, kimlik, '2026-10-20T10:00:00Z');
     expect(p).toMatchObject({
       ad: 'Sabah hareketi',
@@ -263,11 +271,11 @@ describe('Rites önerileri', () => {
       sure: 28,
     });
     expect(kartlar.map((k) => [k.baslik, k.programId, k.gun])).toEqual([
-      ['Sabah esnemesi', p.id, 0],
-      ['Tai chi, 8 hareket', p.id, 0],
+      ['Yürüyüş', p.id, 0],
+      ['Sabah 10 dk tai chi', p.id, 0],
     ]);
-    // P-79: talimat açıklamaya taşınır; öneri kartı saatsiz.
-    expect(kartlar[1]!.bloklar.map((b) => b.tur)).toEqual(['video']);
+    // P-81: yönerge açıklamada; öneri kartı saatsiz.
+    expect(kartlar[1]!.bloklar.map((b) => b.tur)).toEqual(['video', 'sayac']);
     expect(kartlar[1]!.kisa).toBe(VIDEO_TALIMATI);
     expect(kartlar[1]!.saat).toBeNull();
   });

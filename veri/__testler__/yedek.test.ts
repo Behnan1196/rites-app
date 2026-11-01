@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { yeniKart } from '@/mantik/kart';
-import { oneriler, onerdenProgram } from '@/mantik/program';
+import { oneriKartBul, oneriKartIcerigi, onerdenProgram, type Oneri } from '@/mantik/program';
 
 import { animsaticiEkle, animsaticilariOku } from '../animsaticilar';
 import { ayarOku, ayarYaz } from '../ayar';
@@ -14,6 +14,17 @@ import { ozelAlanEkle, ozelAlanlariOku, programAjandaKartlari, programBaslat, pr
 import { yedegiYaz, yedekVerisi } from '../yedek';
 import { yayinOlustur } from '../yayin';
 import { sqljsVeriTabani } from './sqljsVeriTabani';
+
+/** P-81: katalogda hazır öneri programı kalmadı; denemeler için öneri kartlarından bir program. */
+const ornekOneri = (): Oneri => ({
+  id: 'ornek',
+  alanlar: ['hareket'],
+  ad: 'Sabah hareketi',
+  aciklama: '',
+  sure: 28,
+  kartlar: [oneriKartIcerigi(oneriKartBul('h3')!), oneriKartIcerigi(oneriKartBul('h2')!, 0, 1)],
+});
+
 
 const BUGUN = '2026-10-13';
 let n = 0;
@@ -37,7 +48,7 @@ describe('yedek (gerçek SQLite)', () => {
     );
     await kayitDegistir(a.kapi, 'k1', BUGUN, (k) => ({ ...k, yapildi: true }));
     await notEkle(a.kapi, { id: 'n1', metin: 'Ekmek al' });
-    const { program, kartlar } = onerdenProgram(oneriler()[0]!, id, '2026-10-13T00:00:00Z');
+    const { program, kartlar } = onerdenProgram(ornekOneri(), id, '2026-10-13T00:00:00Z');
     await programKur(a.kapi, program, kartlar);
     await programBaslat(a.kapi, program.id, BUGUN, BUGUN, id);
     await ozelAlanEkle(a.kapi, 'Bahçe', '', id);

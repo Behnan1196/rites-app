@@ -397,7 +397,7 @@ export function oneriKartIcerigi(c: KatalogKart, gun = 0, sira = 0): Omit<Progra
     baslik: c.baslik,
     kisa: c.kisa,
     saat: c.saat,
-    hatirlatma: null,
+    hatirlatma: c.hatirlatma ?? null,
     alarm: false,
     tekrar: tekrarKopyasi(c.tekrar),
     bloklar: c.bloklar.map((b) => ({ ...b, maddeler: [...b.maddeler] })),

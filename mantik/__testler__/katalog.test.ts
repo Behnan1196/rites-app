@@ -106,7 +106,7 @@ describe('şu anki katalog', () => {
     const g = gomuluKatalog();
     expect(g.alanlar.length).toBe(9);
     expect(katalogCoz(JSON.parse(JSON.stringify(g)))).toEqual(g); // kendi biçimini okur
-    expect(oneriKartBul('b1')).toMatchObject({ baslik: 'Su', alanlar: ['beslenme'], tur: 'Ölçüm' });
+    expect(oneriKartBul('b1')).toMatchObject({ baslik: 'Günde 8 bardak su', alanlar: ['beslenme'], tur: 'Ölçüm' });
     expect(varsayilanAcikMi('ogrenme')).toBe(false);
   });
   it('indirilen katalog alanları ve önerileri değiştirir; kalkan alan adıyla bulunur', () => {
@@ -132,20 +132,45 @@ describe('şu anki katalog', () => {
   });
 });
 
-describe('Sade öneriler (P-79)', () => {
-  it('tek kartlı program alışkanlık önerisi; kartlar saatsiz; talimat açıklamaya', () => {
-    const g = gomuluKatalog();
-    const s = sadeKatalog(g);
-    expect(s.programlar.every((p) => p.kartlar.length > 1)).toBe(true);
+describe('Sade öneriler (P-79, P-81)', () => {
+  it('öneriler: program yok, süre yok; saat yalnız işin kendisiyse; hatırlatma kartla gelir', () => {
+    const s = sadeKatalog(gomuluKatalog());
+    expect(s.programlar).toEqual([]);
+    expect(s.kartlar.every((c) => !c.tekrar || c.tekrar.gunSayisi === null)).toBe(true);
+    expect(s.kartlar.filter((c) => c.saat).map((c) => [c.id, c.saat])).toEqual([
+      ['u2', '23:00'],
+      ['i1', '19:00'],
+    ]);
+    expect(s.kartlar.find((c) => c.id === 'u2')!.hatirlatma).toEqual({ gunOnce: 0, saat: '22:30' });
     const su = s.kartlar.find((c) => c.id === 'b1')!;
-    const suProgrami = g.programlar.find((p) => p.kartlar.length === 1 && p.kartlar[0]!.kart === 'b1')!;
-    expect(su.sure).toBe(suProgrami.sure);
-    expect(su.tekrar?.gunSayisi).toBe(suProgrami.sure);
-    expect(s.kartlar.every((c) => c.saat === null)).toBe(true);
-    const bilgi = s.kartlar.find((c) => c.id === 'b2')!;
-    expect(bilgi.bloklar.some((b) => b.tur === 'talimat')).toBe(false);
-    expect(bilgi.kisa).not.toBe('');
-    // Programda olmayan kartın süresi yok.
-    expect(s.kartlar.find((c) => c.id === 'h4')!.sure).toBeUndefined();
+    expect(su.baslik).toBe('Günde 8 bardak su');
+    expect(su.bloklar.map((b) => [b.tur, b.birim, b.dakika])).toEqual([['adet', 'bardak', 8]]);
+    expect(s.kartlar.find((c) => c.id === 'a1')!.bloklar.map((b) => b.tur)).toEqual(['gunnot']);
+    expect(s.kartlar.find((c) => c.id === 'h2')!.bloklar.map((b) => b.tur)).toEqual(['video', 'sayac']);
+    expect(s.kartlar.some((c) => c.bloklar.some((b) => b.tur === 'talimat'))).toBe(false);
+    expect(s.kartlar.length).toBe(18);
+  });
+  it('sunucudan eski içerik gelirse: talimat açıklamaya, tek kartlı program gösterilmez', () => {
+    const ham = katalogCoz({
+      alanlar: [{ anahtar: 'beslenme', ad: 'Beslenme' }],
+      kartlar: [
+        { id: 'x', baslik: 'Sebze', bloklar: [{ tur: 'talimat', metin: 'Yarısı sebze.' }], hatirlatma: '15dk' },
+        { id: 'y', baslik: 'Su', bloklar: [] },
+      ],
+      programlar: [
+        { id: 'p1', ad: 'Tek', kartlar: [{ kart: 'x', gun: 0 }] },
+        {
+          id: 'p2',
+          ad: 'İki',
+          kartlar: [
+            { kart: 'x', gun: 0 },
+            { kart: 'y', gun: 0 },
+          ],
+        },
+      ],
+    })!;
+    const s = sadeKatalog(ham);
+    expect(s.kartlar[0]).toMatchObject({ kisa: 'Yarısı sebze.', bloklar: [], hatirlatma: '15dk' });
+    expect(s.programlar.map((p) => p.id)).toEqual(['p2']);
   });
 });

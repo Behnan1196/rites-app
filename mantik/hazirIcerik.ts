@@ -4,7 +4,7 @@
 // kataloğun ilk içeriği de buradan üretilir (`sunucu/icerik-uret.ts`).
 
 import type { KartCesidi, KatalogBlogu } from './katalog';
-import type { Tekrar } from './kart';
+import type { Hatirlatma, Tekrar } from './kart';
 import type { GunKisa } from './tarih';
 
 /** Etkinliğin bloğu: plan başlatılınca kartın blokları buna göre kurulur. */
@@ -21,9 +21,15 @@ export interface Etkinlik {
   id: string;
   baslik: string;
   tekrar: Tekrar;
-  saat: string;
-  blok: EtkinlikBlogu;
-  /** Kütüphanem'deki türü; yoksa bloklardan tahmin edilir. */
+  /** P-81: yalnız saat işin kendisiyse ("23:00'te yat"); yoksa null (saat kişinin seçimi). */
+  saat: string | null;
+  /** P-81: parçalar; yalnız Yaptım yetiyorsa yok. */
+  bloklar: readonly EtkinlikBlogu[];
+  /** P-81: kısa açıklama (talimat parçası yerine). */
+  kisa?: string;
+  /** P-81: kartla gelen hatırlatma ("23:00'te yat": 22:30'da). */
+  hatirlatma?: Hatirlatma | null;
+  /** Kütüphanem'deki türü; yoksa bloklardan tahmin edilir (P-79'dan beri gösterilmez). */
   tur?: 'Tarif' | 'Egzersiz' | 'Bilgi' | 'Ölçüm' | 'Rutin' | 'Diğer';
 }
 
@@ -50,26 +56,26 @@ const herGun: Tekrar = { gunSayisi: null, gunler: null, desen: 'hergun' };
 const haftaIci: Tekrar = { gunSayisi: null, gunler: null, desen: 'haftaici' };
 const gunler = (...g: GunKisa[]): Tekrar => ({ gunSayisi: null, gunler: g, desen: null });
 
-const TURU: Record<string, Etkinlik['tur']> = {
-  h1: 'Egzersiz',
-  h3: 'Egzersiz',
-  h4: 'Egzersiz',
-  z1: 'Rutin',
-  a1: 'Rutin',
-  a2: 'Rutin',
-  o1: 'Rutin',
-  i2: 'Egzersiz',
-  g1: 'Rutin',
-  g2: 'Rutin',
-};
-
-const e = (id: string, baslik: string, tekrar: Tekrar, saat: string, blok: EtkinlikBlogu): Etkinlik => ({
+/**
+ * P-81 (1 Kasım): öneri kartları senaryoya göre yeniden: tek iş, süre yok, saat yalnız işin
+ * kendisiyse; Yaptım yetiyorsa parça yok. Hazır öneri programı yok (program kişinin kartlarından
+ * sonra kurulur). Kimlikler korunur (kişinin gizlediği öneriler kaybolmasın); çıkanlar: h1 (tai
+ * chi'ye katıldı), b2, u1 (23:00'te yat'a katıldı), i2, g2. Yeni: b4 (Balık ye).
+ */
+const e = (
+  id: string,
+  baslik: string,
+  tekrar: Tekrar,
+  bloklar: readonly EtkinlikBlogu[] = [],
+  ek: Pick<Etkinlik, 'kisa' | 'saat' | 'hatirlatma'> | Partial<Pick<Etkinlik, 'kisa' | 'saat' | 'hatirlatma'>> = {},
+): Etkinlik => ({
   id,
   baslik,
   tekrar,
-  saat,
-  blok,
-  tur: TURU[id],
+  bloklar,
+  saat: ek.saat ?? null,
+  kisa: ek.kisa,
+  hatirlatma: ek.hatirlatma ?? null,
 });
 
 export const ALANLAR: readonly HazirAlan[] = [
@@ -79,25 +85,13 @@ export const ALANLAR: readonly HazirAlan[] = [
     ad: 'Hareket',
     aciklama: 'Esneme, yürüyüş, güç',
     etkinlikler: [
-      e('h1', 'Sabah esnemesi', herGun, '07:30', { tur: 'sayac', dakika: 10 }),
-      e('h2', 'Tai chi, 8 hareket', herGun, '07:45', { tur: 'video' }),
-      e('h3', 'Yürüyüş', gunler('Pzt', 'Çar', 'Cum'), '18:00', { tur: 'sayac', dakika: 30 }),
-      e('h4', 'Direnç egzersizi', gunler('Sal', 'Per', 'Cmt'), '18:00', {
-        tur: 'olcum',
-        ad: 'Tekrar sayısı',
-        birim: 'tekrar',
+      e('h2', 'Sabah 10 dk tai chi', herGun, [{ tur: 'video' }, { tur: 'sayac', dakika: 10 }], {
+        kisa: 'Videoyu açıp birlikte uygula.',
       }),
+      e('h3', 'Yürüyüş', gunler('Pzt', 'Çar', 'Cum'), [{ tur: 'sayac', dakika: 30 }]),
+      e('h4', 'Direnç egzersizi', gunler('Sal', 'Cum'), [{ tur: 'olcum', ad: 'Tekrar sayısı', birim: 'tekrar' }]),
     ],
-    paketler: [
-      {
-        id: 'ph1',
-        ad: 'Sabah hareketi',
-        hafta: 4,
-        aciklama: 'Her sabah esneme ve tai chi.',
-        etkinlikler: ['h1', 'h2'],
-      },
-      { id: 'ph2', ad: 'Yürüyüşe başla', hafta: 6, aciklama: 'Haftada üç gün 30 dakika yürüyüş.', etkinlikler: ['h3'] },
-    ],
+    paketler: [],
   },
   {
     anahtar: 'beslenme',
@@ -105,17 +99,11 @@ export const ALANLAR: readonly HazirAlan[] = [
     ad: 'Beslenme',
     aciklama: 'Öğün düzeni, su',
     etkinlikler: [
-      e('b1', 'Su', herGun, '09:00', { tur: 'adet', ad: 'İçilen su', birim: 'bardak', hedef: 8 }),
-      e('b2', 'Öğlene bir tabak sebze', herGun, '13:00', {
-        tur: 'talimat',
-        metin: 'Öğle yemeğinde tabağın yarısı sebze olsun.',
-      }),
-      e('b3', 'Akşam 20:00’den sonra yeme', herGun, '20:00', {
-        tur: 'talimat',
-        metin: 'Akşam yemeğini 20:00’den önce bitir.',
-      }),
+      e('b1', 'Günde 8 bardak su', herGun, [{ tur: 'adet', ad: 'Su', birim: 'bardak', hedef: 8 }]),
+      e('b4', 'Balık ye', gunler('Sal', 'Cum'), [], { kisa: 'Haftada en az iki kez.' }),
+      e('b3', 'Akşam 20:00’den sonra yeme', herGun, [], { kisa: 'Akşam yemeğini 20:00’den önce bitir.' }),
     ],
-    paketler: [{ id: 'pb1', ad: 'Su alışkanlığı', hafta: 3, aciklama: 'Her gün 8 bardak su.', etkinlikler: ['b1'] }],
+    paketler: [],
   },
   {
     anahtar: 'uyku',
@@ -123,41 +111,22 @@ export const ALANLAR: readonly HazirAlan[] = [
     ad: 'Uyku',
     aciklama: 'Düzenli ve yeterli uyku',
     etkinlikler: [
-      e('u1', 'Ekranı kapat', herGun, '22:30', {
-        tur: 'talimat',
-        metin: 'Telefonu ve televizyonu kapat, ışıkları kıs.',
+      e('u2', '23:00’te yat', herGun, [], {
+        saat: '23:00',
+        hatirlatma: { gunOnce: 0, saat: '22:30' },
+        kisa: 'Yarım saat önce ekranı kapat, ışıkları kıs.',
       }),
-      e('u2', 'Aynı saatte yat', herGun, '23:00', { tur: 'talimat', metin: 'Her gün aynı saatte yatmaya çalış.' }),
-      e('u3', 'Kaç saat uyudum?', herGun, '07:00', { tur: 'olcum', ad: 'Uyku', birim: 'saat' }),
+      e('u3', 'Kaç saat uyudum?', herGun, [{ tur: 'olcum', ad: 'Uyku', birim: 'saat' }]),
     ],
-    paketler: [
-      {
-        id: 'pu1',
-        ad: 'Uyku düzeni',
-        hafta: 3,
-        aciklama: 'Ekranı kapat, aynı saatte yat, uykunu yaz.',
-        etkinlikler: ['u1', 'u2', 'u3'],
-      },
-    ],
+    paketler: [],
   },
   {
     anahtar: 'zihin',
     ikon: 'sunny-outline',
     ad: 'Zihin',
     aciklama: 'Sakinlik, dikkat, okuma',
-    etkinlikler: [
-      e('z1', 'Nefes egzersizi', herGun, '08:15', { tur: 'sayac', dakika: 10 }),
-      e('z2', 'Kitap okuma', herGun, '21:00', { tur: 'olcum', ad: 'Okunan sayfa', birim: 'sayfa' }),
-    ],
-    paketler: [
-      {
-        id: 'pz1',
-        ad: 'Günde 10 dakika nefes',
-        hafta: 3,
-        aciklama: 'Her sabah kısa bir nefes çalışması.',
-        etkinlikler: ['z1'],
-      },
-    ],
+    etkinlikler: [e('z1', '10 dk nefes', herGun, [{ tur: 'sayac', dakika: 10 }]), e('z2', 'Kitap oku', herGun)],
+    paketler: [],
   },
   {
     anahtar: 'anlam',
@@ -165,21 +134,12 @@ export const ALANLAR: readonly HazirAlan[] = [
     ad: 'Anlam',
     aciklama: 'Değerler, şükran',
     etkinlikler: [
-      e('a1', 'Şükran notu', herGun, '21:30', { tur: 'gunnot', soru: 'Bugün neye şükrediyorsun?' }),
-      e('a2', 'Haftanın değerlendirmesi', gunler('Paz'), '20:00', {
-        tur: 'gunnot',
-        soru: 'Bu hafta sana iyi gelen neydi, neyi değiştirmek istersin?',
-      }),
+      e('a1', 'Şükran notu', herGun, [{ tur: 'gunnot', soru: 'Bugün neye şükrediyorsun?' }]),
+      e('a2', 'Haftanın değerlendirmesi', gunler('Paz'), [
+        { tur: 'gunnot', soru: 'Bu hafta sana iyi gelen neydi, neyi değiştirmek istersin?' },
+      ]),
     ],
-    paketler: [
-      {
-        id: 'pa1',
-        ad: 'Şükran defteri',
-        hafta: 4,
-        aciklama: 'Her akşam şükrettiğin bir şeyi yaz.',
-        etkinlikler: ['a1'],
-      },
-    ],
+    paketler: [],
   },
   {
     anahtar: 'sosyal',
@@ -187,24 +147,10 @@ export const ALANLAR: readonly HazirAlan[] = [
     ad: 'Sosyal bağlar',
     aciklama: 'Aile, dostlar, çevre',
     etkinlikler: [
-      e('s1', 'Bir yakınını ara', gunler('Pzt', 'Per'), '19:00', {
-        tur: 'talimat',
-        metin: 'Bir süredir konuşmadığın birini ara.',
-      }),
-      e('s2', 'Haftalık buluşma', gunler('Cmt'), '15:00', {
-        tur: 'talimat',
-        metin: 'Bir dostunla ya da ailenle yüz yüze buluş.',
-      }),
+      e('s1', 'Bir yakınını ara', gunler('Pzt', 'Per'), [], { kisa: 'Bir süredir konuşmadığın birini ara.' }),
+      e('s2', 'Haftalık buluşma', gunler('Cmt'), [], { kisa: 'Bir dostunla ya da ailenle yüz yüze buluş.' }),
     ],
-    paketler: [
-      {
-        id: 'ps1',
-        ad: 'Haftada iki arama',
-        hafta: 4,
-        aciklama: 'Yakınlarınla bağını sıcak tut.',
-        etkinlikler: ['s1'],
-      },
-    ],
+    paketler: [],
   },
   {
     anahtar: 'ogrenme',
@@ -212,18 +158,10 @@ export const ALANLAR: readonly HazirAlan[] = [
     ad: 'Öğrenme',
     aciklama: 'Dil, beceri, sınav',
     etkinlikler: [
-      e('o1', 'İngilizce', herGun, '20:30', { tur: 'sayac', dakika: 20 }),
-      e('o2', 'Yeni bir beceri', gunler('Cmt'), '17:00', { tur: 'video' }),
+      e('o1', '20 dk İngilizce', herGun, [{ tur: 'sayac', dakika: 20 }]),
+      e('o2', 'Yeni bir beceri', gunler('Cmt'), [{ tur: 'video' }], { kisa: 'Videoyu açıp birlikte uygula.' }),
     ],
-    paketler: [
-      {
-        id: 'po1',
-        ad: 'Her gün 20 dakika İngilizce',
-        hafta: 8,
-        aciklama: 'Kısa ama her gün.',
-        etkinlikler: ['o1'],
-      },
-    ],
+    paketler: [],
   },
   {
     anahtar: 'is',
@@ -231,40 +169,20 @@ export const ALANLAR: readonly HazirAlan[] = [
     ad: 'İş',
     aciklama: 'Çalışma hayatı ve denge',
     etkinlikler: [
-      e('i1', 'Mesai sonrası ekranı kapat', haftaIci, '19:00', {
-        tur: 'talimat',
-        metin: 'İş e-postalarını ve mesajlarını yarına bırak.',
+      e('i1', 'Mesai sonrası ekranı kapat', haftaIci, [], {
+        saat: '19:00',
+        kisa: 'İş e-postalarını ve mesajlarını yarına bırak.',
       }),
-      e('i2', 'Öğle arası kısa yürüyüş', haftaIci, '12:30', { tur: 'sayac', dakika: 15 }),
     ],
-    paketler: [
-      {
-        id: 'pi1',
-        ad: 'İşi işte bırak',
-        hafta: 4,
-        aciklama: 'Mesai sonrası ekran molası.',
-        etkinlikler: ['i1'],
-      },
-    ],
+    paketler: [],
   },
   {
     anahtar: 'ugras',
     ikon: 'color-palette-outline',
     ad: 'Uğraşlar',
     aciklama: 'Hobiler, yaratıcı işler',
-    etkinlikler: [
-      e('g1', 'Gitar', herGun, '20:00', { tur: 'sayac', dakika: 20 }),
-      e('g2', 'Resim', gunler('Cmt'), '11:00', { tur: 'sayac', dakika: 60 }),
-    ],
-    paketler: [
-      {
-        id: 'pg1',
-        ad: 'Her gün 20 dakika gitar',
-        hafta: 6,
-        aciklama: 'Kısa ama her gün.',
-        etkinlikler: ['g1'],
-      },
-    ],
+    etkinlikler: [e('g1', '20 dk gitar', herGun, [{ tur: 'sayac', dakika: 20 }])],
+    paketler: [],
   },
 ];
 
