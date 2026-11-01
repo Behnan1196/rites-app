@@ -706,3 +706,5 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
   - **Günlük kontrol:** her gün baştan (yalnız tekrarlı kartta; tekrarlıda varsayılan).
   - **Bilgi listesi:** işaretsiz madde listesi (malzemeler, hatırlanacaklar).
   - **Listelerimden:** alışveriş gibi listeler Giriş → Listeler'de durur; kart yalnız ona bağlanır. Kartta listenin adı ve özeti ("3 alınacak"), dokununca liste açılır. Liste silinirse "… artık yok". — Ürün sahibi (P-83); adlar ve varsayılanlar: Öneri
+- **Açıklama da sade başlıklı (P-84):** simge ve ⋯ yok; "Açıklama ⌄", dokununca menüsü (Karttan kaldır, değişebilir). Aa (biçimlendirme) yalnız yazarken görünür. — Ürün sahibi (P-84); ayrıntı: Öneri
+- **"+ Ekle" ile açılan şeridin sonunda Kapat (×)** (P-84); eklenecek parça kalmayınca "+ Ekle" görünmez. — Ürün sahibi (P-84); ikinci kısım: Öneri

@@ -430,3 +430,8 @@ Sonuç: → kararlar.md (Öneri önce ajandaya)
 Ne dedi: "Karttaki zaman ve bileşenlerin yerleşimi konusunda önerin nedir, yeni alan ekleme konusunda alttaki şerit bence normal kullanıcı için gereksiz oldu gibi, eğer ilk kayıtta başlık ve açıklama geliyorsa, bir tek liste eklemek için bir şeride gerek yok, hmm bu arada ajanda kartında listenin kullanım ihtiyaçlarını ve çeşitlerini de irdeleyelim." Seçimler: zaman tek sessiz satır; kartın sonunda "+ Ekle"; sade parça başlıkları (Kur ⋯ menüsüne); listede Adımlar, Günlük kontrol, Bilgi listesi, Listeler'den bağla.
 Nerede: Kart görünümü ve Kur
 Sonuç: → kararlar.md (Kart yerleşimi sadeleşti; listenin dört kullanımı)
+
+### P-84 · 1 Kasım 2026 · Behnan
+Ne dedi: "Sadelik güzel olmaya başladı. Sanırım Açıklama eskide kaldı, onu da uyarlayalım. Bir de +Ekle dediğimde gelen şeridi kapayamıyoruz"
+Nerede: Kart görünümü ve Kur
+Sonuç: → kararlar.md (Açıklama da sade başlıklı; şeritte Kapat)

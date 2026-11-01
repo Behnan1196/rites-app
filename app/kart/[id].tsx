@@ -249,6 +249,11 @@ export default function KartGorunumu() {
   // P-38: tek yerleşim: önce "Ne yapacaksın" (talimat, video, liste, zamanlayıcı…), sonra o günün kaydı.
   const yapilacaklar = bloklar.filter((b) => !BLOK_TURLERI[b.tur].kayit || ARAC_BLOKLARI.includes(b.tur));
   const kaydedilecekler = bloklar.filter((b) => BLOK_TURLERI[b.tur].kayit && !ARAC_BLOKLARI.includes(b.tur));
+  const eklenecek = seritOgeleri({
+    aciklamaVar: aciklamaVarMi(kart.kisa) || aciklamaYaziliyor || !aciklamaDegisir(kart),
+    uzman,
+    mevcut: bloklar.map((b) => b.tur),
+  });
   const kayitDegis = (degistir: (k: Kayit) => Kayit) => void kayitDegistir(kapi, kart.id, gun, degistir);
 
   return (
@@ -430,15 +435,11 @@ export default function KartGorunumu() {
               ),
           )}
           {/* P-83: alttaki sabit şerit yerine kartın sonunda "+ Ekle"; dokununca parça seçenekleri. */}
-          {duzenlenir && (
+          {duzenlenir && (eklenecek.ogeler.length > 0 || eklenecek.daha) && (
             <View style={[stiller.bolum, stiller.cizgili, stiller.ekleAlani]}>
               {ekleAcik ? (
                 <ParcaSeridi
-                  {...seritOgeleri({
-                    aciklamaVar: aciklamaVarMi(kart.kisa) || aciklamaYaziliyor || !aciklamaDegisir(kart),
-                    uzman,
-                    mevcut: bloklar.map((b) => b.tur),
-                  })}
+                  {...eklenecek}
                   onSec={(o) => {
                     setEkleAcik(false);
                     void parcaEkle(o);
@@ -447,6 +448,7 @@ export default function KartGorunumu() {
                     setEkleAcik(false);
                     setSeciciAcik(true);
                   }}
+                  onKapat={() => setEkleAcik(false)}
                 />
               ) : (
                 <Pressable

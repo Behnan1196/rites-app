@@ -26,11 +26,14 @@ export function ParcaSeridi({
   daha,
   onSec,
   onDaha,
+  onKapat,
 }: {
   ogeler: readonly SeritOgesi[];
   daha: boolean;
   onSec: (o: SeritOgesi) => void;
   onDaha: () => void;
+  /** P-84: "+ Ekle" ile açılan şerit kapanır. */
+  onKapat?: () => void;
 }) {
   if (ogeler.length === 0 && !daha) return null;
   const dugme = (
@@ -75,6 +78,7 @@ export function ParcaSeridi({
         return dugme(o, b.ad, b.ikon, () => onSec(o), `${b.ad} ekle`);
       })}
       {daha && dugme('daha', 'Daha', 'ellipsis-horizontal', onDaha, 'Daha fazla parça')}
+      {onKapat && dugme('kapat', 'Kapat', 'close', onKapat, 'Kapat, bir şey ekleme')}
     </View>
   );
 }

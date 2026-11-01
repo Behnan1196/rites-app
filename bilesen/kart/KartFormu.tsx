@@ -399,6 +399,13 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   const cesitSorusu = cesitSorusuAcik && (uzman || hedef.tur === 'sablon');
   const secHaric: BlokTuru[] = tasarim ? ['foto', 'dosya'] : [];
   const cokGunlu = durum.zamanlama.tekrar !== null;
+  const eklenecek = seritOgeleri({
+    aciklamaVar,
+    aciklamaOlur: !tasarim,
+    uzman,
+    haric: secHaric,
+    mevcut: durum.bloklar.map((b) => b.tur),
+  });
   /** Bu formda eklenen, davranışı kişinin seçmediği listeler: süreye göre (bir gün → kalır). */
   const [alinanPaylasilanlar, setAlinanPaylasilanlar] = useState<readonly string[]>([]);
   const [otomatikListeler, setOtomatikListeler] = useState<ReadonlySet<string>>(new Set());
@@ -866,7 +873,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
             </>
 
             {/* P-68: "+ Karta ekle" yerine kartın altında ikon şeridi. P-83: önce yalnız "+ Ekle". */}
-            {!parca && !ekleAcik && (
+            {!parca && !ekleAcik && (eklenecek.ogeler.length > 0 || eklenecek.daha) && (
               <Pressable
                 onPress={() => {
                   Keyboard.dismiss();
@@ -885,13 +892,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
             )}
             {!parca && ekleAcik && (
               <ParcaSeridi
-                {...seritOgeleri({
-                  aciklamaVar,
-                  aciklamaOlur: !tasarim,
-                  uzman,
-                  haric: secHaric,
-                  mevcut: durum.bloklar.map((b) => b.tur),
-                })}
+                {...eklenecek}
                 onSec={(o) => {
                   setEkleAcik(false);
                   parcaEkle(o);
@@ -901,6 +902,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
                   setEkleAcik(false);
                   setBlokSeciciAcik(true);
                 }}
+                onKapat={() => setEkleAcik(false)}
               />
             )}
 

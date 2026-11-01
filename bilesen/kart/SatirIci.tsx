@@ -10,7 +10,6 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { metinDoluMu } from '@/mantik/zenginMetin';
 
-import { SimgeDugmesi } from '../SimgeDugmesi';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
 import { ZenginMetin, ZenginMetinAlani } from '../ZenginMetin';
@@ -229,10 +228,29 @@ export function AciklamaAlani({
   return (
     <View style={stiller.aciklama}>
       <View style={stiller.aciklamaUst}>
-        <Ionicons name="reader-outline" size={20} color={renk.ana} />
-        <Yazi kalinlik="kalin" style={stiller.esnek}>
-          Açıklama
-        </Yazi>
+        {/* P-84: öbür parçalar gibi sade başlık: "Açıklama ⌄"; dokununca menü. Aa yalnız yazarken. */}
+        <Pressable
+          onPress={
+            onMenu
+              ? () => {
+                  // Menüden önce yazılan kaydedilir (kaldırınca geri gelmesin).
+                  if (duzenleRef.current) kapat();
+                  onMenu();
+                }
+              : undefined
+          }
+          disabled={!onMenu}
+          accessibilityRole={onMenu ? 'button' : 'header'}
+          accessibilityLabel={onMenu ? 'Açıklama: seçenekler' : 'Açıklama'}
+          hitSlop={6}
+          style={({ pressed }) => [stiller.aciklamaAdi, pressed && { opacity: 0.6 }]}
+        >
+          <Yazi kalinlik="kalin" renk={renk.ikincil} numberOfLines={1}>
+            Açıklama
+          </Yazi>
+          {!!onMenu && <Ionicons name="chevron-down" size={16} color={renk.soluk} />}
+        </Pressable>
+        <View style={stiller.esnek} />
         {!degisir && (
           <Ionicons
             name="lock-closed-outline"
@@ -241,7 +259,7 @@ export function AciklamaAlani({
             accessibilityLabel="Kart açıkken değiştirilemez"
           />
         )}
-        {degisir && (
+        {degisir && duzenle && (
           <Pressable
             onPress={() => {
               // Editörden çıkış sayılmasın: çubuk açılır, editör açık kalır.
@@ -261,17 +279,6 @@ export function AciklamaAlani({
               Aa
             </Yazi>
           </Pressable>
-        )}
-        {onMenu && (
-          <SimgeDugmesi
-            ikon="ellipsis-horizontal"
-            etiket="Açıklama: seçenekler"
-            onPress={() => {
-              // Menüden önce yazılan kaydedilir (kaldırınca geri gelmesin).
-              if (duzenleRef.current) kapat();
-              onMenu();
-            }}
-          />
         )}
       </View>
       {duzenle ? (
@@ -345,7 +352,8 @@ const stiller = StyleSheet.create({
   },
   dokun: { minHeight: 32, justifyContent: 'center', alignItems: 'flex-start' },
   aciklama: { gap: 6 },
-  aciklamaUst: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  aciklamaUst: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 },
+  aciklamaAdi: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32 },
   esnek: { flex: 1 },
   aa: {
     minWidth: 44,
