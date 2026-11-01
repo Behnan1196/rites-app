@@ -420,3 +420,8 @@ Sonuç: → kararlar.md (Video eklerken Gelenler; Instagram'da aç)
 Ne dedi: "Kart görünümünün sade durması için önce kullanım senaryolarına göre düşünebiliriz … yeni bir kullanıcı Rites önerilerine bakar, kendi ihtiyaçlarına göre ajandaya aktararak bir genel program oluşturabilir: günde 6-8 bardak su, sabah 10 dk tai chi, haftada en az 2 kez balık, saat 11'de yatmayı alışkanlık haline getirmek … su iç kartımız yeterli değil, su sayacı şeklinde olmalı; şükran kartı başka alan olmadan sade bir kart olmalı. Rites önerilerini gözden geçirip sırayla en uygun kartları yaratmalı … Kartın tepesine tarih yazmamıza gerek olmayabilir … altta bileşenleri ve bildirimi içeren şerit bottom-nav'a benziyor ve yanıltıcı … Kart yerleşimini ayrıca konuşacağız." Kararlar: süre yok, tek tek ajandaya; haftada N kez şimdilik yok; öneriler kart kart (sebze ve resim çıktı, programlar kalktı).
 Nerede: Rites önerileri, kart görünümü
 Sonuç: → kararlar.md (Senaryo: kendi düzenini kurmak; öneriler kart kart)
+
+### P-82 · 1 Kasım 2026 · Behnan
+Ne dedi: "Rites önerilerinden Günde 8 bardak suyu açtım, dediğim gibi önce bunu ajandama eklemek istiyorum, bir program yapmak zorunda değilim. Seçenekler Alışkanlık olarak ekle, Programa ekle. Şu an alışkanlık değil, ajandama ekleyip süreyi de 1 hafta vereceğim ve kullanacağım."
+Nerede: Rites önerileri → öneri ekranı
+Sonuç: → kararlar.md (Öneri önce ajandaya)

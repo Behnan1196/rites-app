@@ -689,3 +689,8 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Sunucu:** `icerik_kart.hatirlatma` sütunu; içerik `sunucu/guncelleme-p81.sql` ile yenilenir (Supabase → SQL Editor). Uygulama sütun olmadan da katalogu indirir. — Not
 - **Kartın tepesi (tarih, saat) ve alttaki şerit** (bottom-nav'a benziyor, yanıltıcı): kart yerleşimiyle birlikte konuşulacak. — Not
 - **Katalog sürümü:** uygulamanın katalog beklentisi değişince (`KATALOG_SURUMU`, şimdi 2) telefon 6 saat beklemeden yeni katalogu indirir (ilk açılışta). P-81 güncellemesinden sonra telefonda eski 22 öneri ve 2 program kalmıştı; sunucu doğruydu (18 kart, program yok), telefon saklı kataloğu 6 saat dolmadan yenilememişti. — Öneri
+
+## Öneri önce ajandaya (1 Kasım)
+
+- **Öneri ekranında ana düğme "Ajandama ekle":** öneri sıradan bir kart olarak bugünden, süresiz ajandaya girer ve kart hemen açılır (süresi, günleri, saati orada ayarlanır; "Öneri ‹" ile geri). "Programa ekle" ikinci düğme. "Alışkanlık olarak ekle" öneri ekranında yok; alışkanlık sonra kartın ⋯ menüsünden ("Alışkanlık olarak izle"). P-79'daki "tekrarlı öneri alışkanlık olarak eklenir" kararı bununla değişti. — Ürün sahibi (P-82); kartın hemen açılması: Öneri
+- Rites önerileri ekranındaki bölüm adı "Alışkanlık önerileri" → **Kartlar**; alt başlık "Ajandana ekleyip deneyebileceğin kartlar." — Öneri

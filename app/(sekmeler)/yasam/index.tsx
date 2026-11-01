@@ -184,7 +184,7 @@ export default function YasamTarzim() {
             </View>
             <View style={stiller.esnek}>
               <Yazi tur="kartBasligi">Rites önerileri</Yazi>
-              <Yazi tur="ikincil">Denemek isteyebileceğin programlar ve alışkanlıklar</Yazi>
+              <Yazi tur="ikincil">Ajandana ekleyip deneyebileceğin kartlar</Yazi>
             </View>
             <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
           </Pressable>

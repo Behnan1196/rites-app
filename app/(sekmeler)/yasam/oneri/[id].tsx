@@ -1,8 +1,9 @@
 // Rites önerisi (içerik kataloğundan; pilot 20 Ekim): program ya da kart.
 // Program: "Programlarıma ekle" (kopyası kişinin programı olur; öneri Kütüphanem'de
 // artık görünmez). Kart: "Bugün Ajandama ekle", "Programa ekle". İkisinde de
-// "Önerilerden gizle" / "Yeniden göster". P-79: tekrarlı öneri kartı "Alışkanlık olarak ekle"
-// (Giriş → Devam edenler'e düşer, ajandada görünmez); eski tür etiketi (Egzersiz, Bilgi…) yok.
+// "Önerilerden gizle" / "Yeniden göster". Eski tür etiketi (Egzersiz, Bilgi…) yok (P-79).
+// P-82 (1 Kasım): öneri önce sıradan kart olarak ajandaya girer ("Ajandama ekle"; alışkanlık ya da
+// program sonra, kartın ⋯ menüsünden); eklenince kart açılır, süresi ve günleri orada ayarlanır.
 
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -98,7 +99,7 @@ export default function OneriEkrani() {
           </Yazi>
           <Yazi tur="ikincil">
             {[
-              program ? 'Rites programı' : kart!.tekrar ? 'Alışkanlık önerisi' : 'Rites önerisi',
+              program ? 'Rites programı' : 'Rites önerisi',
               alanlarMetni(alanlar),
               program ? sureMetni(program.sure) : kart!.tekrar ? tekrarMetni(kart!.tekrar) : null,
             ]
@@ -141,17 +142,15 @@ export default function OneriEkrani() {
         <>
           <KartIcerigiGorunumu c={{ ...kart, hatirlatma: kart.hatirlatma ?? null }} />
           <Dugme
-            etiket={kart.tekrar ? 'Alışkanlık olarak ekle' : 'Bugün Ajandama ekle'}
+            etiket="Ajandama ekle"
             pasif={calisiyor}
             onPress={() =>
               void calistir(async () => {
                 const a = kutuphanedenKart({ ...kart, hatirlatma: kart.hatirlatma ?? null }, bugunGun, yeniKimlik);
-                // P-79: tekrarlıysa alışkanlık (Giriş → Devam edenler; ajandada görünmez).
-                const yeni = kart.tekrar ? { ...a.kart, aliskanlik: true } : a.kart;
-                await yeniKartKaydet(kapi, yeni, a.bloklar, yeniKimlik);
-                kisaMesaj(
-                  kart.tekrar ? `Alışkanlıklarına eklendi: ${kart.baslik}` : `Ajandama eklendi: ${kart.baslik}`,
-                );
+                await yeniKartKaydet(kapi, a.kart, a.bloklar, yeniKimlik);
+                kisaMesaj(`Ajandana eklendi: ${kart.baslik}`);
+                // Kart açılır: süresi, günleri, saati orada ayarlanır.
+                router.push({ pathname: '/kart/[id]', params: { id: a.kart.id, gun: bugunGun, geri: 'Öneri' } });
               })
             }
           />
@@ -163,8 +162,8 @@ export default function OneriEkrani() {
           />
           <Yazi tur="ikincil">
             {kart.tekrar
-              ? 'Bugünden başlar; Giriş → Devam edenler’de işaretlersin, gidişatını Alışkanlıklar’da görürsün. Eklediğin kopya senindir.'
-              : 'Ajandana ya da programına eklediğin kopya senindir; istediğin gibi değiştirirsin.'}
+              ? 'Bugünden başlar, süresiz. Eklediğin kart senindir: süresini, günlerini kartta değiştirirsin; istersen ⋯ menüsünden alışkanlık olarak izlersin.'
+              : 'Eklediğin kart senindir; istediğin gibi değiştirirsin.'}
           </Yazi>
         </>
       )}

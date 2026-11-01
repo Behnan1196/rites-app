@@ -1,7 +1,7 @@
 // Rites önerileri (pilot 31 Ekim, P-79): Kütüphanem'den ayrı. Yaşam Tarzım → Rites önerileri.
-// Programlar (çok kartlı öneri programları) ve Alışkanlık önerileri (eskiden tek kartlı
+// Programlar (çok kartlı öneri programları) ve Kartlar (P-82: ajandaya eklenir; eskiden tek kartlı
 // programlar; süreli, saatsiz). Alan süzgeci; gizlenen öneriler altta ayrı. Öneriye dokununca
-// öneri ekranı: "Programlarıma ekle" ya da "Alışkanlık olarak ekle".
+// öneri ekranı: "Programlarıma ekle" ya da "Ajandama ekle" (P-82).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
@@ -41,7 +41,7 @@ export default function Oneriler() {
     <EkranKabi
       geri="Yaşam Tarzım"
       baslik="Rites önerileri"
-      altBaslik="Denemek isteyebileceğin programlar ve alışkanlıklar. Eklediğin kopya senindir."
+      altBaslik="Ajandana ekleyip deneyebileceğin kartlar. Eklediğin kart senindir."
     >
       {alanlar.length > 1 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={stiller.cipler}>
@@ -74,7 +74,7 @@ export default function Oneriler() {
       {kartSonuc.length > 0 && (
         <>
           <Yazi tur="bolumBasligi" accessibilityRole="header">
-            {`Alışkanlık önerileri (${kartSonuc.length})`}
+            {`Kartlar (${kartSonuc.length})`}
           </Yazi>
           {kartSonuc.map((c) => {
             const meta = [alanlarMetni(c.alanlar), c.tekrar ? tekrarMetni(c.tekrar) : null].filter(Boolean).join(' · ');
