@@ -209,3 +209,9 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Yerel göç 26: `yerel_madde.yapildi_gun`; eski çeşitler `yapilacak`, miktarlar boş. `yerelListeleriOku` günlükte bugün işaretlenmeyeni kalan sayar (`date('now','localtime')`).
 - Sunucu: `guncelleme-p86.sql` (ve `sema.sql`): `liste_cesit_check` üç değer, `madde.yapildi_gun date`, `grant update (metin, yapildi_gun)`. `miktar` sütunları duruyor (kullanılmıyor).
 - Kartta düzeltme: `veri/kartlar.ts` `blokMaddesiYaz(kapi, blokId, i, yeni | null)`; Adımlar'da durum dizisinden silinen adım çıkar, Günlük listede o günün işareti de (`mantik/maddeDuzeltme.ts`). Ortak bileşen `bilesen/MaddeDuzeltici.tsx`.
+
+## Günlük ölçümler ve gidişat (P-87, 4 Kasım)
+
+- `mantik/olcumHazirlari.ts`: `COKLU_PARCALAR` (adet, olcum, puan: bir kartta birden çok), `OLCUM_HAZIRLARI`, `OLCUM_TURLERI`, `hazirKarttaMi`. `parcaSecimi`: şeritte `olcum` hep durur ("Ölçüm"); Daha yalnız öbür parçalar kalınca.
+- `bilesen/kart/OlcumSecici.tsx`: hazırlar + Kendin kur; kart görünümünde hazır hemen `blokEkle`, kendin kur `ParcaAyarSayfasi`; formda taslağa eklenir.
+- `mantik/gidisat.ts` `gidisatTablosu(bloklar, kayitlar, bugun, gunSayisi)`: sütunlar, satırlar (en yeni başta), hücre `{deger, yogunluk}`, son 7 gün ortalaması; değerler `kayit.degerler[blok.id]` ("7,5" de okunur). Ekran `app/kart/gidisat/[id].tsx` (sütun sığmazsa yana kayar).

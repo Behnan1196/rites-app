@@ -57,6 +57,7 @@ import { BlokDuzenleyici } from './BlokDuzenleyici';
 import { ElemanMenusu } from './ElemanMenusu';
 import { BLOK_TURLERI } from './blokTurleri';
 import { BlokSecici } from './BlokSecici';
+import { OlcumSecici } from './OlcumSecici';
 import { ParcaSeridi } from './ParcaSeridi';
 import { CesitSecici } from './CesitSecici';
 import { useUzman } from '../useUzman';
@@ -365,6 +366,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   // P-57: rozet → tarih ve saat; şerit → süre ya da hatırlatma.
   const [zamanBolum, setZamanBolum] = useState<ZamanBolumu | null>(null);
   const [ekleAcik, setEkleAcik] = useState(false);
+  const [olcumSecici, setOlcumSecici] = useState(false);
   // P-72: kart görünümündeki şeritten "Daha" Kur'u seçici açık gelir.
   const [blokSeciciAcik, setBlokSeciciAcik] = useState(hedef.tur === 'duzenle' && !!hedef.blokEkle);
   // P-36: yeni kartta "Karta bir şey ekle" kapalı gelir (kartların çoğu başlık ve zamandan ibaret).
@@ -463,6 +465,11 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
   /** P-68: şeritten (ya da Daha'dan) parça ekle; sade yeni kart Kur'a geçer ki parça görünsün. */
   const parcaEkle = (o: SeritOgesi) => {
     Keyboard.dismiss();
+    // P-87: Ölçüm önce hazırları ve Sayarak · Sayı · Puan'ı gösterir.
+    if (o === 'olcum') {
+      setOlcumSecici(true);
+      return;
+    }
     setKur(true);
     if (o === 'aciklama') {
       setAciklamaVar(true);
@@ -471,6 +478,11 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     const yeni = bosBlok(o);
     if (o === 'liste') setOtomatikListeler((s) => new Set([...s, yeni.id]));
     setDurum((d) => ({ ...d, bloklar: [...d.bloklar, yeni] }));
+  };
+  const olcumEkle = (b: BlokTaslagi) => {
+    setOlcumSecici(false);
+    setKur(true);
+    setDurum((d) => ({ ...d, bloklar: [...d.bloklar, b] }));
   };
   const blokKaldir = (i: number) => setDurum((d) => ({ ...d, bloklar: d.bloklar.filter((_, j) => j !== i) }));
   /** P-66: ⋯ → Yukarı / Aşağı. */
@@ -1035,6 +1047,13 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           );
         })()}
 
+      <OlcumSecici
+        gorunur={olcumSecici}
+        mevcut={durum.bloklar}
+        onKapat={() => setOlcumSecici(false)}
+        onHazir={(h) => olcumEkle({ ...bosBlok(h.tur), ad: h.ad, birim: h.birim, dakika: h.hedef })}
+        onTur={(tur) => olcumEkle(bosBlok(tur))}
+      />
       <BlokSecici
         haric={secHaric}
         mevcut={[...durum.bloklar.map((b) => b.tur), ...SERIT_PARCALARI]}

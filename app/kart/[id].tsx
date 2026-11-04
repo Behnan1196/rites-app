@@ -34,6 +34,8 @@ import { KartZamanSatiri } from '@/bilesen/kart/KartZamani';
 import { ParcaSeridi } from '@/bilesen/kart/ParcaSeridi';
 import { ParcaAyarSayfasi } from '@/bilesen/kart/ParcaAyarSayfasi';
 import { BlokSecici } from '@/bilesen/kart/BlokSecici';
+import { OlcumSecici } from '@/bilesen/kart/OlcumSecici';
+import { olcumParcalariMi } from '@/mantik/gidisat';
 import { SERIT_PARCALARI } from '@/mantik/parcaSecimi';
 import { ajandadaMi, aliskanlikMi, programKartiMi } from '@/mantik/aliskanlik';
 import type { ParcaTaslagi } from '@/mantik/blokTaslak';
@@ -129,6 +131,7 @@ export default function KartGorunumu() {
   const [zamanMenusu, setZamanMenusu] = useState(false);
   /** P-83: kartın sonundaki "+ Ekle" açıkken parça seçenekleri görünür. */
   const [ekleAcik, setEkleAcik] = useState(false);
+  const [olcumSecici, setOlcumSecici] = useState(false);
   const uzman = useUzman();
 
   const form = useKartFormu((sonuc) => {
@@ -214,6 +217,11 @@ export default function KartGorunumu() {
   };
   /** P-72: şeritten parça: açıklama yerinde yazılır; fotoğraf önce seçilir; öbürleri boş eklenir. */
   const parcaEkle = async (o: SeritOgesi) => {
+    // P-87: Ölçüm önce hazırları ve Sayarak · Sayı · Puan'ı gösterir.
+    if (o === 'olcum') {
+      setOlcumSecici(true);
+      return;
+    }
     if (o === 'aciklama') {
       // P-75: boş da olsa kartta kalır.
       setAciklamaYaziliyor(true);
@@ -566,6 +574,24 @@ export default function KartGorunumu() {
             />
           );
         })()}
+      <OlcumSecici
+        gorunur={olcumSecici}
+        mevcut={bloklar}
+        onKapat={() => setOlcumSecici(false)}
+        onHazir={(h) => {
+          setOlcumSecici(false);
+          icerikKaydet(
+            blokEkle(kapi, kart.id, { id: yeniKimlik(), tur: h.tur, ad: h.ad, birim: h.birim, dakika: h.hedef }),
+          );
+        }}
+        onTur={(tur) => {
+          setOlcumSecici(false);
+          setParcaAyari({
+            blok: { id: yeniKimlik(), tur, ad: '', metin: '', birim: '', dakika: null, maddeler: [], dosya: null },
+            yeni: true,
+          });
+        }}
+      />
       <BlokSecici
         gorunur={seciciAcik}
         uzman={uzman}
@@ -613,6 +639,16 @@ export default function KartGorunumu() {
           ust={kenar.top + 52}
           onKapat={() => setMenuAcik(false)}
           ogeler={[
+            // P-87: ölçümlerin gidişatı (son 4 hafta, yan yana).
+            ...(olcumParcalariMi(bloklar)
+              ? [
+                  {
+                    etiket: 'Gidişat',
+                    ikon: 'stats-chart-outline' as const,
+                    onPress: () => router.push({ pathname: '/kart/gidisat/[id]', params: { id: kart.id } }),
+                  },
+                ]
+              : []),
             {
               etiket: 'Kütüphaneye kaydet',
               ikon: 'bookmark-outline',

@@ -716,3 +716,11 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Giriş → Listeler kartla aynı üç çeşit:** **Adımlar** (işaret kalır, yapılan alta iner, maddeye gün verilir, "Yapılanları temizle") · **Günlük kontrol** (işaretler her gün baştan; özet "Bugün 1/2") · **Bilgi listesi** (işaretsiz). Eski Alışveriş ve Hazırlık listeleri Adımlar oldu; "Baştan başla" ve hazırlık ilerlemesi kalktı. Ad çipleri: Yapılacaklar, Market, Bavul, Çıkmadan önce (günlük), Okunacak kitaplar, Hediye fikirleri. — Ürün sahibi (P-86); ad çipleri: Öneri
 - **Miktarlar silindi** (alışveriş miktarı, öneri geçmişi); madde yalnız metin. Miktar ve birim gereken listeler için ileride **iki sütunlu tablo** denenebilir. — Ürün sahibi (P-86)
 - **Sunucu:** `sunucu/guncelleme-p86.sql` (çeşit kısıtı üç değer; eski çeşitler Adımlar; miktarlar boş; `madde.yapildi_gun`; madde metni düzeltilebilir). EAS güncellemesinden önce çalıştırılır. — Not
+
+## Günlük ölçümler ve gidişat (4 Kasım)
+
+- **Amaç (kişisel deney):** az sayıda şeyi değiştirip (su, çay, kahve, nefes egzersizi) kendi durumuna (enerji, zihin açıklığı, uyku, kilo, tuvalet sıklığı) etkisini görmek. Rites "birlikte değişiyor" gösterir; "nedeni bu" demez, sağlık yorumu ve önerisi yapmaz. — Ürün sahibi (P-87); ilke: Öneri
+- **Ölçümler tek kartta alt alta:** Sayarak, Ölçüm (Sayı) ve Puan parçaları bir kartta birden çok olur (öbür parçalar yine bir kez). Kartta her biri kendi satırında. — Ürün sahibi (P-87)
+- **"+ Ekle → Ölçüm" normal kullanıcıda da:** önce hazırlar (Su · Çay · Kahve · Tuvalet · Nefes egzersizi · Uyku · Kilo · Enerji · Zihin açıklığı; dokununca eklenir, kartta olan görünmez), altında "Kendin kur": Sayarak · Sayı · Puan. — Ürün sahibi (P-87); hazırların listesi: Öneri
+- **Gidişat kartın ⋯ menüsünde** (kartta ölçüm varsa): son 4 hafta, her gün bir satır (en yeni üstte), her ölçüm bir sütun; hücrede değer, zeminin koyuluğu büyüklüğü (Sayarak'ta hedefe, Puan'da 5'e, Sayı'da dönemin en küçüğü–en büyüğüne göre). Üstte son 7 günün ortalaması; hafta araları çizgili. Hesap ve yorum yok. — Ürün sahibi (P-87); ortalama satırı: Öneri
+- **Sonra (veri birikince):** iki grup karşılaştırması ("kahve ≤1 günlerde enerji ort. …", ertesi gün seçeneği) ve önce / sonra deneyi (temel dönem + tek değişiklik). Hazır "Günlük ölçümler" öneri kartı da düşünülebilir. — Not

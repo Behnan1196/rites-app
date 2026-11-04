@@ -3,6 +3,7 @@
 // (adımlar listenin bir biçimi). Önceden eklenmiş çift parçalar kartta kalır.
 
 import { ARAC_BLOKLARI, ICERIK_BLOKLARI, KAYIT_BLOKLARI, type BlokTuru } from './kart';
+import { COKLU_PARCALAR } from './olcumHazirlari';
 
 /** Normal kullanıcının parçaları (P-51); açıklama talimatın yerine geçer. */
 export const NORMAL_BLOKLAR: readonly BlokTuru[] = ['liste', 'foto', 'video'];
@@ -23,7 +24,8 @@ export function secilebilirParcalar({
   const kartta = new Set(mevcut.map(esi));
   // P-51: tek Liste; "Proje adımları" ayrı seçenek değil.
   // P-83: Bilgi listesi ve Listelerimden de Liste'nin biçimleri.
-  const goster = (t: BlokTuru) => !haric.includes(t) && esi(t) === t && !kartta.has(t);
+  // P-87: ölçüm parçaları (Sayarak, Ölçüm, Puan) bir kartta birden çok olur.
+  const goster = (t: BlokTuru) => !haric.includes(t) && esi(t) === t && (!kartta.has(t) || COKLU_PARCALAR.includes(t));
   if (!uzman) return { gorunen: NORMAL_BLOKLAR.filter(goster), kayit: [] };
   return {
     gorunen: [...ICERIK_BLOKLARI, ...ARAC_BLOKLARI].filter(goster),
@@ -38,7 +40,8 @@ export function eklenecekParcaVarMi(a: Parameters<typeof secilebilirParcalar>[0]
 }
 
 /** P-68: kartın altındaki şeritte doğrudan duran parçalar (açıklama ayrıca). */
-export const SERIT_PARCALARI: readonly BlokTuru[] = ['liste', 'foto', 'video'];
+/** P-87: şeritteki "Ölçüm" hazır ölçümleri ve Sayarak · Sayı · Puan'ı açar; hep durur. */
+export const SERIT_PARCALARI: readonly BlokTuru[] = ['liste', 'foto', 'video', 'olcum'];
 
 export type SeritOgesi = 'aciklama' | BlokTuru;
 
@@ -63,7 +66,10 @@ export function seritOgeleri({
   const kartta = new Set(mevcut.map(esi));
   const ogeler: SeritOgesi[] = [];
   if (aciklamaOlur && !aciklamaVar) ogeler.push('aciklama');
-  for (const t of SERIT_PARCALARI) if (!haric.includes(t) && !kartta.has(t)) ogeler.push(t);
-  const daha = uzman && eklenecekParcaVarMi({ uzman, haric, mevcut: [...mevcut, ...SERIT_PARCALARI] });
+  for (const t of SERIT_PARCALARI)
+    if (!haric.includes(t) && (!kartta.has(t) || COKLU_PARCALAR.includes(t))) ogeler.push(t);
+  // Daha: şeritte olmayan öbür parçalar (ölçüm türleri şeritteki Ölçüm'de).
+  const s = secilebilirParcalar({ uzman, haric, mevcut: [...mevcut, ...SERIT_PARCALARI] });
+  const daha = uzman && [...s.gorunen, ...s.kayit].some((t) => !COKLU_PARCALAR.includes(t));
   return { ogeler, daha };
 }

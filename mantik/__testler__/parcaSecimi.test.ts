@@ -5,7 +5,8 @@ describe('Her parça karta bir kez (P-67)', () => {
     expect(secilebilirParcalar({ uzman: false, mevcut: ['liste'] }).gorunen).toEqual(['foto', 'video']);
     const u = secilebilirParcalar({ uzman: true, mevcut: ['olcum', 'video'] });
     expect(u.gorunen).not.toContain('video');
-    expect(u.kayit).not.toContain('olcum');
+    // P-87: ölçüm parçaları birden çok olur.
+    expect(u.kayit).toContain('olcum');
     expect(u.kayit).toContain('puan');
   });
   it('proje adımları liste sayılır', () => {
@@ -27,7 +28,7 @@ describe('Her parça karta bir kez (P-67)', () => {
 describe('Kartın altındaki şerit (P-68)', () => {
   it('varsayılan: açıklama kartta, şeritte Liste · Fotoğraf · Video; normal kullanıcıda Daha yok', () => {
     expect(seritOgeleri({ aciklamaVar: true, uzman: false })).toEqual({
-      ogeler: ['liste', 'foto', 'video'],
+      ogeler: ['liste', 'foto', 'video', 'olcum'],
       daha: false,
     });
   });
@@ -36,18 +37,19 @@ describe('Kartın altındaki şerit (P-68)', () => {
       'aciklama',
       'liste',
       'foto',
+      'olcum',
     ]);
   });
   it('uzmanda Daha, öbür parçalar bitince yok', () => {
     expect(seritOgeleri({ aciklamaVar: true, uzman: true }).daha).toBe(true);
     const hepsi = secilebilirParcalar({ uzman: true });
     const mevcut = [...hepsi.gorunen, ...hepsi.kayit];
-    expect(seritOgeleri({ aciklamaVar: true, uzman: true, mevcut })).toEqual({ ogeler: [], daha: false });
+    expect(seritOgeleri({ aciklamaVar: true, uzman: true, mevcut })).toEqual({ ogeler: ['olcum'], daha: false });
   });
   it('çeşit tasarımında açıklama ve fotoğraf yok', () => {
     expect(
       seritOgeleri({ aciklamaVar: false, aciklamaOlur: false, uzman: true, haric: ['foto', 'dosya'] }).ogeler,
-    ).toEqual(['liste', 'video']);
+    ).toEqual(['liste', 'video', 'olcum']);
   });
 });
 
@@ -56,7 +58,23 @@ describe('P-83: listenin biçimleri', () => {
     const s = secilebilirParcalar({ uzman: true });
     expect(s.gorunen).not.toContain('bilgi');
     expect(s.gorunen).not.toContain('listebag');
-    expect(seritOgeleri({ aciklamaVar: true, uzman: false, mevcut: ['listebag'] }).ogeler).toEqual(['foto', 'video']);
-    expect(seritOgeleri({ aciklamaVar: true, uzman: false, mevcut: ['bilgi'] }).ogeler).toEqual(['foto', 'video']);
+    expect(seritOgeleri({ aciklamaVar: true, uzman: false, mevcut: ['listebag'] }).ogeler).toEqual([
+      'foto',
+      'video',
+      'olcum',
+    ]);
+    expect(seritOgeleri({ aciklamaVar: true, uzman: false, mevcut: ['bilgi'] }).ogeler).toEqual([
+      'foto',
+      'video',
+      'olcum',
+    ]);
+  });
+});
+
+describe('P-87: günlük ölçümler', () => {
+  it('kartta ölçüm varken şeritte Ölçüm yine durur', () => {
+    expect(seritOgeleri({ aciklamaVar: true, uzman: false, mevcut: ['adet', 'olcum', 'puan'] }).ogeler).toContain(
+      'olcum',
+    );
   });
 });
