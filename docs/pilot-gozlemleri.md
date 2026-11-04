@@ -460,3 +460,8 @@ Sonuç: → kararlar.md (Zamanlayıcı ve anımsatıcı ayarları). 20 sn susma 
 Ne dedi: "Listelerle ilgili, ajanda kartında bir listeyi bağla seçeneği var, pratik bir yararını göremedim, sence işe yarar mı" (öneri: kaldıralım) → "Kaldıralım. Bir de Gruplar sekmesinin üst sağında Kişiler için ikon var, ama zaten ilk sıradaki Kişilerim kartı aynı işi yapıyor, o yüzden ikonu kaldıralım"
 Nerede: Kartın listesi, Gruplar sekmesi
 Sonuç: → kararlar.md (Kartta "Listelerimden" kalktı; Gruplar'da kişi simgesi kalktı)
+
+### P-90 · 4 Kasım 2026 · Behnan
+Ne dedi: "Biraz önce yaptığımız ölçüm kartı, alışkanlıklar, programlar ile ilgili genel olarak konuşmak istiyorum … ölçümler kartında hedefimiz bir alışkanlık dahil yaşam tarzı değişikliklerinin etkisini görmek. Şu an onu da tam bir hedef olmaksızın izliyoruz … süt ürünlerini, en azından bir süre, tamamen kesmek, ayrıca mümkün olduğunca terlemek … bir çeşit detoks programı gibi düşünüyorum … 2 hafta yaptıklarıma dikkat edeceğim. Bunu ajanda üzerinden mi yapmalı yoksa bir program gibi düşünüp, örneğin Giriş'den mi takip etmeli" → öneri: program = deney → "Evet belirli süre için denemeye değer. Başlayalım"
+Nerede: Program ekranı, Gidişat
+Sonuç: → kararlar.md (Program = deney)

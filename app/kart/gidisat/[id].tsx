@@ -6,15 +6,17 @@ import { useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { EkranKabi } from '@/bilesen/EkranKabi';
-import { olcu, renk } from '@/bilesen/tema';
+import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
+import { programDonemleri } from '@/mantik/deneme';
 import { gidisatTablosu, sayiMetni } from '@/mantik/gidisat';
 import { gunKisa, haftaGunu, kisaTarih } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import { kartAyrinti, kartKayitlari } from '@/veri/kartlar';
+import { programlariOku } from '@/veri/programlar';
 import { useBugun } from '@/veri/useBugun';
 
-const GUN_SUTUNU = 72;
+const GUN_SUTUNU = 80;
 const SUTUN = 60;
 
 export default function Gidisat() {
@@ -25,7 +27,7 @@ export default function Gidisat() {
     ['kart', 'plan'],
     async (oku) => {
       const a = await kartAyrinti(oku, id);
-      return a ? { ...a, kayitlar: await kartKayitlari(oku, id) } : null;
+      return a ? { ...a, kayitlar: await kartKayitlari(oku, id), programlar: await programlariOku(oku) } : null;
     },
     [id],
   );
@@ -36,8 +38,12 @@ export default function Gidisat() {
         <Yazi tur="ikincil">Bu kart artık yok.</Yazi>
       </EkranKabi>
     );
-  const { kart, bloklar, kayitlar } = veri.veri;
+  const { kart, bloklar, kayitlar, programlar } = veri.veri;
   const t = gidisatTablosu(bloklar, kayitlar, bugunGun, 28);
+  // P-90: programların günleri tabloda solda şeritle işaretli (önce / sırası göz ile karşılaştırılsın).
+  const enEski = t.satirlar[t.satirlar.length - 1]?.gun ?? bugunGun;
+  const donemler = programDonemleri(programlar, bugunGun).filter((d) => d.son >= enEski);
+  const donemi = (gun: string) => donemler.find((d) => gun >= d.ilk && gun <= d.son);
   // Sütunlar ekrana sığıyorsa genişler; sığmıyorsa tablo yana kayar.
   const kullanilabilir = width - olcu.ekranKenari * 2 - GUN_SUTUNU;
   const sutun = Math.max(SUTUN, t.sutunlar.length ? Math.floor(kullanilabilir / t.sutunlar.length) : SUTUN);
@@ -84,6 +90,7 @@ export default function Gidisat() {
             .join(', ')}`}
         >
           <View style={[stiller.gunHucresi, { width: GUN_SUTUNU }]}>
+            {!!donemi(s.gun) && <View style={stiller.programSeridi} />}
             <Yazi kalinlik={s.gun === bugunGun ? 'kalin' : undefined} numberOfLines={1}>
               {s.gun === bugunGun ? 'Bugün' : `${gunKisa(s.gun)} ${kisaTarih(s.gun).split(' ')[0]}`}
             </Yazi>
@@ -114,6 +121,14 @@ export default function Gidisat() {
               {`Şimdilik ${girilenGun} günün kaydı var. Birkaç hafta doldurdukça ölçümleri yan yana görmek anlam kazanır.`}
             </Yazi>
           )}
+          {donemler.map((d) => (
+            <View key={d.programId} style={stiller.programNotu}>
+              <View style={stiller.programSimgesi} />
+              <Yazi tur="ikincil" style={stiller.esnek}>
+                {`${d.ad}: ${kisaTarih(d.ilk)} – ${d.son === bugunGun ? 'bugün' : kisaTarih(d.son)}`}
+              </Yazi>
+            </View>
+          ))}
           <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={stiller.kaydirma}>
             {tablo}
           </ScrollView>
@@ -134,7 +149,18 @@ const stiller = StyleSheet.create({
   baslikSatiri: { borderBottomWidth: 2, borderBottomColor: renk.cizgi },
   ortalamaSatiri: { backgroundColor: renk.anaAcik, borderBottomWidth: 2, borderBottomColor: renk.cizgi },
   haftaSonu: { borderBottomWidth: 2, borderBottomColor: renk.cizgi },
-  gunHucresi: { justifyContent: 'center', paddingVertical: 8, paddingRight: 6 },
+  gunHucresi: { justifyContent: 'center', paddingVertical: 8, paddingRight: 6, paddingLeft: 10 },
+  programSeridi: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 5,
+    backgroundColor: kaynakRenk.plan.serit,
+  },
+  programNotu: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  programSimgesi: { width: 5, height: 20, borderRadius: 2, backgroundColor: kaynakRenk.plan.serit },
+  esnek: { flex: 1 },
   baslikHucresi: { justifyContent: 'flex-end', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 2 },
   hucre: {
     minHeight: 40,

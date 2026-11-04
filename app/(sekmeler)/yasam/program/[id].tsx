@@ -32,18 +32,20 @@ import {
   kartSirasi,
   kartZamanMetni,
   programBagi,
-  sonOlcumler,
   uygulamaOzeti,
   YILDIZ_SOZLERI,
   yildizMetni,
   type ProgramKarti,
 } from '@/mantik/program';
-import { kisaTarih, type Gun } from '@/mantik/tarih';
+import { AZ_VERI, kartUyumlari, olcumKarsilastirmalari, ONCE_GUN, programDonemi, type Ortalama } from '@/mantik/deneme';
+import { sayiMetni } from '@/mantik/gidisat';
+import { gunEkle, kisaTarih, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import { gunYapilanlari, type KartOzeti } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
 import {
   alanDurumlari,
+  olcumKayitlari,
   programAjandaKartlari,
   programBaslat,
   programiDegerlendir,
@@ -90,6 +92,8 @@ export default function ProgramEkrani() {
         ajanda: await programAjandaKartlari(oku, program.id),
         yapilanlar: await gunYapilanlari(oku, bugunGun),
         gelisim: program.baslangic ? await programKayitlari(oku, program.id, program.baslangic) : null,
+        // P-90: bütün ölçümler, programdan önceki 14 günle birlikte.
+        olcum: program.baslangic ? await olcumKayitlari(oku, gunEkle(program.baslangic, -ONCE_GUN)) : null,
       };
     },
     [id, bugunGun],
@@ -98,14 +102,13 @@ export default function ProgramEkrani() {
   const gelisim = useMemo(() => {
     const v = veri.veri;
     if (!v?.gelisim || !v.program.baslangic || v.program.baslangic > bugunGun) return null;
+    const donem = programDonemi(v.program, bugunGun);
+    const yapilanlar = v.gelisim.kayitlar.filter((k) => k.yapildi);
     return {
-      ozet: uygulamaOzeti(
-        v.ajanda,
-        v.gelisim.kayitlar.filter((k) => k.yapildi),
-        v.program.baslangic,
-        bugunGun,
-      ),
-      olcumler: sonOlcumler(v.gelisim.olcumler, v.gelisim.kayitlar),
+      ozet: uygulamaOzeti(v.ajanda, yapilanlar, v.program.baslangic, bugunGun),
+      donem,
+      uyum: donem ? kartUyumlari(v.ajanda, yapilanlar, donem, bugunGun) : [],
+      olcumler: donem && v.olcum ? olcumKarsilastirmalari(v.olcum.parcalar, v.olcum.kayitlar, donem) : [],
     };
   }, [veri.veri, bugunGun]);
 
@@ -315,17 +318,50 @@ export default function ProgramEkrani() {
               metin={`Bu uygulamada ${gelisim.ozet.toplam} kezin ${gelisim.ozet.yapilan} tanesi yapıldı`}
               oran={gelisim.ozet.yapilan / gelisim.ozet.toplam}
             />
-            {gelisim.olcumler.length > 0 && (
+            {/* P-90: kart kart uyum. */}
+            {gelisim.uyum.length > 1 && (
               <Bolum style={stiller.olcumler}>
-                {gelisim.olcumler.map((o, i) => (
-                  <View key={`${o.ad}-${i}`} style={[stiller.olcum, i > 0 && stiller.cizgili]} accessible>
-                    <Yazi tur="ikincil" style={stiller.esnek}>
-                      {o.ad}
+                {gelisim.uyum.map((u, i) => (
+                  <View key={u.kartId} style={[stiller.olcum, i > 0 && stiller.cizgili]} accessible>
+                    <Yazi style={stiller.esnek} numberOfLines={2}>
+                      {u.baslik}
                     </Yazi>
-                    <Yazi kalinlik="kalin">{o.deger}</Yazi>
+                    <Yazi kalinlik="kalin" renk={u.yapilan === u.toplam ? renk.ana : renk.yazi}>
+                      {`${u.yapilan}/${u.toplam} gün`}
+                    </Yazi>
                   </View>
                 ))}
               </Bolum>
+            )}
+            {/* P-90: ölçümler: programdan önceki 14 gün → program dönemi (ortalamalar). */}
+            {gelisim.olcumler.length > 0 && (
+              <>
+                <Yazi kalinlik="kalin">{`Ölçümler: önceki ${ONCE_GUN} gün → program`}</Yazi>
+                <Bolum style={stiller.olcumler}>
+                  {gelisim.olcumler.map((o, i) => (
+                    <View
+                      key={o.parca.id}
+                      style={[stiller.olcum, i > 0 && stiller.cizgili]}
+                      accessible
+                      accessibilityLabel={`${o.parca.ad}: önce ${ortMetni(o.once)}, programda ${ortMetni(o.sirasinda)}`}
+                    >
+                      <View style={stiller.esnek}>
+                        <Yazi numberOfLines={1}>{o.parca.ad + (o.parca.birim ? ` (${o.parca.birim})` : '')}</Yazi>
+                        <Yazi tur="etiket" numberOfLines={1}>
+                          {`${o.parca.kartBaslik} · ${o.once.gun} gün → ${o.sirasinda.gun} gün`}
+                        </Yazi>
+                      </View>
+                      <Yazi kalinlik="kalin">{`${ortMetni(o.once)} → ${ortMetni(o.sirasinda)}`}</Yazi>
+                    </View>
+                  ))}
+                </Bolum>
+                <Yazi tur="ikincil">
+                  {gelisim.olcumler.some((o) => o.once.gun < AZ_VERI || o.sirasinda.gun < AZ_VERI)
+                    ? 'Bazı ölçümlerde henüz az gün var; birkaç gün daha doldurunca karşılaştırma anlam kazanır. '
+                    : ''}
+                  Birlikte değişen ölçümler bir ipucudur; nedenini tek başına göstermez.
+                </Yazi>
+              </>
             )}
           </>
         )}
@@ -460,6 +496,10 @@ function KartSatiri({
       <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
     </Pressable>
   );
+}
+
+function ortMetni(o: Ortalama): string {
+  return o.ort === null ? '–' : sayiMetni(o.ort);
 }
 
 const stiller = StyleSheet.create({

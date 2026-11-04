@@ -27,6 +27,7 @@ import {
   type ProgramDurumu,
   type ProgramKarti,
 } from '@/mantik/program';
+import type { OlcumParcasi } from '@/mantik/deneme';
 import { gecerliSes } from '@/mantik/sesler';
 import { gunEkle, type Gun } from '@/mantik/tarih';
 
@@ -613,4 +614,50 @@ export async function programaYansit(kapi: Kapi, oku: Okuyucu, kartId: string): 
 /** Ajandadaki kart programın kartı mı (programın adı için). */
 export function programKartiMi(kart: Pick<Kart, 'planId' | 'bag'>): boolean {
   return !!kart.planId && !!programBagCoz(kart.bag);
+}
+
+/**
+ * P-90: programın değerlendirmesi için bütün kartların ölçüm parçaları (Sayarak, Ölçüm, Puan) ve
+ * `ilk`ten bugüne kayıtları.
+ */
+export async function olcumKayitlari(
+  oku: Okuyucu,
+  ilk: Gun,
+): Promise<{
+  parcalar: OlcumParcasi[];
+  kayitlar: { kartId: string; tarih: Gun; degerler: Record<string, string> }[];
+}> {
+  const bloklar = await oku.hepsi<{
+    id: string;
+    kart_id: string;
+    tur: 'adet' | 'olcum' | 'puan';
+    ad: string;
+    birim: string;
+    baslik: string;
+  }>(
+    `SELECT b.id, b.kart_id, b.tur, b.ad, b.birim, k.baslik FROM blok b JOIN kart k ON k.id = b.kart_id
+     WHERE b.tur IN ('adet', 'olcum', 'puan') ORDER BY k.sira, b.sira`,
+  );
+  const kartlar = [...new Set(bloklar.map((b) => b.kart_id))];
+  const kayitlar = kartlar.length
+    ? await oku.hepsi<{ kart_id: string; tarih: string; degerler: string }>(
+        `SELECT kart_id, tarih, degerler FROM kayit WHERE tarih >= ? AND kart_id IN (${kartlar.map(() => '?').join(', ')})`,
+        [ilk, ...kartlar],
+      )
+    : [];
+  return {
+    parcalar: bloklar.map((b) => ({
+      id: b.id,
+      kartId: b.kart_id,
+      kartBaslik: b.baslik,
+      tur: b.tur,
+      ad: b.ad,
+      birim: b.birim,
+    })),
+    kayitlar: kayitlar.map((r) => ({
+      kartId: r.kart_id,
+      tarih: r.tarih,
+      degerler: json<Record<string, string>>(r.degerler, {}),
+    })),
+  };
 }

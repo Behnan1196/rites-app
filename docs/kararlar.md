@@ -736,3 +736,11 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 
 - **Kartın listesinde "Listelerimden" (Listeler'deki bir listeye bağlanma) seçeneği kalktı:** pratik yararı az (Adımlar'daki maddeye gün verilince zaten ajandada; Listeler Giriş'ten iki dokunuş), dördüncü seçenek kafa karıştırıyordu. Kart ve Listeler aynı üç çeşit: Adımlar · Günlük kontrol · Bilgi listesi. Önceden bağlanmış liste kartta görünür ve açılır. İhtiyaç çıkarsa yönü tersi: listenin ekranından "Ajandaya koy". — Ürün sahibi (P-89); gerekçe ve ters yön: Öneri
 - **Gruplar sekmesinin üst sağındaki Kişilerim simgesi kalktı;** ilk sıradaki Kişilerim kutusu aynı işi yapıyor. — Ürün sahibi (P-89)
+
+## Program = deney: değerlendirme ve gidişatta programın günleri (4 Kasım)
+
+- **Üç kavram, üç soru:** Alışkanlık "uyuyor muyum?" (bağımsız, sürekli; seri ve yüzde) · Ölçüm "nasıl gidiyorum?" (sürekli gözlem; gidişat) · Program "bu dönem bana ne yaptı?" (başı sonu ve niyeti olan paket; önce / sonra karşılaştırması). Örnek: "2 hafta süt ürünü yok" programı (Süt ürünü yemedim · Terle kartları); günlük iş ajandada, değerlendirme programın ekranında. — Ürün sahibi (P-90); kavramlar: Öneri
+- **Günlük ölçümler kartı programın dışında, sürekli kalır**; programdan önce de ölçülürse karşılaştıracak "önce" olur (mümkünse programdan bir hafta önce başla). — Öneri (P-90)
+- **Programın ekranında (Gelişim):** kart kart uyum ("5/6 gün") ve **Ölçümler: önceki 14 gün → program**: bütün kartlardaki Sayarak, Ölçüm ve Puan parçalarının iki dönemdeki ortalaması ("Enerji 2,9 → 3,6", gün sayılarıyla; az veride uyarı; "birlikte değişen ölçümler bir ipucudur; nedenini tek başına göstermez"). Eski "son ölçüm" satırları bunun yerine. — Ürün sahibi (P-90); 14 gün ve ayrıntılar: Öneri
+- **Gidişat tablosunda programın günleri solda program renginde şeritle işaretli;** üstte "Süt ürünsüz: 4 Kasım – bugün". — Ürün sahibi (P-90)
+- **Sonra:** programa niyet ("Cildim ve enerjim nasıl değişecek?") ve gözlenecek ölçümlerin seçimi; değerlendirme yalnız onları gösterir. — Not
