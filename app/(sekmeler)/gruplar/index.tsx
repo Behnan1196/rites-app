@@ -11,7 +11,6 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
-import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
 import { GrupDavetleri } from '@/bilesen/gruplar/GrupDavetleri';
 import { GrupKurSayfasi } from '@/bilesen/gruplar/GrupKurSayfasi';
 import { useGrupBekleyenleri } from '@/bilesen/gruplar/useGrupBekleyenleri';
@@ -50,7 +49,6 @@ export default function Gruplar() {
     <EkranKabi
       baslik="Gruplar"
       altBaslik="Kişilerin ve birlikte yürüttüğün gruplar."
-      baslikSag={<SimgeDugmesi ikon="person-outline" etiket="Kişilerim" onPress={kisileriAc} />}
     >
       {!ben ? (
         oturum.durum === 'yukleniyor' ? null : (

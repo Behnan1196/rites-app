@@ -139,7 +139,8 @@ export function BlokDuzenleyici({
           {/* P-83: listenin kullanımı: işaretler kalır · her gün baştan (çok günlü) · işaretsiz · Listeler'den. */}
           <View style={stiller.turler} accessibilityRole="radiogroup" accessibilityLabel="Liste nasıl kullanılsın">
             {/* P-85: Günlük kontrol tek seferlik kartta da seçilir (o gün işaretlenir; kart tekrarlı olunca her gün baştan). */}
-            {LISTE_TURLERI.map((t) => (
+            {/* P-89: "Listelerimden" yeni listede yok; önceden bağlanmış listede seçili durur. */}
+            {LISTE_TURLERI.filter((t) => t.tur !== 'listebag' || blok.tur === 'listebag').map((t) => (
               <SecenekHapi
                 key={t.tur}
                 etiket={t.ad}

@@ -731,3 +731,8 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Alarm olarak çalan zamanlayıcı Rites açıkken 20 sn çalınca susar ve kendiliğinden ertelenir** (5 dk sonra yeniden çalar; en çok 3 kez, sonra biter). Rites kapalıyken iOS (AlarmKit) çalan alarmı uygulamanın susturmasına izin vermiyor; alarm kişi durdurana dek çalar (Apple'ın geliştirici forumundaki yanıtı: süreyle kendiliğinden susturan bir API yok). Kişi o sırada uygulamaya dönerse alarm hemen susar ve ertelenir. — Ürün sahibi (P-88, 20 sn); kapalıyken sınırı: Not
 - **Anımsatıcılar'daki "Ajanda hatırlatmalarının sesi" kalktı.** Kartın sesi kartın hatırlatmasında seçilir; artık bildirimle gelen hatırlatmada da ("Ses"; alarmda "Alarm sesi"). Kartın sesi yoksa eski genel ses, o da yoksa telefonun sesi. — Ürün sahibi (P-88); bildirimde de ses: Öneri
 - **Yeni anımsatıcı son kurulanın "Nasıl uyarsın?", sesi ve ertelemesiyle açılır.** — Ürün sahibi (P-88); erteleme de: Öneri
+
+## Kartta "Listelerimden" kalktı; Gruplar'da kişi simgesi kalktı (4 Kasım)
+
+- **Kartın listesinde "Listelerimden" (Listeler'deki bir listeye bağlanma) seçeneği kalktı:** pratik yararı az (Adımlar'daki maddeye gün verilince zaten ajandada; Listeler Giriş'ten iki dokunuş), dördüncü seçenek kafa karıştırıyordu. Kart ve Listeler aynı üç çeşit: Adımlar · Günlük kontrol · Bilgi listesi. Önceden bağlanmış liste kartta görünür ve açılır. İhtiyaç çıkarsa yönü tersi: listenin ekranından "Ajandaya koy". — Ürün sahibi (P-89); gerekçe ve ters yön: Öneri
+- **Gruplar sekmesinin üst sağındaki Kişilerim simgesi kalktı;** ilk sıradaki Kişilerim kutusu aynı işi yapıyor. — Ürün sahibi (P-89)

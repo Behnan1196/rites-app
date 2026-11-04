@@ -455,3 +455,8 @@ Sonuç: → kararlar.md (Günlük ölçümler ve gidişat)
 Ne dedi: "Girişteki anımsatıcı ve zamanlayıcı ile ilgili bir kaç şey yapalım. 1. Zamanlayıcı alarm olarak çalmaya başladığında, bir şey yapılmazsa sürekli çalıyor, belki bir 20 sn çaldıktan sonra susmalı ve otomatik ertelenmiş kabul etmeli. Bu arada erteleme süresini seçemiyoruz, 5 dk mantıklı bir süre. 2. Anımsatıcıda Ajanda hatırlatmalarının sesi diye bir bölüm var, gereksiz kalmış olabilir, zaten kartlarda ayarlayabiliyoruz 3. Anımsatıcılarda, son kurulan anımsatıcıda seçilen Nasıl uyarsın ve Ses seçeneklerini hatırlasın."
 Nerede: Giriş → Zamanlayıcı, Anımsatıcılar
 Sonuç: → kararlar.md (Zamanlayıcı ve anımsatıcı ayarları). 20 sn susma yalnız Rites açıkken (iOS sınırı).
+
+### P-89 · 4 Kasım 2026 · Behnan
+Ne dedi: "Listelerle ilgili, ajanda kartında bir listeyi bağla seçeneği var, pratik bir yararını göremedim, sence işe yarar mı" (öneri: kaldıralım) → "Kaldıralım. Bir de Gruplar sekmesinin üst sağında Kişiler için ikon var, ama zaten ilk sıradaki Kişilerim kartı aynı işi yapıyor, o yüzden ikonu kaldıralım"
+Nerede: Kartın listesi, Gruplar sekmesi
+Sonuç: → kararlar.md (Kartta "Listelerimden" kalktı; Gruplar'da kişi simgesi kalktı)
