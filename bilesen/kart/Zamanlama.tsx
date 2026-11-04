@@ -383,7 +383,11 @@ export function ZamanOzeti({
       hitSlop={6}
       style={({ pressed }) => [stiller.ozetSatiri, pressed && { opacity: 0.6 }]}
     >
-      <Ionicons name={!izin ? 'lock-closed-outline' : deger.tekrar ? 'repeat' : 'calendar-outline'} size={16} color={renk.ikincil} />
+      <Ionicons
+        name={!izin ? 'lock-closed-outline' : deger.tekrar ? 'repeat' : 'calendar-outline'}
+        size={16}
+        color={renk.ikincil}
+      />
       <Yazi tur="ikincil" kalinlik="yariKalin" numberOfLines={1} style={stiller.ozetYazi}>
         {metin}
       </Yazi>
@@ -887,16 +891,17 @@ export function ZamanlamaPaneli({
                   />
                 </View>
                 <Yazi tur="ikincil">{KART_ALARM_ACIKLAMASI}</Yazi>
-                {!!deger.alarm && (
-                  <>
-                    <Yazi kalinlik="kalin">Alarm sesi</Yazi>
-                    <SesSecici
-                      ses={deger.alarmSesi ?? null}
-                      onDegis={(alarmSesi) => onDegis({ ...deger, alarmSesi })}
-                      alarm
-                    />
-                  </>
-                )}
+              </>
+            )}
+            {/* P-88: kartın sesi burada (bildirimde de); Anımsatıcılar'daki genel ses kalktı. */}
+            {deger.hatirlatma !== null && (
+              <>
+                <Yazi kalinlik="kalin">{deger.alarm ? 'Alarm sesi' : 'Ses'}</Yazi>
+                <SesSecici
+                  ses={deger.alarmSesi ?? null}
+                  onDegis={(alarmSesi) => onDegis({ ...deger, alarmSesi })}
+                  alarm={!!deger.alarm}
+                />
               </>
             )}
           </>
@@ -1197,7 +1202,14 @@ const stiller = StyleSheet.create({
   serit: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   // P-72: tek satır (hatırlatma kartın altındaki şeritte); uzun yazı kısalır.
   hapSatiri: { flexDirection: 'row', gap: 6, alignItems: 'center' },
-  ozetSatiri: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32, alignSelf: 'flex-start', maxWidth: '100%' },
+  ozetSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 32,
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
+  },
   ozetYazi: { flexShrink: 1 },
   ozetHatirlatma: { flexShrink: 2 },
   // P-73: bölmeli zaman şeridi.

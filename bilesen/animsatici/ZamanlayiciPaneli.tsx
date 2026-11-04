@@ -124,7 +124,7 @@ function Panel({ ayar, sure, simdiMs }: { ayar: ZamanlayiciAyari; sure: Animsati
       <Yazi tur="ikincil">
         {ayar.cal === 'alarm'
           ? alarmDestegi
-            ? 'Telefon sessizde olsa da çalar; sen durdurana kadar sürer.'
+            ? 'Telefon sessizde olsa da çalar. Ertele 5 dk. Rites açıksa 20 sn çalıp susar ve 5 dk sonra yeniden çalar; kapalıyken sen durdurana kadar çalar.'
             : 'Bu telefonda alarm yok; bir kez bildirim gelir ve zamanlayıcı kendiliğinden biter.'
           : 'Bir kez kısa bir ses ve bildirim gelir; zamanlayıcı kendiliğinden biter.'}
       </Yazi>

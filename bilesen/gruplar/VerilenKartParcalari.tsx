@@ -42,7 +42,7 @@ export function VerilenZamanSayfasi({
       saat: z.saat,
       hatirlatma,
       alarm: !!(hatirlatma && z.alarm),
-      alarmSesi: z.alarm ? (z.alarmSesi ?? null) : null,
+      alarmSesi: z.hatirlatma ? (z.alarmSesi ?? null) : null,
     }).catch((e: unknown) => {
       console.warn(e);
       kisaMesaj('Kaydedilemedi. Yeniden dene.');

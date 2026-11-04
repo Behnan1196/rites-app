@@ -10,7 +10,15 @@ import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 
-import { alarmiEslestir, alarmPlani, erteleGecerliMi, kartAlarminiEslestir, kartAlarmPlani } from '@/mantik/alarm';
+import {
+  alarmiEslestir,
+  alarmPlani,
+  erteleGecerliMi,
+  kartAlarminiEslestir,
+  kartAlarmPlani,
+  tekrarliAlarmKimligi,
+} from '@/mantik/alarm';
+import { otomatikSusacaklar, ZAMANLAYICI_OTOMATIK_ERTELEME } from '@/mantik/zamanlayici';
 import { bildirimPlani, erteleSaati, saatMetni } from '@/mantik/animsatici';
 import { bugun } from '@/mantik/tarih';
 import {
@@ -187,6 +195,42 @@ export function BildirimYoneticisi() {
       clearTimeout(t);
       bitir();
     };
+  }, [kapi, oku]);
+
+  // P-88: alarm olarak çalan zamanlayıcı, Rites açıkken 20 sn çalınca susar ve kendiliğinden
+  // ertelenir (en çok 3 kez, sonra biter). iOS, Rites kapalıyken çalan alarmı susturmaya izin
+  // vermiyor; o zaman alarm kişi durdurana dek çalar.
+  const otomatikSayisi = useRef(new Map<string, number>());
+  useEffect(() => {
+    let isleniyor = false;
+    const bak = async () => {
+      if (isleniyor || AppState.currentState !== 'active') return;
+      isleniyor = true;
+      try {
+        const animsaticilar = await animsaticilariOku(oku);
+        for (const a of otomatikSusacaklar(animsaticilar, Date.now())) {
+          const saat = a.saatler[0];
+          if (!saat) continue;
+          await alarmiSustur(tekrarliAlarmKimligi(a.id, saat));
+          const n = (otomatikSayisi.current.get(a.id) ?? 0) + 1;
+          otomatikSayisi.current.set(a.id, n);
+          if (n > ZAMANLAYICI_OTOMATIK_ERTELEME) {
+            await durdur(kapi, a.id, bugun(), saat);
+            kisaMesajRef.current(`Durduruldu: ${a.ad}`);
+          } else {
+            await zamanlayiciErtele(kapi, a.id, a.erteleDk);
+            kisaMesajRef.current(`Sustu; ${a.erteleDk} dk sonra yeniden çalar · ${a.ad}`);
+          }
+          planlaRef.current();
+        }
+      } catch (e) {
+        console.error('Zamanlayıcı susturulamadı', e);
+      } finally {
+        isleniyor = false;
+      }
+    };
+    const t = setInterval(() => void bak(), 2000);
+    return () => clearInterval(t);
   }, [kapi, oku]);
 
   // Alarmdaki Durdur / Ertele (Rites'ı açar; basış telefonda bekler).

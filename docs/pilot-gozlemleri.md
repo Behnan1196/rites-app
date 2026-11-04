@@ -450,3 +450,8 @@ Sonuç: → kararlar.md (Listelerde üç çeşit; maddeyi yerinde düzeltme)
 Ne dedi: "Rites'ı günlük hayatta kullanmaya çalışıyorum, günlük kaç bardak su içtiğimi, çay kahve tüketimimi ve bunlarda yapacağım değişikliklerin genel iyilik durumuma nasıl etki ettiğini anlamaya çalışıyorum … deneysel açıdan az sayıda parametrenin etkisini görmenin daha anlamlı olacağını düşündüm … sayaçların her karta tek bir tane eklenmesi yetmiyor, günlük ölçümler adında bir kartın içine hem su, hem kahve, belki yapılan nefes egzersizi, ayrıca kilo, uyku süresi, enerji durumu gibi … ölçümü almam gerekecek … enerjik olma, zihin açıklığı, günlük tuvalete çıkma sıklığı gibi konulara etkisini nasıl basitçe görebileceğimi henüz bilemiyorum" Seçimler: tek kartta alt alta; önce yan yana şerit; Gidişat kartın ⋯ menüsünde; + Ekle'de Ölçüm normal kullanıcıda da.
 Nerede: Kart görünümü, yeni Gidişat ekranı
 Sonuç: → kararlar.md (Günlük ölçümler ve gidişat)
+
+### P-88 · 4 Kasım 2026 · Behnan
+Ne dedi: "Girişteki anımsatıcı ve zamanlayıcı ile ilgili bir kaç şey yapalım. 1. Zamanlayıcı alarm olarak çalmaya başladığında, bir şey yapılmazsa sürekli çalıyor, belki bir 20 sn çaldıktan sonra susmalı ve otomatik ertelenmiş kabul etmeli. Bu arada erteleme süresini seçemiyoruz, 5 dk mantıklı bir süre. 2. Anımsatıcıda Ajanda hatırlatmalarının sesi diye bir bölüm var, gereksiz kalmış olabilir, zaten kartlarda ayarlayabiliyoruz 3. Anımsatıcılarda, son kurulan anımsatıcıda seçilen Nasıl uyarsın ve Ses seçeneklerini hatırlasın."
+Nerede: Giriş → Zamanlayıcı, Anımsatıcılar
+Sonuç: → kararlar.md (Zamanlayıcı ve anımsatıcı ayarları). 20 sn susma yalnız Rites açıkken (iOS sınırı).

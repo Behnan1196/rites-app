@@ -95,7 +95,7 @@ export function KartZamanSatiri({
       saat: y.saat,
       hatirlatma,
       alarm: !!(hatirlatma && y.alarm),
-      alarmSesi: y.alarm ? (y.alarmSesi ?? null) : null,
+      alarmSesi: hatirlatma ? (y.alarmSesi ?? null) : null,
       tekrar: y.tekrar,
       seriSay: kart.seriSay ?? null,
       sabitler: kart.sabitler ?? null,

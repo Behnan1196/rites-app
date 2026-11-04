@@ -131,7 +131,7 @@ describe('anımsatıcı sesi (pilot 19 Ekim)', () => {
       duraklama: null,
       gunler: [],
       alarm: true,
-      erteleDk: 1,
+      erteleDk: 5,
     });
     expect(z.saatler).toEqual([b.saat]);
 

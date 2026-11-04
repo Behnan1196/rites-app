@@ -13,8 +13,12 @@ import type { Animsatici } from './animsatici';
 export const VARSAYILAN_ZAMANLAYICI_DK = 5;
 /** P-70: 1 saat sınırı kalktı; en çok 23:59:59. */
 export const ZAMANLAYICI_EN_COK_MS = (24 * 3600 - 1) * 1000;
-/** Zamanlayıcıda ertele (dakika; yalnız alarmda; P-31). */
-export const ZAMANLAYICI_ERTELEME = 1;
+/** Zamanlayıcıda ertele (dakika; yalnız alarmda; P-31; P-88: 1 → 5). */
+export const ZAMANLAYICI_ERTELEME = 5;
+/** P-88: alarm olarak çalan zamanlayıcı Rites açıkken bu kadar çalınca susar ve ertelenir. */
+export const ZAMANLAYICI_SUSMA_SN = 20;
+/** P-88: kendiliğinden erteleme en çok bu kadar; sonra zamanlayıcı biter. */
+export const ZAMANLAYICI_OTOMATIK_ERTELEME = 3;
 
 export type ZamanlayiciAlanlari = Pick<Animsatici, 'bitis' | 'toplamMs' | 'duraklama'>;
 
@@ -146,4 +150,19 @@ export function bitenBildirimZamanlayicilari(
 /** Bildirimle çalan zamanlayıcı mı (Giriş'te "Şimdi çalıyor" olmaz). */
 export function bildirimliZamanlayiciMi(a: Pick<Animsatici, 'bitis' | 'alarm'>): boolean {
   return !!a.bitis && !a.alarm;
+}
+
+/**
+ * P-88: Rites açıkken susturulup ertelenecek zamanlayıcılar: alarm olarak çalan, duraklatılmamış,
+ * bitişinden bu yana 20 sn ile 30 dk geçmiş (daha eskisi kişi uygulamaya dönünce bir kez susar).
+ */
+export function otomatikSusacaklar<T extends Pick<Animsatici, 'alarm' | 'bitis' | 'duraklama'>>(
+  animsaticilar: readonly T[],
+  simdiMs: number,
+): T[] {
+  return animsaticilar.filter((a) => {
+    if (!a.alarm || !a.bitis || duraklatildiMi(a)) return false;
+    const gecen = simdiMs - new Date(a.bitis).getTime();
+    return gecen >= ZAMANLAYICI_SUSMA_SN * 1000 && gecen < 30 * 60_000;
+  });
 }

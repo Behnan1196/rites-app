@@ -22,7 +22,9 @@ import {
 } from '@/mantik/animsatici';
 import { GUN_KISA } from '@/mantik/tarih';
 import { animsaticiEkle, animsaticiGuncelle, animsaticiSil } from '@/veri/animsaticilar';
+import { ayarYaz, type Ayarlar } from '@/veri/ayar';
 import { bildirimIzni } from '@/veri/bildirimler';
+import { useAyar } from '@/veri/kancalar';
 import { yeniKimlik } from '@/veri/kimlik';
 import { useVeri } from '@/veri/VeriSaglayici';
 
@@ -60,7 +62,9 @@ function sonrakiSaat(saatler: readonly string[]): string {
   return saatMetni(dk);
 }
 
-function ilkForm(duzenlenen: Animsatici | null): Form {
+type SonAyar = Ayarlar['son_animsatici'] | null | undefined;
+
+function ilkForm(duzenlenen: Animsatici | null, son: SonAyar): Form {
   if (duzenlenen)
     return {
       ad: duzenlenen.ad,
@@ -74,9 +78,10 @@ function ilkForm(duzenlenen: Animsatici | null): Form {
     ad: '',
     saatler: [simdiSaati()],
     gunler: [...HER_GUN],
-    alarm: false,
-    erteleDk: VARSAYILAN_ERTELEME,
-    ses: null,
+    // P-88: yeni anımsatıcı son kurulanın uyarısı, sesi ve ertelemesiyle açılır.
+    alarm: son?.alarm ?? false,
+    erteleDk: son?.erteleDk ?? VARSAYILAN_ERTELEME,
+    ses: son?.ses ?? null,
   };
 }
 
@@ -84,18 +89,20 @@ function AnimsaticiFormu({
   gorunur,
   onKapat,
   duzenlenen,
+  son,
 }: {
   gorunur: boolean;
   onKapat: () => void;
   /** Verilirse düzenleme: form dolu açılır, altta "Anımsatıcıyı sil" var. */
   duzenlenen: Animsatici | null;
+  son: SonAyar;
 }) {
   const { kapi } = useVeri();
   const kisaMesaj = useKisaMesaj();
   const { destek: alarmDestegi, izinIste } = useAlarmDestegi();
-  const [baslangic] = useState(() => ilkForm(duzenlenen));
+  const [baslangic] = useState(() => ilkForm(duzenlenen, son));
   const [form, setForm] = useState<Form>(baslangic);
-  const [alarmDokunuldu, setAlarmDokunuldu] = useState(!!duzenlenen);
+  const [alarmDokunuldu, setAlarmDokunuldu] = useState(!!duzenlenen || !!son?.alarm);
   const [hata, setHata] = useState<string | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
   const [silSoruluyor, setSilSoruluyor] = useState(false);
@@ -134,6 +141,7 @@ function AnimsaticiFormu({
       };
       if (duzenlenen) await animsaticiGuncelle(kapi, a);
       else await animsaticiEkle(kapi, a);
+      await ayarYaz(kapi, 'son_animsatici', { alarm, ses: form.ses, erteleDk: form.erteleDk }).catch(() => undefined);
       await bildirimIzni(true);
       kisaMesaj(duzenlenen ? `Kaydedildi: ${a.ad}` : `Anımsatıcı eklendi: ${a.ad}`);
       onKapat();
@@ -302,6 +310,7 @@ export function useAnimsaticiFormu() {
     acik: boolean;
     duzenlenen: Animsatici | null;
   } | null>(null);
+  const son = useAyar('son_animsatici').veri;
   /** Anımsatıcı verilirse düzenleme açılır. */
   const ac = useCallback(
     (duzenlenen: Animsatici | null = null) => setDurum((d) => ({ no: (d?.no ?? 0) + 1, acik: true, duzenlenen })),
@@ -311,6 +320,7 @@ export function useAnimsaticiFormu() {
     <AnimsaticiFormu
       key={durum.no}
       duzenlenen={durum.duzenlenen}
+      son={son}
       gorunur={durum.acik}
       onKapat={() => setDurum((d) => (d ? { ...d, acik: false } : d))}
     />

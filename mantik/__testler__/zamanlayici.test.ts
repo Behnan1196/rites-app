@@ -5,9 +5,11 @@ import {
   geriSayimMetni,
   ilerleme,
   kalanMs,
+  otomatikSusacaklar,
   parcalardanMs,
   sureParcalari,
   VARSAYILAN_ZAMANLAYICI,
+  ZAMANLAYICI_ERTELEME,
   zamanlayiciAltMetni,
   zamanlayiciAyariCoz,
   zamanlayiciSuresiMetni,
@@ -117,5 +119,23 @@ describe('Bildirimli zamanlayıcı bir kez çalar (P-70)', () => {
     ];
     expect(bitenBildirimZamanlayicilari(liste, T0 + 1000)).toEqual([]);
     expect(bitenBildirimZamanlayicilari(liste, T0 + 6000)).toEqual(['b']);
+  });
+});
+
+describe('P-88: Rites açıkken çalan zamanlayıcı susar', () => {
+  const t0 = Date.parse('2026-11-04T09:00:00Z');
+  const z = (alanlar: Partial<{ alarm: boolean; bitis: string | null; duraklama: number | null }>) => ({
+    alarm: true,
+    bitis: new Date(t0).toISOString(),
+    duraklama: null,
+    ...alanlar,
+  });
+  it('20 sn çalınca susacak; bildirimde, duraklatılmışta ve çok eskide değil', () => {
+    expect(otomatikSusacaklar([z({})], t0 + 19_000)).toHaveLength(0);
+    expect(otomatikSusacaklar([z({})], t0 + 20_000)).toHaveLength(1);
+    expect(otomatikSusacaklar([z({ alarm: false })], t0 + 60_000)).toHaveLength(0);
+    expect(otomatikSusacaklar([z({ duraklama: 5000 })], t0 + 60_000)).toHaveLength(0);
+    expect(otomatikSusacaklar([z({})], t0 + 31 * 60_000)).toHaveLength(0);
+    expect(ZAMANLAYICI_ERTELEME).toBe(5);
   });
 });

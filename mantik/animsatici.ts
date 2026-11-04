@@ -415,7 +415,8 @@ export function bildirimPlani({
       baslik: k.baslik,
       govde: kartHatirlatmaGovdesi(k, gun),
       sesli: true,
-      ses: kartSesi,
+      // P-88: kartın kendi sesi (hatırlatmasında seçilen); yoksa eski genel ayar, o da yoksa telefonun sesi.
+      ses: k.alarmSesi ?? kartSesi,
       erteleDk: null,
       veri: { tur: 'kart', kartId: k.id, gun },
     });

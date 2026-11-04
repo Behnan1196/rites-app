@@ -42,6 +42,8 @@ export interface Ayarlar {
   listeler_tasindi: boolean;
   /** Alışveriş listelerine yazılan maddeler, en yeni başta (P-61: yazarken öneri; yalnız bu telefonda). */
   alisveris_gecmisi: string[];
+  /** P-88: son kurulan anımsatıcının "Nasıl uyarsın?", sesi ve ertelemesi; yeni anımsatıcı bunlarla açılır. */
+  son_animsatici: { alarm: boolean; ses: string | null; erteleDk: number };
 }
 
 export type AyarAnahtari = keyof Ayarlar;

@@ -724,3 +724,10 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **"+ Ekle → Ölçüm" normal kullanıcıda da:** önce hazırlar (Su · Çay · Kahve · Tuvalet · Nefes egzersizi · Uyku · Kilo · Enerji · Zihin açıklığı; dokununca eklenir, kartta olan görünmez), altında "Kendin kur": Sayarak · Sayı · Puan. — Ürün sahibi (P-87); hazırların listesi: Öneri
 - **Gidişat kartın ⋯ menüsünde** (kartta ölçüm varsa): son 4 hafta, her gün bir satır (en yeni üstte), her ölçüm bir sütun; hücrede değer, zeminin koyuluğu büyüklüğü (Sayarak'ta hedefe, Puan'da 5'e, Sayı'da dönemin en küçüğü–en büyüğüne göre). Üstte son 7 günün ortalaması; hafta araları çizgili. Hesap ve yorum yok. — Ürün sahibi (P-87); ortalama satırı: Öneri
 - **Sonra (veri birikince):** iki grup karşılaştırması ("kahve ≤1 günlerde enerji ort. …", ertesi gün seçeneği) ve önce / sonra deneyi (temel dönem + tek değişiklik). Hazır "Günlük ölçümler" öneri kartı da düşünülebilir. — Not
+
+## Zamanlayıcı ve anımsatıcı ayarları (4 Kasım)
+
+- **Zamanlayıcının ertelemesi 5 dk** (önce 1 dk). — Ürün sahibi (P-88)
+- **Alarm olarak çalan zamanlayıcı Rites açıkken 20 sn çalınca susar ve kendiliğinden ertelenir** (5 dk sonra yeniden çalar; en çok 3 kez, sonra biter). Rites kapalıyken iOS (AlarmKit) çalan alarmı uygulamanın susturmasına izin vermiyor; alarm kişi durdurana dek çalar (Apple'ın geliştirici forumundaki yanıtı: süreyle kendiliğinden susturan bir API yok). Kişi o sırada uygulamaya dönerse alarm hemen susar ve ertelenir. — Ürün sahibi (P-88, 20 sn); kapalıyken sınırı: Not
+- **Anımsatıcılar'daki "Ajanda hatırlatmalarının sesi" kalktı.** Kartın sesi kartın hatırlatmasında seçilir; artık bildirimle gelen hatırlatmada da ("Ses"; alarmda "Alarm sesi"). Kartın sesi yoksa eski genel ses, o da yoksa telefonun sesi. — Ürün sahibi (P-88); bildirimde de ses: Öneri
+- **Yeni anımsatıcı son kurulanın "Nasıl uyarsın?", sesi ve ertelemesiyle açılır.** — Ürün sahibi (P-88); erteleme de: Öneri

@@ -525,7 +525,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
     saat: durum.zamanlama.saat,
     hatirlatma: gecerliHatirlatma(durum.zamanlama.hatirlatma, durum.zamanlama.saat),
     alarm: !!(gecerliHatirlatma(durum.zamanlama.hatirlatma, durum.zamanlama.saat) && durum.zamanlama.alarm),
-    alarmSesi: durum.zamanlama.alarm ? (durum.zamanlama.alarmSesi ?? null) : null,
+    alarmSesi: durum.zamanlama.hatirlatma ? (durum.zamanlama.alarmSesi ?? null) : null,
     tekrar: durum.zamanlama.tekrar,
     seriSay: durum.zamanlama.tekrar ? durum.seriSay : null,
     sabitler: durum.sabitler.length ? [...durum.sabitler] : null,
