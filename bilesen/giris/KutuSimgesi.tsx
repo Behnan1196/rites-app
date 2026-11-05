@@ -28,6 +28,8 @@ export function KutuSimgesi({ k, renkler, boyut = 24 }: { k: KutuAnahtari; renkl
       return <Ionicons name="notifications-outline" size={boyut} color={r} />;
     case 'devam':
       return <Ionicons name="leaf-outline" size={boyut} color={r} />;
+    case 'olcum':
+      return <Ionicons name="speedometer-outline" size={boyut} color={r} />;
     case 'soru':
       return <Ionicons name="help-circle-outline" size={boyut} color={r} />;
     case 'su':

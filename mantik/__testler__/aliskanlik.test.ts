@@ -43,3 +43,12 @@ describe('Süren alışkanlık (P-78)', () => {
     expect(surenAliskanlikMi(p, '2026-10-27')).toBe(true);
   });
 });
+
+describe('P-91: Ölçümlerim', () => {
+  it('alışkanlık değil; varsayılan olarak ajandada görünmez, istenirse görünür', () => {
+    const k = { tekrar: { gunSayisi: null, gunler: null, desen: 'hergun' as const }, planId: null, bag: null };
+    expect(aliskanlikMi({ ...k, olcumlerim: true })).toBe(false);
+    expect(ajandadaMi({ ...k, olcumlerim: true, ajandada: null })).toBe(false);
+    expect(ajandadaMi({ ...k, olcumlerim: true, ajandada: true })).toBe(true);
+  });
+});

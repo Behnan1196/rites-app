@@ -333,6 +333,13 @@ export default function ProgramEkrani() {
                 ))}
               </Bolum>
             )}
+            {gelisim.olcumler.length === 0 && (
+              <Yazi tur="ikincil">
+                {
+                  "Giriş'teki Ölçümlerim'e her gün ölçümlerini (enerji, uyku…) girersen burada programdan önce ve sonra yan yana görünür."
+                }
+              </Yazi>
+            )}
             {/* P-90: ölçümler: programdan önceki 14 gün → program dönemi (ortalamalar). */}
             {gelisim.olcumler.length > 0 && (
               <>
@@ -348,7 +355,7 @@ export default function ProgramEkrani() {
                       <View style={stiller.esnek}>
                         <Yazi numberOfLines={1}>{o.parca.ad + (o.parca.birim ? ` (${o.parca.birim})` : '')}</Yazi>
                         <Yazi tur="etiket" numberOfLines={1}>
-                          {`${o.parca.kartBaslik} · ${o.once.gun} gün → ${o.sirasinda.gun} gün`}
+                          {`${o.once.gun} gün → ${o.sirasinda.gun} gün`}
                         </Yazi>
                       </View>
                       <Yazi kalinlik="kalin">{`${ortMetni(o.once)} → ${ortMetni(o.sirasinda)}`}</Yazi>

@@ -48,7 +48,7 @@ export function igneliNotlar<T extends { igneli: boolean }>(
 
 // ---- Giriş kutuları (G-7, `05` §10) -------------------------------------------
 
-export type KutuAnahtari = 'not' | 'gelenler' | 'bugun' | 'animsatici' | 'devam' | 'soru' | 'su' | 'ortak';
+export type KutuAnahtari = 'not' | 'gelenler' | 'bugun' | 'animsatici' | 'devam' | 'olcum' | 'soru' | 'su' | 'ortak';
 
 export interface KutuAyari {
   k: KutuAnahtari;
@@ -70,6 +70,8 @@ export const KUTULAR: readonly KutuTanimi[] = [
   { k: 'bugun', ad: 'Bugün sırada', aciklama: 'Ajandandaki sıradaki iş', hazir: true },
   { k: 'animsatici', ad: 'Anımsatıcılar', aciklama: 'Sıradaki anımsatma', hazir: true },
   { k: 'devam', ad: 'Devam edenler', aciklama: 'Uyguladığın programlar', hazir: true },
+  // P-91: kişinin tek ölçüm defteri; tarih seçip girilir.
+  { k: 'olcum', ad: 'Ölçümlerim', aciklama: 'Su, kahve, enerji, uyku…; günü seçip gir', hazir: true },
   // Pilot 20 Ekim: Günün sorusu planla birlikte kalktı (ayarda da görünmez).
   { k: 'soru', ad: 'Günün sorusu', aciklama: '', hazir: false },
   { k: 'su', ad: 'Su', aciklama: 'Yarım kutu · günlük bardak sayacı', hazir: false },

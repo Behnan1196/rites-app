@@ -465,3 +465,8 @@ Sonuç: → kararlar.md (Kartta "Listelerimden" kalktı; Gruplar'da kişi simges
 Ne dedi: "Biraz önce yaptığımız ölçüm kartı, alışkanlıklar, programlar ile ilgili genel olarak konuşmak istiyorum … ölçümler kartında hedefimiz bir alışkanlık dahil yaşam tarzı değişikliklerinin etkisini görmek. Şu an onu da tam bir hedef olmaksızın izliyoruz … süt ürünlerini, en azından bir süre, tamamen kesmek, ayrıca mümkün olduğunca terlemek … bir çeşit detoks programı gibi düşünüyorum … 2 hafta yaptıklarıma dikkat edeceğim. Bunu ajanda üzerinden mi yapmalı yoksa bir program gibi düşünüp, örneğin Giriş'den mi takip etmeli" → öneri: program = deney → "Evet belirli süre için denemeye değer. Başlayalım"
 Nerede: Program ekranı, Gidişat
 Sonuç: → kararlar.md (Program = deney)
+
+### P-91 · 5 Kasım 2026 · Behnan
+Ne dedi: "Günlük ölçümler için bir kart oluşturdum, topluca oradan giriyorum. Başka kartlarda da ölçüm olabiliyor, tabi bu biraz karışıklık yaratıyor. Acaba ölçümleri girişde bir çeşit kart olarak mı tanımlasak, sadece buradaki ölçümleri dikkate almamız uygun olabilir belki. Ölçümler tarihsel olacağı için giriş ekranındaki modülde tarih seçimi de olsa, ayrıca ajanda da göster diyerek istenildiğinde ajandadan da kullanılabilse. Ancak amaç hem ajandayı rahatlatmak, hem kolay girişi sağlamak, hem de günlük (bazıları haftalık) ölçümlerin özel bir kart olmasını, yani ikinci aynı veya benzeri adlı karttan farklı olmasını sağlamak" Seçimler: kartlardaki ölçümler kalsın ama değerlendirmeye girmesin; Ölçümlerim boş başlasın; her ölçüme sıklık; kutunun içinde girilsin.
+Nerede: Giriş, Gidişat, program değerlendirmesi
+Sonuç: → kararlar.md (Ölçümlerim: Giriş'te tek ölçüm defteri)

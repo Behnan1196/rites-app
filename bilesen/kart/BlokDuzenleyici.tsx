@@ -21,6 +21,8 @@ import { ArtiEksi, Bolum, SecenekHapi } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
 import { maddeliListeMi, type BlokTuru } from '@/mantik/kart';
+import { olcumGunu, siklikYaz } from '@/mantik/olcumHazirlari';
+import { GUN_KISA } from '@/mantik/tarih';
 
 import { BagliListeSecici } from './BagliListe';
 import { BLOK_TURLERI } from './blokTurleri';
@@ -39,6 +41,8 @@ interface Ozellikler {
   onMenu?: () => void;
   /** P-77: kart görünümündeki ayar sayfasında: kutu, başlık satırı ve "Bunu kaldır" yok (listede adı kalır). */
   basliksiz?: boolean;
+  /** P-91: Ölçümlerim'de ölçümün sıklığı (her gün ya da haftada bir gün). */
+  siklik?: boolean;
 }
 
 export function BlokDuzenleyici({
@@ -50,6 +54,7 @@ export function BlokDuzenleyici({
   onGelendenAlindi,
   onMenu,
   basliksiz = false,
+  siklik = false,
 }: Ozellikler) {
   const tur = BLOK_TURLERI[blok.tur];
   const degis = (alanlar: Partial<BlokTaslagi>) => onDegis({ ...blok, ...alanlar });
@@ -162,6 +167,28 @@ export function BlokDuzenleyici({
               liste
             />
           )}
+        </>
+      )}
+      {siklik && (blok.tur === 'adet' || blok.tur === 'olcum' || blok.tur === 'puan') && (
+        <>
+          <Yazi kalinlik="kalin">Ne sıklıkla?</Yazi>
+          <View style={stiller.turler}>
+            <SecenekHapi
+              etiket="Her gün"
+              secili={olcumGunu(blok) === null}
+              onPress={() => degis({ metin: siklikYaz(null) })}
+            />
+            {GUN_KISA.map((g, i) => (
+              <SecenekHapi
+                key={g}
+                etiket={g}
+                erisimEtiketi={`Haftada bir: ${g}`}
+                secili={olcumGunu(blok) === i}
+                onPress={() => degis({ metin: siklikYaz(i) })}
+              />
+            ))}
+          </View>
+          <Yazi tur="ikincil">Haftalık ölçüm yalnız kendi gününde görünür; geçmiş bir günü seçince yine girilir.</Yazi>
         </>
       )}
       {blok.tur === 'foto' && (

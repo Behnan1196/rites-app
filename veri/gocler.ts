@@ -351,6 +351,12 @@ export const GOCLER: readonly Goc[] = [
           UPDATE yerel_liste SET cesit = 'yapilacak' WHERE cesit NOT IN ('yapilacak', 'gunluk', 'not');
           UPDATE yerel_madde SET miktar = '' WHERE miktar <> '';`,
   },
+  {
+    // Ölçümlerim (pilot 5 Kasım, P-91): kişinin tek ölçüm defteri; Giriş'te kutusu var,
+    // varsayılan olarak ajandada görünmez. Program değerlendirmesi yalnız buradaki ölçümlere bakar.
+    surum: 27,
+    sql: `ALTER TABLE kart ADD COLUMN olcumlerim INTEGER NOT NULL DEFAULT 0;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

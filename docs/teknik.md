@@ -215,3 +215,9 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - `mantik/olcumHazirlari.ts`: `COKLU_PARCALAR` (adet, olcum, puan: bir kartta birden çok), `OLCUM_HAZIRLARI`, `OLCUM_TURLERI`, `hazirKarttaMi`. `parcaSecimi`: şeritte `olcum` hep durur ("Ölçüm"); Daha yalnız öbür parçalar kalınca.
 - `bilesen/kart/OlcumSecici.tsx`: hazırlar + Kendin kur; kart görünümünde hazır hemen `blokEkle`, kendin kur `ParcaAyarSayfasi`; formda taslağa eklenir.
 - `mantik/gidisat.ts` `gidisatTablosu(bloklar, kayitlar, bugun, gunSayisi)`: sütunlar, satırlar (en yeni başta), hücre `{deger, yogunluk}`, son 7 gün ortalaması; değerler `kayit.degerler[blok.id]` ("7,5" de okunur). Ekran `app/kart/gidisat/[id].tsx` (sütun sığmazsa yana kayar).
+
+## Ölçümlerim (P-91, 5 Kasım)
+
+- Yerel göç 27: `kart.olcumlerim` (1 / 0). `Kart.olcumlerim`; `olcumlerimiOku`, `olcumlerimiKur` (her gün, süresiz, `ajandada = 0`). `aliskanlikMi` false; `ajandadaMi` yalnız `ajandada = 1` ise.
+- Sıklık ölçüm parçasının (adet, olcum, puan) kullanılmayan `metin` alanında: `hafta:0` (Pzt) … `hafta:6` (Paz); boş = her gün (`mantik/olcumHazirlari`: `olcumGunu`, `siklikYaz`, `olcumGunuMu`). `BlokDuzenleyici` / `ParcaAyarSayfasi` `siklik` ile gösterir.
+- Giriş kutusu `bilesen/giris/OlcumlerimKutusu.tsx` (`KutuAnahtari` `olcum`). `olcumKayitlari` (program değerlendirmesi) yalnız `olcumlerim = 1` kartın parçaları.

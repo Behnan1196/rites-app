@@ -1,7 +1,7 @@
 // Programın değerlendirmesi (pilot 4 Kasım, P-90: "program = deney"): belirli bir süre bazı
 // şeylere uyup (süt ürünü yok, terle) durumunun (enerji, cilt…) nasıl değiştiğini görmek.
 // - Uyum: programın her kartı, görünen günlerin kaçında yapıldı.
-// - Ölçümler: bütün kartlardaki ölçüm parçaları (Sayarak, Ölçüm, Puan) için programdan önceki
+// - Ölçümler: Ölçümlerim'deki ölçüm parçaları (Sayarak, Ölçüm, Puan; P-91) için programdan önceki
 //   günlerin ortalaması ile program dönemininki yan yana. Yorum yok; az veride uyarı.
 // - Gidişat tablosunda programın günleri işaretlenir (`programDonemleri`).
 

@@ -40,3 +40,25 @@ export const OLCUM_TURLERI: readonly { tur: 'adet' | 'olcum' | 'puan'; ad: strin
 export function hazirKarttaMi(h: OlcumHaziri, bloklar: readonly { tur: BlokTuru; ad: string }[]): boolean {
   return bloklar.some((b) => b.tur === h.tur && b.ad.trim().toLocaleLowerCase('tr') === h.ad.toLocaleLowerCase('tr'));
 }
+
+// ---- Sıklık (P-91) ---------------------------------------------------------------
+// Ölçümlerim'de bir ölçüm her gün ya da haftada bir gün (kilo Pazartesi) girilir. Ölçüm
+// parçalarında kullanılmayan `metin` alanında tutulur: "hafta:0" (Pzt) … "hafta:6" (Paz).
+
+const SIKLIK = /^hafta:([0-6])$/;
+
+/** Haftalık ölçümün günü (0 = Pzt … 6 = Paz); her günse null. */
+export function olcumGunu(b: { metin: string }): number | null {
+  const m = SIKLIK.exec(b.metin.trim());
+  return m ? Number(m[1]) : null;
+}
+
+export function siklikYaz(gun: number | null): string {
+  return gun === null ? '' : `hafta:${gun}`;
+}
+
+/** Ölçüm bu gün girilir mi: her gün ya da haftanın o günü; o gün değeri varsa yine görünür. */
+export function olcumGunuMu(b: { metin: string }, haftaninGunu: number, degerVar = false): boolean {
+  const g = olcumGunu(b);
+  return g === null || g === haftaninGunu || degerVar;
+}

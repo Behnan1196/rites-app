@@ -744,3 +744,11 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Programın ekranında (Gelişim):** kart kart uyum ("5/6 gün") ve **Ölçümler: önceki 14 gün → program**: bütün kartlardaki Sayarak, Ölçüm ve Puan parçalarının iki dönemdeki ortalaması ("Enerji 2,9 → 3,6", gün sayılarıyla; az veride uyarı; "birlikte değişen ölçümler bir ipucudur; nedenini tek başına göstermez"). Eski "son ölçüm" satırları bunun yerine. — Ürün sahibi (P-90); 14 gün ve ayrıntılar: Öneri
 - **Gidişat tablosunda programın günleri solda program renginde şeritle işaretli;** üstte "Süt ürünsüz: 4 Kasım – bugün". — Ürün sahibi (P-90)
 - **Sonra:** programa niyet ("Cildim ve enerjim nasıl değişecek?") ve gözlenecek ölçümlerin seçimi; değerlendirme yalnız onları gösterir. — Not
+
+## Ölçümlerim: Giriş'te tek ölçüm defteri (5 Kasım)
+
+- **Ölçümlerim kişinin tek ölçüm defteri;** başka bir kartla karışmaz. Program değerlendirmesi (önce → program) yalnız buradaki ölçümlere bakar. Başka kartlardaki ölçüm parçaları (su sayacı gibi) yerinde çalışır, değerlendirmeye girmez. — Ürün sahibi (P-91)
+- **Giriş'te Ölçümlerim kutusu:** üstte gün seçimi (‹ Bugün ›; geçmiş günler sonradan girilir, ileri gün yok), altında o günün ölçümleri, en altta "+ Ölçüm" · "Gidişat" · "Düzenle". Ölçüme uzun basınca ayarı (ad, birim, sıklık). Kutu yeni olduğu için Giriş'in sonuna eklenir; yeri "Giriş'te neler görünsün?"den değişir. — Ürün sahibi (P-91); yerleşim: Öneri
+- **Ajandada göster** varsayılan kapalı; Düzenle → kartın ⋯ menüsünden açılır. Ölçümlerim alışkanlık sayılmaz, programa eklenmez. — Ürün sahibi (P-91)
+- **Her ölçümün sıklığı:** her gün ya da haftada bir gün (kilo Pazartesi). Haftalık ölçüm yalnız kendi gününde görünür; o gün değeri varsa yine görünür. — Ürün sahibi (P-91)
+- **Var olan "Günlük ölçümler" kartı olduğu gibi kalır;** Ölçümlerim boş başlar. — Ürün sahibi (P-91)

@@ -607,6 +607,7 @@ export default function KartGorunumu() {
           blok={parcaAyari.blok}
           yeni={parcaAyari.yeni}
           cokGunlu={!!kart.tekrar}
+          siklik={!!kart.olcumlerim}
           onKaydet={(t) => {
             const { id, ...alanlar } = t;
             icerikKaydet(parcaAyari.yeni ? blokEkle(kapi, kart.id, { id, ...alanlar }) : blokYaz(kapi, t));
@@ -655,7 +656,7 @@ export default function KartGorunumu() {
               onPress: () => kutuphane.ac({ tur: 'kart', kart, bloklar, alanlar: program?.alanlar ?? [] }),
             },
             // P-78: tekrarlı kart alışkanlık olarak izlenir (Giriş → Devam edenler); programın kartı zaten öyle.
-            ...(duzenlenir && kart.tekrar && !programKartiMi(kart)
+            ...(duzenlenir && kart.tekrar && !programKartiMi(kart) && !kart.olcumlerim
               ? [
                   {
                     etiket: kart.aliskanlik ? 'Alışkanlıktan çıkar' : 'Alışkanlık olarak izle',
@@ -673,7 +674,7 @@ export default function KartGorunumu() {
                   },
                 ]
               : []),
-            ...(aliskanlikMi(kart)
+            ...(aliskanlikMi(kart) || kart.olcumlerim
               ? [
                   {
                     etiket: ajandadaMi(kart) ? 'Ajandada gösterme' : 'Ajandada göster',
@@ -693,7 +694,7 @@ export default function KartGorunumu() {
                   },
                 ]
               : []),
-            ...(!kart.planId && !kart.bag && !kart.kilitli
+            ...(!kart.planId && !kart.bag && !kart.kilitli && !kart.olcumlerim
               ? [
                   {
                     etiket: 'Programa ekle',

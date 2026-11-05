@@ -617,7 +617,7 @@ export function programKartiMi(kart: Pick<Kart, 'planId' | 'bag'>): boolean {
 }
 
 /**
- * P-90: programın değerlendirmesi için bütün kartların ölçüm parçaları (Sayarak, Ölçüm, Puan) ve
+ * P-90: programın değerlendirmesi için ölçüm parçaları (Sayarak, Ölçüm, Puan; P-91: yalnız Ölçümlerim'dekiler) ve
  * `ilk`ten bugüne kayıtları.
  */
 export async function olcumKayitlari(
@@ -636,7 +636,7 @@ export async function olcumKayitlari(
     baslik: string;
   }>(
     `SELECT b.id, b.kart_id, b.tur, b.ad, b.birim, k.baslik FROM blok b JOIN kart k ON k.id = b.kart_id
-     WHERE b.tur IN ('adet', 'olcum', 'puan') ORDER BY k.sira, b.sira`,
+     WHERE b.tur IN ('adet', 'olcum', 'puan') AND k.olcumlerim = 1 ORDER BY b.sira`,
   );
   const kartlar = [...new Set(bloklar.map((b) => b.kart_id))];
   const kayitlar = kartlar.length

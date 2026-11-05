@@ -10,6 +10,7 @@ import {
   bosKayit,
   hatirlatmaCoz,
   hatirlatmaYaz,
+  yeniKart,
   type Blok,
   type BlokTuru,
   type Kart,
@@ -60,6 +61,7 @@ interface KartSatiri {
   bag?: string | null;
   sabitler?: string | null;
   aliskanlik?: number | null;
+  olcumlerim?: number | null;
   ajandada?: number | null;
   blok_sayisi?: number;
   adim_maddeler?: string | null;
@@ -129,6 +131,7 @@ export function kartSatirdan(s: KartSatiri): KartOzeti {
     bag: s.bag ?? null,
     ...(s.sabitler ? { sabitler: json<SabitAlan[] | null>(s.sabitler, null) } : {}),
     ...(s.aliskanlik ? { aliskanlik: true } : {}),
+    ...(s.olcumlerim ? { olcumlerim: true } : {}),
     ...(s.ajandada === 0 || s.ajandada === 1 ? { ajandada: s.ajandada === 1 } : {}),
     blokSayisi: s.blok_sayisi ?? 0,
     adimlar: s.adim_maddeler
@@ -168,7 +171,7 @@ function kayitSatirdan(s: KayitSatiri): Kayit {
 }
 
 const KART_ALANLARI =
-  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, seri_say, cesit, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag, sabitler, aliskanlik, ajandada';
+  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, seri_say, cesit, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag, sabitler, aliskanlik, ajandada, olcumlerim';
 
 function kartDegerleri(k: Kart): SqlDeger[] {
   return [
@@ -196,6 +199,7 @@ function kartDegerleri(k: Kart): SqlDeger[] {
     k.sabitler ? JSON.stringify(k.sabitler) : null,
     k.aliskanlik ? 1 : 0,
     k.ajandada === null || k.ajandada === undefined ? null : k.ajandada ? 1 : 0,
+    k.olcumlerim ? 1 : 0,
   ];
 }
 
@@ -764,4 +768,32 @@ export function aliskanlikYaz(kapi: Kapi, kartId: string, aliskanlik: boolean): 
 /** Alışkanlık ajandada da görünsün mü. */
 export function ajandadaYaz(kapi: Kapi, kartId: string, ajandada: boolean): Promise<void> {
   return kapi.yaz(['kart'], (y) => y.calistir('UPDATE kart SET ajandada = ? WHERE id = ?', [ajandada ? 1 : 0, kartId]));
+}
+
+// ---- Ölçümlerim (P-91) -------------------------------------------------------------
+
+/** Kişinin Ölçümlerim kartı (tek); yoksa null. */
+export async function olcumlerimiOku(oku: Okuyucu): Promise<{ kart: KartOzeti; bloklar: Blok[] } | null> {
+  const s = await oku.ilk<{ id: string }>('SELECT id FROM kart WHERE olcumlerim = 1 ORDER BY olusturma LIMIT 1');
+  return s ? kartAyrinti(oku, s.id) : null;
+}
+
+/** Ölçümlerim'i kurar (her gün, süresiz, ajandada değil); kimliğini döner. Varsa onu döner. */
+export async function olcumlerimiKur(kapi: Kapi, oku: Okuyucu, bugunGun: Gun, idUret: KimlikUretici): Promise<string> {
+  const var_ = await oku.ilk<{ id: string }>('SELECT id FROM kart WHERE olcumlerim = 1 LIMIT 1');
+  if (var_) return var_.id;
+  const id = idUret();
+  await yeniKartKaydet(
+    kapi,
+    yeniKart(id, {
+      baslik: 'Ölçümlerim',
+      tarih: bugunGun,
+      tekrar: { gunSayisi: null, gunler: null, desen: 'hergun' },
+      olcumlerim: true,
+      ajandada: false,
+    }),
+    [],
+    idUret,
+  );
+  return id;
 }

@@ -20,7 +20,8 @@ const GUN_SUTUNU = 80;
 const SUTUN = 60;
 
 export default function Gidisat() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, geri: geriParam } = useLocalSearchParams<{ id: string; geri?: string }>();
+  const geri = geriParam || 'Kart';
   const bugunGun = useBugun();
   const { width } = useWindowDimensions();
   const veri = useSorgu(
@@ -31,10 +32,10 @@ export default function Gidisat() {
     },
     [id],
   );
-  if (veri.yukleniyor) return <EkranKabi geri="Kart" />;
+  if (veri.yukleniyor) return <EkranKabi geri={geri} />;
   if (!veri.veri)
     return (
-      <EkranKabi geri="Kart" baslik="Gidişat">
+      <EkranKabi geri={geri} baslik="Gidişat">
         <Yazi tur="ikincil">Bu kart artık yok.</Yazi>
       </EkranKabi>
     );
@@ -109,7 +110,7 @@ export default function Gidisat() {
   );
 
   return (
-    <EkranKabi geri="Kart" baslik="Gidişat" altBaslik={`${kart.baslik} · son 4 hafta`}>
+    <EkranKabi geri={geri} baslik="Gidişat" altBaslik={`${kart.baslik} · son 4 hafta`}>
       {t.sutunlar.length === 0 ? (
         <Yazi tur="ikincil">
           {'Bu kartta ölçüm yok. Karta "+ Ekle → Ölçüm" ile su, kahve, enerji gibi ölçümler ekle.'}

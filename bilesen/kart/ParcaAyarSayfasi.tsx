@@ -15,6 +15,7 @@ export function ParcaAyarSayfasi({
   blok,
   yeni = false,
   cokGunlu,
+  siklik = false,
   onKaydet,
   onKapat,
 }: {
@@ -22,6 +23,8 @@ export function ParcaAyarSayfasi({
   /** Daha'dan yeni parça: "Ekle" ile karta eklenir. */
   yeni?: boolean;
   cokGunlu: boolean;
+  /** P-91: Ölçümlerim'de ölçümün sıklığı. */
+  siklik?: boolean;
   onKaydet: (b: ParcaTaslagi) => void;
   onKapat: () => void;
 }) {
@@ -51,6 +54,7 @@ export function ParcaAyarSayfasi({
         onListeSecimi={(tur) => setTaslak((t) => ({ ...t, tur }))}
         onMenu={undefined}
         basliksiz
+        siklik={siklik}
       />
     </AltSayfa>
   );

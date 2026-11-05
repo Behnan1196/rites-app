@@ -1,6 +1,6 @@
 import { gidisatTablosu, olcumParcalariMi, sayiMetni, sayiOku } from '../gidisat';
 import { bosKayit, type Blok } from '../kart';
-import { hazirKarttaMi, OLCUM_HAZIRLARI } from '../olcumHazirlari';
+import { hazirKarttaMi, OLCUM_HAZIRLARI, olcumGunu, olcumGunuMu, siklikYaz } from '../olcumHazirlari';
 
 const blok = (id: string, tur: Blok['tur'], ad: string, d: Partial<Blok> = {}): Blok => ({
   id,
@@ -73,5 +73,16 @@ describe('Gidişat (P-87)', () => {
         bloklar,
       ),
     ).toBe(false);
+  });
+});
+
+describe('P-91: ölçüm sıklığı', () => {
+  it('haftalık ölçüm yalnız kendi gününde (değeri varsa yine)', () => {
+    expect(olcumGunu({ metin: siklikYaz(0) })).toBe(0);
+    expect(olcumGunu({ metin: '' })).toBeNull();
+    expect(olcumGunuMu({ metin: 'hafta:0' }, 0)).toBe(true);
+    expect(olcumGunuMu({ metin: 'hafta:0' }, 3)).toBe(false);
+    expect(olcumGunuMu({ metin: 'hafta:0' }, 3, true)).toBe(true);
+    expect(olcumGunuMu({ metin: '' }, 3)).toBe(true);
   });
 });

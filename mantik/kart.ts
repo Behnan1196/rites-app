@@ -131,6 +131,8 @@ export interface Kart {
   aliskanlik?: boolean;
   /** P-78: ajandada görünür mü; null / yok: varsayılan (alışkanlık görünmez, öbürleri görünür). */
   ajandada?: boolean | null;
+  /** P-91: Ölçümlerim (kişinin tek ölçüm defteri; Giriş'te kutusu var, varsayılan ajandada değil). */
+  olcumlerim?: boolean;
 }
 
 /**
