@@ -35,6 +35,8 @@ interface Ozellikler {
   baslikSag?: ReactNode;
   /** Sağ üstte avatar (Profil · Ayarlar); P-34: yalnız Giriş. */
   avatar?: boolean;
+  /** P-95: klavye açıkken dışarıya ilk dokunuş yalnız klavyeyi kapatsın (yanlışlıkla ölçüm girilmesin). */
+  klavyeKapatir?: boolean;
   children?: ReactNode;
 }
 
@@ -47,6 +49,7 @@ export function EkranKabi({
   kaydirilabilir = true,
   baslikSag,
   avatar = false,
+  klavyeKapatir = false,
   children,
 }: Ozellikler) {
   const kenar = useSafeAreaInsets();
@@ -96,7 +99,7 @@ export function EkranKabi({
         ref={kaydirma}
         scrollEnabled={kaydirilabilir && !kilitli}
         contentContainerStyle={stiller.icerik}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps={klavyeKapatir ? 'never' : 'handled'}
       >
         {((!!geri && !!baslik) || !!altBaslik) && (
           <View style={stiller.baslikAlani}>

@@ -762,3 +762,9 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Kartın ⋯ → "Rutine çevir (maddeler adım olur)"**: listenin her maddesi bir adım kartı olur (o günün işaretleriyle), liste kalkar. Listesiz kartta "Rutin yap". — Ürün sahibi (P-93)
 - **Sınırlar (şimdilik):** rutin paylaşılınca, kütüphaneye kaydedilince ya da programa eklenince adımları gitmez; rutinin zamanı "yalnız bu gün" değişirse o günün kopyasında adımlar görünmez ("bu gün ve sonrası"nda adımlar yeni karta geçer). — Not
 - **Ölçümlerim'deki "Bugüne dön" yazısı yerine ajandadaki ↶ simgesi.** — Ürün sahibi (P-93)
+
+## Ölçüm girişi kolaylaştı; yaşam alanlarının puanı ölçüm oldu (5 Kasım)
+
+- **Ölçümlerim'de "Son ölçümler" çubukları ve "Önceki: …" satırı yok** (gidişat ayrı ekranda). — Ürün sahibi (P-95)
+- **Klavye:** Ölçümlerim açıkken dışarıya ilk dokunuş yalnız klavyeyi kapatır (yanlışlıkla sayaca, puana basılmaz); iPhone'da sayı klavyesinin üstünde "Bitti". — Ürün sahibi (P-95, sorun); çözüm: Öneri
+- **Yaşam alanlarının puanı bir ölçüm:** "+ Ölçüm → Yaşam alanlarım" açık her alana 1–5 puan ekler, haftada bir (Pazar; sıklığı değiştirilebilir). Yaşam Tarzım'daki puan en son girilen değerdir: orada değişince bugünün ölçümü yazılır; Ölçümlerim'de en son güne girilen puan Yaşam Tarzım'a yazılır. Gidişatta ve program karşılaştırmasında öbür ölçümlerle yan yana ("Beslenme 2 → 4 · Enerji 2,9 → 3,6"): beslenmenin kötü gittiği haftada enerjinin düşmesi gibi koşullar da görünür. — Ürün sahibi (P-95); eşitleme kuralı: Öneri

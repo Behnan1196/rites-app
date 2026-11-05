@@ -480,3 +480,13 @@ Sonuç: → kararlar.md (Giriş'te Ölçümlerim küçük kutu)
 Ne dedi: "Güzel, bir tek Bugüne dön yazısı yerine ajanda da uyguladığımız bugüne dön ikonunu koyabiliriz. Ajanda da her gün ilk kartım Sabah rutini, bu kartta yaklaşık 8-10 madde var bir liste olarak, sırasıyla yaptım diye maddeleri işaretliyorum ancak bazıları egzersiz olduğu için video'ya gerek var. Bu tip ihtiyaçlar olacağını düşünerek sanırım kartlardan oluşan bir kartta (rutin) oluşturmamız gerekecek, hatta içindeki maddeleri Giriş deki Bugün sırada da görüp işaretleyebilmeliyim" Seçimler: kartlardan oluşan kart; Bugün sırada sıradaki adım; maddeler adım kartlarına çevrilsin; adımlar rutinle aynı günler.
 Nerede: Ajanda, kart görünümü, Giriş → Bugün sırada, Ölçümlerim
 Sonuç: → kararlar.md (Rutin: kartlardan oluşan kart)
+
+### P-94 · 5 Kasım 2026 · Behnan
+Ne dedi: "Listenin kartlardan oluşması güzel oldu, biraz kullanayım, yeni fikirler doğabilir"
+Nerede: Rutin
+Sonuç: Kullanımda deneniyor; karar yok.
+
+### P-95 · 5 Kasım 2026 · Behnan
+Ne dedi: "Ölçüm kartıyla ilgili, sayarak olanların altında çıkan "Son ölçümler" bilgilerini kaldıralım. En çok sorunu, değer girmede yaşıyorum, klavye açılıyor, onu kapatmak için dışarıda bir yere basayım derken yanlışlıkla ölçüm girebiliyorum. Diğer yandan, bizim Yaşam tarzındaki alanlarımız ile bu ölçümlerin aslında ilişkisi var, orada verdiğim puan genel ama … uyguladığım yeni bir faaliyet ile ölçümleri karşılaştırırken, o alanlarda vereceğim puanları da hesaba katmam gerekebilir. Örneğin beslenmem kötü ise veya çok iyi ise … bu durum sonucu etkileyecektir." Seçimler: alan puanı bir ölçüm olsun; haftada bir, Pazar.
+Nerede: Ölçümlerim, Yaşam Tarzım → alan
+Sonuç: → kararlar.md (Ölçüm girişi kolaylaştı; yaşam alanlarının puanı ölçüm oldu)

@@ -41,21 +41,50 @@ export function hazirKarttaMi(h: OlcumHaziri, bloklar: readonly { tur: BlokTuru;
   return bloklar.some((b) => b.tur === h.tur && b.ad.trim().toLocaleLowerCase('tr') === h.ad.toLocaleLowerCase('tr'));
 }
 
-// ---- Sıklık (P-91) ---------------------------------------------------------------
+// ---- Sıklık (P-91) ve yaşam alanı (P-95) --------------------------------------------
 // Ölçümlerim'de bir ölçüm her gün ya da haftada bir gün (kilo Pazartesi) girilir. Ölçüm
-// parçalarında kullanılmayan `metin` alanında tutulur: "hafta:0" (Pzt) … "hafta:6" (Paz).
+// parçalarında kullanılmayan `metin` alanında, "|" ile ayrılmış etiketler olarak tutulur:
+// "hafta:0" (Pzt) … "hafta:6" (Paz); yaşam alanının puanıysa "alan:<anahtar>".
 
 const SIKLIK = /^hafta:([0-6])$/;
+const ALAN = /^alan:(.+)$/;
+
+function etiketler(metin: string): string[] {
+  return metin
+    .split('|')
+    .map((t) => t.trim())
+    .filter(Boolean);
+}
 
 /** Haftalık ölçümün günü (0 = Pzt … 6 = Paz); her günse null. */
 export function olcumGunu(b: { metin: string }): number | null {
-  const m = SIKLIK.exec(b.metin.trim());
-  return m ? Number(m[1]) : null;
+  for (const t of etiketler(b.metin)) {
+    const m = SIKLIK.exec(t);
+    if (m) return Number(m[1]);
+  }
+  return null;
 }
 
-export function siklikYaz(gun: number | null): string {
-  return gun === null ? '' : `hafta:${gun}`;
+/** P-95: yaşam alanının puanıysa alanın anahtarı. */
+export function olcumAlani(b: { metin: string }): string | null {
+  for (const t of etiketler(b.metin)) {
+    const m = ALAN.exec(t);
+    if (m) return m[1]!;
+  }
+  return null;
 }
+
+export function siklikYaz(gun: number | null, alan: string | null = null): string {
+  return [gun === null ? null : `hafta:${gun}`, alan ? `alan:${alan}` : null].filter(Boolean).join('|');
+}
+
+/** Sıklığı değiştirir; öbür etiketler (alan) kalır. */
+export function siklikDegistir(metin: string, gun: number | null): string {
+  return siklikYaz(gun, olcumAlani({ metin }));
+}
+
+/** P-95: yaşam alanlarının haftalık puanı Pazar. */
+export const ALAN_PUANI_GUNU = 6;
 
 /** Ölçüm bu gün girilir mi: her gün ya da haftanın o günü; o gün değeri varsa yine görünür. */
 export function olcumGunuMu(b: { metin: string }, haftaninGunu: number, degerVar = false): boolean {

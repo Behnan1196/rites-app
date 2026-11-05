@@ -11,16 +11,17 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { ParcaTaslagi } from '@/mantik/blokTaslak';
 import { bosKayit, type Kayit } from '@/mantik/kart';
-import { COKLU_PARCALAR, olcumGunuMu } from '@/mantik/olcumHazirlari';
+import { COKLU_PARCALAR, olcumAlani, olcumGunuMu } from '@/mantik/olcumHazirlari';
 import { goreliTarih, gunEkle, haftaGunu, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import { blokEkle, blokYaz, kartKayitlari, kayitDegistir, olcumlerimiKur, olcumlerimiOku } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
+import { alanOlcumleriniEkle, eklenecekAlanlar, olcumdenAlanPuaniYaz } from '@/veri/olcumlerim';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { Dugme } from '../Dugme';
-import { BlokUygulama } from '../kart/BlokUygulama';
+import { BlokUygulama, OlcumSadeBaglami } from '../kart/BlokUygulama';
 import { OlcumSecici } from '../kart/OlcumSecici';
 import { ParcaAyarSayfasi } from '../kart/ParcaAyarSayfasi';
 import { useKisaMesaj } from '../KisaMesaj';
@@ -45,6 +46,7 @@ export function OlcumlerimIcerigi() {
     },
     [],
   );
+  const eklenecek = useSorgu(['plan', 'kart'], (o) => eklenecekAlanlar(o), []).veri ?? [];
   if (veri.yukleniyor) return null;
   const hata = (e: unknown) => {
     console.error('Kaydedilemedi', e);
@@ -68,159 +70,173 @@ export function OlcumlerimIcerigi() {
   const gizli = (v?.bloklar.filter((b) => COKLU_PARCALAR.includes(b.tur)).length ?? 0) - olcumler.length;
 
   return (
-    <View style={stiller.icerik}>
-      {!v ? (
-        <>
-          <Yazi tur="ikincil">
-            Su, kahve, enerji, uyku gibi ölçümlerini her gün buraya gir; gidişatı ve programlarının etkisini gör.
-          </Yazi>
-          <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Ölçümlerimi kur" onPress={() => void kur()} />
-        </>
-      ) : (
-        <>
-          {/* Gün seçimi: geçmiş günler sonradan girilir; yarın yok. */}
-          <View style={stiller.gunSatiri}>
-            <Pressable
-              onPress={() => setGun(gunEkle(secilen, -1))}
-              accessibilityRole="button"
-              accessibilityLabel="Önceki gün"
-              hitSlop={6}
-              style={stiller.ok}
-            >
-              <Ionicons name="chevron-back" size={22} color={renk.ana} />
-            </Pressable>
-            {/* P-93: ajandadaki gibi: gün adı ve yanında "bugüne dön" simgesi. */}
-            <View style={stiller.gunAdi}>
-              <Yazi kalinlik="kalin" accessibilityRole="header">
-                {goreliTarih(secilen, bugunGun)}
-              </Yazi>
-              {secilen !== bugunGun && (
-                <Pressable
-                  onPress={() => setGun(null)}
-                  accessibilityRole="button"
-                  accessibilityLabel="Bugüne dön"
-                  hitSlop={8}
-                  style={({ pressed }) => [stiller.bugune, pressed && { opacity: 0.7 }]}
-                >
-                  <Ionicons name="arrow-undo" size={18} color={renk.ana} />
-                </Pressable>
-              )}
-            </View>
-            <Pressable
-              onPress={() => setGun(gunEkle(secilen, 1))}
-              disabled={secilen >= bugunGun}
-              accessibilityRole="button"
-              accessibilityLabel="Sonraki gün"
-              hitSlop={6}
-              style={[stiller.ok, secilen >= bugunGun && { opacity: 0.3 }]}
-            >
-              <Ionicons name="chevron-forward" size={22} color={renk.ana} />
-            </Pressable>
-          </View>
-
-          {olcumler.length === 0 && (
+    <OlcumSadeBaglami.Provider value>
+      <View style={stiller.icerik}>
+        {!v ? (
+          <>
             <Yazi tur="ikincil">
-              {gizli > 0 ? 'Bu gün girilecek ölçüm yok (haftalık ölçümler kendi gününde).' : 'Henüz ölçüm yok.'}
+              Su, kahve, enerji, uyku gibi ölçümlerini her gün buraya gir; gidişatı ve programlarının etkisini gör.
             </Yazi>
-          )}
-          {olcumler.map((b, i) => (
-            <Pressable
-              key={`${b.id}-${secilen}`}
-              onLongPress={() => setAyar(b)}
-              accessible={false}
-              style={[stiller.olcum, i > 0 && stiller.cizgili]}
-            >
-              <BlokUygulama
-                blok={b}
-                gun={secilen}
-                kayit={kayit}
-                kayitlar={v.kayitlar}
-                onKayit={(degistir) => void kayitDegistir(kapi, v.kart.id, secilen, degistir).catch(hata)}
-              />
-            </Pressable>
-          ))}
+            <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Ölçümlerimi kur" onPress={() => void kur()} />
+          </>
+        ) : (
+          <>
+            {/* Gün seçimi: geçmiş günler sonradan girilir; yarın yok. */}
+            <View style={stiller.gunSatiri}>
+              <Pressable
+                onPress={() => setGun(gunEkle(secilen, -1))}
+                accessibilityRole="button"
+                accessibilityLabel="Önceki gün"
+                hitSlop={6}
+                style={stiller.ok}
+              >
+                <Ionicons name="chevron-back" size={22} color={renk.ana} />
+              </Pressable>
+              {/* P-93: ajandadaki gibi: gün adı ve yanında "bugüne dön" simgesi. */}
+              <View style={stiller.gunAdi}>
+                <Yazi kalinlik="kalin" accessibilityRole="header">
+                  {goreliTarih(secilen, bugunGun)}
+                </Yazi>
+                {secilen !== bugunGun && (
+                  <Pressable
+                    onPress={() => setGun(null)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Bugüne dön"
+                    hitSlop={8}
+                    style={({ pressed }) => [stiller.bugune, pressed && { opacity: 0.7 }]}
+                  >
+                    <Ionicons name="arrow-undo" size={18} color={renk.ana} />
+                  </Pressable>
+                )}
+              </View>
+              <Pressable
+                onPress={() => setGun(gunEkle(secilen, 1))}
+                disabled={secilen >= bugunGun}
+                accessibilityRole="button"
+                accessibilityLabel="Sonraki gün"
+                hitSlop={6}
+                style={[stiller.ok, secilen >= bugunGun && { opacity: 0.3 }]}
+              >
+                <Ionicons name="chevron-forward" size={22} color={renk.ana} />
+              </Pressable>
+            </View>
 
-          <View style={stiller.alt}>
-            <Pressable
-              onPress={() => setSecici(true)}
-              accessibilityRole="button"
-              accessibilityLabel="Ölçüm ekle"
-              hitSlop={6}
-              style={({ pressed }) => [stiller.altDugme, pressed && { opacity: 0.6 }]}
-            >
-              <Ionicons name="add" size={20} color={renk.ana} />
-              <Yazi kalinlik="kalin" renk={renk.ana}>
-                Ölçüm
+            {olcumler.length === 0 && (
+              <Yazi tur="ikincil">
+                {gizli > 0 ? 'Bu gün girilecek ölçüm yok (haftalık ölçümler kendi gününde).' : 'Henüz ölçüm yok.'}
               </Yazi>
-            </Pressable>
-            <Pressable
-              onPress={() =>
-                router.push({ pathname: '/kart/gidisat/[id]', params: { id: v.kart.id, geri: 'Ölçümlerim' } })
-              }
-              accessibilityRole="button"
-              accessibilityLabel="Gidişat"
-              hitSlop={6}
-              style={({ pressed }) => [stiller.altDugme, pressed && { opacity: 0.6 }]}
-            >
-              <Ionicons name="stats-chart-outline" size={18} color={renk.ana} />
-              <Yazi kalinlik="kalin" renk={renk.ana}>
-                Gidişat
-              </Yazi>
-            </Pressable>
-            <Pressable
-              onPress={() =>
-                router.push({ pathname: '/kart/[id]', params: { id: v.kart.id, gun: secilen, geri: 'Ölçümlerim' } })
-              }
-              accessibilityRole="button"
-              accessibilityLabel="Ölçümleri düzenle: sıra, sıklık, ajandada göster"
-              hitSlop={6}
-              style={({ pressed }) => [stiller.altDugme, pressed && { opacity: 0.6 }]}
-            >
-              <Ionicons name="create-outline" size={18} color={renk.ana} />
-              <Yazi kalinlik="kalin" renk={renk.ana}>
-                Düzenle
-              </Yazi>
-            </Pressable>
-          </View>
-        </>
-      )}
+            )}
+            {olcumler.map((b, i) => (
+              <Pressable
+                key={`${b.id}-${secilen}`}
+                onLongPress={() => setAyar(b)}
+                accessible={false}
+                style={[stiller.olcum, i > 0 && stiller.cizgili]}
+              >
+                <BlokUygulama
+                  blok={b}
+                  gun={secilen}
+                  kayit={kayit}
+                  kayitlar={v.kayitlar}
+                  onKayit={(degistir) =>
+                    void kayitDegistir(kapi, v.kart.id, secilen, degistir)
+                      // P-95: yaşam alanının puanıysa Yaşam Tarzım'daki puan da (en son günse).
+                      .then(() => (olcumAlani(b) ? olcumdenAlanPuaniYaz(kapi, oku, v.kart.id, b, secilen) : undefined))
+                      .catch(hata)
+                  }
+                />
+              </Pressable>
+            ))}
 
-      <OlcumSecici
-        gorunur={secici}
-        mevcut={v?.bloklar ?? []}
-        onKapat={() => setSecici(false)}
-        onHazir={(h) => {
-          setSecici(false);
-          void olcumlerimiKur(kapi, oku, bugunGun, yeniKimlik)
-            .then((id) =>
-              blokEkle(kapi, id, { id: yeniKimlik(), tur: h.tur, ad: h.ad, birim: h.birim, dakika: h.hedef }),
-            )
-            .catch(hata);
-        }}
-        onTur={(tur) => {
-          setSecici(false);
-          setAyar({ id: '', tur, ad: '', metin: '', birim: '', dakika: null, maddeler: [], dosya: null });
-        }}
-      />
-      {ayar && (
-        <ParcaAyarSayfasi
-          blok={ayar}
-          yeni={ayar.id === ''}
-          cokGunlu
-          siklik
-          onKaydet={(t) => {
-            void olcumlerimiKur(kapi, oku, bugunGun, yeniKimlik)
-              .then(async (kartId) => {
-                const { id, ...alanlar } = t;
-                if (id === '') await blokEkle(kapi, kartId, { ...alanlar, id: yeniKimlik() });
-                else await blokYaz(kapi, t);
-              })
+            <View style={stiller.alt}>
+              <Pressable
+                onPress={() => setSecici(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Ölçüm ekle"
+                hitSlop={6}
+                style={({ pressed }) => [stiller.altDugme, pressed && { opacity: 0.6 }]}
+              >
+                <Ionicons name="add" size={20} color={renk.ana} />
+                <Yazi kalinlik="kalin" renk={renk.ana}>
+                  Ölçüm
+                </Yazi>
+              </Pressable>
+              <Pressable
+                onPress={() =>
+                  router.push({ pathname: '/kart/gidisat/[id]', params: { id: v.kart.id, geri: 'Ölçümlerim' } })
+                }
+                accessibilityRole="button"
+                accessibilityLabel="Gidişat"
+                hitSlop={6}
+                style={({ pressed }) => [stiller.altDugme, pressed && { opacity: 0.6 }]}
+              >
+                <Ionicons name="stats-chart-outline" size={18} color={renk.ana} />
+                <Yazi kalinlik="kalin" renk={renk.ana}>
+                  Gidişat
+                </Yazi>
+              </Pressable>
+              <Pressable
+                onPress={() =>
+                  router.push({ pathname: '/kart/[id]', params: { id: v.kart.id, gun: secilen, geri: 'Ölçümlerim' } })
+                }
+                accessibilityRole="button"
+                accessibilityLabel="Ölçümleri düzenle: sıra, sıklık, ajandada göster"
+                hitSlop={6}
+                style={({ pressed }) => [stiller.altDugme, pressed && { opacity: 0.6 }]}
+              >
+                <Ionicons name="create-outline" size={18} color={renk.ana} />
+                <Yazi kalinlik="kalin" renk={renk.ana}>
+                  Düzenle
+                </Yazi>
+              </Pressable>
+            </View>
+          </>
+        )}
+
+        <OlcumSecici
+          gorunur={secici}
+          mevcut={v?.bloklar ?? []}
+          alanSayisi={eklenecek.length}
+          onAlanlar={() => {
+            setSecici(false);
+            void alanOlcumleriniEkle(kapi, oku, bugunGun, yeniKimlik)
+              .then((n) => kisaMesaj(`${n} yaşam alanı eklendi; puanları Pazar günleri`))
               .catch(hata);
           }}
-          onKapat={() => setAyar(null)}
+          onKapat={() => setSecici(false)}
+          onHazir={(h) => {
+            setSecici(false);
+            void olcumlerimiKur(kapi, oku, bugunGun, yeniKimlik)
+              .then((id) =>
+                blokEkle(kapi, id, { id: yeniKimlik(), tur: h.tur, ad: h.ad, birim: h.birim, dakika: h.hedef }),
+              )
+              .catch(hata);
+          }}
+          onTur={(tur) => {
+            setSecici(false);
+            setAyar({ id: '', tur, ad: '', metin: '', birim: '', dakika: null, maddeler: [], dosya: null });
+          }}
         />
-      )}
-    </View>
+        {ayar && (
+          <ParcaAyarSayfasi
+            blok={ayar}
+            yeni={ayar.id === ''}
+            cokGunlu
+            siklik
+            onKaydet={(t) => {
+              void olcumlerimiKur(kapi, oku, bugunGun, yeniKimlik)
+                .then(async (kartId) => {
+                  const { id, ...alanlar } = t;
+                  if (id === '') await blokEkle(kapi, kartId, { ...alanlar, id: yeniKimlik() });
+                  else await blokYaz(kapi, t);
+                })
+                .catch(hata);
+            }}
+            onKapat={() => setAyar(null)}
+          />
+        )}
+      </View>
+    </OlcumSadeBaglami.Provider>
   );
 }
 

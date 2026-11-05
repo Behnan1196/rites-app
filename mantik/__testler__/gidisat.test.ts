@@ -1,6 +1,14 @@
 import { gidisatTablosu, olcumParcalariMi, sayiMetni, sayiOku } from '../gidisat';
 import { bosKayit, type Blok } from '../kart';
-import { hazirKarttaMi, OLCUM_HAZIRLARI, olcumGunu, olcumGunuMu, siklikYaz } from '../olcumHazirlari';
+import {
+  hazirKarttaMi,
+  OLCUM_HAZIRLARI,
+  olcumAlani,
+  olcumGunu,
+  olcumGunuMu,
+  siklikDegistir,
+  siklikYaz,
+} from '../olcumHazirlari';
 
 const blok = (id: string, tur: Blok['tur'], ad: string, d: Partial<Blok> = {}): Blok => ({
   id,
@@ -84,5 +92,17 @@ describe('P-91: ölçüm sıklığı', () => {
     expect(olcumGunuMu({ metin: 'hafta:0' }, 3)).toBe(false);
     expect(olcumGunuMu({ metin: 'hafta:0' }, 3, true)).toBe(true);
     expect(olcumGunuMu({ metin: '' }, 3)).toBe(true);
+  });
+});
+
+describe('P-95: yaşam alanının puanı', () => {
+  it('alan etiketi sıklıkla birlikte durur; sıklık değişince alan kalır', () => {
+    const metin = siklikYaz(6, 'beslenme');
+    expect(metin).toBe('hafta:6|alan:beslenme');
+    expect(olcumGunu({ metin })).toBe(6);
+    expect(olcumAlani({ metin })).toBe('beslenme');
+    const yeni = siklikDegistir(metin, null);
+    expect(olcumGunu({ metin: yeni })).toBeNull();
+    expect(olcumAlani({ metin: yeni })).toBe('beslenme');
   });
 });

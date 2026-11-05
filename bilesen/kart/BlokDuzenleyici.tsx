@@ -21,7 +21,7 @@ import { ArtiEksi, Bolum, SecenekHapi } from '../Secim';
 import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
 import { maddeliListeMi, type BlokTuru } from '@/mantik/kart';
-import { olcumGunu, siklikYaz } from '@/mantik/olcumHazirlari';
+import { olcumGunu, siklikDegistir } from '@/mantik/olcumHazirlari';
 import { GUN_KISA } from '@/mantik/tarih';
 
 import { BagliListeSecici } from './BagliListe';
@@ -176,7 +176,7 @@ export function BlokDuzenleyici({
             <SecenekHapi
               etiket="Her gün"
               secili={olcumGunu(blok) === null}
-              onPress={() => degis({ metin: siklikYaz(null) })}
+              onPress={() => degis({ metin: siklikDegistir(blok.metin, null) })}
             />
             {GUN_KISA.map((g, i) => (
               <SecenekHapi
@@ -184,7 +184,7 @@ export function BlokDuzenleyici({
                 etiket={g}
                 erisimEtiketi={`Haftada bir: ${g}`}
                 secili={olcumGunu(blok) === i}
-                onPress={() => degis({ metin: siklikYaz(i) })}
+                onPress={() => degis({ metin: siklikDegistir(blok.metin, i) })}
               />
             ))}
           </View>

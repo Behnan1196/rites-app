@@ -6,7 +6,7 @@ import { OlcumlerimIcerigi } from '@/bilesen/giris/OlcumlerimKutusu';
 
 export default function Olcumlerim() {
   return (
-    <EkranKabi geri="Giriş" baslik="Ölçümlerim">
+    <EkranKabi geri="Giriş" baslik="Ölçümlerim" klavyeKapatir>
       <OlcumlerimIcerigi />
     </EkranKabi>
   );

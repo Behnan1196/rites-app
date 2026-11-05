@@ -28,7 +28,7 @@ import { useBulusmalar } from '@/bilesen/gruplar/Bulusmalar';
 import { GorusmeyeKatil } from '@/bilesen/gruplar/BulusmaKarti';
 import { useKartVer } from '@/bilesen/gruplar/KartVerSayfasi';
 import { BirakSorusu } from '@/bilesen/gruplar/VerilenKartParcalari';
-import { BlokUygulama } from '@/bilesen/kart/BlokUygulama';
+import { BlokUygulama, OlcumSadeBaglami } from '@/bilesen/kart/BlokUygulama';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
 import { KartZamanSatiri } from '@/bilesen/kart/KartZamani';
 import { ParcaSeridi } from '@/bilesen/kart/ParcaSeridi';
@@ -291,256 +291,261 @@ export default function KartGorunumu() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={stiller.icerik} keyboardShouldPersistTaps="handled">
-        <View style={stiller.kart}>
-          {serit && <View style={[stiller.kaynakSeridi, { backgroundColor: serit }]} />}
-          <View style={[stiller.bolum, stiller.baslikAlani]}>
-            {!!cesit && (
-              <View style={stiller.cesitAdi}>
-                <Ionicons
-                  name={(cesit.ikon as React.ComponentProps<typeof Ionicons>['name'] | null) ?? 'leaf-outline'}
-                  size={20}
-                  color={renk.ikincil}
-                />
-                <Yazi tur="etiket" kalinlik="kalin" numberOfLines={1}>
-                  {cesit.ad}
-                </Yazi>
+      <ScrollView
+        contentContainerStyle={stiller.icerik}
+        keyboardShouldPersistTaps={kart.olcumlerim ? 'never' : 'handled'}
+      >
+        <OlcumSadeBaglami.Provider value={!!kart.olcumlerim}>
+          <View style={stiller.kart}>
+            {serit && <View style={[stiller.kaynakSeridi, { backgroundColor: serit }]} />}
+            <View style={[stiller.bolum, stiller.baslikAlani]}>
+              {!!cesit && (
+                <View style={stiller.cesitAdi}>
+                  <Ionicons
+                    name={(cesit.ikon as React.ComponentProps<typeof Ionicons>['name'] | null) ?? 'leaf-outline'}
+                    size={20}
+                    color={renk.ikincil}
+                  />
+                  <Yazi tur="etiket" kalinlik="kalin" numberOfLines={1}>
+                    {cesit.ad}
+                  </Yazi>
+                </View>
+              )}
+              <View style={stiller.baslikSatiri}>
+                {isaretlenir && (
+                  <Pressable
+                    onPress={() =>
+                      void (kart.ust
+                        ? rutinAdimiIsaretle(kapi, oku, kart.ust, kart.id, gun, !kayit.yapildi)
+                        : isaretle(kapi, kart.id, gun, !kayit.yapildi))
+                    }
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: kayit.yapildi }}
+                    accessibilityLabel={
+                      kayit.yapildi ? `${kart.baslik}: yapıldı` : `${kart.baslik}: yapıldı olarak işaretle`
+                    }
+                    hitSlop={8}
+                    style={stiller.isaretAlani}
+                  >
+                    <View style={[stiller.isaret, kayit.yapildi && stiller.isaretDolu]}>
+                      {kayit.yapildi && <Ionicons name="checkmark" size={20} color={renk.yuzey} />}
+                    </View>
+                  </Pressable>
+                )}
+                {baslikDegisir(kart) ? (
+                  <SatirIciBaslik
+                    baslik={kart.baslik}
+                    onKaydet={(baslik) => icerikKaydet(kartMetniYaz(kapi, kart.id, { baslik }))}
+                  />
+                ) : (
+                  <>
+                    <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.esnek}>
+                      {kart.baslik}
+                    </Yazi>
+                    <SabitSimgesi />
+                  </>
+                )}
               </View>
-            )}
-            <View style={stiller.baslikSatiri}>
-              {isaretlenir && (
+              {/* P-83: başlığın altında tek, sessiz zaman satırı; dokununca tek Zaman sayfası. */}
+              {/* P-93: rutinin adımının kendi zamanı yok; rutinin günlerini izler. */}
+              {!kart.ust && <KartZamanSatiri kart={kart} bloklar={bloklar} gun={gun} />}
+              {!!rutin && (
                 <Pressable
                   onPress={() =>
-                    void (kart.ust
-                      ? rutinAdimiIsaretle(kapi, oku, kart.ust, kart.id, gun, !kayit.yapildi)
-                      : isaretle(kapi, kart.id, gun, !kayit.yapildi))
+                    router.canGoBack()
+                      ? router.back()
+                      : router.push({ pathname: '/kart/[id]', params: { id: rutin.id, gun } })
                   }
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: kayit.yapildi }}
-                  accessibilityLabel={
-                    kayit.yapildi ? `${kart.baslik}: yapıldı` : `${kart.baslik}: yapıldı olarak işaretle`
-                  }
+                  accessibilityRole="button"
+                  accessibilityLabel={`Rutin: ${rutin.baslik}, aç`}
+                  style={stiller.planEtiketi}
                   hitSlop={8}
-                  style={stiller.isaretAlani}
                 >
-                  <View style={[stiller.isaret, kayit.yapildi && stiller.isaretDolu]}>
-                    {kayit.yapildi && <Ionicons name="checkmark" size={20} color={renk.yuzey} />}
-                  </View>
+                  <Yazi tur="etiket" kalinlik="kalin" renk={renk.ana}>
+                    {`Rutin: ${rutin.baslik} ›`}
+                  </Yazi>
                 </Pressable>
               )}
-              {baslikDegisir(kart) ? (
-                <SatirIciBaslik
-                  baslik={kart.baslik}
-                  onKaydet={(baslik) => icerikKaydet(kartMetniYaz(kapi, kart.id, { baslik }))}
-                />
-              ) : (
-                <>
-                  <Yazi tur="bolumBasligi" accessibilityRole="header" style={stiller.esnek}>
-                    {kart.baslik}
-                  </Yazi>
-                  <SabitSimgesi />
-                </>
-              )}
-            </View>
-            {/* P-83: başlığın altında tek, sessiz zaman satırı; dokununca tek Zaman sayfası. */}
-            {/* P-93: rutinin adımının kendi zamanı yok; rutinin günlerini izler. */}
-            {!kart.ust && <KartZamanSatiri kart={kart} bloklar={bloklar} gun={gun} />}
-            {!!rutin && (
-              <Pressable
-                onPress={() =>
-                  router.canGoBack()
-                    ? router.back()
-                    : router.push({ pathname: '/kart/[id]', params: { id: rutin.id, gun } })
-                }
-                accessibilityRole="button"
-                accessibilityLabel={`Rutin: ${rutin.baslik}, aç`}
-                style={stiller.planEtiketi}
-                hitSlop={8}
-              >
-                <Yazi tur="etiket" kalinlik="kalin" renk={renk.ana}>
-                  {`Rutin: ${rutin.baslik} ›`}
-                </Yazi>
-              </Pressable>
-            )}
-            {!!program && (
-              <Pressable
-                onPress={() => router.push({ pathname: '/yasam/program/[id]', params: { id: program.id } })}
-                accessibilityRole="button"
-                accessibilityLabel={`Program: ${program.ad}, aç`}
-                style={stiller.planEtiketi}
-                hitSlop={8}
-              >
-                <Yazi tur="etiket" kalinlik="kalin" renk={kaynakRenk.plan.yazi}>
-                  {`Program: ${program.ad} ›`}
-                </Yazi>
-              </Pressable>
-            )}
-            {/* P-75: açıklama başlık satırlı öğe (Açıklama · Aa · ⋯); boşken de yerinde kalır. */}
-            {(aciklamaVarMi(kart.kisa) || aciklamaYaziliyor) && (
-              <AciklamaAlani
-                key={aciklamaYaziliyor ? 'yaziliyor' : 'durgun'}
-                metin={kart.kisa}
-                ilkDuzenleme={aciklamaYaziliyor}
-                degisir={aciklamaDegisir(kart)}
-                onKaydet={(kisa) =>
-                  icerikKaydet(kartMetniYaz(kapi, kart.id, { kisa: metinDoluMu(kisa) ? kisa : BOS_ACIKLAMA }))
-                }
-                onMenu={duzenlenir ? () => setAciklamaMenusu(true) : undefined}
-              />
-            )}
-            {!!gorusme && <GorusmeyeKatil baglanti={gorusme} />}
-          </View>
-
-          {/* P-93: rutinin adımları. */}
-          {kart.rutin && (
-            <View style={[stiller.bolum, stiller.cizgili, stiller.anaBolum]}>
-              <RutinAdimlari rutin={kart} gun={gun} duzenlenir={duzenlenir} isaretlenir={isaretlenir} />
-            </View>
-          )}
-
-          {/* P-73: Kayıt ve seri kutusu kartta yok; alışkanlıkların gidişatı ayrı ekranda düşünülecek. */}
-          {[
-            // P-69: "Ne yapacaksın" başlığı yok (açıklama da yukarıda); günün kaydında gün başlığı kalır.
-            { baslik: '', liste: yapilacaklar },
-            // P-83: "Bugün" başlığı yok; başka bir günün kaydında gün yazılır.
-            { baslik: gun === bugunGun ? '' : gunBasligi(gun, bugunGun), liste: kaydedilecekler },
-          ].map(
-            (bolum) =>
-              bolum.liste.length > 0 && (
-                <View
-                  key={bolum.liste === yapilacaklar ? 'icerik' : 'kayit'}
-                  style={[stiller.bolum, stiller.cizgili, stiller.anaBolum]}
+              {!!program && (
+                <Pressable
+                  onPress={() => router.push({ pathname: '/yasam/program/[id]', params: { id: program.id } })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Program: ${program.ad}, aç`}
+                  style={stiller.planEtiketi}
+                  hitSlop={8}
                 >
-                  {!!bolum.baslik && (
-                    <Yazi tur="kutuBasligi" accessibilityRole="header">
-                      {bolum.baslik}
-                    </Yazi>
-                  )}
-                  {bolum.liste.map((b) => {
-                    const tur = BLOK_TURLERI[b.tur];
-                    // P-69: listede simge ve "Liste" yazısı yok; yalnız varsa liste adı.
-                    const listeMi = maddeliListeMi(b.tur);
-                    const ad = listeMi ? b.ad : tur.ad;
-                    const sabitSimge = ayarliParcaMi(b.tur) && !parcaDegisir(kart, b);
-                    return (
-                      <Pressable
-                        key={`${b.id}-${gun}`}
-                        style={stiller.parca}
-                        onLongPress={duzenlenir ? () => setBlokMenusu(b.id) : undefined}
-                        accessible={false}
-                      >
-                        {/* P-83: sade başlık: yalnız parçanın adı (simge, tür başlığı ve ⋯ yok). Ada dokununca
+                  <Yazi tur="etiket" kalinlik="kalin" renk={kaynakRenk.plan.yazi}>
+                    {`Program: ${program.ad} ›`}
+                  </Yazi>
+                </Pressable>
+              )}
+              {/* P-75: açıklama başlık satırlı öğe (Açıklama · Aa · ⋯); boşken de yerinde kalır. */}
+              {(aciklamaVarMi(kart.kisa) || aciklamaYaziliyor) && (
+                <AciklamaAlani
+                  key={aciklamaYaziliyor ? 'yaziliyor' : 'durgun'}
+                  metin={kart.kisa}
+                  ilkDuzenleme={aciklamaYaziliyor}
+                  degisir={aciklamaDegisir(kart)}
+                  onKaydet={(kisa) =>
+                    icerikKaydet(kartMetniYaz(kapi, kart.id, { kisa: metinDoluMu(kisa) ? kisa : BOS_ACIKLAMA }))
+                  }
+                  onMenu={duzenlenir ? () => setAciklamaMenusu(true) : undefined}
+                />
+              )}
+              {!!gorusme && <GorusmeyeKatil baglanti={gorusme} />}
+            </View>
+
+            {/* P-93: rutinin adımları. */}
+            {kart.rutin && (
+              <View style={[stiller.bolum, stiller.cizgili, stiller.anaBolum]}>
+                <RutinAdimlari rutin={kart} gun={gun} duzenlenir={duzenlenir} isaretlenir={isaretlenir} />
+              </View>
+            )}
+
+            {/* P-73: Kayıt ve seri kutusu kartta yok; alışkanlıkların gidişatı ayrı ekranda düşünülecek. */}
+            {[
+              // P-69: "Ne yapacaksın" başlığı yok (açıklama da yukarıda); günün kaydında gün başlığı kalır.
+              { baslik: '', liste: yapilacaklar },
+              // P-83: "Bugün" başlığı yok; başka bir günün kaydında gün yazılır.
+              { baslik: gun === bugunGun ? '' : gunBasligi(gun, bugunGun), liste: kaydedilecekler },
+            ].map(
+              (bolum) =>
+                bolum.liste.length > 0 && (
+                  <View
+                    key={bolum.liste === yapilacaklar ? 'icerik' : 'kayit'}
+                    style={[stiller.bolum, stiller.cizgili, stiller.anaBolum]}
+                  >
+                    {!!bolum.baslik && (
+                      <Yazi tur="kutuBasligi" accessibilityRole="header">
+                        {bolum.baslik}
+                      </Yazi>
+                    )}
+                    {bolum.liste.map((b) => {
+                      const tur = BLOK_TURLERI[b.tur];
+                      // P-69: listede simge ve "Liste" yazısı yok; yalnız varsa liste adı.
+                      const listeMi = maddeliListeMi(b.tur);
+                      const ad = listeMi ? b.ad : tur.ad;
+                      const sabitSimge = ayarliParcaMi(b.tur) && !parcaDegisir(kart, b);
+                      return (
+                        <Pressable
+                          key={`${b.id}-${gun}`}
+                          style={stiller.parca}
+                          onLongPress={duzenlenir ? () => setBlokMenusu(b.id) : undefined}
+                          accessible={false}
+                        >
+                          {/* P-83: sade başlık: yalnız parçanın adı (simge, tür başlığı ve ⋯ yok). Ada dokununca
                             ya da parçaya uzun basınca parçanın menüsü. Kayıt parçalarının (Sayarak, Ölçüm…)
                             adı kendi içinde; başlıkları yok, menüleri uzun basınca. */}
-                        {!tur.kayit && (
-                          <Pressable
-                            onPress={duzenlenir ? () => setBlokMenusu(b.id) : undefined}
-                            onLongPress={duzenlenir ? () => setBlokMenusu(b.id) : undefined}
-                            disabled={!duzenlenir}
-                            accessibilityRole={duzenlenir ? 'button' : 'header'}
-                            accessibilityLabel={duzenlenir ? `${ad || 'Liste'}: seçenekler` : ad || 'Liste'}
-                            hitSlop={6}
-                            style={({ pressed }) => [stiller.blokBasligi, pressed && { opacity: 0.6 }]}
-                          >
-                            <Yazi kalinlik="kalin" renk={renk.ikincil} style={stiller.blokAdi} numberOfLines={1}>
-                              {ad || 'Liste'}
-                            </Yazi>
-                            {sabitSimge && <SabitSimgesi />}
-                            {duzenlenir && <Ionicons name="chevron-down" size={16} color={renk.soluk} />}
-                          </Pressable>
-                        )}
-                        {/* P-66: kuran açık bıraktıysa talimat ve video yerinde düzeltilir, listeye madde eklenir. */}
-                        {parcaDegisir(kart, b) && b.tur === 'talimat' ? (
-                          <SatirIciZengin
-                            metin={b.metin}
-                            etiket="Talimat"
-                            bosIpucu="+ Talimat yaz"
-                            onKaydet={(metin) => icerikKaydet(blokIcerikYaz(kapi, b.id, { metin }))}
-                          />
-                        ) : parcaDegisir(kart, b) && b.tur === 'video' ? (
-                          <VideolarDuzenleyici
-                            videolar={blokVideolari(b)}
-                            onDegis={(v) => icerikKaydet(blokIcerikYaz(kapi, b.id, videolarBlogu(v)))}
-                          />
-                        ) : (
-                          <BlokUygulama
-                            blok={b}
-                            gun={gun}
-                            kayit={kayit}
-                            kayitlar={kayitlar}
-                            onKayit={kayitDegis}
-                            onMaddeDuzelt={
-                              parcaDegisir(kart, b)
-                                ? (i, yeni) => {
-                                    icerikKaydet(blokMaddesiYaz(kapi, b.id, i, yeni));
-                                    // P-86: günlük listede silinen maddenin o günkü işareti de gider.
-                                    if (yeni === null && b.tur === 'liste')
-                                      kayitDegis((k) => ({
-                                        ...k,
-                                        isaretler: {
-                                          ...k.isaretler,
-                                          [b.id]: isaretleriDuzelt(k.isaretler[b.id] ?? [], i, null),
-                                        },
-                                      }));
-                                  }
-                                : undefined
-                            }
-                          />
-                        )}
-                        {parcaDegisir(kart, b) && listeMi && (
-                          <MaddeEkle
-                            onEkle={(madde) =>
-                              icerikKaydet(blokIcerikYaz(kapi, b.id, { maddeler: [...b.maddeler, madde] }))
-                            }
-                          />
-                        )}
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              ),
-          )}
-          {/* P-83: alttaki sabit şerit yerine kartın sonunda "+ Ekle"; dokununca parça seçenekleri. */}
-          {duzenlenir && (eklenecek.ogeler.length > 0 || eklenecek.daha) && (
-            <View style={[stiller.bolum, stiller.cizgili, stiller.ekleAlani]}>
-              {ekleAcik ? (
-                <ParcaSeridi
-                  {...eklenecek}
-                  onSec={(o) => {
-                    setEkleAcik(false);
-                    void parcaEkle(o);
-                  }}
-                  onDaha={() => {
-                    setEkleAcik(false);
-                    setSeciciAcik(true);
-                  }}
-                  onKapat={() => setEkleAcik(false)}
-                />
-              ) : (
-                <Pressable
-                  onPress={() => setEkleAcik(true)}
-                  accessibilityRole="button"
-                  accessibilityLabel="Karta ekle: açıklama, liste, fotoğraf, video"
-                  hitSlop={8}
-                  style={({ pressed }) => [stiller.ekle, pressed && { opacity: 0.6 }]}
-                >
-                  <Ionicons name="add" size={20} color={renk.ana} />
-                  <Yazi kalinlik="kalin" renk={renk.ana}>
-                    Ekle
-                  </Yazi>
-                </Pressable>
-              )}
-            </View>
-          )}
-        </View>
+                          {!tur.kayit && (
+                            <Pressable
+                              onPress={duzenlenir ? () => setBlokMenusu(b.id) : undefined}
+                              onLongPress={duzenlenir ? () => setBlokMenusu(b.id) : undefined}
+                              disabled={!duzenlenir}
+                              accessibilityRole={duzenlenir ? 'button' : 'header'}
+                              accessibilityLabel={duzenlenir ? `${ad || 'Liste'}: seçenekler` : ad || 'Liste'}
+                              hitSlop={6}
+                              style={({ pressed }) => [stiller.blokBasligi, pressed && { opacity: 0.6 }]}
+                            >
+                              <Yazi kalinlik="kalin" renk={renk.ikincil} style={stiller.blokAdi} numberOfLines={1}>
+                                {ad || 'Liste'}
+                              </Yazi>
+                              {sabitSimge && <SabitSimgesi />}
+                              {duzenlenir && <Ionicons name="chevron-down" size={16} color={renk.soluk} />}
+                            </Pressable>
+                          )}
+                          {/* P-66: kuran açık bıraktıysa talimat ve video yerinde düzeltilir, listeye madde eklenir. */}
+                          {parcaDegisir(kart, b) && b.tur === 'talimat' ? (
+                            <SatirIciZengin
+                              metin={b.metin}
+                              etiket="Talimat"
+                              bosIpucu="+ Talimat yaz"
+                              onKaydet={(metin) => icerikKaydet(blokIcerikYaz(kapi, b.id, { metin }))}
+                            />
+                          ) : parcaDegisir(kart, b) && b.tur === 'video' ? (
+                            <VideolarDuzenleyici
+                              videolar={blokVideolari(b)}
+                              onDegis={(v) => icerikKaydet(blokIcerikYaz(kapi, b.id, videolarBlogu(v)))}
+                            />
+                          ) : (
+                            <BlokUygulama
+                              blok={b}
+                              gun={gun}
+                              kayit={kayit}
+                              kayitlar={kayitlar}
+                              onKayit={kayitDegis}
+                              onMaddeDuzelt={
+                                parcaDegisir(kart, b)
+                                  ? (i, yeni) => {
+                                      icerikKaydet(blokMaddesiYaz(kapi, b.id, i, yeni));
+                                      // P-86: günlük listede silinen maddenin o günkü işareti de gider.
+                                      if (yeni === null && b.tur === 'liste')
+                                        kayitDegis((k) => ({
+                                          ...k,
+                                          isaretler: {
+                                            ...k.isaretler,
+                                            [b.id]: isaretleriDuzelt(k.isaretler[b.id] ?? [], i, null),
+                                          },
+                                        }));
+                                    }
+                                  : undefined
+                              }
+                            />
+                          )}
+                          {parcaDegisir(kart, b) && listeMi && (
+                            <MaddeEkle
+                              onEkle={(madde) =>
+                                icerikKaydet(blokIcerikYaz(kapi, b.id, { maddeler: [...b.maddeler, madde] }))
+                              }
+                            />
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                ),
+            )}
+            {/* P-83: alttaki sabit şerit yerine kartın sonunda "+ Ekle"; dokununca parça seçenekleri. */}
+            {duzenlenir && (eklenecek.ogeler.length > 0 || eklenecek.daha) && (
+              <View style={[stiller.bolum, stiller.cizgili, stiller.ekleAlani]}>
+                {ekleAcik ? (
+                  <ParcaSeridi
+                    {...eklenecek}
+                    onSec={(o) => {
+                      setEkleAcik(false);
+                      void parcaEkle(o);
+                    }}
+                    onDaha={() => {
+                      setEkleAcik(false);
+                      setSeciciAcik(true);
+                    }}
+                    onKapat={() => setEkleAcik(false)}
+                  />
+                ) : (
+                  <Pressable
+                    onPress={() => setEkleAcik(true)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Karta ekle: açıklama, liste, fotoğraf, video"
+                    hitSlop={8}
+                    style={({ pressed }) => [stiller.ekle, pressed && { opacity: 0.6 }]}
+                  >
+                    <Ionicons name="add" size={20} color={renk.ana} />
+                    <Yazi kalinlik="kalin" renk={renk.ana}>
+                      Ekle
+                    </Yazi>
+                  </Pressable>
+                )}
+              </View>
+            )}
+          </View>
 
-        {kart.kilitli && (
-          <Yazi tur="ikincil">
-            {verilenId
-              ? `${kart.gelenKimden || 'Bir yakının'} verdi. Değiştirmene izin verdiği alanları doğrudan düzeltebilirsin. Yaptım bilgin ona gider.`
-              : 'Koçundan gelen kart paylaşılamaz; kendi kütüphanene kaydedebilirsin.'}
-          </Yazi>
-        )}
+          {kart.kilitli && (
+            <Yazi tur="ikincil">
+              {verilenId
+                ? `${kart.gelenKimden || 'Bir yakının'} verdi. Değiştirmene izin verdiği alanları doğrudan düzeltebilirsin. Yaptım bilgin ona gider.`
+                : 'Koçundan gelen kart paylaşılamaz; kendi kütüphanene kaydedebilirsin.'}
+            </Yazi>
+          )}
+        </OlcumSadeBaglami.Provider>
       </ScrollView>
       {blokMenusu &&
         (() => {

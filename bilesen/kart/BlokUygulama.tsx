@@ -4,8 +4,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
-import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { InputAccessoryView, Keyboard, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { adimDurumu, ilerleme, ilerlemeMetni } from '@/mantik/adimlar';
 import { blokVideolari } from '@/mantik/video';
@@ -581,7 +581,10 @@ function OlcumBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
   const alan = useGecikmeliKayit(kayit.degerler[blok.id] ?? '', (d) =>
     onKayit((k) => ({ ...k, degerler: { ...k.degerler, [blok.id]: d.trim() } })),
   );
-  const onceki = oncekiDeger(kayitlar, blok.id, gun);
+  const sade = useContext(OlcumSadeBaglami);
+  const onceki = sade ? null : oncekiDeger(kayitlar, blok.id, gun);
+  // P-95: sayı klavyesinde "Bitti" (iOS'ta sayı klavyesinin kapatma tuşu yok).
+  const bittiId = `bitti-${blok.id}`;
   return (
     <View style={stiller.olcumKap}>
       <View style={stiller.satir}>
@@ -594,6 +597,7 @@ function OlcumBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
           onChangeText={alan.degis}
           onBlur={alan.birak}
           keyboardType="decimal-pad"
+          inputAccessoryViewID={Platform.OS === 'ios' ? bittiId : undefined}
           placeholder="0"
           placeholderTextColor={renk.soluk}
           selectionColor={renk.ana}
@@ -601,6 +605,22 @@ function OlcumBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
         />
         {!!blok.birim && <Yazi tur="ikincil">{blok.birim}</Yazi>}
       </View>
+      {Platform.OS === 'ios' && (
+        <InputAccessoryView nativeID={bittiId}>
+          <View style={stiller.bittiSatiri}>
+            <Pressable
+              onPress={() => Keyboard.dismiss()}
+              accessibilityRole="button"
+              hitSlop={8}
+              style={stiller.bittiDugmesi}
+            >
+              <Yazi kalinlik="kalin" renk={renk.ana}>
+                Bitti
+              </Yazi>
+            </Pressable>
+          </View>
+        </InputAccessoryView>
+      )}
       {onceki && (
         <Yazi tur="ikincil" style={stiller.onceki}>
           {`Önceki: ${onceki.deger}${blok.birim ? ` ${blok.birim}` : ''} · ${uzunTarih(onceki.tarih)}`}
@@ -610,6 +630,9 @@ function OlcumBlogu({ blok, gun, kayit, kayitlar, onKayit }: Ozellikler) {
     </View>
   );
 }
+
+/** P-95: Ölçümlerim'de "Son ölçümler" ve "Önceki" gösterilmez (gidişat ayrı ekranda). */
+export const OlcumSadeBaglami = createContext(false);
 
 /** P-35: takip kartında ölçümün son 7 değeri (kartın içinde, küçük çubuklar). */
 function OlcumGecmisi({
@@ -624,7 +647,8 @@ function OlcumGecmisi({
   /** Çubuğun üstündeki yazı (süre: "10 dk"); yoksa yazıldığı gibi. */
   bicim?: (n: OlcumNoktasi) => string;
 }) {
-  if (noktalar.length < 2) return null;
+  const sade = useContext(OlcumSadeBaglami);
+  if (sade || noktalar.length < 2) return null;
   const oranlar = cubukOranlari(noktalar);
   const yaz = (n: OlcumNoktasi) => (bicim ? bicim(n) : n.metin);
   const ozet = noktalar.map((n) => `${uzunTarih(n.tarih)}: ${yaz(n)}${birim ? ` ${birim}` : ''}`).join(', ');
@@ -722,6 +746,15 @@ function GelisimFotografi({ blok, kayit, onKayit }: Ozellikler) {
 }
 
 const stiller = StyleSheet.create({
+  bittiSatiri: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    backgroundColor: renk.bolumluZemin,
+    borderTopWidth: 1,
+    borderTopColor: renk.cizgi,
+    paddingHorizontal: 12,
+  },
+  bittiDugmesi: { minHeight: 44, paddingHorizontal: 12, justifyContent: 'center' },
   bilgiMaddesi: { flexDirection: 'row', gap: 10, paddingVertical: 4, alignItems: 'flex-start' },
   adimBaslik: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   cubuk: { height: 6, borderRadius: 3, backgroundColor: renk.satirCizgi, overflow: 'hidden' },
