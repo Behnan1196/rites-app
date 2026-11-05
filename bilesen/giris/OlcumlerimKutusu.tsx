@@ -26,10 +26,10 @@ import { ParcaAyarSayfasi } from '../kart/ParcaAyarSayfasi';
 import { useKisaMesaj } from '../KisaMesaj';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
-import { KutuSimgesi } from './KutuSimgesi';
-import { ModulDugmesi } from './ModulDugmesi';
+import { kutuRengi, KutuSimgesi } from './KutuSimgesi';
 
-export function OlcumlerimKutusu() {
+/** Ölçümlerim ekranının içeriği (P-92: Giriş'te yalnız küçük kutu; dokununca bu ekran). */
+export function OlcumlerimIcerigi() {
   const { kapi, oku } = useVeri();
   const bugunGun = useBugun();
   const kisaMesaj = useKisaMesaj();
@@ -68,18 +68,7 @@ export function OlcumlerimKutusu() {
   const gizli = (v?.bloklar.filter((b) => COKLU_PARCALAR.includes(b.tur)).length ?? 0) - olcumler.length;
 
   return (
-    <View style={stiller.kutu}>
-      <View style={stiller.baslik}>
-        <ModulDugmesi
-          etiket="Gidişatı aç"
-          onPress={() => v && router.push({ pathname: '/kart/gidisat/[id]', params: { id: v.kart.id, geri: 'Giriş' } })}
-          simge={<KutuSimgesi k="olcum" />}
-        />
-        <Yazi tur="kutuBasligi" accessibilityRole="header" style={stiller.esnek}>
-          Ölçümlerim
-        </Yazi>
-      </View>
-
+    <View style={stiller.icerik}>
       {!v ? (
         <>
           <Yazi tur="ikincil">
@@ -160,7 +149,9 @@ export function OlcumlerimKutusu() {
               </Yazi>
             </Pressable>
             <Pressable
-              onPress={() => router.push({ pathname: '/kart/gidisat/[id]', params: { id: v.kart.id, geri: 'Giriş' } })}
+              onPress={() =>
+                router.push({ pathname: '/kart/gidisat/[id]', params: { id: v.kart.id, geri: 'Ölçümlerim' } })
+              }
               accessibilityRole="button"
               accessibilityLabel="Gidişat"
               hitSlop={6}
@@ -173,7 +164,7 @@ export function OlcumlerimKutusu() {
             </Pressable>
             <Pressable
               onPress={() =>
-                router.push({ pathname: '/kart/[id]', params: { id: v.kart.id, gun: secilen, geri: 'Giriş' } })
+                router.push({ pathname: '/kart/[id]', params: { id: v.kart.id, gun: secilen, geri: 'Ölçümlerim' } })
               }
               accessibilityRole="button"
               accessibilityLabel="Ölçümleri düzenle: sıra, sıklık, ajandada göster"
@@ -228,8 +219,51 @@ export function OlcumlerimKutusu() {
   );
 }
 
+/**
+ * P-92: Giriş'te yarım kutu: "Ölçümlerim", bugün girilen / bugünkü ölçüm sayısı. Dokununca
+ * Ölçümlerim ekranı (gün seçimi ve ölçümler).
+ */
+export function OlcumlerimKutusu() {
+  const bugunGun = useBugun();
+  const veri = useSorgu(
+    ['kart'],
+    async (o) => {
+      const a = await olcumlerimiOku(o);
+      return a ? { ...a, kayitlar: await kartKayitlari(o, a.kart.id) } : null;
+    },
+    [],
+  );
+  const v = veri.veri;
+  let alt = 'Su, kahve, enerji, uyku…';
+  if (v) {
+    const kayit = v.kayitlar.find((k) => k.tarih === bugunGun);
+    const hg = haftaGunu(bugunGun);
+    const bugunku = v.bloklar.filter((b) => COKLU_PARCALAR.includes(b.tur) && olcumGunuMu(b, hg));
+    const girilen = bugunku.filter((b) => (kayit?.degerler[b.id] ?? '') !== '').length;
+    alt = bugunku.length ? `Bugün ${girilen}/${bugunku.length}` : 'Bugün ölçüm yok';
+  }
+  return (
+    <Pressable
+      onPress={() => router.push('/giris/olcumlerim')}
+      accessibilityRole="button"
+      accessibilityLabel={`Ölçümlerim, ${alt}`}
+      style={({ pressed }) => [stiller.kutu, pressed && { opacity: 0.75 }]}
+    >
+      <View style={[stiller.simge, { backgroundColor: kutuRengi('olcum').zemin }]}>
+        <KutuSimgesi k="olcum" boyut={22} />
+      </View>
+      <Yazi tur="kartBasligi">Ölçümlerim</Yazi>
+      <Yazi tur="ikincil">{alt}</Yazi>
+    </Pressable>
+  );
+}
+
 const stiller = StyleSheet.create({
+  icerik: { gap: 8 },
+  simge: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   kutu: {
+    flex: 1,
+    minHeight: 120,
     backgroundColor: renk.yuzey,
     borderWidth: 1,
     borderColor: renk.cizgi,

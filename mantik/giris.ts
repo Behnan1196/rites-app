@@ -71,7 +71,7 @@ export const KUTULAR: readonly KutuTanimi[] = [
   { k: 'animsatici', ad: 'Anımsatıcılar', aciklama: 'Sıradaki anımsatma', hazir: true },
   { k: 'devam', ad: 'Devam edenler', aciklama: 'Uyguladığın programlar', hazir: true },
   // P-91: kişinin tek ölçüm defteri; tarih seçip girilir.
-  { k: 'olcum', ad: 'Ölçümlerim', aciklama: 'Su, kahve, enerji, uyku…; günü seçip gir', hazir: true },
+  { k: 'olcum', ad: 'Ölçümlerim', aciklama: 'Yarım kutu · su, kahve, enerji, uyku…', hazir: true },
   // Pilot 20 Ekim: Günün sorusu planla birlikte kalktı (ayarda da görünmez).
   { k: 'soru', ad: 'Günün sorusu', aciklama: '', hazir: false },
   { k: 'su', ad: 'Su', aciklama: 'Yarım kutu · günlük bardak sayacı', hazir: false },
@@ -80,7 +80,7 @@ export const KUTULAR: readonly KutuTanimi[] = [
 ];
 
 /** Yarım kutular (`05` §10). */
-export const YARIM_KUTULAR: ReadonlySet<KutuAnahtari> = new Set(['su', 'ortak']);
+export const YARIM_KUTULAR: ReadonlySet<KutuAnahtari> = new Set(['su', 'ortak', 'olcum']);
 
 /**
  * Giriş'in satırları: tam kutu tek başına; arka arkaya gelen iki yarım kutu yan yana;

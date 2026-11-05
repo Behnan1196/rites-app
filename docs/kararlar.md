@@ -752,3 +752,4 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Ajandada göster** varsayılan kapalı; Düzenle → kartın ⋯ menüsünden açılır. Ölçümlerim alışkanlık sayılmaz, programa eklenmez. — Ürün sahibi (P-91)
 - **Her ölçümün sıklığı:** her gün ya da haftada bir gün (kilo Pazartesi). Haftalık ölçüm yalnız kendi gününde görünür; o gün değeri varsa yine görünür. — Ürün sahibi (P-91)
 - **Var olan "Günlük ölçümler" kartı olduğu gibi kalır;** Ölçümlerim boş başlar. — Ürün sahibi (P-91)
+- **Giriş'te Ölçümlerim küçük (yarım) kutu (P-92):** ölçümler çok olunca Giriş'te açık durmasın; kutuda yalnız "Ölçümlerim · Bugün 2/5" (bugün girilen / bugünkü ölçüm). Dokununca Ölçümlerim ekranı (gün seçimi, ölçümler, + Ölçüm · Gidişat · Düzenle). Listeler'le yan yana durabilir. — Ürün sahibi (P-92); yarım kutu ve sayaç: Öneri

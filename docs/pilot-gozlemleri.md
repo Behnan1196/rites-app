@@ -470,3 +470,8 @@ Sonuç: → kararlar.md (Program = deney)
 Ne dedi: "Günlük ölçümler için bir kart oluşturdum, topluca oradan giriyorum. Başka kartlarda da ölçüm olabiliyor, tabi bu biraz karışıklık yaratıyor. Acaba ölçümleri girişde bir çeşit kart olarak mı tanımlasak, sadece buradaki ölçümleri dikkate almamız uygun olabilir belki. Ölçümler tarihsel olacağı için giriş ekranındaki modülde tarih seçimi de olsa, ayrıca ajanda da göster diyerek istenildiğinde ajandadan da kullanılabilse. Ancak amaç hem ajandayı rahatlatmak, hem kolay girişi sağlamak, hem de günlük (bazıları haftalık) ölçümlerin özel bir kart olmasını, yani ikinci aynı veya benzeri adlı karttan farklı olmasını sağlamak" Seçimler: kartlardaki ölçümler kalsın ama değerlendirmeye girmesin; Ölçümlerim boş başlasın; her ölçüme sıklık; kutunun içinde girilsin.
 Nerede: Giriş, Gidişat, program değerlendirmesi
 Sonuç: → kararlar.md (Ölçümlerim: Giriş'te tek ölçüm defteri)
+
+### P-92 · 5 Kasım 2026 · Behnan
+Ne dedi: "Güzel, yalnız ölçüm çeşidi genelde fazla, giriş'de açık durmasın, widgetden ulaşalım."
+Nerede: Giriş → Ölçümlerim
+Sonuç: → kararlar.md (Giriş'te Ölçümlerim küçük kutu)
