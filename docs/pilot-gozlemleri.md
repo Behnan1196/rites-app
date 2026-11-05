@@ -510,3 +510,8 @@ Sonuç: → kararlar.md (Ölçümlerim ajandadan açıldığında Sil yok)
 Ne dedi: "Ölçümlerde Düzenle dediğimizde fazladan Yukarı Aşağı ve Kaldır yapılabiliyor, bir de açıklama, liste vb alanlar eklenebiliyor. Eğer, ölçümün başlığına uzun basılarak çıkan formda bunları yapabiliriz ve Düzenle modunda yukarıdaki ... menüsünü de direk ölçüm kartının yukarısına koyabiliriz. Bir de Puan için (1-5) gelen daireler fazla büyük, biraz küçültebiliriz."
 Nerede: Ölçümlerim
 Sonuç: → kararlar.md (Ölçümlerim'de Düzenle kalktı; puan daireleri küçüldü)
+
+### P-100 · 5 Kasım 2026 · Behnan
+Ne dedi: "Daire boyutu iyi ancak araları açılabilir. Yine "Sayarak"da da fontu biraz küçültebiliriz."
+Nerede: Ölçümlerim (Puan, Sayarak)
+Sonuç: → kararlar.md (Puan dairelerinin arası açıldı; Sayarak'ın sayısı küçüldü)

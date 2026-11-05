@@ -806,9 +806,10 @@ const stiller = StyleSheet.create({
   },
   adetArti: { backgroundColor: renk.ana },
   adetOrta: { flex: 1, alignItems: 'center' },
-  adetSayi: { fontSize: 34, lineHeight: 40, fontVariant: ['tabular-nums'] },
-  // P-99: daireler küçüldü (44); satırın solunda toplanır.
-  puanSatiri: { flexDirection: 'row', gap: 10 },
+  // P-100: sayı biraz küçüldü.
+  adetSayi: { fontSize: 26, lineHeight: 32, fontVariant: ['tabular-nums'] },
+  // P-99: daireler küçüldü (44); P-100: satıra eşit aralıkla yayılır.
+  puanSatiri: { flexDirection: 'row', justifyContent: 'space-between', maxWidth: 320 },
   puanDaire: {
     width: 44,
     height: 44,
