@@ -505,3 +505,8 @@ Sonuç: P-96'nın gerekçesi. Yaşam alanlarının kullanımı (öz değerlendir
 Ne dedi: "Evet, pusula doğru tanım oldu. Ölçümlerimi ajanda da gösterdiğimizde ve düzenlediğimizde "Ajanda da gösterme seçeneği" var, ayrıca Sil seçeneği de, burada ölçüm için sil seçeneği olmasın, sadece girişden ulaşıldığında silinebilsin."
 Nerede: Ajanda → Ölçümlerim kartı → ⋯
 Sonuç: → kararlar.md (Ölçümlerim ajandadan açıldığında Sil yok)
+
+### P-99 · 5 Kasım 2026 · Behnan
+Ne dedi: "Ölçümlerde Düzenle dediğimizde fazladan Yukarı Aşağı ve Kaldır yapılabiliyor, bir de açıklama, liste vb alanlar eklenebiliyor. Eğer, ölçümün başlığına uzun basılarak çıkan formda bunları yapabiliriz ve Düzenle modunda yukarıdaki ... menüsünü de direk ölçüm kartının yukarısına koyabiliriz. Bir de Puan için (1-5) gelen daireler fazla büyük, biraz küçültebiliriz."
+Nerede: Ölçümlerim
+Sonuç: → kararlar.md (Ölçümlerim'de Düzenle kalktı; puan daireleri küçüldü)

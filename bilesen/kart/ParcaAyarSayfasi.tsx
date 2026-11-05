@@ -4,10 +4,12 @@
 // fotoğraf; listenin maddeleri (düzeltme, silme). Yeni parça (Daha'dan) burada kurulup eklenir.
 
 import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { formaBlok, kaydaBlok, type ParcaTaslagi } from '@/mantik/blokTaslak';
 
 import { AltSayfa } from '../AltSayfa';
+import { Dugme } from '../Dugme';
 import { BlokDuzenleyici } from './BlokDuzenleyici';
 import { BLOK_TURLERI } from './blokTurleri';
 
@@ -18,6 +20,9 @@ export function ParcaAyarSayfasi({
   siklik = false,
   onKaydet,
   onKapat,
+  onYukari,
+  onAsagi,
+  onSil,
 }: {
   blok: ParcaTaslagi;
   /** Daha'dan yeni parça: "Ekle" ile karta eklenir. */
@@ -27,6 +32,10 @@ export function ParcaAyarSayfasi({
   siklik?: boolean;
   onKaydet: (b: ParcaTaslagi) => void;
   onKapat: () => void;
+  /** P-99: Ölçümlerim'de ölçümün formunda sıra ve kaldırma. */
+  onYukari?: () => void;
+  onAsagi?: () => void;
+  onSil?: () => void;
 }) {
   const [ilk] = useState(() => formaBlok(blok));
   const [taslak, setTaslak] = useState(ilk);
@@ -56,6 +65,45 @@ export function ParcaAyarSayfasi({
         basliksiz
         siklik={siklik}
       />
+      {(onYukari || onAsagi) && (
+        <View style={stiller.ikili}>
+          <Dugme
+            tur="ikincil"
+            etiket="↑ Yukarı"
+            pasif={!onYukari}
+            onPress={() => {
+              onYukari?.();
+              onKapat();
+            }}
+            style={stiller.esnek}
+          />
+          <Dugme
+            tur="ikincil"
+            etiket="↓ Aşağı"
+            pasif={!onAsagi}
+            onPress={() => {
+              onAsagi?.();
+              onKapat();
+            }}
+            style={stiller.esnek}
+          />
+        </View>
+      )}
+      {!!onSil && (
+        <Dugme
+          tur="tehlike"
+          etiket="Ölçümü kaldır"
+          onPress={() => {
+            onSil();
+            onKapat();
+          }}
+        />
+      )}
     </AltSayfa>
   );
 }
+
+const stiller = StyleSheet.create({
+  ikili: { flexDirection: 'row', gap: 8 },
+  esnek: { flex: 1 },
+});

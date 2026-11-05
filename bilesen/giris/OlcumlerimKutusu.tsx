@@ -14,7 +14,16 @@ import { bosKayit, type Kayit } from '@/mantik/kart';
 import { COKLU_PARCALAR, olcumGunuMu } from '@/mantik/olcumHazirlari';
 import { goreliTarih, gunEkle, haftaGunu, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
-import { blokEkle, blokYaz, kartKayitlari, kayitDegistir, olcumlerimiKur, olcumlerimiOku } from '@/veri/kartlar';
+import {
+  blokEkle,
+  blokSil,
+  blokYaz,
+  bloklarinYeriniDegistir,
+  kartKayitlari,
+  kayitDegistir,
+  olcumlerimiKur,
+  olcumlerimiOku,
+} from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
@@ -168,23 +177,6 @@ export function OlcumlerimIcerigi() {
                   Gidişat
                 </Yazi>
               </Pressable>
-              <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: '/kart/[id]',
-                    params: { id: v.kart.id, gun: secilen, geri: 'Ölçümlerim', olcumlerimden: '1' },
-                  })
-                }
-                accessibilityRole="button"
-                accessibilityLabel="Ölçümleri düzenle: sıra, sıklık, ajandada göster"
-                hitSlop={6}
-                style={({ pressed }) => [stiller.altDugme, pressed && { opacity: 0.6 }]}
-              >
-                <Ionicons name="create-outline" size={18} color={renk.ana} />
-                <Yazi kalinlik="kalin" renk={renk.ana}>
-                  Düzenle
-                </Yazi>
-              </Pressable>
             </View>
           </>
         )}
@@ -222,6 +214,23 @@ export function OlcumlerimIcerigi() {
                 .catch(hata);
             }}
             onKapat={() => setAyar(null)}
+            // P-99: sıra ve kaldırma ölçümün formunda (kart görünümüne gitmeden).
+            {...(() => {
+              const tumu = (v?.bloklar ?? []).filter((x) => COKLU_PARCALAR.includes(x.tur));
+              const i = tumu.findIndex((x) => x.id === ayar.id);
+              if (!v || i < 0) return {};
+              const once = tumu[i - 1];
+              const sonra = tumu[i + 1];
+              return {
+                onYukari: once
+                  ? () => void bloklarinYeriniDegistir(kapi, v.kart.id, ayar.id, once.id).catch(hata)
+                  : undefined,
+                onAsagi: sonra
+                  ? () => void bloklarinYeriniDegistir(kapi, v.kart.id, ayar.id, sonra.id).catch(hata)
+                  : undefined,
+                onSil: () => void blokSil(kapi, ayar.id).catch(hata),
+              };
+            })()}
           />
         )}
       </View>
@@ -304,7 +313,7 @@ const stiller = StyleSheet.create({
   cizgili: { borderTopWidth: 1, borderTopColor: renk.satirCizgi, paddingTop: 10 },
   alt: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     borderTopWidth: 1,
     borderTopColor: renk.satirCizgi,
     paddingTop: 8,
