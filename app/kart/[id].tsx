@@ -110,7 +110,12 @@ const AYARLI: readonly BlokTuru[] = [
 ];
 
 export default function KartGorunumu() {
-  const { id, gun: gunParam, geri } = useLocalSearchParams<{ id: string; gun?: string; geri?: string }>();
+  const {
+    id,
+    gun: gunParam,
+    geri,
+    olcumlerimden,
+  } = useLocalSearchParams<{ id: string; gun?: string; geri?: string; olcumlerimden?: string }>();
   const geriYazisi = geri || 'Ajandam';
   const bugunGun = useBugun();
   const gun: Gun = gunParam ?? bugunGun;
@@ -784,12 +789,17 @@ export default function KartGorunumu() {
               ? []
               : [
                   { etiket: 'Paylaş', ikon: 'share-outline' as const, onPress: () => paylas.ac({ kart, bloklar }) },
-                  {
-                    etiket: 'Sil',
-                    ikon: 'trash-outline' as const,
-                    tehlike: true,
-                    onPress: () => kartSil.baslat(kart, gun),
-                  },
+                  // P-98: Ölçümlerim yalnız Giriş → Ölçümlerim → Düzenle'den silinir (ajandadan değil).
+                  ...(kart.olcumlerim && olcumlerimden !== '1'
+                    ? []
+                    : [
+                        {
+                          etiket: 'Sil',
+                          ikon: 'trash-outline' as const,
+                          tehlike: true,
+                          onPress: () => kartSil.baslat(kart, gun),
+                        },
+                      ]),
                 ]),
           ]}
         />

@@ -495,3 +495,13 @@ Sonuç: → kararlar.md (Ölçüm girişi kolaylaştı; yaşam alanlarının pua
 Ne dedi: "Ölçümlere yaşam alanlarını bağlamamız pek doğru olmadı." Seçimler: tamamen geri al; nedenler: ölçümler kalabalıklaştı, alan puanı ölçüm değil.
 Nerede: Ölçümlerim, Yaşam Tarzım
 Sonuç: → kararlar.md (Yaşam alanlarının puanı ölçüm değil; P-95'in o kısmı geri alındı)
+
+### P-97 · 5 Kasım 2026 · Behnan
+Ne dedi: "Yaşam alanlarını ayırmamın nedenini açıklayayım. Bu alanları kullanıcı kendisi de belirliyor, hatta bendeki standart haliyle de bazı alanların ölçümde görünmesi aykırı duruyor. Örneğin, uyku, beslenme, hareket ölçümlerle uyumlu görünse de, her zaman uyumlu olmayabilir. Ben ölçümlere istersem Uyku Kalitesi diye yine dereceli bir ölçüm koyabilirim ve başladığım bir müdahale etkinliği ile ilişkisine odaklanabilirim. Kaldı ki, yaşam alanları ölçümlerinin, örneğin sosyal bağlarla veya anlamla uykunun olası etkileşimini analiz etmek çok zor ve yanıltıcı olabilir. Yaşam alanlarını tanımladık ama henüz etkin kullanamadık, kişinin kendini değerlendirmesi ve eksiklerini tamamlaması için başlatıldı ama en azından ben testlerde kullanamadım."
+Nerede: Yaşam Tarzım → alanlar
+Sonuç: P-96'nın gerekçesi. Yaşam alanlarının kullanımı (öz değerlendirme ve eksikleri tamamlama) ayrıca konuşulacak; açık konu.
+
+### P-98 · 5 Kasım 2026 · Behnan
+Ne dedi: "Evet, pusula doğru tanım oldu. Ölçümlerimi ajanda da gösterdiğimizde ve düzenlediğimizde "Ajanda da gösterme seçeneği" var, ayrıca Sil seçeneği de, burada ölçüm için sil seçeneği olmasın, sadece girişden ulaşıldığında silinebilsin."
+Nerede: Ajanda → Ölçümlerim kartı → ⋯
+Sonuç: → kararlar.md (Ölçümlerim ajandadan açıldığında Sil yok)

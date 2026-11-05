@@ -170,7 +170,10 @@ export function OlcumlerimIcerigi() {
               </Pressable>
               <Pressable
                 onPress={() =>
-                  router.push({ pathname: '/kart/[id]', params: { id: v.kart.id, gun: secilen, geri: 'Ölçümlerim' } })
+                  router.push({
+                    pathname: '/kart/[id]',
+                    params: { id: v.kart.id, gun: secilen, geri: 'Ölçümlerim', olcumlerimden: '1' },
+                  })
                 }
                 accessibilityRole="button"
                 accessibilityLabel="Ölçümleri düzenle: sıra, sıklık, ajandada göster"
