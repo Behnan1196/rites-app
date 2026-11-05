@@ -357,6 +357,15 @@ export const GOCLER: readonly Goc[] = [
     surum: 27,
     sql: `ALTER TABLE kart ADD COLUMN olcumlerim INTEGER NOT NULL DEFAULT 0;`,
   },
+  {
+    // Rutin (pilot 5 Kasım, P-93): kartlardan oluşan kart. `rutin` = 1 rutinin kendisi; adım
+    // kartlarında `ust` rutinin kimliği, `ust_sira` rutindeki sırası. Adımlar ajandada görünmez.
+    surum: 28,
+    sql: `ALTER TABLE kart ADD COLUMN rutin INTEGER NOT NULL DEFAULT 0;
+          ALTER TABLE kart ADD COLUMN ust TEXT;
+          ALTER TABLE kart ADD COLUMN ust_sira REAL;
+          CREATE INDEX kart_ust ON kart (ust);`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

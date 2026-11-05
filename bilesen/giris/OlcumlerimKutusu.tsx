@@ -89,18 +89,23 @@ export function OlcumlerimIcerigi() {
             >
               <Ionicons name="chevron-back" size={22} color={renk.ana} />
             </Pressable>
-            <Pressable
-              onPress={() => setGun(null)}
-              disabled={secilen === bugunGun}
-              accessibilityRole="button"
-              accessibilityLabel={secilen === bugunGun ? 'Bugün' : `${goreliTarih(secilen, bugunGun)}; bugüne dön`}
-              style={stiller.gunAdi}
-            >
-              <Yazi kalinlik="kalin" renk={secilen === bugunGun ? renk.yazi : renk.vurguYazi}>
+            {/* P-93: ajandadaki gibi: gün adı ve yanında "bugüne dön" simgesi. */}
+            <View style={stiller.gunAdi}>
+              <Yazi kalinlik="kalin" accessibilityRole="header">
                 {goreliTarih(secilen, bugunGun)}
               </Yazi>
-              {secilen !== bugunGun && <Yazi tur="etiket">Bugüne dön</Yazi>}
-            </Pressable>
+              {secilen !== bugunGun && (
+                <Pressable
+                  onPress={() => setGun(null)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Bugüne dön"
+                  hitSlop={8}
+                  style={({ pressed }) => [stiller.bugune, pressed && { opacity: 0.7 }]}
+                >
+                  <Ionicons name="arrow-undo" size={18} color={renk.ana} />
+                </Pressable>
+              )}
+            </View>
             <Pressable
               onPress={() => setGun(gunEkle(secilen, 1))}
               disabled={secilen >= bugunGun}
@@ -281,7 +286,15 @@ const stiller = StyleSheet.create({
     minHeight: 48,
   },
   ok: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
-  gunAdi: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 48 },
+  gunAdi: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48 },
+  bugune: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: renk.anaAcik,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   olcum: { paddingVertical: 6 },
   cizgili: { borderTopWidth: 1, borderTopColor: renk.satirCizgi, paddingTop: 10 },
   alt: {

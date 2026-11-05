@@ -753,3 +753,12 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Her ölçümün sıklığı:** her gün ya da haftada bir gün (kilo Pazartesi). Haftalık ölçüm yalnız kendi gününde görünür; o gün değeri varsa yine görünür. — Ürün sahibi (P-91)
 - **Var olan "Günlük ölçümler" kartı olduğu gibi kalır;** Ölçümlerim boş başlar. — Ürün sahibi (P-91)
 - **Giriş'te Ölçümlerim küçük (yarım) kutu (P-92):** ölçümler çok olunca Giriş'te açık durmasın; kutuda yalnız "Ölçümlerim · Bugün 2/5" (bugün girilen / bugünkü ölçüm). Dokununca Ölçümlerim ekranı (gün seçimi, ölçümler, + Ölçüm · Gidişat · Düzenle). Listeler'le yan yana durabilir. — Ürün sahibi (P-92); yarım kutu ve sayaç: Öneri
+
+## Rutin: kartlardan oluşan kart (5 Kasım)
+
+- **Rutin (Sabah rutini):** ajandada tek satır ("Her gün · 3/9"); içindeki adımlar sıralı küçük kartlardır (yalnız başlık; istenirse video, zamanlayıcı, açıklama). Rutinin ekranında adımlar işaret kutusuyla; adıma dokununca kendi kartı (videosu orada). Son adım işaretlenince rutin kendiliğinden yapıldı; bir adımın işareti kalkınca geri alınır. — Ürün sahibi (P-93)
+- **Adımlar rutinin günlerini izler** (kendi zamanları yok, ajandada ayrıca görünmez, alışkanlık sayılmaz); adımın kartında "Rutin: Sabah rutini ›". Adıma uzun basınca Yukarı · Aşağı · Rutinden kaldır; altta "+ Ekle ve Enter'a bas". — Ürün sahibi (P-93); düzenleme biçimi: Öneri
+- **Bugün sırada rutinde sıradaki adımı gösterir** ("1/3 · Sıradaki: Esneme"); Yaptım o adımı işaretler. — Ürün sahibi (P-93)
+- **Kartın ⋯ → "Rutine çevir (maddeler adım olur)"**: listenin her maddesi bir adım kartı olur (o günün işaretleriyle), liste kalkar. Listesiz kartta "Rutin yap". — Ürün sahibi (P-93)
+- **Sınırlar (şimdilik):** rutin paylaşılınca, kütüphaneye kaydedilince ya da programa eklenince adımları gitmez; rutinin zamanı "yalnız bu gün" değişirse o günün kopyasında adımlar görünmez ("bu gün ve sonrası"nda adımlar yeni karta geçer). — Not
+- **Ölçümlerim'deki "Bugüne dön" yazısı yerine ajandadaki ↶ simgesi.** — Ürün sahibi (P-93)

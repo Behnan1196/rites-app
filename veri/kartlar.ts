@@ -62,6 +62,9 @@ interface KartSatiri {
   sabitler?: string | null;
   aliskanlik?: number | null;
   olcumlerim?: number | null;
+  rutin?: number | null;
+  ust?: string | null;
+  ust_sira?: number | null;
   ajandada?: number | null;
   blok_sayisi?: number;
   adim_maddeler?: string | null;
@@ -132,6 +135,8 @@ export function kartSatirdan(s: KartSatiri): KartOzeti {
     ...(s.sabitler ? { sabitler: json<SabitAlan[] | null>(s.sabitler, null) } : {}),
     ...(s.aliskanlik ? { aliskanlik: true } : {}),
     ...(s.olcumlerim ? { olcumlerim: true } : {}),
+    ...(s.rutin ? { rutin: true } : {}),
+    ...(s.ust ? { ust: s.ust, ustSira: s.ust_sira ?? 0 } : {}),
     ...(s.ajandada === 0 || s.ajandada === 1 ? { ajandada: s.ajandada === 1 } : {}),
     blokSayisi: s.blok_sayisi ?? 0,
     adimlar: s.adim_maddeler
@@ -171,7 +176,7 @@ function kayitSatirdan(s: KayitSatiri): Kayit {
 }
 
 const KART_ALANLARI =
-  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, seri_say, cesit, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag, sabitler, aliskanlik, ajandada, olcumlerim';
+  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, seri_say, cesit, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag, sabitler, aliskanlik, ajandada, olcumlerim, rutin, ust, ust_sira';
 
 function kartDegerleri(k: Kart): SqlDeger[] {
   return [
@@ -200,6 +205,9 @@ function kartDegerleri(k: Kart): SqlDeger[] {
     k.aliskanlik ? 1 : 0,
     k.ajandada === null || k.ajandada === undefined ? null : k.ajandada ? 1 : 0,
     k.olcumlerim ? 1 : 0,
+    k.rutin ? 1 : 0,
+    k.ust ?? null,
+    k.ust ? (k.ustSira ?? 0) : null,
   ];
 }
 
@@ -444,6 +452,9 @@ export function islemleriUygula(
           }
           await y.calistir(`DELETE FROM kayit WHERE kart_id = ?${kosul.sql}`, [islem.kaynakKartId, ...kosul.params]);
           await kisaYoluEsitleY(y, islem.hedefKartId);
+          // P-93: rutin "bu gün ve sonrası" yeni karta geçince adımları da onunla gider.
+          if (islem.aralik.tur === 'sonrasi')
+            await y.calistir('UPDATE kart SET ust = ? WHERE ust = ?', [islem.hedefKartId, islem.kaynakKartId]);
           break;
         }
         case 'kayitSil': {
@@ -452,6 +463,7 @@ export function islemleriUygula(
           break;
         }
         case 'kartSil':
+          await rutinAdimlariniSilY(y, islem.kartId); // P-93: rutinin adımları
           await y.calistir('DELETE FROM kayit WHERE kart_id = ?', [islem.kartId]);
           await y.calistir('DELETE FROM blok WHERE kart_id = ?', [islem.kartId]);
           await y.calistir('DELETE FROM kart WHERE id = ?', [islem.kartId]);
@@ -536,11 +548,19 @@ export async function bagliKart(oku: Okuyucu, bag: string): Promise<string | nul
   return (await oku.ilk<{ id: string }>('SELECT id FROM kart WHERE bag = ?', [bag]))?.id ?? null;
 }
 
+/** P-93: rutin silinince adımları da kayıtları ve bloklarıyla silinir. */
+async function rutinAdimlariniSilY(y: Yazici, rutinId: string): Promise<void> {
+  await y.calistir('DELETE FROM kayit WHERE kart_id IN (SELECT id FROM kart WHERE ust = ?)', [rutinId]);
+  await y.calistir('DELETE FROM blok WHERE kart_id IN (SELECT id FROM kart WHERE ust = ?)', [rutinId]);
+  await y.calistir('DELETE FROM kart WHERE ust = ?', [rutinId]);
+}
+
 /** Kartları kayıtları ve bloklarıyla siler. */
 export function kartlariSil(kapi: Kapi, kimlikler: readonly string[]): Promise<void> {
   if (kimlikler.length === 0) return Promise.resolve();
   return kapi.yaz(['kart'], async (y) => {
     for (const id of kimlikler) {
+      await rutinAdimlariniSilY(y, id); // P-93: rutinin adımları
       await y.calistir('DELETE FROM kayit WHERE kart_id = ?', [id]);
       await y.calistir('DELETE FROM blok WHERE kart_id = ?', [id]);
       await y.calistir('DELETE FROM kart WHERE id = ?', [id]);

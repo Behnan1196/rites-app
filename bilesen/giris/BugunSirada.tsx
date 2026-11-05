@@ -12,7 +12,9 @@ import { tekrarMetni } from '@/mantik/gorunurluk';
 import { kalanlar } from '@/mantik/kalanlar';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { maddeKarti, maddeKartiMi } from '@/mantik/listeler';
+import { rutinDurumu, rutinIlerlemeMetni } from '@/mantik/rutinAdimlari';
 import { useSorgu } from '@/veri/kancalar';
+import { rutinAdimiIsaretle } from '@/veri/rutinler';
 import { gunYapilanlari, isaretle, tumKartlar } from '@/veri/kartlar';
 import { useBugun } from '@/veri/useBugun';
 import { useSimdi } from '@/veri/useSimdi';
@@ -26,7 +28,7 @@ import { KutuSimgesi } from './KutuSimgesi';
 import { ModulDugmesi } from './ModulDugmesi';
 
 export function BugunSirada() {
-  const { kapi } = useVeri();
+  const { kapi, oku } = useVeri();
   const bugunGun = useBugun();
   const simdi = useSimdi();
   const kisaMesaj = useKisaMesaj();
@@ -70,6 +72,15 @@ export function BugunSirada() {
               else router.push({ pathname: '/kart/[id]', params: { id: k.id, gun: bugunGun } });
             };
             const meta = [k.saat ?? 'Bugün', k.tekrar ? tekrarMetni(k.tekrar) : null].filter(Boolean).join(' · ');
+            // P-93: rutinse sıradaki adımı; Yaptım o adımı işaretler (son adımda rutin de yapıldı).
+            const rutin =
+              !maddeKartiMi(k) && k.rutin
+                ? rutinDurumu(
+                    kartlar.filter((x) => x.ust === k.id),
+                    yapilanlar,
+                  )
+                : null;
+            const adim = rutin?.siradaki ?? null;
             return (
               <View style={stiller.kart}>
                 <Pressable
@@ -84,6 +95,11 @@ export function BugunSirada() {
                       {k.baslik}
                     </Yazi>
                     <Yazi tur="ikincil">{meta}</Yazi>
+                    {!!adim && rutin && (
+                      <Yazi kalinlik="kalin" renk={renk.ana} style={stiller.adim}>
+                        {`${rutinIlerlemeMetni(rutin)} · Sıradaki: ${adim.baslik}`}
+                      </Yazi>
+                    )}
                   </View>
                   {acilir && <Ionicons name="chevron-forward" size={24} color={renk.soluk} />}
                 </Pressable>
@@ -94,11 +110,15 @@ export function BugunSirada() {
                         kisaMesaj(BAGLANAMIYOR);
                         return;
                       }
+                    } else if (adim) {
+                      await rutinAdimiIsaretle(kapi, oku, k.id, adim.id, bugunGun, true);
+                      kisaMesaj(`Yapıldı: ${adim.baslik}`);
+                      return;
                     } else await isaretle(kapi, k.id, bugunGun, true);
                     kisaMesaj(`Yapıldı: ${k.baslik}`);
                   }}
                   accessibilityRole="button"
-                  accessibilityLabel={`${k.baslik}: yaptım`}
+                  accessibilityLabel={`${adim ? adim.baslik : k.baslik}: yaptım`}
                   style={({ pressed }) => [stiller.yaptim, pressed && { opacity: 0.85 }]}
                 >
                   <Ionicons name="checkmark" size={26} color={renk.yuzey} />
@@ -155,6 +175,7 @@ const stiller = StyleSheet.create({
     justifyContent: 'center',
   },
   yaptimYazi: { fontSize: 22 },
+  adim: { fontSize: 18, lineHeight: 24, marginTop: 4 },
   tamam: { fontSize: 22, lineHeight: 28 },
   kalan: {
     flexDirection: 'row',

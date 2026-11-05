@@ -221,3 +221,10 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - Yerel göç 27: `kart.olcumlerim` (1 / 0). `Kart.olcumlerim`; `olcumlerimiOku`, `olcumlerimiKur` (her gün, süresiz, `ajandada = 0`). `aliskanlikMi` false; `ajandadaMi` yalnız `ajandada = 1` ise.
 - Sıklık ölçüm parçasının (adet, olcum, puan) kullanılmayan `metin` alanında: `hafta:0` (Pzt) … `hafta:6` (Paz); boş = her gün (`mantik/olcumHazirlari`: `olcumGunu`, `siklikYaz`, `olcumGunuMu`). `BlokDuzenleyici` / `ParcaAyarSayfasi` `siklik` ile gösterir.
 - Giriş kutusu `bilesen/giris/OlcumlerimKutusu.tsx` (`KutuAnahtari` `olcum`). `olcumKayitlari` (program değerlendirmesi) yalnız `olcumlerim = 1` kartın parçaları.
+
+## Rutin (P-93, 5 Kasım)
+
+- Yerel göç 28: `kart.rutin` (1 / 0), `kart.ust` (adımın rutini), `kart.ust_sira`; indeks `kart_ust`. `Kart.rutin`, `Kart.ust`, `Kart.ustSira`.
+- Adım kartı her gün süresiz tekrarlı bir karttır (`ust` dolu); `ajandadaMi` ve `aliskanlikMi` false; kart görünümünde zaman satırı yok.
+- `veri/rutinler.ts`: `rutinAdimlari`, `rutinAdimiEkle`, `rutinYap`, `adimlarinYeriniDegistir`, `rutinAdimiIsaretle` (hepsi yapıldıysa rutin yapıldı, değilse geri alınır), `rutineCevir` (listenin maddeleri → adımlar). `mantik/rutinAdimlari.ts`: `adimSirasi`, `rutinDurumu`. (`mantik/rutin.ts` Birlikte rutin, gruplar.)
+- Rutin silinince adımları da silinir (`kartlariSil`, `islemleriUygula` `kartSil`); "bu gün ve sonrası" bölmesinde adımlar yeni karta geçer (`kayitTasi` `sonrasi`).

@@ -9,7 +9,8 @@ import type { Kart } from './kart';
 import { programBagCoz } from './program';
 import { gunEkle, gunFarki, type Gun } from './tarih';
 
-type AliskanlikAlanlari = Pick<Kart, 'tekrar' | 'aliskanlik' | 'planId' | 'bag'> & Pick<Partial<Kart>, 'olcumlerim'>;
+type AliskanlikAlanlari = Pick<Kart, 'tekrar' | 'aliskanlik' | 'planId' | 'bag'> &
+  Pick<Partial<Kart>, 'olcumlerim' | 'ust'>;
 
 /** Programın kartı mı (ajandaya programdan düşen). */
 export function programKartiMi(k: Pick<Kart, 'planId' | 'bag'>): boolean {
@@ -18,7 +19,7 @@ export function programKartiMi(k: Pick<Kart, 'planId' | 'bag'>): boolean {
 
 /** Alışkanlık mı: tekrarlı ve (seçilmiş ya da programın kartı). */
 export function aliskanlikMi(k: AliskanlikAlanlari): boolean {
-  if (k.olcumlerim) return false;
+  if (k.olcumlerim || k.ust) return false;
   return k.tekrar !== null && (!!k.aliskanlik || programKartiMi(k));
 }
 
@@ -26,6 +27,8 @@ export function aliskanlikMi(k: AliskanlikAlanlari): boolean {
 export function ajandadaMi(k: AliskanlikAlanlari & Pick<Kart, 'ajandada'>): boolean {
   // P-91: Ölçümlerim de varsayılan olarak ajandada görünmez.
   if (k.olcumlerim) return k.ajandada === true;
+  // P-93: rutinin adımı ajandada görünmez; rutinin içinde durur.
+  if (k.ust) return false;
   if (!aliskanlikMi(k)) return true;
   return k.ajandada === true;
 }

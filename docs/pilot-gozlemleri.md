@@ -475,3 +475,8 @@ Sonuç: → kararlar.md (Ölçümlerim: Giriş'te tek ölçüm defteri)
 Ne dedi: "Güzel, yalnız ölçüm çeşidi genelde fazla, giriş'de açık durmasın, widgetden ulaşalım."
 Nerede: Giriş → Ölçümlerim
 Sonuç: → kararlar.md (Giriş'te Ölçümlerim küçük kutu)
+
+### P-93 · 5 Kasım 2026 · Behnan
+Ne dedi: "Güzel, bir tek Bugüne dön yazısı yerine ajanda da uyguladığımız bugüne dön ikonunu koyabiliriz. Ajanda da her gün ilk kartım Sabah rutini, bu kartta yaklaşık 8-10 madde var bir liste olarak, sırasıyla yaptım diye maddeleri işaretliyorum ancak bazıları egzersiz olduğu için video'ya gerek var. Bu tip ihtiyaçlar olacağını düşünerek sanırım kartlardan oluşan bir kartta (rutin) oluşturmamız gerekecek, hatta içindeki maddeleri Giriş deki Bugün sırada da görüp işaretleyebilmeliyim" Seçimler: kartlardan oluşan kart; Bugün sırada sıradaki adım; maddeler adım kartlarına çevrilsin; adımlar rutinle aynı günler.
+Nerede: Ajanda, kart görünümü, Giriş → Bugün sırada, Ölçümlerim
+Sonuç: → kararlar.md (Rutin: kartlardan oluşan kart)

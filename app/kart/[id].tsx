@@ -35,6 +35,8 @@ import { ParcaSeridi } from '@/bilesen/kart/ParcaSeridi';
 import { ParcaAyarSayfasi } from '@/bilesen/kart/ParcaAyarSayfasi';
 import { BlokSecici } from '@/bilesen/kart/BlokSecici';
 import { OlcumSecici } from '@/bilesen/kart/OlcumSecici';
+import { RutinAdimlari } from '@/bilesen/kart/RutinAdimlari';
+import { rutinAdimiIsaretle, rutineCevir } from '@/veri/rutinler';
 import { olcumParcalariMi } from '@/mantik/gidisat';
 import { SERIT_PARCALARI } from '@/mantik/parcaSecimi';
 import { ajandadaMi, aliskanlikMi, programKartiMi } from '@/mantik/aliskanlik';
@@ -151,10 +153,13 @@ export default function KartGorunumu() {
       const ayrinti = await kartAyrinti(oku, id);
       if (!ayrinti) return null;
       const program = ayrinti.kart.planId ? await programOku(oku, ayrinti.kart.planId) : null;
+      // P-93: rutinin adımıysa rutin.
+      const rutin = ayrinti.kart.ust ? ((await kartAyrinti(oku, ayrinti.kart.ust))?.kart ?? null) : null;
       return {
         ...ayrinti,
         kayitlar: await kartKayitlari(oku, id),
         program,
+        rutin,
       };
     },
     [id],
@@ -168,7 +173,7 @@ export default function KartGorunumu() {
 
   if (veri.yukleniyor || !veri.veri) return <View style={[stiller.kap, { paddingTop: kenar.top }]} />;
 
-  const { kart, bloklar, kayitlar, program } = veri.veri;
+  const { kart, bloklar, kayitlar, program, rutin } = veri.veri;
 
   const programaEkle = async (programId: string) => {
     setProgramSec(0);
@@ -305,7 +310,11 @@ export default function KartGorunumu() {
             <View style={stiller.baslikSatiri}>
               {isaretlenir && (
                 <Pressable
-                  onPress={() => void isaretle(kapi, kart.id, gun, !kayit.yapildi)}
+                  onPress={() =>
+                    void (kart.ust
+                      ? rutinAdimiIsaretle(kapi, oku, kart.ust, kart.id, gun, !kayit.yapildi)
+                      : isaretle(kapi, kart.id, gun, !kayit.yapildi))
+                  }
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: kayit.yapildi }}
                   accessibilityLabel={
@@ -334,7 +343,25 @@ export default function KartGorunumu() {
               )}
             </View>
             {/* P-83: başlığın altında tek, sessiz zaman satırı; dokununca tek Zaman sayfası. */}
-            <KartZamanSatiri kart={kart} bloklar={bloklar} gun={gun} />
+            {/* P-93: rutinin adımının kendi zamanı yok; rutinin günlerini izler. */}
+            {!kart.ust && <KartZamanSatiri kart={kart} bloklar={bloklar} gun={gun} />}
+            {!!rutin && (
+              <Pressable
+                onPress={() =>
+                  router.canGoBack()
+                    ? router.back()
+                    : router.push({ pathname: '/kart/[id]', params: { id: rutin.id, gun } })
+                }
+                accessibilityRole="button"
+                accessibilityLabel={`Rutin: ${rutin.baslik}, aç`}
+                style={stiller.planEtiketi}
+                hitSlop={8}
+              >
+                <Yazi tur="etiket" kalinlik="kalin" renk={renk.ana}>
+                  {`Rutin: ${rutin.baslik} ›`}
+                </Yazi>
+              </Pressable>
+            )}
             {!!program && (
               <Pressable
                 onPress={() => router.push({ pathname: '/yasam/program/[id]', params: { id: program.id } })}
@@ -363,6 +390,13 @@ export default function KartGorunumu() {
             )}
             {!!gorusme && <GorusmeyeKatil baglanti={gorusme} />}
           </View>
+
+          {/* P-93: rutinin adımları. */}
+          {kart.rutin && (
+            <View style={[stiller.bolum, stiller.cizgili, stiller.anaBolum]}>
+              <RutinAdimlari rutin={kart} gun={gun} duzenlenir={duzenlenir} isaretlenir={isaretlenir} />
+            </View>
+          )}
 
           {/* P-73: Kayıt ve seri kutusu kartta yok; alışkanlıkların gidişatı ayrı ekranda düşünülecek. */}
           {[
@@ -656,7 +690,7 @@ export default function KartGorunumu() {
               onPress: () => kutuphane.ac({ tur: 'kart', kart, bloklar, alanlar: program?.alanlar ?? [] }),
             },
             // P-78: tekrarlı kart alışkanlık olarak izlenir (Giriş → Devam edenler); programın kartı zaten öyle.
-            ...(duzenlenir && kart.tekrar && !programKartiMi(kart) && !kart.olcumlerim
+            ...(duzenlenir && kart.tekrar && !programKartiMi(kart) && !kart.olcumlerim && !kart.ust
               ? [
                   {
                     etiket: kart.aliskanlik ? 'Alışkanlıktan çıkar' : 'Alışkanlık olarak izle',
@@ -683,6 +717,25 @@ export default function KartGorunumu() {
                   },
                 ]
               : []),
+            // P-93: kartı rutine çevir (listesi varsa maddeleri adım kartı olur).
+            ...(duzenlenir && !kart.rutin && !kart.ust && !kart.olcumlerim
+              ? [
+                  {
+                    etiket: bloklar.some((b) => maddeliListeMi(b.tur))
+                      ? 'Rutine çevir (maddeler adım olur)'
+                      : 'Rutin yap (adımlardan oluşsun)',
+                    ikon: 'list-circle-outline' as const,
+                    onPress: () =>
+                      icerikKaydet(
+                        rutineCevir(kapi, oku, kart.id, gun, yeniKimlik).then((n) =>
+                          kisaMesaj(
+                            n ? `Rutin: ${n} adım oluştu; videoyu adımın kartına ekle` : 'Artık rutin; adımlarını ekle',
+                          ),
+                        ),
+                      ),
+                  },
+                ]
+              : []),
             // P-83: Kur üstten menüye (parça ekle, sırala, bütün ayarlar).
             ...(duzenlenir
               ? [
@@ -694,7 +747,7 @@ export default function KartGorunumu() {
                   },
                 ]
               : []),
-            ...(!kart.planId && !kart.bag && !kart.kilitli && !kart.olcumlerim
+            ...(!kart.planId && !kart.bag && !kart.kilitli && !kart.olcumlerim && !kart.ust
               ? [
                   {
                     etiket: 'Programa ekle',

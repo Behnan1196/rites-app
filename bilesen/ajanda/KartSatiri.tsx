@@ -24,6 +24,8 @@ interface Ozellikler {
   onIsaretle: () => void;
   onAc: () => void;
   planAdlari?: ReadonlyMap<string, string>;
+  /** P-93: rutinse o günün ilerlemesi ("3/9"). */
+  rutin?: { yapilan: number; toplam: number } | null;
   /** Sürükleyerek sıralama (yalnız Gün görünümünde). */
   surukle?: {
     onUzunBas: () => void;
@@ -33,13 +35,21 @@ interface Ozellikler {
   };
 }
 
-export function KartSatiri({ kart, yapildi, onIsaretle, onAc, planAdlari = BOS_PLANLAR, surukle }: Ozellikler) {
+export function KartSatiri({
+  kart,
+  yapildi,
+  onIsaretle,
+  onAc,
+  planAdlari = BOS_PLANLAR,
+  rutin = null,
+  surukle,
+}: Ozellikler) {
   const maddeMi = maddeKartiMi(kart);
   const anahtar = kaynakAnahtari(kart);
   const stil = kaynakStili(anahtar);
   const etiket = kaynakEtiketi(kart, planAdlari);
   const kocMu = kaynakTuru(anahtar) === 'koc';
-  const adim = kart.adimlar && kart.adimlar.toplam > 0 ? kart.adimlar : null;
+  const adim = rutin && rutin.toplam > 0 ? rutin : kart.adimlar && kart.adimlar.toplam > 0 ? kart.adimlar : null;
   const metaVar = !!(kart.saat || kart.hatirlatma || kart.tekrar || etiket || adim);
 
   return (
