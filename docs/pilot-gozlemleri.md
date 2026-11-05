@@ -490,3 +490,8 @@ Sonuç: Kullanımda deneniyor; karar yok.
 Ne dedi: "Ölçüm kartıyla ilgili, sayarak olanların altında çıkan "Son ölçümler" bilgilerini kaldıralım. En çok sorunu, değer girmede yaşıyorum, klavye açılıyor, onu kapatmak için dışarıda bir yere basayım derken yanlışlıkla ölçüm girebiliyorum. Diğer yandan, bizim Yaşam tarzındaki alanlarımız ile bu ölçümlerin aslında ilişkisi var, orada verdiğim puan genel ama … uyguladığım yeni bir faaliyet ile ölçümleri karşılaştırırken, o alanlarda vereceğim puanları da hesaba katmam gerekebilir. Örneğin beslenmem kötü ise veya çok iyi ise … bu durum sonucu etkileyecektir." Seçimler: alan puanı bir ölçüm olsun; haftada bir, Pazar.
 Nerede: Ölçümlerim, Yaşam Tarzım → alan
 Sonuç: → kararlar.md (Ölçüm girişi kolaylaştı; yaşam alanlarının puanı ölçüm oldu)
+
+### P-96 · 5 Kasım 2026 · Behnan
+Ne dedi: "Ölçümlere yaşam alanlarını bağlamamız pek doğru olmadı." Seçimler: tamamen geri al; nedenler: ölçümler kalabalıklaştı, alan puanı ölçüm değil.
+Nerede: Ölçümlerim, Yaşam Tarzım
+Sonuç: → kararlar.md (Yaşam alanlarının puanı ölçüm değil; P-95'in o kısmı geri alındı)

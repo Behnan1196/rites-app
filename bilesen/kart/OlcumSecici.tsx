@@ -18,36 +18,16 @@ export function OlcumSecici({
   onHazir,
   onTur,
   onKapat,
-  alanSayisi = 0,
-  onAlanlar,
 }: {
   gorunur: boolean;
   mevcut: readonly { tur: BlokTuru; ad: string }[];
   onHazir: (h: OlcumHaziri) => void;
   onTur: (tur: 'adet' | 'olcum' | 'puan') => void;
   onKapat: () => void;
-  /** P-95: Ölçümlerim'de: puanı olmayan açık yaşam alanı sayısı ve "Yaşam alanlarım" eklemesi. */
-  alanSayisi?: number;
-  onAlanlar?: () => void;
 }) {
   const hazirlar = OLCUM_HAZIRLARI.filter((h) => !hazirKarttaMi(h, mevcut));
   return (
     <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik="Ölçüm ekle" solVazgec>
-      {!!onAlanlar && alanSayisi > 0 && (
-        <Pressable
-          onPress={onAlanlar}
-          accessibilityRole="button"
-          accessibilityLabel={`Yaşam alanlarım: açık ${alanSayisi} alana 1 ile 5 arası puan, haftada bir`}
-          style={({ pressed }) => [stiller.tur, pressed && { opacity: 0.7 }]}
-        >
-          <Ionicons name="leaf-outline" size={22} color={renk.ana} />
-          <View style={stiller.esnek}>
-            <Yazi kalinlik="kalin">Yaşam alanlarım</Yazi>
-            <Yazi tur="ikincil">{`Açık ${alanSayisi} alana 1–5 puan, haftada bir (Pazar). Yaşam Tarzım'daki puanla aynı.`}</Yazi>
-          </View>
-          <Ionicons name="add" size={22} color={renk.ana} />
-        </Pressable>
-      )}
       {hazirlar.length > 0 && (
         <>
           <Yazi kalinlik="kalin">Hazır</Yazi>

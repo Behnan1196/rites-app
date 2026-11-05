@@ -27,7 +27,6 @@ import { alanAdiHatasi, ozelMi, PUAN_SOZLERI, type Alan } from '@/mantik/alanlar
 import { oneriAnahtari, oneriKartlari, oneriler as tumOneriler, sureMetni, yildizMetni } from '@/mantik/program';
 import { icerikMetaMetni } from '@/mantik/kutuphane';
 import { useSorgu } from '@/veri/kancalar';
-import { alanPuaniniOlcumeYaz } from '@/veri/olcumlerim';
 import { useBugun } from '@/veri/useBugun';
 import { gizliOneriler } from '@/veri/katalog';
 import { alanDurumuYaz, ozelAlanSil, ozelAlanYaz, varsayilanAlanDurumu } from '@/veri/programlar';
@@ -49,7 +48,7 @@ export default function AlanEkrani() {
 }
 
 function AlanIcerigi({ alan, p }: { alan: Alan; p: ReturnType<typeof useProgramlar> }) {
-  const { kapi, oku } = useVeri();
+  const { kapi } = useVeri();
   const kisaMesaj = useKisaMesaj();
   const durum = p.durumlar?.get(alan.anahtar) ?? varsayilanAlanDurumu(alan.anahtar);
   const programlar = p.ozetler.filter((o) => o.program.alanlar.includes(alan.anahtar));
@@ -120,12 +119,7 @@ function AlanIcerigi({ alan, p }: { alan: Alan; p: ReturnType<typeof usePrograml
             return (
               <Pressable
                 key={n}
-                onPress={() =>
-                  void alanDurumuYaz(kapi, alan.anahtar, { puan: n }).then(() =>
-                    // P-95: Ölçümlerim'de bu alanın puanı varsa bugünün değeri olur.
-                    alanPuaniniOlcumeYaz(kapi, oku, alan.anahtar, n, bugunGun),
-                  )
-                }
+                onPress={() => void alanDurumuYaz(kapi, alan.anahtar, { puan: n })}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: secili }}
                 accessibilityLabel={`${n}, ${PUAN_SOZLERI[n]}`}

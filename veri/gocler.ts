@@ -366,6 +366,13 @@ export const GOCLER: readonly Goc[] = [
           ALTER TABLE kart ADD COLUMN ust_sira REAL;
           CREATE INDEX kart_ust ON kart (ust);`,
   },
+  {
+    // P-96 (5 Kasım): yaşam alanlarının puanı ölçüm olmaktan çıktı; Ölçümlerim'e eklenmiş
+    // alan puanı parçaları silinir (Yaşam Tarzım'daki puanlar yerinde).
+    surum: 29,
+    sql: `DELETE FROM blok WHERE tur = 'puan' AND metin LIKE '%alan:%'
+            AND kart_id IN (SELECT id FROM kart WHERE olcumlerim = 1);`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

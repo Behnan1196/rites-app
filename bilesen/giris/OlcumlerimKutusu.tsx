@@ -11,12 +11,11 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { ParcaTaslagi } from '@/mantik/blokTaslak';
 import { bosKayit, type Kayit } from '@/mantik/kart';
-import { COKLU_PARCALAR, olcumAlani, olcumGunuMu } from '@/mantik/olcumHazirlari';
+import { COKLU_PARCALAR, olcumGunuMu } from '@/mantik/olcumHazirlari';
 import { goreliTarih, gunEkle, haftaGunu, type Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import { blokEkle, blokYaz, kartKayitlari, kayitDegistir, olcumlerimiKur, olcumlerimiOku } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
-import { alanOlcumleriniEkle, eklenecekAlanlar, olcumdenAlanPuaniYaz } from '@/veri/olcumlerim';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
@@ -46,7 +45,6 @@ export function OlcumlerimIcerigi() {
     },
     [],
   );
-  const eklenecek = useSorgu(['plan', 'kart'], (o) => eklenecekAlanlar(o), []).veri ?? [];
   if (veri.yukleniyor) return null;
   const hata = (e: unknown) => {
     console.error('Kaydedilemedi', e);
@@ -138,12 +136,7 @@ export function OlcumlerimIcerigi() {
                   gun={secilen}
                   kayit={kayit}
                   kayitlar={v.kayitlar}
-                  onKayit={(degistir) =>
-                    void kayitDegistir(kapi, v.kart.id, secilen, degistir)
-                      // P-95: yaşam alanının puanıysa Yaşam Tarzım'daki puan da (en son günse).
-                      .then(() => (olcumAlani(b) ? olcumdenAlanPuaniYaz(kapi, oku, v.kart.id, b, secilen) : undefined))
-                      .catch(hata)
-                  }
+                  onKayit={(degistir) => void kayitDegistir(kapi, v.kart.id, secilen, degistir).catch(hata)}
                 />
               </Pressable>
             ))}
@@ -196,13 +189,6 @@ export function OlcumlerimIcerigi() {
         <OlcumSecici
           gorunur={secici}
           mevcut={v?.bloklar ?? []}
-          alanSayisi={eklenecek.length}
-          onAlanlar={() => {
-            setSecici(false);
-            void alanOlcumleriniEkle(kapi, oku, bugunGun, yeniKimlik)
-              .then((n) => kisaMesaj(`${n} yaşam alanı eklendi; puanları Pazar günleri`))
-              .catch(hata);
-          }}
           onKapat={() => setSecici(false)}
           onHazir={(h) => {
             setSecici(false);
