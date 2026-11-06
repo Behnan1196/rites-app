@@ -135,7 +135,7 @@ export function kartSatirdan(s: KartSatiri): KartOzeti {
     ...(s.sabitler ? { sabitler: json<SabitAlan[] | null>(s.sabitler, null) } : {}),
     ...(s.aliskanlik ? { aliskanlik: true } : {}),
     ...(s.olcumlerim ? { olcumlerim: true } : {}),
-    ...(s.rutin ? { rutin: true } : {}),
+    ...(s.rutin ? { rutin: s.rutin } : {}),
     ...(s.ust ? { ust: s.ust, ustSira: s.ust_sira ?? 0 } : {}),
     ...(s.ajandada === 0 || s.ajandada === 1 ? { ajandada: s.ajandada === 1 } : {}),
     blokSayisi: s.blok_sayisi ?? 0,
@@ -205,7 +205,7 @@ function kartDegerleri(k: Kart): SqlDeger[] {
     k.aliskanlik ? 1 : 0,
     k.ajandada === null || k.ajandada === undefined ? null : k.ajandada ? 1 : 0,
     k.olcumlerim ? 1 : 0,
-    k.rutin ? 1 : 0,
+    k.rutin ?? 0,
     k.ust ?? null,
     k.ust ? (k.ustSira ?? 0) : null,
   ];

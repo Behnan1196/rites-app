@@ -133,8 +133,12 @@ export interface Kart {
   ajandada?: boolean | null;
   /** P-91: Ölçümlerim (kişinin tek ölçüm defteri; Giriş'te kutusu var, varsayılan ajandada değil). */
   olcumlerim?: boolean;
-  /** P-93: rutin (kartlardan oluşan kart); adımları `ust` alanında bunun kimliğini taşır. */
-  rutin?: boolean;
+  /**
+   * P-93: rutin (kartlardan oluşan liste); adımları `ust` alanında bunun kimliğini taşır.
+   * P-105: listenin çeşidi: 1 Günlük kontrol (her gün baştan), 2 Adımlar (işaret kalır),
+   * 3 Bilgi listesi (işaretsiz). 0 / yok: rutin değil.
+   */
+  rutin?: number;
   /** P-93: rutinin adımıysa rutinin kimliği; ajandada görünmez, rutinin günlerini izler. */
   ust?: string | null;
   /** P-93: rutindeki sırası. */

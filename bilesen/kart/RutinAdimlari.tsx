@@ -7,12 +7,24 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { Kart } from '@/mantik/kart';
-import { rutinDurumu, rutinIlerlemeMetni } from '@/mantik/rutinAdimlari';
+import {
+  RUTIN_BILGI,
+  RUTIN_GUNLUK,
+  rutinCesidi,
+  rutinCesitAdi,
+  rutinDurumu,
+  rutinIlerlemeMetni,
+} from '@/mantik/rutinAdimlari';
 import type { Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
-import { gunYapilanlari } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
-import { adimSiralariniYaz, rutinAdimiEkle, rutinAdimiIsaretle, rutinAdimlari } from '@/veri/rutinler';
+import {
+  adimSiralariniYaz,
+  rutinAdimiEkle,
+  rutinAdimiIsaretle,
+  rutinAdimlari,
+  rutinYapilanlari,
+} from '@/veri/rutinler';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
@@ -28,8 +40,11 @@ export function RutinAdimlari({
   duzenlenir,
   isaretlenir,
   onSurukleme,
+  onCesit,
 }: {
-  rutin: Pick<Kart, 'id' | 'baslik' | 'tarih'>;
+  rutin: Pick<Kart, 'id' | 'baslik' | 'tarih' | 'rutin'>;
+  /** Listenin çeşidini seçme sayfası (adın yanındaki ⌄). */
+  onCesit?: () => void;
   gun: Gun;
   duzenlenir: boolean;
   /** Bu gün rutinin günü mü (işaret kutuları yalnız o zaman). */
@@ -42,8 +57,8 @@ export function RutinAdimlari({
   const kisaMesaj = useKisaMesaj();
   const veri = useSorgu(
     ['kart'],
-    async (o) => ({ adimlar: await rutinAdimlari(o, rutin.id), yapilanlar: await gunYapilanlari(o, gun) }),
-    [rutin.id, gun],
+    async (o) => ({ adimlar: await rutinAdimlari(o, rutin.id), yapilanlar: await rutinYapilanlari(o, rutin, gun) }),
+    [rutin.id, rutin.rutin, gun],
   );
   const hata = (e: unknown) => {
     console.error('Kaydedilemedi', e);
@@ -52,21 +67,35 @@ export function RutinAdimlari({
   if (!veri.veri) return null;
   const { adimlar, yapilanlar } = veri.veri;
   const d = rutinDurumu(adimlar, yapilanlar);
+  const cesit = rutinCesidi(rutin) ?? RUTIN_GUNLUK;
+  const isaretli = cesit !== RUTIN_BILGI;
 
   return (
     <View style={stiller.kap}>
       <View style={stiller.ust}>
-        <Yazi kalinlik="kalin" renk={renk.ikincil} style={stiller.esnek}>
-          Adımlar
-        </Yazi>
-        {adimlar.length > 0 && (
+        {/* P-105: listenin çeşidi (Adımlar · Günlük kontrol · Bilgi listesi); dokununca değişir. */}
+        <Pressable
+          onPress={onCesit}
+          disabled={!onCesit}
+          accessibilityRole={onCesit ? 'button' : 'header'}
+          accessibilityLabel={onCesit ? `${rutinCesitAdi(cesit)}: listenin çeşidini değiştir` : rutinCesitAdi(cesit)}
+          hitSlop={6}
+          style={({ pressed }) => [stiller.cesit, pressed && { opacity: 0.6 }]}
+        >
+          <Yazi kalinlik="kalin" renk={renk.ikincil}>
+            {rutinCesitAdi(cesit)}
+          </Yazi>
+          {!!onCesit && <Ionicons name="chevron-down" size={16} color={renk.soluk} />}
+        </Pressable>
+        <View style={stiller.esnek} />
+        {isaretli && adimlar.length > 0 && (
           <Yazi kalinlik="kalin" renk={d.yapilan === d.toplam ? renk.ana : renk.ikincil}>
             {rutinIlerlemeMetni(d)}
           </Yazi>
         )}
       </View>
       {adimlar.length === 0 && (
-        <Yazi tur="ikincil">Rutinin adımlarını sırayla ekle. Her adıma sonra video, zamanlayıcı ekleyebilirsin.</Yazi>
+        <Yazi tur="ikincil">Maddeleri sırayla ekle. Her maddeye dokunup video, zamanlayıcı ekleyebilirsin.</Yazi>
       )}
       {/* P-101: adıma uzun basıp sürükleyerek sıra değişir (ajandadaki gibi); kaldırmak adımın kendi ⋯ menüsünde. */}
       <SiraliKartlar
@@ -78,7 +107,7 @@ export function RutinAdimlari({
           const yapildi = yapilanlar.has(a.id);
           return (
             <View style={stiller.adim}>
-              {isaretlenir && (
+              {isaretli && isaretlenir && (
                 <Pressable
                   onPress={() => void rutinAdimiIsaretle(kapi, oku, rutin.id, a.id, gun, !yapildi).catch(hata)}
                   accessibilityRole="checkbox"
@@ -91,6 +120,11 @@ export function RutinAdimlari({
                     {yapildi && <Ionicons name="checkmark" size={20} color={renk.yuzey} />}
                   </View>
                 </Pressable>
+              )}
+              {!isaretli && (
+                <View style={stiller.nokta}>
+                  <Yazi renk={renk.ikincil}>•</Yazi>
+                </View>
               )}
               <Pressable
                 onPress={() => router.push({ pathname: '/kart/[id]', params: { id: a.id, gun, geri: rutin.baslik } })}
@@ -127,6 +161,8 @@ export function RutinAdimlari({
 }
 
 const stiller = StyleSheet.create({
+  cesit: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32 },
+  nokta: { width: 24, alignItems: 'center' },
   kap: { gap: 4 },
   ust: { flexDirection: 'row', alignItems: 'center', minHeight: 32 },
   esnek: { flex: 1 },

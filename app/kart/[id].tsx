@@ -36,7 +36,9 @@ import { ParcaAyarSayfasi } from '@/bilesen/kart/ParcaAyarSayfasi';
 import { BlokSecici } from '@/bilesen/kart/BlokSecici';
 import { OlcumSecici } from '@/bilesen/kart/OlcumSecici';
 import { RutinAdimlari } from '@/bilesen/kart/RutinAdimlari';
-import { rutinAdimiIsaretle, rutineCevir } from '@/veri/rutinler';
+import { ListeCesidiSecici } from '@/bilesen/kart/ListeCesidiSecici';
+import { adimlarListeParcasi, rutinCesidi } from '@/mantik/rutinAdimlari';
+import { rutinAdimiIsaretle, rutinAdimlari, rutinYap } from '@/veri/rutinler';
 import { olcumParcalariMi } from '@/mantik/gidisat';
 import { SERIT_PARCALARI } from '@/mantik/parcaSecimi';
 import { ajandadaMi, aliskanlikMi, programKartiMi } from '@/mantik/aliskanlik';
@@ -140,6 +142,8 @@ export default function KartGorunumu() {
   /** P-83: kartın sonundaki "+ Ekle" açıkken parça seçenekleri görünür. */
   const [ekleAcik, setEkleAcik] = useState(false);
   const [olcumSecici, setOlcumSecici] = useState(false);
+  /** P-105: listenin çeşidi (yeni liste ya da var olanın çeşidi). */
+  const [listeCesidi, setListeCesidi] = useState(false);
   /** P-101: rutinin adımı sürüklenirken ekran kaymasın. */
   const [surukleniyor, setSurukleniyor] = useState(false);
   const uzman = useUzman();
@@ -163,11 +167,14 @@ export default function KartGorunumu() {
       const program = ayrinti.kart.planId ? await programOku(oku, ayrinti.kart.planId) : null;
       // P-93: rutinin adımıysa rutin.
       const rutin = ayrinti.kart.ust ? ((await kartAyrinti(oku, ayrinti.kart.ust))?.kart ?? null) : null;
+      // P-105: dışarı giderken (paylaş, ver, kütüphane) adımlar liste parçası olur.
+      const adimlar = ayrinti.kart.rutin ? await rutinAdimlari(oku, ayrinti.kart.id) : [];
       return {
         ...ayrinti,
         kayitlar: await kartKayitlari(oku, id),
         program,
         rutin,
+        adimlar,
       };
     },
     [id],
@@ -181,7 +188,8 @@ export default function KartGorunumu() {
 
   if (veri.yukleniyor || !veri.veri) return <View style={[stiller.kap, { paddingTop: kenar.top }]} />;
 
-  const { kart, bloklar, kayitlar, program, rutin } = veri.veri;
+  const { kart, bloklar, kayitlar, program, rutin, adimlar } = veri.veri;
+  const disaBloklar = adimlarListeParcasi(kart, bloklar, adimlar);
 
   const programaEkle = async (programId: string) => {
     setProgramSec(0);
@@ -249,22 +257,9 @@ export default function KartGorunumu() {
       icerikKaydet(blokEkle(kapi, kart.id, { id: yeniKimlik(), tur: 'foto', dosya }));
       return;
     }
-    // P-83: liste önce kurulur: Adımlar · Günlük kontrol (tekrarlıda) · Bilgi listesi · Listelerimden.
-    // Tek seferlik kartta işaretleri kalan liste (formdaki gibi).
+    // P-105: listenin maddeleri kart olur; önce çeşidi sorulur (Adımlar · Günlük kontrol · Bilgi listesi).
     if (o === 'liste') {
-      setParcaAyari({
-        blok: {
-          id: yeniKimlik(),
-          tur: kart.tekrar ? 'liste' : 'adimlar',
-          ad: '',
-          metin: '',
-          birim: '',
-          dakika: null,
-          maddeler: [],
-          dosya: null,
-        },
-        yeni: true,
-      });
+      setListeCesidi(true);
       return;
     }
     icerikKaydet(blokEkle(kapi, kart.id, { id: yeniKimlik(), tur: o }));
@@ -275,7 +270,8 @@ export default function KartGorunumu() {
   const eklenecek = seritOgeleri({
     aciklamaVar: aciklamaVarMi(kart.kisa) || aciklamaYaziliyor || !aciklamaDegisir(kart),
     uzman,
-    mevcut: bloklar.map((b) => b.tur),
+    // P-105: listesi olan (ya da bir listenin maddesi olan) karta ikinci liste eklenmez.
+    mevcut: [...bloklar.map((b) => b.tur), ...(kart.rutin || kart.ust ? (['liste'] as const) : [])],
   });
   /** P-104: rutinin adımının menüsü sade: yalnız Kur ve Rutinden kaldır. */
   const menuOgeleri = <T extends { etiket: string }>(ogeler: T[]): T[] =>
@@ -416,6 +412,7 @@ export default function KartGorunumu() {
                   duzenlenir={duzenlenir}
                   isaretlenir={isaretlenir}
                   onSurukleme={setSurukleniyor}
+                  onCesit={duzenlenir ? () => setListeCesidi(true) : undefined}
                 />
               </View>
             )}
@@ -631,6 +628,15 @@ export default function KartGorunumu() {
             />
           );
         })()}
+      <ListeCesidiSecici
+        gorunur={listeCesidi}
+        secili={rutinCesidi(kart)}
+        onKapat={() => setListeCesidi(false)}
+        onSec={(c) => {
+          setListeCesidi(false);
+          if (c !== rutinCesidi(kart)) icerikKaydet(rutinYap(kapi, kart.id, c));
+        }}
+      />
       <OlcumSecici
         gorunur={olcumSecici}
         mevcut={bloklar}
@@ -710,7 +716,7 @@ export default function KartGorunumu() {
             {
               etiket: 'Kütüphaneye kaydet',
               ikon: 'bookmark-outline',
-              onPress: () => kutuphane.ac({ tur: 'kart', kart, bloklar, alanlar: program?.alanlar ?? [] }),
+              onPress: () => kutuphane.ac({ tur: 'kart', kart, bloklar: disaBloklar, alanlar: program?.alanlar ?? [] }),
             },
             // P-78: tekrarlı kart alışkanlık olarak izlenir (Giriş → Devam edenler); programın kartı zaten öyle.
             ...(duzenlenir && kart.tekrar && !programKartiMi(kart) && !kart.olcumlerim && !kart.ust
@@ -737,25 +743,6 @@ export default function KartGorunumu() {
                     etiket: ajandadaMi(kart) ? 'Ajandada gösterme' : 'Ajandada göster',
                     ikon: 'calendar-outline' as const,
                     onPress: () => icerikKaydet(ajandadaYaz(kapi, kart.id, !ajandadaMi(kart))),
-                  },
-                ]
-              : []),
-            // P-93: kartı rutine çevir (listesi varsa maddeleri adım kartı olur).
-            ...(duzenlenir && !kart.rutin && !kart.ust && !kart.olcumlerim
-              ? [
-                  {
-                    etiket: bloklar.some((b) => maddeliListeMi(b.tur))
-                      ? 'Rutine çevir (maddeler adım olur)'
-                      : 'Rutin yap (adımlardan oluşsun)',
-                    ikon: 'list-circle-outline' as const,
-                    onPress: () =>
-                      icerikKaydet(
-                        rutineCevir(kapi, oku, kart.id, gun, yeniKimlik).then((n) =>
-                          kisaMesaj(
-                            n ? `Rutin: ${n} adım oluştu; videoyu adımın kartına ekle` : 'Artık rutin; adımlarını ekle',
-                          ),
-                        ),
-                      ),
                   },
                 ]
               : []),
@@ -794,14 +781,18 @@ export default function KartGorunumu() {
                   {
                     etiket: 'Birine ver',
                     ikon: 'gift-outline' as const,
-                    onPress: () => kartVer.ac({ paket: kartPaketi(kart, bloklar) }),
+                    onPress: () => kartVer.ac({ paket: kartPaketi(kart, disaBloklar) }),
                   },
                 ]
               : []),
             ...(kart.kilitli
               ? []
               : [
-                  { etiket: 'Paylaş', ikon: 'share-outline' as const, onPress: () => paylas.ac({ kart, bloklar }) },
+                  {
+                    etiket: 'Paylaş',
+                    ikon: 'share-outline' as const,
+                    onPress: () => paylas.ac({ kart, bloklar: disaBloklar }),
+                  },
                   // P-98: Ölçümlerim yalnız Giriş → Ölçümlerim → Düzenle'den silinir (ajandadan değil).
                   ...(kart.olcumlerim && olcumlerimden !== '1'
                     ? []

@@ -2,7 +2,15 @@
 
 import { adimDurumu } from '@/mantik/adimlar';
 import { yeniKart, type Kart } from '@/mantik/kart';
-import { adimSirasi } from '@/mantik/rutinAdimlari';
+import {
+  adimSirasi,
+  listedenCesit,
+  RUTIN_BILGI,
+  RUTIN_GUNLUK,
+  RUTIN_KALICI,
+  rutinCesidi,
+  type RutinCesidi,
+} from '@/mantik/rutinAdimlari';
 import type { Gun } from '@/mantik/tarih';
 
 import type { Kapi, Okuyucu } from './kapi';
@@ -51,9 +59,25 @@ export async function rutinAdimiEkle(
   return id;
 }
 
-/** Rutin olarak işaretle (adımları sonra eklenir). */
-export function rutinYap(kapi: Kapi, kartId: string): Promise<void> {
-  return kapi.yaz(['kart'], (y) => y.calistir('UPDATE kart SET rutin = 1 WHERE id = ?', [kartId]));
+/** Kartın listesi adım kartlarından olsun (P-105: çeşidiyle); adımları sonra eklenir. */
+export function rutinYap(kapi: Kapi, kartId: string, cesit: RutinCesidi = RUTIN_GUNLUK): Promise<void> {
+  return kapi.yaz(['kart'], (y) => y.calistir('UPDATE kart SET rutin = ? WHERE id = ?', [cesit, kartId]));
+}
+
+/** P-105: "İşaretlediğin kalır" listesinde bir kez yapılan adımlar (hangi gün olursa). */
+export async function kaliciYapilanlar(oku: Okuyucu): Promise<Set<string>> {
+  const s = await oku.hepsi<{ kart_id: string }>(
+    'SELECT DISTINCT kart_id FROM kayit WHERE yapildi = 1 AND kart_id IN (SELECT id FROM kart WHERE ust IS NOT NULL)',
+  );
+  return new Set(s.map((x) => x.kart_id));
+}
+
+/** Rutinin çeşidine göre o gün işaretli görünen adımlar (Bilgi listesinde hiçbiri). */
+export async function rutinYapilanlari(oku: Okuyucu, rutin: Pick<Kart, 'rutin'>, gun: Gun): Promise<Set<string>> {
+  const c = rutinCesidi(rutin);
+  if (c === RUTIN_BILGI) return new Set();
+  if (c === RUTIN_KALICI) return kaliciYapilanlar(oku);
+  return gunYapilanlari(oku, gun);
 }
 
 /** İki adımın yerini değiştirir. */
@@ -80,11 +104,19 @@ export async function rutinAdimiIsaretle(
   gun: Gun,
   yapildi: boolean,
 ): Promise<void> {
-  await isaretle(kapi, adimId, gun, yapildi);
+  const rutin = (await kartAyrinti(oku, rutinId))?.kart;
+  if (!rutin) return;
+  const cesit = rutinCesidi(rutin);
+  if (cesit === RUTIN_BILGI) return;
+  // P-105: "İşaretlediğin kalır"da işaret kaldırılınca bütün günlerin işareti kalkar.
+  if (cesit === RUTIN_KALICI && !yapildi)
+    await kapi.yaz(['kart'], (y) => y.calistir('UPDATE kayit SET yapildi = 0 WHERE kart_id = ?', [adimId]));
+  else await isaretle(kapi, adimId, gun, yapildi);
   const adimlar = await rutinAdimlari(oku, rutinId);
-  const yapilanlar = await gunYapilanlari(oku, gun);
+  const yapilanlar = await rutinYapilanlari(oku, rutin, gun);
   const hepsi = adimlar.length > 0 && adimlar.every((a) => yapilanlar.has(a.id));
-  if (hepsi !== yapilanlar.has(rutinId)) await isaretle(kapi, rutinId, gun, hepsi);
+  const rutinYapildi = (await gunYapilanlari(oku, gun)).has(rutinId);
+  if (hepsi !== rutinYapildi) await isaretle(kapi, rutinId, gun, hepsi);
 }
 
 /**
@@ -101,20 +133,24 @@ export async function rutineCevir(
   const a = await kartAyrinti(oku, kartId);
   if (!a) return 0;
   const liste = a.bloklar.find((b) => b.tur === 'liste' || b.tur === 'adimlar' || b.tur === 'bilgi');
-  await rutinYap(kapi, kartId);
+  await rutinYap(kapi, kartId, liste ? listedenCesit(liste.tur) : RUTIN_GUNLUK);
   if (!liste) return 0;
   const kayit = (await kartKayitlari(oku, kartId)).find((k) => k.tarih === gun);
   const durum = liste.tur === 'adimlar' ? adimDurumu(liste.durum, liste.maddeler.length) : null;
-  const yapildiMi = (i: number) =>
+  // O günün işaretleri (Günlük kontrol) ya da yapıldığı günleriyle (İşaretlediğin kalır).
+  const yapildigiGun = (i: number): Gun | null =>
     liste.tur === 'liste'
-      ? !!kayit?.isaretler[liste.id]?.[i]
+      ? kayit?.isaretler[liste.id]?.[i]
+        ? gun
+        : null
       : liste.tur === 'adimlar'
-        ? durum?.yapilan[i] === gun
-        : false;
+        ? (durum?.yapilan[i] ?? null)
+        : null;
   let n = 0;
   for (const [i, madde] of liste.maddeler.entries()) {
     const id = await rutinAdimiEkle(kapi, oku, a.kart, madde, gun, idUret);
-    if (yapildiMi(i)) await isaretle(kapi, id, gun, true);
+    const g = yapildigiGun(i);
+    if (g) await isaretle(kapi, id, g, true);
     n++;
   }
   await kapi.yaz(['kart'], (y) => y.calistir('DELETE FROM blok WHERE id = ?', [liste.id]));

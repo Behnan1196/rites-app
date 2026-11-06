@@ -18,7 +18,15 @@ import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import { bolmeSecenekleri, bolmeSorusuGerekirMi, duzenle, type BolmeSecimi, type KartTanimi } from '@/mantik/bolme';
 import { formaBlok, kaydaBlok } from '@/mantik/blokTaslak';
 import { CESIT_SIMGELERI, cesitBul, cesitler as tumCesitler, yeniCesitKimligi } from '@/mantik/cesit';
-import { gecerliHatirlatma, yeniKart, type Blok, type BlokTuru, type Kart, type SabitAlan } from '@/mantik/kart';
+import {
+  gecerliHatirlatma,
+  maddeliListeMi,
+  yeniKart,
+  type Blok,
+  type BlokTuru,
+  type Kart,
+  type SabitAlan,
+} from '@/mantik/kart';
 import { SERIT_PARCALARI, seritOgeleri, type SeritOgesi } from '@/mantik/parcaSecimi';
 import { ayarliParcaMi, sabitDegistir } from '@/mantik/gorunumDegisimi';
 import { katalog, type KartCesidi } from '@/mantik/katalog';
@@ -41,6 +49,7 @@ import { notSil } from '@/veri/notlar';
 import { paylasilanSil } from '@/veri/paylasilanlar';
 import { programaYansit, programKartiEkle, programKartiSil, programKartiYaz } from '@/veri/programlar';
 import { useBugun } from '@/veri/useBugun';
+import { rutineCevir } from '@/veri/rutinler';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { AltSayfa } from '../AltSayfa';
@@ -630,6 +639,9 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
           ...(hedef.tur === 'yeni' && hedef.aliskanlik && t.tekrar ? { aliskanlik: true } : {}),
         });
         await yeniKartKaydet(kapi, kart, bloklar, yeniKimlik);
+        // P-105: yeni kartın listesi maddeleri kart olan listeye döner (çeşidi korunur).
+        if (hedef.tur === 'yeni' && bloklar.some((b) => maddeliListeMi(b.tur) && (b.maddeler?.length ?? 0) > 0))
+          await rutineCevir(kapi, oku, kart.id, kart.tarih ?? hedef.gun, yeniKimlik);
         const notId = hedef.tur === 'yeni' ? hedef.taslak?.notId : undefined;
         if (notId) {
           await notSil(kapi, notId);

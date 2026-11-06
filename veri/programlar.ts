@@ -2,6 +2,7 @@
 // Programın kartları `program_kart`ta durur (bloklar JSON); uygulanırken ajandaya
 // düşen kartlar `kart.plan_id = program`, `kart.bag = program:<programKartı>` taşır.
 
+import { adimlarListeParcasi as adimliBloklar } from '@/mantik/rutinAdimlari';
 import { yeniKartSirasi } from '@/mantik/ajanda';
 import {
   alanBul,
@@ -32,6 +33,7 @@ import { gecerliSes } from '@/mantik/sesler';
 import { gunEkle, type Gun } from '@/mantik/tarih';
 
 import type { Kapi, Okuyucu, Yazici } from './kapi';
+import { rutinAdimlari } from './rutinler';
 import { bloklariYazY, kartAyrinti, kartEkleY, kartSatirdan, type KartOzeti, type KimlikUretici } from './kartlar';
 
 function json<T>(metin: string | null, varsayilan: T): T {
@@ -572,7 +574,11 @@ export async function karttanProgramaEkle(
   const p = await programOku(oku, programId);
   if (!a || !p) return null;
   const uygulaniyor = etkinDurum(p, bugunGun) === 'uygulaniyor' && !!p.baslangic;
-  const icerik = karttanIcerik(a.kart, a.bloklar, uygulaniyor ? p.baslangic : null);
+  const icerik = karttanIcerik(
+    a.kart,
+    adimliBloklar(a.kart, a.bloklar, await rutinAdimlari(oku, a.kart.id)),
+    uygulaniyor ? p.baslangic : null,
+  );
   const pkId = idUret();
   await kapi.yaz(['plan', 'kart'], async (y) => {
     const enBuyuk = await y.ilk<{ s: number | null }>('SELECT MAX(sira) AS s FROM program_kart WHERE program_id = ?', [
@@ -602,7 +608,11 @@ export async function programaYansit(kapi: Kapi, oku: Okuyucu, kartId: string): 
   const p = await programOku(oku, a.kart.planId);
   const eski = (await oku.ilk<ProgramKartSatiri>('SELECT * FROM program_kart WHERE id = ?', [pkId])) ?? null;
   if (!p || !eski) return;
-  const icerik = karttanIcerik(a.kart, a.bloklar, p.baslangic);
+  const icerik = karttanIcerik(
+    a.kart,
+    adimliBloklar(a.kart, a.bloklar, await rutinAdimlari(oku, a.kart.id)),
+    p.baslangic,
+  );
   const onceki = programKartSatirdan(eski);
   await programKartiYaz(kapi, {
     ...onceki,

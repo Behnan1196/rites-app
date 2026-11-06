@@ -535,3 +535,8 @@ Sonuç: Soru; adımın ⋯ menüsünün sadeleştirilmesi önerildi.
 Ne dedi: "Şimdilik adım kartının menüsünü sadeleştirelim. Burada rastladığım bir sorun, listenin adımları girişde ajandanın Sıradaki işi oluyor, oysa ben sadece liste yaptım her zaman adım değil. Ancak zaten sıradaki iş widgeti en azından benim kullanım şeklimde çok yararlı değil, o yüzden liste maddelerinin kart olmasında sakınca yok, yapısal olarak sence de yoksa hemen tüm liste adımları kısa kart şeklinde olsun" Seçimler: Bugün sırada tamamen kalksın; kart listeleri adım kartı olsun, eskiler de çevrilsin.
 Nerede: Rutin, Giriş
 Sonuç: → kararlar.md (adım menüsü sade; Bugün sırada kalktı); bütün listelerin çevrilmesi için yapısal plan onaya sunuldu.
+
+### P-105 · 6 Kasım 2026 · Behnan
+Ne dedi: "Eski listeleri çevirmeyelim, ben o listeleri tamamen silip yeniden kurarım. Rutin diyoruz ama aslında listenin 3 şekli kalacak, + Ekle ile yine sorsun."
+Nerede: Kart → + Ekle → Liste
+Sonuç: → kararlar.md (listenin üç çeşidi, maddeleri kart; eskiler çevrilmez).

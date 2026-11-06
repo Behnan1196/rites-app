@@ -2,7 +2,8 @@
 // (A-1 … A-8, PL-4, `05` §8). P-34: başlık "Ajandam"; sağda ara, takvim, Görünüm
 // (gün / hafta + kaynak süzgeci) ve ＋ (kart ekle); avatar yalnız Giriş'te.
 
-import { rutinDurumu } from '@/mantik/rutinAdimlari';
+import { RUTIN_BILGI, RUTIN_KALICI, rutinCesidi, rutinDurumu } from '@/mantik/rutinAdimlari';
+import { kaliciYapilanlar } from '@/veri/rutinler';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -95,6 +96,8 @@ export default function Ajandam() {
       planAdlari: new Map((await programlariOku(oku)).map((p) => [p.id, p.ad])),
       yapilanlar: await gunlerinYapilanlari(oku, hafta[0]!, hafta[6]!),
       bloklar: aramaAcik ? await blokMetinleri(oku) : null,
+      // P-105: "Adımlar" listesinde işaret kalır (hangi gün yapıldıysa).
+      kalici: await kaliciYapilanlar(oku),
     }),
     [hafta[0], aramaAcik],
   );
@@ -155,13 +158,19 @@ export default function Ajandam() {
 
   // P-93: rutinlerin adımları (ajandada görünmez; rutinin satırında "3/9").
   const rutinAdimlariOf = (id: string) => (yerelKartlar ?? []).filter((k) => k.ust === id);
+  // P-105: Bilgi listesinde ilerleme yok; Adımlar'da işaret günden bağımsız.
+  const rutinIlerlemesi = (k: { id: string; rutin?: number }) => {
+    const c = rutinCesidi(k);
+    if (!c || c === RUTIN_BILGI) return null;
+    return rutinDurumu(rutinAdimlariOf(k.id), c === RUTIN_KALICI ? (veri.veri?.kalici ?? BOS_KUME) : seciliYapilanlar);
+  };
   const satirCiz = (kart: KartOzeti, surukle?: SurukleIslemleri) => (
     <KartSatiri
       key={kart.id}
       kart={kart}
       planAdlari={planAdlari}
       yapildi={seciliYapilanlar.has(kart.id)}
-      rutin={kart.rutin ? rutinDurumu(rutinAdimlariOf(kart.id), seciliYapilanlar) : null}
+      rutin={rutinIlerlemesi(kart)}
       surukle={surukle}
       onIsaretle={() => {
         const yapildi = !seciliYapilanlar.has(kart.id);
