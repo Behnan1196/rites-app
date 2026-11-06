@@ -277,6 +277,9 @@ export default function KartGorunumu() {
     uzman,
     mevcut: bloklar.map((b) => b.tur),
   });
+  /** P-104: rutinin adımının menüsü sade: yalnız Kur ve Rutinden kaldır. */
+  const menuOgeleri = <T extends { etiket: string }>(ogeler: T[]): T[] =>
+    kart.ust ? ogeler.filter((o) => o.etiket === 'Kur: ayarlar ve sıra' || o.etiket === 'Rutinden kaldır') : ogeler;
   const kayitDegis = (degistir: (k: Kayit) => Kayit) => void kayitDegistir(kapi, kart.id, gun, degistir);
 
   return (
@@ -693,7 +696,7 @@ export default function KartGorunumu() {
         <AcilirMenu
           ust={kenar.top + 52}
           onKapat={() => setMenuAcik(false)}
-          ogeler={[
+          ogeler={menuOgeleri([
             // P-87: ölçümlerin gidişatı (son 4 hafta, yan yana).
             ...(olcumParcalariMi(bloklar)
               ? [
@@ -830,7 +833,7 @@ export default function KartGorunumu() {
                           },
                         ]),
                 ]),
-          ]}
+          ])}
         />
       )}
       {form.oge}

@@ -37,7 +37,6 @@ describe('Giriş kutuları (G-7, 05 §10)', () => {
     expect(hazirKutular(s).map((a) => a.k)).toEqual([
       'not',
       'gelenler',
-      'bugun',
       'animsatici',
       'devam',
       'olcum',
@@ -59,7 +58,6 @@ describe('Giriş kutuları (G-7, 05 §10)', () => {
     expect(hazirKutular(t).map((a) => a.k)).toEqual([
       'not',
       'gelenler',
-      'bugun',
       'devam',
       'animsatici',
       'olcum',
@@ -71,12 +69,12 @@ describe('Giriş kutuları (G-7, 05 §10)', () => {
   });
   it('sürükleyerek sıralama: görünmeyenler yerinde kalır', () => {
     const s = kutuSirasi(null).map((a) => (a.k === 'gelenler' ? { ...a, acik: false } : a));
-    const t = kutulariSirala(s, ['devam', 'not', 'gelenler', 'bugun', 'animsatici', 'olcum', 'ortak']);
+    const t = kutulariSirala(s, ['devam', 'not', 'gelenler', 'animsatici', 'olcum', 'ortak']);
     expect(t.map((a) => a.k)).toEqual([
       'devam',
       'not',
-      'gelenler',
       'bugun',
+      'gelenler',
       'animsatici',
       'olcum',
       'soru',

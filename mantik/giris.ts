@@ -67,7 +67,8 @@ export interface KutuTanimi {
 export const KUTULAR: readonly KutuTanimi[] = [
   { k: 'not', ad: 'Hızlı Not', aciklama: 'Notların; kapatırsan buradan yeniden açarsın', hazir: true },
   { k: 'gelenler', ad: 'Gelenler', aciklama: 'Sana gönderilenler ve gruplarından yanıt bekleyenler', hazir: true },
-  { k: 'bugun', ad: 'Bugün sırada', aciklama: 'Ajandandaki sıradaki iş', hazir: true },
+  // P-104 (6 Kasım): Bugün sırada kalktı (kullanılmıyordu); ayarda da görünmez.
+  { k: 'bugun', ad: 'Bugün sırada', aciklama: 'Ajandandaki sıradaki iş', hazir: false },
   { k: 'animsatici', ad: 'Anımsatıcılar', aciklama: 'Sıradaki anımsatma', hazir: true },
   { k: 'devam', ad: 'Devam edenler', aciklama: 'Uyguladığın programlar', hazir: true },
   // P-91: kişinin tek ölçüm defteri; tarih seçip girilir.

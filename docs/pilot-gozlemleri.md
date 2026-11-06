@@ -525,3 +525,13 @@ Sonuç: → kararlar.md (Rutinin adımları sürükleyerek sıralanır)
 Ne dedi: "Anımsatıcıyı alarm verdiğinde, (sanırım) rites kapalı iken, gelen menüde kapatmama rağmen, ritesı açtığımda anımsatıcı çalıyor görünüyor ve Durdur diye görünüyor, oysa kapatmıştım"
 Nerede: Giriş → Anımsatıcılar (alarm)
 Sonuç: Hata. → kararlar.md (Telefonda durdurulan alarm Rites'ta "Şimdi çalıyor" kalmaz)
+
+### P-103 · 6 Kasım 2026 · Behnan
+Ne dedi: "Bir şey sorayım, listelerde kart tipi (rutin) daha güzel oldu, hem sürüklenip hem detayına girip değişiklik yapılıyor. Tabi içine girince kartın tüm olanaklarının olması doğru olmayabilir, ama sanki sakıncası da yok."
+Nerede: Rutin → adımın kartı
+Sonuç: Soru; adımın ⋯ menüsünün sadeleştirilmesi önerildi.
+
+### P-104 · 6 Kasım 2026 · Behnan
+Ne dedi: "Şimdilik adım kartının menüsünü sadeleştirelim. Burada rastladığım bir sorun, listenin adımları girişde ajandanın Sıradaki işi oluyor, oysa ben sadece liste yaptım her zaman adım değil. Ancak zaten sıradaki iş widgeti en azından benim kullanım şeklimde çok yararlı değil, o yüzden liste maddelerinin kart olmasında sakınca yok, yapısal olarak sence de yoksa hemen tüm liste adımları kısa kart şeklinde olsun" Seçimler: Bugün sırada tamamen kalksın; kart listeleri adım kartı olsun, eskiler de çevrilsin.
+Nerede: Rutin, Giriş
+Sonuç: → kararlar.md (adım menüsü sade; Bugün sırada kalktı); bütün listelerin çevrilmesi için yapısal plan onaya sunuldu.
