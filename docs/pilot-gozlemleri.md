@@ -540,3 +540,8 @@ Sonuç: → kararlar.md (adım menüsü sade; Bugün sırada kalktı); bütün l
 Ne dedi: "Eski listeleri çevirmeyelim, ben o listeleri tamamen silip yeniden kurarım. Rutin diyoruz ama aslında listenin 3 şekli kalacak, + Ekle ile yine sorsun."
 Nerede: Kart → + Ekle → Liste
 Sonuç: → kararlar.md (listenin üç çeşidi, maddeleri kart; eskiler çevrilmez).
+
+### P-106 · 6 Kasım 2026 · Behnan
+Ne dedi: "Bir deneyim. Bu arada, Hızlı not ile not ekleyebiliyoruz ama Notlar ekranından not eklemeyi hiç yapmamışız"
+Nerede: Giriş → Notlar
+Sonuç: → kararlar.md (Notlar'ın üstünde yazma kutusu).

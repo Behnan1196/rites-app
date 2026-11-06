@@ -318,7 +318,16 @@ export function AciklamaAlani({
 }
 
 /** Listeye madde ekleme satırı. */
-export function MaddeEkle({ onEkle }: { onEkle: (metin: string) => void }) {
+export function MaddeEkle({
+  onEkle,
+  yer = "+ Ekle ve Enter'a bas",
+  etiket = 'Listeye ekle',
+}: {
+  onEkle: (metin: string) => void;
+  /** Yer tutucu yazı (Notlar'da "+ Not yaz ve Enter'a bas"). */
+  yer?: string;
+  etiket?: string;
+}) {
   const [metin, setMetin] = useState('');
   const ekle = () => {
     const t = metin.trim();
@@ -328,13 +337,13 @@ export function MaddeEkle({ onEkle }: { onEkle: (metin: string) => void }) {
   };
   return (
     <TextInput
-      accessibilityLabel="Listeye ekle"
+      accessibilityLabel={etiket}
       value={metin}
       onChangeText={setMetin}
       onSubmitEditing={ekle}
       submitBehavior="submit"
       returnKeyType="done"
-      placeholder="+ Ekle ve Enter'a bas"
+      placeholder={yer}
       placeholderTextColor={renk.soluk}
       selectionColor={renk.ana}
       style={[stiller.ekle, yazi('normal')]}
