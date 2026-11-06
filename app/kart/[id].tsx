@@ -83,6 +83,7 @@ import {
   kartSabitleriYaz,
   isaretle,
   kartAyrinti,
+  kartlariSil,
   kartKayitlari,
   kartMetniYaz,
   kayitDegistir,
@@ -139,6 +140,8 @@ export default function KartGorunumu() {
   /** P-83: kartın sonundaki "+ Ekle" açıkken parça seçenekleri görünür. */
   const [ekleAcik, setEkleAcik] = useState(false);
   const [olcumSecici, setOlcumSecici] = useState(false);
+  /** P-101: rutinin adımı sürüklenirken ekran kaymasın. */
+  const [surukleniyor, setSurukleniyor] = useState(false);
   const uzman = useUzman();
 
   const form = useKartFormu((sonuc) => {
@@ -297,6 +300,7 @@ export default function KartGorunumu() {
       </View>
 
       <ScrollView
+        scrollEnabled={!surukleniyor}
         contentContainerStyle={stiller.icerik}
         keyboardShouldPersistTaps={kart.olcumlerim ? 'never' : 'handled'}
       >
@@ -403,7 +407,13 @@ export default function KartGorunumu() {
             {/* P-93: rutinin adımları. */}
             {kart.rutin && (
               <View style={[stiller.bolum, stiller.cizgili, stiller.anaBolum]}>
-                <RutinAdimlari rutin={kart} gun={gun} duzenlenir={duzenlenir} isaretlenir={isaretlenir} />
+                <RutinAdimlari
+                  rutin={kart}
+                  gun={gun}
+                  duzenlenir={duzenlenir}
+                  isaretlenir={isaretlenir}
+                  onSurukleme={setSurukleniyor}
+                />
               </View>
             )}
 
@@ -792,14 +802,33 @@ export default function KartGorunumu() {
                   // P-98: Ölçümlerim yalnız Giriş → Ölçümlerim → Düzenle'den silinir (ajandadan değil).
                   ...(kart.olcumlerim && olcumlerimden !== '1'
                     ? []
-                    : [
-                        {
-                          etiket: 'Sil',
-                          ikon: 'trash-outline' as const,
-                          tehlike: true,
-                          onPress: () => kartSil.baslat(kart, gun),
-                        },
-                      ]),
+                    : kart.ust
+                      ? [
+                          // P-101: rutinin adımı doğrudan rutinden kaldırılır (sıralama sürüklemeyle).
+                          {
+                            etiket: 'Rutinden kaldır',
+                            ikon: 'trash-outline' as const,
+                            tehlike: true,
+                            onPress: () =>
+                              void kartlariSil(kapi, [kart.id])
+                                .then(() => {
+                                  kisaMesaj(`Rutinden kaldırıldı: ${kart.baslik}`);
+                                  router.back();
+                                })
+                                .catch((e: unknown) => {
+                                  console.error(e);
+                                  kisaMesaj('Kaydedilemedi. Yeniden dene.');
+                                }),
+                          },
+                        ]
+                      : [
+                          {
+                            etiket: 'Sil',
+                            ikon: 'trash-outline' as const,
+                            tehlike: true,
+                            onPress: () => kartSil.baslat(kart, gun),
+                          },
+                        ]),
                 ]),
           ]}
         />

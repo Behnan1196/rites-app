@@ -1,26 +1,25 @@
 // Rutinin adımları (pilot 5 Kasım, P-93): rutin kartının ekranında sıralı adımlar; her birinin
-// işaret kutusu (o gün), adı ve "›" (adımın kendi kartı: video, zamanlayıcı…). Adıma uzun basınca
-// Yukarı · Aşağı · Rutinden kaldır. Altta "+ Adım ekle". Son adım işaretlenince rutin yapıldı.
+// işaret kutusu (o gün), adı ve "›" (adımın kendi kartı: video, zamanlayıcı…). P-101: adıma uzun
+// basıp sürükleyerek sıralanır; kaldırmak adımın kartının ⋯ menüsünde. Altta "+ Ekle". Son adım işaretlenince rutin yapıldı.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { Kart } from '@/mantik/kart';
 import { rutinDurumu, rutinIlerlemeMetni } from '@/mantik/rutinAdimlari';
 import type { Gun } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
-import { gunYapilanlari, kartlariSil } from '@/veri/kartlar';
+import { gunYapilanlari } from '@/veri/kartlar';
 import { yeniKimlik } from '@/veri/kimlik';
-import { adimlarinYeriniDegistir, rutinAdimiEkle, rutinAdimiIsaretle, rutinAdimlari } from '@/veri/rutinler';
+import { adimSiralariniYaz, rutinAdimiEkle, rutinAdimiIsaretle, rutinAdimlari } from '@/veri/rutinler';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { useKisaMesaj } from '../KisaMesaj';
 import { renk } from '../tema';
 import { Yazi } from '../Yazi';
-import { ElemanMenusu } from './ElemanMenusu';
+import { SiraliKartlar } from '../ajanda/SiraliKartlar';
 import { MaddeEkle } from './SatirIci';
 
 export function RutinAdimlari({
@@ -28,17 +27,19 @@ export function RutinAdimlari({
   gun,
   duzenlenir,
   isaretlenir,
+  onSurukleme,
 }: {
   rutin: Pick<Kart, 'id' | 'baslik' | 'tarih'>;
   gun: Gun;
   duzenlenir: boolean;
   /** Bu gün rutinin günü mü (işaret kutuları yalnız o zaman). */
   isaretlenir: boolean;
+  /** Sürükleme sırasında ekran kaymasın. */
+  onSurukleme: (aktif: boolean) => void;
 }) {
   const { kapi, oku } = useVeri();
   const bugunGun = useBugun();
   const kisaMesaj = useKisaMesaj();
-  const [menu, setMenu] = useState<string | null>(null);
   const veri = useSorgu(
     ['kart'],
     async (o) => ({ adimlar: await rutinAdimlari(o, rutin.id), yapilanlar: await gunYapilanlari(o, gun) }),
@@ -51,8 +52,6 @@ export function RutinAdimlari({
   if (!veri.veri) return null;
   const { adimlar, yapilanlar } = veri.veri;
   const d = rutinDurumu(adimlar, yapilanlar);
-  const secili = adimlar.find((a) => a.id === menu);
-  const i = secili ? adimlar.indexOf(secili) : -1;
 
   return (
     <View style={stiller.kap}>
@@ -69,67 +68,58 @@ export function RutinAdimlari({
       {adimlar.length === 0 && (
         <Yazi tur="ikincil">Rutinin adımlarını sırayla ekle. Her adıma sonra video, zamanlayıcı ekleyebilirsin.</Yazi>
       )}
-      {adimlar.map((a) => {
-        const yapildi = yapilanlar.has(a.id);
-        return (
-          <View key={a.id} style={stiller.adim}>
-            {isaretlenir && (
+      {/* P-101: adıma uzun basıp sürükleyerek sıra değişir (ajandadaki gibi); kaldırmak adımın kendi ⋯ menüsünde. */}
+      <SiraliKartlar
+        kartlar={adimlar.map((a) => ({ ...a, sira: a.ustSira ?? 0 }))}
+        aralik={0}
+        onSurukleme={onSurukleme}
+        onSira={(kimlikler) => void adimSiralariniYaz(kapi, kimlikler).catch(hata)}
+        satir={(a, surukle) => {
+          const yapildi = yapilanlar.has(a.id);
+          return (
+            <View style={stiller.adim}>
+              {isaretlenir && (
+                <Pressable
+                  onPress={() => void rutinAdimiIsaretle(kapi, oku, rutin.id, a.id, gun, !yapildi).catch(hata)}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: yapildi }}
+                  accessibilityLabel={a.baslik}
+                  hitSlop={6}
+                  style={stiller.isaretAlani}
+                >
+                  <View style={[stiller.kare, yapildi && stiller.kareDolu]}>
+                    {yapildi && <Ionicons name="checkmark" size={20} color={renk.yuzey} />}
+                  </View>
+                </Pressable>
+              )}
               <Pressable
-                onPress={() => void rutinAdimiIsaretle(kapi, oku, rutin.id, a.id, gun, !yapildi).catch(hata)}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: yapildi }}
-                accessibilityLabel={a.baslik}
-                hitSlop={6}
-                style={stiller.isaretAlani}
+                onPress={() => router.push({ pathname: '/kart/[id]', params: { id: a.id, gun, geri: rutin.baslik } })}
+                onLongPress={duzenlenir ? surukle.onUzunBas : undefined}
+                delayLongPress={300}
+                onPressOut={duzenlenir ? surukle.onBirak : undefined}
+                accessibilityActions={duzenlenir ? surukle.eylemler : undefined}
+                onAccessibilityAction={duzenlenir ? surukle.onEylem : undefined}
+                accessibilityRole="button"
+                accessibilityLabel={`${a.baslik}, aç`}
+                accessibilityHint={duzenlenir ? 'Sırasını değiştirmek için uzun basıp sürükle' : undefined}
+                style={({ pressed }) => [stiller.adimGovde, pressed && { opacity: 0.6 }]}
               >
-                <View style={[stiller.kare, yapildi && stiller.kareDolu]}>
-                  {yapildi && <Ionicons name="checkmark" size={20} color={renk.yuzey} />}
-                </View>
+                <Yazi
+                  renk={yapildi ? renk.ikincil : renk.yazi}
+                  style={[stiller.esnek, yapildi && stiller.cizili]}
+                  numberOfLines={2}
+                >
+                  {a.baslik}
+                </Yazi>
+                <Ionicons name="chevron-forward" size={18} color={renk.soluk} />
               </Pressable>
-            )}
-            <Pressable
-              onPress={() => router.push({ pathname: '/kart/[id]', params: { id: a.id, gun, geri: rutin.baslik } })}
-              onLongPress={duzenlenir ? () => setMenu(a.id) : undefined}
-              accessibilityRole="button"
-              accessibilityLabel={`${a.baslik}, aç`}
-              accessibilityHint={duzenlenir ? 'Sıra ve kaldırma için uzun bas' : undefined}
-              style={({ pressed }) => [stiller.adimGovde, pressed && { opacity: 0.6 }]}
-            >
-              <Yazi
-                renk={yapildi ? renk.ikincil : renk.yazi}
-                style={[stiller.esnek, yapildi && stiller.cizili]}
-                numberOfLines={2}
-              >
-                {a.baslik}
-              </Yazi>
-              <Ionicons name="chevron-forward" size={18} color={renk.soluk} />
-            </Pressable>
-          </View>
-        );
-      })}
+            </View>
+          );
+        }}
+      />
       {duzenlenir && (
         <MaddeEkle
           onEkle={(baslik) => void rutinAdimiEkle(kapi, oku, rutin, baslik, bugunGun, yeniKimlik).catch(hata)}
-        />
-      )}
-      {secili && (
-        <ElemanMenusu
-          baslik={secili.baslik}
-          anahtarlar={[]}
-          onYukari={i > 0 ? () => void adimlarinYeriniDegistir(kapi, secili, adimlar[i - 1]!).catch(hata) : undefined}
-          onAsagi={
-            i < adimlar.length - 1
-              ? () => void adimlarinYeriniDegistir(kapi, secili, adimlar[i + 1]!).catch(hata)
-              : undefined
-          }
-          onSil={() => {
-            setMenu(null);
-            void kartlariSil(kapi, [secili.id])
-              .then(() => kisaMesaj(`Rutinden kaldırıldı: ${secili.baslik}`))
-              .catch(hata);
-          }}
-          silEtiketi="Rutinden kaldır"
-          onKapat={() => setMenu(null)}
         />
       )}
     </View>

@@ -120,3 +120,11 @@ export async function rutineCevir(
   await kapi.yaz(['kart'], (y) => y.calistir('DELETE FROM blok WHERE id = ?', [liste.id]));
   return n;
 }
+
+/** P-101: sürükleyerek sıralama: adımların yeni sırası (kimlikler sırasıyla). */
+export function adimSiralariniYaz(kapi: Kapi, kimlikler: readonly string[]): Promise<void> {
+  return kapi.yaz(['kart'], async (y) => {
+    for (const [i, id] of kimlikler.entries())
+      await y.calistir('UPDATE kart SET ust_sira = ? WHERE id = ?', [i + 1, id]);
+  });
+}

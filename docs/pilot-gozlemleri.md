@@ -515,3 +515,8 @@ Sonuç: → kararlar.md (Ölçümlerim'de Düzenle kalktı; puan daireleri küç
 Ne dedi: "Daire boyutu iyi ancak araları açılabilir. Yine "Sayarak"da da fontu biraz küçültebiliriz."
 Nerede: Ölçümlerim (Puan, Sayarak)
 Sonuç: → kararlar.md (Puan dairelerinin arası açıldı; Sayarak'ın sayısı küçüldü)
+
+### P-101 · 6 Kasım 2026 · Behnan
+Ne dedi: "Listelere dönelim, liste maddelerinin, özellikle kart tipi ise sıralanmasını sürükleyerek sağlayabilir miyiz."
+Nerede: Rutin (kartlardan oluşan liste)
+Sonuç: → kararlar.md (Rutinin adımları sürükleyerek sıralanır)
