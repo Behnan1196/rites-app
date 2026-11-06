@@ -11,6 +11,7 @@ import {
   isoHaftaGunleri,
   kararliUuid,
   saatParcalari,
+  susturulmusAlarmlar,
   tekrarliAlarmKimligi,
 } from '../alarm';
 import { animsaticiMeta, bildirimPlani, type Animsatici } from '../animsatici';
@@ -342,5 +343,24 @@ describe('Başka zaman hatırlatması (gün önce, saat)', () => {
     ]);
     // 10 gün önce → pencerenin dışında (geçmişte) kalır
     expect(bildirimPlani({ ...girdi, kartlar: [{ ...k, hatirlatma: { gunOnce: 10, saat: '09:00' } }] })).toEqual([]);
+  });
+});
+
+describe('P-102: telefonda durdurulmuş alarm', () => {
+  const a = { id: 'a1', alarm: true, bitis: null };
+  const m = (durum: string, alanlar: Partial<typeof a> = {}) => ({
+    animsatici: { ...a, ...alanlar },
+    saat: '08:00',
+    durum,
+  });
+  it('çalıyor görünen ama telefonda çalmayan alarm durduruldu sayılır', () => {
+    expect(susturulmusAlarmlar([m('caliyor')], '2026-11-06', null)).toHaveLength(1);
+    expect(susturulmusAlarmlar([m('caliyor')], '2026-11-06', tekrarliAlarmKimligi('a1', '08:00'))).toHaveLength(0);
+    expect(
+      susturulmusAlarmlar([m('caliyor')], '2026-11-06', ertelemeAlarmKimligi('a1', '2026-11-06', '08:00')),
+    ).toHaveLength(0);
+    expect(susturulmusAlarmlar([m('caliyor')], '2026-11-06', 'baska')).toHaveLength(1);
+    expect(susturulmusAlarmlar([m('caliyor', { alarm: false })], '2026-11-06', null)).toHaveLength(0);
+    expect(susturulmusAlarmlar([m('sirada')], '2026-11-06', null)).toHaveLength(0);
   });
 });

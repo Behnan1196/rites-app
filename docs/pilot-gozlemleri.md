@@ -520,3 +520,8 @@ Sonuç: → kararlar.md (Puan dairelerinin arası açıldı; Sayarak'ın sayıs�
 Ne dedi: "Listelere dönelim, liste maddelerinin, özellikle kart tipi ise sıralanmasını sürükleyerek sağlayabilir miyiz."
 Nerede: Rutin (kartlardan oluşan liste)
 Sonuç: → kararlar.md (Rutinin adımları sürükleyerek sıralanır)
+
+### P-102 · 6 Kasım 2026 · Behnan
+Ne dedi: "Anımsatıcıyı alarm verdiğinde, (sanırım) rites kapalı iken, gelen menüde kapatmama rağmen, ritesı açtığımda anımsatıcı çalıyor görünüyor ve Durdur diye görünüyor, oysa kapatmıştım"
+Nerede: Giriş → Anımsatıcılar (alarm)
+Sonuç: Hata. → kararlar.md (Telefonda durdurulan alarm Rites'ta "Şimdi çalıyor" kalmaz)

@@ -28,6 +28,7 @@ interface AlarmModulu {
   cancelAlarmAsync(id: string): Promise<boolean>;
   completeNativeAlarmAsync(alarmId: string): Promise<void>;
   getScheduledAlarmsAsync(): Promise<ScheduledAlarm[]>;
+  getCurrentAlarmContextAsync(): Promise<{ id: string; state?: string } | null>;
   getPendingAlarmActionsAsync(): Promise<AlarmAction[]>;
   clearPendingAlarmActionsAsync(ids?: string[]): Promise<void>;
   clearPendingNativeAlarmHandoffAsync(): Promise<void>;
@@ -158,6 +159,21 @@ export async function alarmiSustur(id: string): Promise<void> {
     await modul.cancelAlarmAsync(id);
   } catch (e) {
     console.error('Alarm susturulamadı', e);
+  }
+}
+
+/**
+ * P-102: şu an çalmakta olan alarmın kimliği (yoksa null). Alarm Rites kapalıyken ya da kilit
+ * ekranında durdurulunca Rites'a haber gelmeyebiliyor; açılınca bununla anlaşılır.
+ */
+export async function calanAlarm(): Promise<string | null> {
+  if (!modul) return null;
+  try {
+    const c = await modul.getCurrentAlarmContextAsync();
+    return c && c.state === 'alerting' ? c.id : null;
+  } catch (e) {
+    console.error('Alarm durumu okunamadı', e);
+    return null;
   }
 }
 

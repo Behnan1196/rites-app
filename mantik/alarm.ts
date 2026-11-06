@@ -282,3 +282,21 @@ export function saatParcalari(saat: string): { hour: number; minute: number } {
   const dk = dakika(saat);
   return { hour: Math.floor(dk / 60), minute: dk % 60 };
 }
+
+/**
+ * P-102: Rites'ta "Şimdi çalıyor" görünen ama telefonda artık çalmayan alarmlı anımsatmalar
+ * (alarm Rites kapalıyken ya da kilit ekranında durduruldu, Rites'a haber gelmedi). Bunlar
+ * durduruldu sayılır. Zamanlayıcı ayrı (kendiliğinden susar ve ertelenir).
+ */
+export function susturulmusAlarmlar<
+  T extends { animsatici: Pick<Animsatici, 'id' | 'alarm' | 'bitis'>; saat: string; durum: string },
+>(animsatmalar: readonly T[], gun: Gun, calanAlarmId: string | null): T[] {
+  return animsatmalar.filter((m) => {
+    if (m.durum !== 'caliyor' || !m.animsatici.alarm || m.animsatici.bitis) return false;
+    const kimlikler = [
+      tekrarliAlarmKimligi(m.animsatici.id, m.saat),
+      ertelemeAlarmKimligi(m.animsatici.id, gun, m.saat),
+    ];
+    return !calanAlarmId || !kimlikler.includes(calanAlarmId);
+  });
+}

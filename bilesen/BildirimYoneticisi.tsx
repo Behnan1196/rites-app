@@ -16,14 +16,16 @@ import {
   erteleGecerliMi,
   kartAlarminiEslestir,
   kartAlarmPlani,
+  susturulmusAlarmlar,
   tekrarliAlarmKimligi,
 } from '@/mantik/alarm';
 import { otomatikSusacaklar, ZAMANLAYICI_OTOMATIK_ERTELEME } from '@/mantik/zamanlayici';
-import { bildirimPlani, erteleSaati, saatMetni } from '@/mantik/animsatici';
+import { bildirimPlani, bugununAnimsatmalari, erteleSaati, saatMetni } from '@/mantik/animsatici';
 import { bugun } from '@/mantik/tarih';
 import {
   alarmiSustur,
   alarmIzni,
+  calanAlarm,
   alarmPlaniniUygula,
   basislariDinle,
   basislariTemizle,
@@ -194,6 +196,34 @@ export function BildirimYoneticisi() {
     return () => {
       clearTimeout(t);
       bitir();
+    };
+  }, [kapi, oku]);
+
+  // P-102: Rites açılınca: "Şimdi çalıyor" görünen alarmlı anımsatıcı telefonda artık çalmıyorsa
+  // (Rites kapalıyken ya da kilit ekranında durduruldu ve Rites'a haber gelmedi) durduruldu sayılır.
+  useEffect(() => {
+    const bak = async () => {
+      try {
+        if ((await alarmIzni()) !== 'var') return;
+        const gun = bugun();
+        const calanlar = susturulmusAlarmlar(
+          bugununAnimsatmalari(await animsaticilariOku(oku), await gunDurumlari(oku, gun), gun, simdiSaat()),
+          gun,
+          await calanAlarm(),
+        );
+        for (const m of calanlar) await durdur(kapi, m.animsatici.id, gun, m.saat);
+      } catch (e) {
+        console.error('Çalan alarm denetlenemedi', e);
+      }
+    };
+    // Basışlar (Durdur / Ertele) önce işlensin diye biraz sonra.
+    const t = setTimeout(() => void bak(), 1500);
+    const abonelik = AppState.addEventListener('change', (d) => {
+      if (d === 'active') setTimeout(() => void bak(), 1500);
+    });
+    return () => {
+      clearTimeout(t);
+      abonelik.remove();
     };
   }, [kapi, oku]);
 
