@@ -550,3 +550,8 @@ Sonuç: → kararlar.md (Notlar'ın üstünde yazma kutusu).
 Ne dedi: "Anımsatıcı bildirim yolladığında, sanırım eskiden kalma, yani bildirimin durdur veya ertele menüsü olduğu zamandan kalma bir şekilde, giriş ekranında Durdur Ertele yazıyor, sanırım hiç gerek yok ona"
 Nerede: Giriş → Anımsatıcılar kutusu
 Sonuç: → kararlar.md (Şimdi çalıyor yalnız alarmda).
+
+### P-108 · 7 Kasım 2026 · Behnan
+Ne dedi: "Hemen düzeltme, ama ajanda kartlarında Kur ekranı Listeleri görmüyor. Hemen yapma dedim çünkü bu kur ile ayarlama, bazı alanları değiştirmeye kilitleme, sıralama gibi konuları yeniden ele almamız lazım, kur'u kaldırmak için bir miktar çalışma yapmıştık ama henüz bitiremedik."
+Nerede: Kart → ⋯ → Kur
+Sonuç: Bekliyor; Kur'un geleceği (ayarlar, kilitler, sıralama) birlikte ele alınacak. → kararlar.md (not).
