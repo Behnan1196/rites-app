@@ -37,7 +37,11 @@ import { BlokSecici } from '@/bilesen/kart/BlokSecici';
 import { OlcumSecici } from '@/bilesen/kart/OlcumSecici';
 import { RutinAdimlari } from '@/bilesen/kart/RutinAdimlari';
 import { ListeCesidiSecici } from '@/bilesen/kart/ListeCesidiSecici';
-import { adimlarListeParcasi, rutinCesidi } from '@/mantik/rutinAdimlari';
+import { AdimGunuSayfasi } from '@/bilesen/kart/AdimGunuSayfasi';
+import { ListeyiPaylas, ListeyiSilSorusu } from '@/bilesen/listeler/ListeKartiIslemleri';
+import { useOturumAc } from '@/bilesen/oturum/OturumSayfasi';
+import { adimGunuYaz, listedeYaz } from '@/veri/listeKartlari';
+import { adimlarListeParcasi, RUTIN_KALICI, rutinCesidi } from '@/mantik/rutinAdimlari';
 import { rutinAdimiIsaretle, rutinAdimlari, rutinYap } from '@/veri/rutinler';
 import { olcumParcalariMi } from '@/mantik/gidisat';
 import { SERIT_PARCALARI } from '@/mantik/parcaSecimi';
@@ -61,7 +65,7 @@ import { BLOK_TURLERI } from '@/bilesen/kart/blokTurleri';
 import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { kaynakAnahtari, kaynakTuru } from '@/mantik/kaynak';
 import { Yazi } from '@/bilesen/Yazi';
-import { gunBasligi } from '@/mantik/ajanda';
+import { gunBasligi, kisaGoreliTarih } from '@/mantik/ajanda';
 import { cesitBul } from '@/mantik/cesit';
 import { gorunurMu } from '@/mantik/gorunurluk';
 import { ARAC_BLOKLARI, bosKayit, maddeliListeMi, type BlokTuru, type Kayit, type SabitAlan } from '@/mantik/kart';
@@ -151,6 +155,11 @@ export default function KartGorunumu() {
   const [olcumSecici, setOlcumSecici] = useState(false);
   /** P-105: listenin çeşidi (yeni liste ya da var olanın çeşidi). */
   const [listeCesidi, setListeCesidi] = useState(false);
+  /** P-110: Listeler'deki listenin paylaşımı ve silinmesi; Adımlar'da maddenin günü. */
+  const [listePaylas, setListePaylas] = useState(false);
+  const [listeSil, setListeSil] = useState(false);
+  const [adimGunu, setAdimGunu] = useState(false);
+  const oturumAc = useOturumAc();
   /** P-101: rutinin adımı sürüklenirken ekran kaymasın. */
   const [surukleniyor, setSurukleniyor] = useState(false);
   const uzman = useUzman();
@@ -288,7 +297,9 @@ export default function KartGorunumu() {
   const menuOgeleri = (ogeler: MenuOgesi[], kur: MenuOgesi | null): MenuOgesi[] => {
     const i = ogeler.findIndex((o) => o.tehlike);
     const hepsi = !kur ? ogeler : i < 0 ? [...ogeler, kur] : [...ogeler.slice(0, i), kur, ...ogeler.slice(i)];
-    return kart.ust ? hepsi.filter((o) => o.etiket === KUR || o.etiket === 'Rutinden kaldır') : hepsi;
+    return kart.ust
+      ? hepsi.filter((o) => o.etiket === KUR || o.etiket === 'Listeden kaldır' || o.etiket === 'Gün ver')
+      : hepsi;
   };
   const kayitDegis = (degistir: (k: Kayit) => Kayit) => void kayitDegistir(kapi, kart.id, gun, degistir);
 
@@ -370,21 +381,25 @@ export default function KartGorunumu() {
               </View>
               {/* P-83: başlığın altında tek, sessiz zaman satırı; dokununca tek Zaman sayfası. */}
               {/* P-93: rutinin adımının kendi zamanı yok; rutinin günlerini izler. */}
-              {!kart.ust && <KartZamanSatiri kart={kart} bloklar={bloklar} gun={gun} />}
+              {/* P-110: Listeler'deki liste ajandada değilse zamanı yok. */}
+              {!kart.ust && (!kart.listede || ajandadaMi(kart)) && (
+                <KartZamanSatiri kart={kart} bloklar={bloklar} gun={gun} />
+              )}
               {!!rutin && (
                 <Pressable
                   onPress={() =>
-                    router.canGoBack()
+                    // Listeden açıldıysa geri; ajandadan açıldıysa liste açılır.
+                    router.canGoBack() && geri === rutin.baslik
                       ? router.back()
                       : router.push({ pathname: '/kart/[id]', params: { id: rutin.id, gun } })
                   }
                   accessibilityRole="button"
-                  accessibilityLabel={`Rutin: ${rutin.baslik}, aç`}
+                  accessibilityLabel={`Liste: ${rutin.baslik}, aç`}
                   style={stiller.planEtiketi}
                   hitSlop={8}
                 >
                   <Yazi tur="etiket" kalinlik="kalin" renk={renk.ana}>
-                    {`Rutin: ${rutin.baslik} ›`}
+                    {`Liste: ${rutin.baslik}${kart.tekrar === null && kart.tarih ? ` · ${kisaGoreliTarih(kart.tarih, bugunGun)}` : ''} ›`}
                   </Yazi>
                 </Pressable>
               )}
@@ -753,7 +768,26 @@ export default function KartGorunumu() {
                     },
                   ]
                 : []),
-              ...(aliskanlikMi(kart) || kart.olcumlerim
+              // P-110: Listeler'e taşı (liste ajandada görünmeye devam eder).
+              ...(duzenlenir && kart.rutin && !kart.listede && !kart.ust && !kart.olcumlerim
+                ? [
+                    {
+                      etiket: 'Listeler’e taşı',
+                      ikon: 'list-outline' as const,
+                      onPress: () =>
+                        icerikKaydet(
+                          listedeYaz(kapi, kart.id, true).then(() =>
+                            kisaMesaj('Giriş → Listeler’de; ajandada da görünüyor'),
+                          ),
+                        ),
+                    },
+                  ]
+                : []),
+              // P-110: Adımlar listesinde maddeye gün (o gün ajandada).
+              ...(duzenlenir && kart.ust && rutin && rutinCesidi(rutin) === RUTIN_KALICI
+                ? [{ etiket: 'Gün ver', ikon: 'calendar-outline' as const, onPress: () => setAdimGunu(true) }]
+                : []),
+              ...(aliskanlikMi(kart) || kart.olcumlerim || (kart.listede && !kart.ust)
                 ? [
                     {
                       etiket: ajandadaMi(kart) ? 'Ajandada gösterme' : 'Ajandada göster',
@@ -772,7 +806,7 @@ export default function KartGorunumu() {
                     },
                   ]
                 : []),
-              ...(!kart.planId && !kart.bag && !kart.kilitli && !kart.olcumlerim && !kart.ust
+              ...(!kart.planId && !kart.bag && !kart.kilitli && !kart.olcumlerim && !kart.ust && !kart.listede
                 ? [
                     {
                       etiket: 'Programa ekle',
@@ -791,7 +825,7 @@ export default function KartGorunumu() {
                     },
                   ]
                 : []),
-              ...(!kart.kilitli && !kart.bag && oturum.durum === 'var'
+              ...(!kart.kilitli && !kart.bag && oturum.durum === 'var' && !kart.listede
                 ? [
                     {
                       etiket: 'Birine ver',
@@ -803,11 +837,18 @@ export default function KartGorunumu() {
               ...(kart.kilitli
                 ? []
                 : [
-                    {
-                      etiket: 'Paylaş',
-                      ikon: 'share-outline' as const,
-                      onPress: () => paylas.ac({ kart, bloklar: disaBloklar }),
-                    },
+                    // P-110: Listeler'deki liste gruplarla / kişilerle ortak liste olur.
+                    kart.listede
+                      ? {
+                          etiket: 'Başkalarıyla paylaş',
+                          ikon: 'people-outline' as const,
+                          onPress: () => (oturum.durum === 'var' ? setListePaylas(true) : oturumAc()),
+                        }
+                      : {
+                          etiket: 'Paylaş',
+                          ikon: 'share-outline' as const,
+                          onPress: () => paylas.ac({ kart, bloklar: disaBloklar }),
+                        },
                     // P-98: Ölçümlerim yalnız Giriş → Ölçümlerim → Düzenle'den silinir (ajandadan değil).
                     ...(kart.olcumlerim && olcumlerimden !== '1'
                       ? []
@@ -815,13 +856,13 @@ export default function KartGorunumu() {
                         ? [
                             // P-101: rutinin adımı doğrudan rutinden kaldırılır (sıralama sürüklemeyle).
                             {
-                              etiket: 'Rutinden kaldır',
+                              etiket: 'Listeden kaldır',
                               ikon: 'trash-outline' as const,
                               tehlike: true,
                               onPress: () =>
                                 void kartlariSil(kapi, [kart.id])
                                   .then(() => {
-                                    kisaMesaj(`Rutinden kaldırıldı: ${kart.baslik}`);
+                                    kisaMesaj(`Listeden kaldırıldı: ${kart.baslik}`);
                                     router.back();
                                   })
                                   .catch((e: unknown) => {
@@ -832,10 +873,10 @@ export default function KartGorunumu() {
                           ]
                         : [
                             {
-                              etiket: 'Sil',
+                              etiket: kart.listede ? 'Listeyi sil' : 'Sil',
                               ikon: 'trash-outline' as const,
                               tehlike: true,
-                              onPress: () => kartSil.baslat(kart, gun),
+                              onPress: () => (kart.listede ? setListeSil(true) : kartSil.baslat(kart, gun)),
                             },
                           ]),
                   ]),
@@ -857,6 +898,16 @@ export default function KartGorunumu() {
       {paylas.oge}
       {kutuphane.oge}
       {kartSil.oge}
+      {listePaylas && <ListeyiPaylas kart={kart} gun={gun} onKapat={() => setListePaylas(false)} />}
+      {listeSil && <ListeyiSilSorusu kart={kart} onKapat={() => setListeSil(false)} />}
+      {adimGunu && (
+        <AdimGunuSayfasi
+          baslik={kart.baslik}
+          gun={kart.tekrar === null ? kart.tarih : null}
+          onKapat={() => setAdimGunu(false)}
+          onSec={(g) => icerikKaydet(adimGunuYaz(kapi, oku, kart.id, g))}
+        />
+      )}
       {programSec > 0 && (
         <ProgramSecSayfasi
           key={programSec}

@@ -40,6 +40,8 @@ export interface Ayarlar {
   uzman_gorunumu: boolean;
   /** Liste kartları Listelerim'e taşındı (P-58; bir kez). */
   listeler_tasindi: boolean;
+  /** P-110: Listelerim (yerel_liste) liste kartlarına çevrildi. */
+  listeler_karta: boolean;
   /** Alışveriş listelerine yazılan maddeler, en yeni başta (P-61: yazarken öneri; yalnız bu telefonda). */
   alisveris_gecmisi: string[];
   /** P-88: son kurulan anımsatıcının "Nasıl uyarsın?", sesi ve ertelemesi; yeni anımsatıcı bunlarla açılır. */

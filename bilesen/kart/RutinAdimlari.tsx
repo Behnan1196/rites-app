@@ -6,6 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { kisaGoreliTarih } from '@/mantik/ajanda';
 import type { Kart } from '@/mantik/kart';
 import {
   RUTIN_BILGI,
@@ -29,7 +30,7 @@ import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { useKisaMesaj } from '../KisaMesaj';
-import { renk } from '../tema';
+import { kaynakRenk, renk } from '../tema';
 import { Yazi } from '../Yazi';
 import { SiraliKartlar } from '../ajanda/SiraliKartlar';
 import { MaddeEkle } from './SatirIci';
@@ -138,13 +139,17 @@ export function RutinAdimlari({
                 accessibilityHint={duzenlenir ? 'Sırasını değiştirmek için uzun basıp sürükle' : undefined}
                 style={({ pressed }) => [stiller.adimGovde, pressed && { opacity: 0.6 }]}
               >
-                <Yazi
-                  renk={yapildi ? renk.ikincil : renk.yazi}
-                  style={[stiller.esnek, yapildi && stiller.cizili]}
-                  numberOfLines={2}
-                >
-                  {a.baslik}
-                </Yazi>
+                <View style={stiller.esnek}>
+                  <Yazi renk={yapildi ? renk.ikincil : renk.yazi} style={yapildi && stiller.cizili} numberOfLines={2}>
+                    {a.baslik}
+                  </Yazi>
+                  {/* P-110: günü olan madde (o gün ajandada). */}
+                  {a.tekrar === null && !!a.tarih && (
+                    <Yazi tur="etiket" kalinlik="kalin" renk={kaynakRenk.liste.yazi}>
+                      {kisaGoreliTarih(a.tarih, bugunGun)}
+                    </Yazi>
+                  )}
+                </View>
                 <Ionicons name="chevron-forward" size={18} color={renk.soluk} />
               </Pressable>
             </View>

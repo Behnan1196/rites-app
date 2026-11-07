@@ -90,3 +90,19 @@ export function adimlarListeParcasi<B extends { id: string; kartId: string; sira
   };
   return [...bloklar, liste];
 }
+
+/** P-110: Listeler'in çeşit adları (`yapilacak` · `gunluk` · `not`) ile kartın listesinin çeşidi. */
+export function listeCesidindenRutin(c: 'yapilacak' | 'gunluk' | 'not'): RutinCesidi {
+  return c === 'gunluk' ? RUTIN_GUNLUK : c === 'not' ? RUTIN_BILGI : RUTIN_KALICI;
+}
+
+export function rutindenListeCesidi(c: RutinCesidi | null): 'yapilacak' | 'gunluk' | 'not' {
+  return c === RUTIN_GUNLUK ? 'gunluk' : c === RUTIN_BILGI ? 'not' : 'yapilacak';
+}
+
+/** "3/8 yapıldı" ya da Bilgi listesinde "8 madde". */
+export function listeOzetMetni(cesit: RutinCesidi | null, yapilan: number, toplam: number): string {
+  if (toplam === 0) return 'Boş';
+  if (cesit === RUTIN_BILGI) return `${toplam} madde`;
+  return `${yapilan}/${toplam} yapıldı`;
+}

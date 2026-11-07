@@ -7,7 +7,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useOturum } from '@/sunucu/oturum';
 import { useSorgu } from '@/veri/kancalar';
-import { yerelListeleriOku } from '@/veri/yerelListeler';
+import { tumKartlar } from '@/veri/kartlar';
 
 import { useListeler } from '../listeler/useListeler';
 import { kaynakRenk, olcu, renk } from '../tema';
@@ -16,7 +16,9 @@ import { Yazi } from '../Yazi';
 export function OrtakListelerKutusu() {
   const oturum = useOturum();
   const { listeler } = useListeler(oturum);
-  const yereller = useSorgu(['liste'], (o) => yerelListeleriOku(o), []).veri ?? [];
+  // P-110: kişisel listeler Listeler'de duran kartlardır.
+  const yereller =
+    useSorgu(['kart'], async (o) => (await tumKartlar(o)).filter((k) => k.listede && !k.ust), []).veri ?? [];
   const sayi = listeler.length + yereller.length;
   const alt = sayi ? `${sayi} liste` : 'Yapılacaklar, alışveriş';
   return (

@@ -3,7 +3,7 @@
 // (gün / hafta + kaynak süzgeci) ve ＋ (kart ekle); avatar yalnız Giriş'te.
 
 import { RUTIN_BILGI, RUTIN_KALICI, rutinCesidi, rutinDurumu } from '@/mantik/rutinAdimlari';
-import { kaliciYapilanlar } from '@/veri/rutinler';
+import { kaliciYapilanlar, rutinAdimiIsaretle } from '@/veri/rutinler';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -53,7 +53,7 @@ const BOS_PLANLAR: ReadonlyMap<string, string> = new Map();
 
 export default function Ajandam() {
   const bugunGun = useBugun();
-  const { kapi } = useVeri();
+  const { kapi, oku } = useVeri();
   const [secili, setSecili] = useState<Gun>(bugunGun);
   const [gorunum, setGorunum] = useState<Gorunum>('gun');
   /** Süzgeçte işareti kaldırılan (gizlenen) kaynaklar. */
@@ -104,7 +104,16 @@ export default function Ajandam() {
 
   const yerelKartlar = veri.veri?.kartlar;
   const kartlar = useMemo(
-    () => (yerelKartlar ? [...yerelKartlar, ...verilenler.maddeler.map(maddeKarti)] : undefined),
+    () =>
+      yerelKartlar
+        ? [
+            // P-110: gün verilen liste maddesi ajandada "Liste: X" ile görünür.
+            ...yerelKartlar.map((k) =>
+              k.ust ? { ...k, listeAdi: yerelKartlar.find((u) => u.id === k.ust)?.baslik ?? null } : k,
+            ),
+            ...verilenler.maddeler.map(maddeKarti),
+          ]
+        : undefined,
     [yerelKartlar, verilenler.maddeler],
   );
   const planAdlari = veri.veri?.planAdlari ?? BOS_PLANLAR;
@@ -176,7 +185,8 @@ export default function Ajandam() {
         const yapildi = !seciliYapilanlar.has(kart.id);
         if (maddeKartiMi(kart)) {
           void verilenler.isaretle(kart.maddeId, yapildi).then((ok) => ok || kisaMesaj(BAGLANAMIYOR));
-        } else void isaretle(kapi, kart.id, secili, yapildi);
+        } else if (kart.ust) void rutinAdimiIsaretle(kapi, oku, kart.ust, kart.id, secili, yapildi);
+        else void isaretle(kapi, kart.id, secili, yapildi);
       }}
       onAc={() => kartiAc(kart, secili)}
     />

@@ -141,6 +141,8 @@ export interface Kart {
   rutin?: number;
   /** P-93: rutinin adımıysa rutinin kimliği; ajandada görünmez, rutinin günlerini izler. */
   ust?: string | null;
+  /** P-110: Giriş → Listeler'de duran liste (maddeleri kart); ajandada yalnız "Ajandada göster" ile. */
+  listede?: boolean;
   /** P-93: rutindeki sırası. */
   ustSira?: number | null;
 }

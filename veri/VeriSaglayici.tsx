@@ -8,6 +8,8 @@ import { bugun } from '@/mantik/tarih';
 
 import { gocleriUygula } from './gocler';
 import { sakliKataloguYukle } from './katalog';
+import { yeniKimlik } from './kimlik';
+import { yerelListeleriKartaCevir } from './listeKartlari';
 import { listeKartlariniTasi } from './yerelListeler';
 import { ozelAlanlariOku } from './programlar';
 import { kapiOlustur, okuyucuOlustur, type HamVeriTabani, type Kapi, type Okuyucu } from './kapi';
@@ -50,6 +52,10 @@ export function VeriSaglayici({ children, bekleme, hata }: Ozellikler) {
         // P-58: bir kez: yalnız listeden ibaret tek seferlik kartlar Listelerim'e taşınır.
         await listeKartlariniTasi(veri.kapi, veri.oku, bugun()).catch((e: unknown) =>
           console.warn('Liste kartları taşınamadı', e),
+        );
+        // P-110: bir kez: Listelerim maddeleri kart olan listelere çevrilir.
+        await yerelListeleriKartaCevir(veri.kapi, veri.oku, bugun(), yeniKimlik).catch((e: unknown) =>
+          console.warn('Listeler çevrilemedi', e),
         );
         if (!iptal) setDurum({ tur: 'hazir', veri });
       } catch (e) {

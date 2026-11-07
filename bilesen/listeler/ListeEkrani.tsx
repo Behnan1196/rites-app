@@ -27,7 +27,9 @@ import { listedenAyril, listeyiSil } from '@/sunucu/listeler';
 import { useOturum } from '@/sunucu/oturum';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
-import { yerelListeKur, yerelListeSil } from '@/veri/yerelListeler';
+import { yeniKimlik } from '@/veri/kimlik';
+import { listeKartiKur, listeKartiSil } from '@/veri/listeKartlari';
+import { listeCesidindenRutin } from '@/mantik/rutinAdimlari';
 
 import { Dugme } from '../Dugme';
 import { EkranKabi } from '../EkranKabi';
@@ -59,7 +61,7 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
   const oturum = useOturum();
   const bugunGun = useBugun();
   const kisaMesaj = useKisaMesaj();
-  const { kapi } = useVeri();
+  const { kapi, oku } = useVeri();
   const { ben, listeler, ad, yukleniyor, baglanamiyor, yenile } = useListeler(oturum);
   // Kişilerim sunucuyla eşleşsin (Yeni liste / düzenle formundaki kişiler için).
   const { kisiler } = useKisiler(oturum);
@@ -113,13 +115,22 @@ function OrtakListeEkrani({ geri }: { geri: string }) {
     if (!liste || !ben || !m.maddeler) return;
     let yerelId: string | null = null;
     try {
-      yerelId = await yerelListeKur(kapi, liste.ad, cesit, paylasimdanYerele(m.maddeler, ben));
+      // P-110: kişisel liste maddeleri kart olan bir karttır.
+      yerelId = await listeKartiKur(
+        kapi,
+        oku,
+        liste.ad,
+        listeCesidindenRutin(cesit),
+        bugunGun,
+        yeniKimlik,
+        paylasimdanYerele(m.maddeler, ben).map((x) => ({ ...x, yapildiGun: x.yapildi ? bugunGun : null })),
+      );
       await listeyiSil(liste.id);
       kisaMesaj(`${liste.ad} artık yalnız sende`);
-      router.replace({ pathname: '/giris/liste/[id]', params: { id: yerelId } });
+      router.replace({ pathname: '/kart/[id]', params: { id: yerelId, geri: 'Listeler' } });
     } catch (e) {
       console.warn(e);
-      if (yerelId) await yerelListeSil(kapi, yerelId).catch(() => undefined);
+      if (yerelId) await listeKartiSil(kapi, yerelId).catch(() => undefined);
       kisaMesaj(BAGLANAMIYOR);
     }
   };

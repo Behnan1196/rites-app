@@ -794,3 +794,14 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Kilitler yalnız uzmanda:** "Başlık ve zaman izinleri" menüsü ve Kur'daki "Kart görünümünde değiştirilebilsin" anahtarları normal kullanıcıda görünmez. Kartta zaten bir kilit varsa görünür (açabilsin diye). Uzmandan gelen kartın kilidi yine görünür ve geçerli. — Ürün sahibi (P-109); var olan kilit: Öneri
 - **Telefondaki "Uzman görünümü" web uygulaması gelene kadar kalır;** web gelince telefondaki uzman araçları azaltılır. — Ürün sahibi (P-109)
 - **Uzman web uygulaması (aynı Supabase) sonraki adım:** önce telefondaki sadeleşme bitecek. Web yalnız içeriği (kart ve program kalıpları) tutar; danışanın kişisel verisi telefonda kalır. Panelin danışan verisini görmesi ayrı ve büyük bir karar (gizlilik, "klinik değil" ilkesi). — Ürün sahibi (sıra, P-109); içerik / veri sınırı: Öneri
+
+## Liste, rutin, alışkanlık (7 Kasım, P-110)
+
+- **Tek liste kavramı:** Giriş → Listeler'deki kişisel liste, maddeleri kart olan bir karttır (kartın içindeki listeyle aynı üç çeşit: Adımlar · Günlük kontrol · Bilgi listesi; maddeye video, zamanlayıcı eklenir, maddeler sürüklenir). Listeye dokununca kartın ekranı açılır. "Rutin" diye ayrı bir şey yok: rutin, listesi olan bir kart. — Ürün sahibi (P-110)
+- **Ajandada göster:** Listeler'deki liste varsayılan olarak ajandada değil; ⋯ → "Ajandada göster" ile listenin günlerinde (kartın zamanı; varsayılan her gün) ajandada tek satır ("1/3"). Takviyeler böyle. — Ürün sahibi (P-110)
+- **Kartın listesini Listeler'e taşı:** listesi olan kartın ⋯ menüsünde "Listeler'e taşı" (Sabah rutini gibi); açıklaması, videosu kendinde kalır, ajandada görünmeye devam eder. Kartın içindeki liste o karta özgü kısa listeler için de kalır. — Ürün sahibi (P-110); menü yeri: Öneri
+- **Adımlar'da maddeye gün:** maddenin ⋯ menüsünde "Gün ver" (Tarih yok · Bugün · Yarın · takvim); madde o gün ajandada tek başına, "Liste: X" etiketiyle görünür. Listede maddenin altında günü yazar. — Ürün sahibi (P-110)
+- **Eski Listelerim kendiliğinden çevrildi** (ad, açıklama, çeşit, maddeler; Adımlar'da işaretler yapıldıkları günle, Günlük kontrolde bugünkü işaretler, gün verilen maddeler). — Ürün sahibi (P-110)
+- **Paylaşılan listeler düz yazı kalır:** "Başkalarıyla paylaş" deyince maddeler yazı olarak ortak listeye gider (işaret ve günleriyle), liste telefondan silinir (maddelerin videoları gitmez). "Paylaşmayı bırak" yine maddeleri kart olan liste kurar. — Öneri (P-110)
+- **Alışkanlık bir kartın izlenme biçimi:** listenin kendisi de ("Alışkanlık olarak izle") içindeki tek bir madde de izlenebilecek (ikisi de olabilir). Maddenin alışkanlığı ikinci adım. — Ürün sahibi (P-110)
+- Listeler'deki listenin ⋯ menüsünde Programa ekle ve Birine ver yok; "Paylaş" yerine "Başkalarıyla paylaş", "Sil" yerine "Listeyi sil" (onaylı, maddeleriyle). Maddenin menüsünde "Rutinden kaldır" artık "Listeden kaldır"; maddenin kartındaki etiket "Liste: X ›". — Öneri

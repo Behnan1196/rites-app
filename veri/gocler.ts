@@ -373,6 +373,11 @@ export const GOCLER: readonly Goc[] = [
     sql: `DELETE FROM blok WHERE tur = 'puan' AND metin LIKE '%alan:%'
             AND kart_id IN (SELECT id FROM kart WHERE olcumlerim = 1);`,
   },
+  {
+    // P-110 (7 Kasım): Giriş → Listeler'deki liste, maddeleri kart olan bir karttır.
+    surum: 30,
+    sql: `ALTER TABLE kart ADD COLUMN listede INTEGER NOT NULL DEFAULT 0;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */
