@@ -219,12 +219,9 @@ export function bugununAnimsatmalari(
     for (const saat of a.saatler) {
       const d = gunDurumlari.find((g) => g.animsaticiId === a.id && g.saat === saat);
       const gosterilen = d?.ertelenenSaat ?? saat;
-      sonuc.push({
-        animsatici: a,
-        saat,
-        gosterilen,
-        durum: animsatmaDurumu(a, gosterilen, !!d?.ertelenenSaat, !!d?.durduruldu, simdi),
-      });
+      const durum = animsatmaDurumu(a, gosterilen, !!d?.ertelenenSaat, !!d?.durduruldu, simdi);
+      // P-107: bildirimle gelen anımsatma bir kez gelir (Durdur / Ertele yok); "Şimdi çalıyor" yalnız alarmda.
+      sonuc.push({ animsatici: a, saat, gosterilen, durum: durum === 'caliyor' && !a.alarm ? 'gecti' : durum });
     }
   }
   return sonuc.sort(

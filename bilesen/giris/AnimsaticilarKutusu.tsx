@@ -5,6 +5,7 @@
 // zamanlayıcı simgesi kutunun içinde kadranı açar. P-42: tek zamanlayıcı, +1 dk yok.
 // P-43: zamanlayıcı her zaman görünür (simge yok): `ZamanlayiciPaneli`.
 // P-70: bildirimle çalan zamanlayıcı "Şimdi çalıyor" olmaz; bir kez çalar, kendiliğinden silinir.
+// P-107: "Şimdi çalıyor" ve Durdur / Ertele yalnız alarmla çalan anımsatıcıda; bildirim bir kez gelir.
 
 import { router } from 'expo-router';
 import { useEffect } from 'react';

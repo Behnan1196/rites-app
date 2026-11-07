@@ -94,12 +94,21 @@ describe('bugünün durumları (05 §7)', () => {
       BUGUN,
       '14:05',
     );
+    // P-107: bildirimle gelen anımsatma bir kez gelir; "Şimdi çalıyor" yalnız alarmda.
     expect(l.map((m) => [m.saat, m.gosterilen, m.durum, idiMetni(m)])).toEqual([
-      ['14:00', '14:00', 'caliyor', ''],
+      ['14:00', '14:00', 'gecti', ''],
       ['08:00', '14:10', 'ertelendi', '(08:00 idi)'],
       ['20:00', '20:00', 'sirada', ''],
     ]);
-    const o = girisOzeti(l);
+    expect(girisOzeti(l).calan).toBeNull();
+    const alarmli = bugununAnimsatmalari(
+      [{ ...goz, alarm: true }, hs],
+      [{ animsaticiId: 'g', saat: '08:00', durduruldu: false, ertelenenSaat: '14:10' }],
+      BUGUN,
+      '14:05',
+    );
+    expect(alarmli[0]!.durum).toBe('caliyor');
+    const o = girisOzeti(alarmli);
     expect([o.calan?.saat, o.siradaki?.saat, o.kalan]).toEqual(['14:00', '08:00', 2]);
     expect(kalanMetni(o.kalan)).toBe('bugün 2 kez daha');
     expect(kalanMetni(0)).toBe('bugün bitti');

@@ -545,3 +545,8 @@ Sonuç: → kararlar.md (listenin üç çeşidi, maddeleri kart; eskiler çevril
 Ne dedi: "Bir deneyim. Bu arada, Hızlı not ile not ekleyebiliyoruz ama Notlar ekranından not eklemeyi hiç yapmamışız"
 Nerede: Giriş → Notlar
 Sonuç: → kararlar.md (Notlar'ın üstünde yazma kutusu).
+
+### P-107 · 7 Kasım 2026 · Behnan
+Ne dedi: "Anımsatıcı bildirim yolladığında, sanırım eskiden kalma, yani bildirimin durdur veya ertele menüsü olduğu zamandan kalma bir şekilde, giriş ekranında Durdur Ertele yazıyor, sanırım hiç gerek yok ona"
+Nerede: Giriş → Anımsatıcılar kutusu
+Sonuç: → kararlar.md (Şimdi çalıyor yalnız alarmda).
