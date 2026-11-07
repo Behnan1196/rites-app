@@ -84,7 +84,11 @@ function AliskanlikKutusu({ a }: { a: AliskanlikOzeti }) {
             {a.kart.baslik}
           </Yazi>
           <Yazi tur="etiket" numberOfLines={1}>
-            {[a.kart.tekrar ? tekrarMetni(a.kart.tekrar) : null, a.program ? `Program: ${a.program.ad}` : null]
+            {[
+              a.kart.tekrar ? tekrarMetni(a.kart.tekrar) : null,
+              a.program ? `Program: ${a.program.ad}` : null,
+              a.liste ? `Liste: ${a.liste}` : null,
+            ]
               .filter(Boolean)
               .join(' · ')}
           </Yazi>
@@ -133,22 +137,25 @@ function AliskanlikKutusu({ a }: { a: AliskanlikOzeti }) {
         </Yazi>
       </View>
 
-      <View style={stiller.anahtar}>
-        <View style={stiller.esnek}>
-          <Yazi>Ajandada göster</Yazi>
-          <Yazi tur="etiket">{ajandadaMi(a.kart) ? 'Ajandada da görünür' : 'Yalnız burada ve Giriş’te'}</Yazi>
+      {/* P-110: listenin maddesi ajandada listesiyle görünür; anahtar yok. */}
+      {!a.liste && (
+        <View style={stiller.anahtar}>
+          <View style={stiller.esnek}>
+            <Yazi>Ajandada göster</Yazi>
+            <Yazi tur="etiket">{ajandadaMi(a.kart) ? 'Ajandada da görünür' : 'Yalnız burada ve Giriş’te'}</Yazi>
+          </View>
+          <AcKapa
+            acik={ajandadaMi(a.kart)}
+            etiket={`${a.kart.baslik} ajandada görünsün`}
+            onDegis={(acik) =>
+              void ajandadaYaz(kapi, a.kart.id, acik).catch((e: unknown) => {
+                console.error('Kaydedilemedi', e);
+                kisaMesaj('Kaydedilemedi. Yeniden dene.');
+              })
+            }
+          />
         </View>
-        <AcKapa
-          acik={ajandadaMi(a.kart)}
-          etiket={`${a.kart.baslik} ajandada görünsün`}
-          onDegis={(acik) =>
-            void ajandadaYaz(kapi, a.kart.id, acik).catch((e: unknown) => {
-              console.error('Kaydedilemedi', e);
-              kisaMesaj('Kaydedilemedi. Yeniden dene.');
-            })
-          }
-        />
-      </View>
+      )}
     </View>
   );
 }

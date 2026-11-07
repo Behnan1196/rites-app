@@ -9,6 +9,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { DEVAM_EN_COK, fazlaProgramMetni, PROGRAM_YOK_METNI } from '@/mantik/program';
 import { isaretle } from '@/veri/kartlar';
+import { rutinAdimiIsaretle } from '@/veri/rutinler';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
@@ -23,7 +24,7 @@ import { useProgramlar } from '../yasam/useProgramlar';
 const ALISKANLIK_EN_COK = 5;
 
 export function DevamEdenler() {
-  const { kapi } = useVeri();
+  const { kapi, oku } = useVeri();
   const bugunGun = useBugun();
   const { yukleniyor, ozetler } = useProgramlar();
   const { aliskanliklar } = useAliskanliklar();
@@ -86,9 +87,12 @@ export function DevamEdenler() {
             <View key={a.kart.id} style={stiller.satir}>
               <Pressable
                 onPress={() =>
-                  void isaretle(kapi, a.kart.id, bugunGun, !a.yapildi).catch((e: unknown) =>
-                    console.error('İşaretlenemedi', e),
-                  )
+                  // P-110: listenin maddesiyse listenin ilerlemesi de güncellenir.
+                  void (
+                    a.kart.ust
+                      ? rutinAdimiIsaretle(kapi, oku, a.kart.ust, a.kart.id, bugunGun, !a.yapildi)
+                      : isaretle(kapi, a.kart.id, bugunGun, !a.yapildi)
+                  ).catch((e: unknown) => console.error('İşaretlenemedi', e))
                 }
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: a.yapildi }}
@@ -115,7 +119,7 @@ export function DevamEdenler() {
                   {a.kart.baslik}
                 </Yazi>
                 <Yazi tur="ikincil" numberOfLines={1}>
-                  {a.program ? `${a.kisa} · ${a.program.ad}` : a.kisa}
+                  {[a.kisa, a.program?.ad, a.liste].filter(Boolean).join(' · ')}
                 </Yazi>
               </Pressable>
             </View>

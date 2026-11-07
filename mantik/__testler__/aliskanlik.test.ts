@@ -52,3 +52,20 @@ describe('P-91: Ölçümlerim', () => {
     expect(ajandadaMi({ ...k, olcumlerim: true, ajandada: true })).toBe(true);
   });
 });
+
+describe('P-110: listenin maddesi', () => {
+  const herGun = { gunSayisi: null, gunler: null, desen: 'hergun' as const };
+  const madde = { tekrar: herGun, aliskanlik: false, planId: null, bag: null, ust: 'l', ajandada: null };
+  it('seçilirse alışkanlık; gün verilmiş madde değil; ajandada yalnız günü varsa', () => {
+    expect(aliskanlikMi(madde)).toBe(false);
+    expect(aliskanlikMi({ ...madde, aliskanlik: true })).toBe(true);
+    expect(aliskanlikMi({ ...madde, aliskanlik: true, tekrar: null })).toBe(false);
+    expect(ajandadaMi({ ...madde, aliskanlik: true })).toBe(false);
+    expect(ajandadaMi({ ...madde, tekrar: null })).toBe(true);
+  });
+  it('Listeler’deki liste yalnız Ajandada göster ile ajandada', () => {
+    const liste = { tekrar: herGun, aliskanlik: false, planId: null, bag: null, listede: true };
+    expect(ajandadaMi({ ...liste, ajandada: null })).toBe(false);
+    expect(ajandadaMi({ ...liste, ajandada: true })).toBe(true);
+  });
+});

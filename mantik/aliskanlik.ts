@@ -19,7 +19,9 @@ export function programKartiMi(k: Pick<Kart, 'planId' | 'bag'>): boolean {
 
 /** Alışkanlık mı: tekrarlı ve (seçilmiş ya da programın kartı). */
 export function aliskanlikMi(k: AliskanlikAlanlari): boolean {
-  if (k.olcumlerim || k.ust) return false;
+  if (k.olcumlerim) return false;
+  // P-110: listenin maddesi de izlenebilir (gün verilmiş madde değil).
+  if (k.ust) return !!k.aliskanlik && k.tekrar !== null;
   return k.tekrar !== null && (!!k.aliskanlik || programKartiMi(k));
 }
 

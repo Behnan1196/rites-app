@@ -14,7 +14,10 @@ import { useBugun } from '@/veri/useBugun';
 import { useProgramlar } from '../yasam/useProgramlar';
 
 export interface AliskanlikOzeti {
+  /** Listenin maddesiyse günleri listenin günleri (P-110). */
   kart: KartOzeti;
+  /** P-110: listenin maddesiyse listenin adı. */
+  liste: string | null;
   /** Son 90 günün Yaptım günleri. */
   yapilan: ReadonlySet<Gun>;
   /** Bugün kartın günü mü (Giriş'te bugünün satırı). */
@@ -45,14 +48,25 @@ export function useAliskanliklar(): { yukleniyor: boolean; aliskanliklar: Aliska
     const { kartlar, gunler } = veri.veri;
     const kartinProgrami = new Map<string, Program>();
     for (const o of ozetler) for (const k of o.kartlar) kartinProgrami.set(k.id, o.program);
+    // P-110: listenin maddesi listenin günlerini izler.
+    const ustler = new Map(kartlar.map((k) => [k.id, k]));
     return kartlar
-      .filter((k) => aliskanlikMi(k) && surenAliskanlikMi(k, bugunGun))
-      .map((kart): AliskanlikOzeti => {
+      .filter((k) => aliskanlikMi(k))
+      .map((k) => {
+        const ust = k.ust ? ustler.get(k.ust) : undefined;
+        return {
+          kart: ust ? { ...k, tarih: ust.tarih, tekrar: ust.tekrar, bitis: ust.bitis, atlanan: ust.atlanan } : k,
+          liste: ust?.baslik ?? null,
+        };
+      })
+      .filter(({ kart }) => surenAliskanlikMi(kart, bugunGun))
+      .map(({ kart, liste }): AliskanlikOzeti => {
         const yapilan = new Set<Gun>();
         for (const [gun, kume] of gunler) if (kume.has(kart.id)) yapilan.add(gun);
         const s = seri(kart, yapilan, bugunGun);
         return {
           kart,
+          liste,
           yapilan,
           bugunVar: gorunurMu(kart, bugunGun, bugunGun),
           yapildi: yapilan.has(bugunGun),

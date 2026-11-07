@@ -41,7 +41,7 @@ import { AdimGunuSayfasi } from '@/bilesen/kart/AdimGunuSayfasi';
 import { ListeyiPaylas, ListeyiSilSorusu } from '@/bilesen/listeler/ListeKartiIslemleri';
 import { useOturumAc } from '@/bilesen/oturum/OturumSayfasi';
 import { adimGunuYaz, listedeYaz } from '@/veri/listeKartlari';
-import { adimlarListeParcasi, RUTIN_KALICI, rutinCesidi } from '@/mantik/rutinAdimlari';
+import { adimlarListeParcasi, RUTIN_GUNLUK, RUTIN_KALICI, rutinCesidi } from '@/mantik/rutinAdimlari';
 import { rutinAdimiIsaretle, rutinAdimlari, rutinYap } from '@/veri/rutinler';
 import { olcumParcalariMi } from '@/mantik/gidisat';
 import { SERIT_PARCALARI } from '@/mantik/parcaSecimi';
@@ -298,7 +298,9 @@ export default function KartGorunumu() {
     const i = ogeler.findIndex((o) => o.tehlike);
     const hepsi = !kur ? ogeler : i < 0 ? [...ogeler, kur] : [...ogeler.slice(0, i), kur, ...ogeler.slice(i)];
     return kart.ust
-      ? hepsi.filter((o) => o.etiket === KUR || o.etiket === 'Listeden kaldır' || o.etiket === 'Gün ver')
+      ? hepsi.filter((o) =>
+          [KUR, 'Listeden kaldır', 'Gün ver', 'Alışkanlık olarak izle', 'Alışkanlıktan çıkar'].includes(o.etiket),
+        )
       : hepsi;
   };
   const kayitDegis = (degistir: (k: Kayit) => Kayit) => void kayitDegistir(kapi, kart.id, gun, degistir);
@@ -778,6 +780,23 @@ export default function KartGorunumu() {
                         icerikKaydet(
                           listedeYaz(kapi, kart.id, true).then(() =>
                             kisaMesaj('Giriş → Listeler’de; ajandada da görünüyor'),
+                          ),
+                        ),
+                    },
+                  ]
+                : []),
+              // P-110: Günlük kontrol listesinin maddesi alışkanlık olarak izlenebilir (listenin günleriyle).
+              ...(duzenlenir && kart.ust && kart.tekrar && rutin && rutinCesidi(rutin) === RUTIN_GUNLUK
+                ? [
+                    {
+                      etiket: kart.aliskanlik ? 'Alışkanlıktan çıkar' : 'Alışkanlık olarak izle',
+                      ikon: 'leaf-outline' as const,
+                      onPress: () =>
+                        icerikKaydet(
+                          aliskanlikYaz(kapi, kart.id, !kart.aliskanlik).then(() =>
+                            kisaMesaj(
+                              kart.aliskanlik ? 'Artık alışkanlık değil' : 'Alışkanlık: Giriş → Devam edenler’de de',
+                            ),
                           ),
                         ),
                     },
