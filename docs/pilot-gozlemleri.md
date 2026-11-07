@@ -555,3 +555,8 @@ Sonuç: → kararlar.md (Şimdi çalıyor yalnız alarmda).
 Ne dedi: "Hemen düzeltme, ama ajanda kartlarında Kur ekranı Listeleri görmüyor. Hemen yapma dedim çünkü bu kur ile ayarlama, bazı alanları değiştirmeye kilitleme, sıralama gibi konuları yeniden ele almamız lazım, kur'u kaldırmak için bir miktar çalışma yapmıştık ama henüz bitiremedik."
 Nerede: Kart → ⋯ → Kur
 Sonuç: Bekliyor; Kur'un geleceği (ayarlar, kilitler, sıralama) birlikte ele alınacak. → kararlar.md (not).
+
+### P-109 · 7 Kasım 2026 · Behnan
+Ne dedi: "Tamam, düşündüğüm şu; Rites'ın uzman kullanıcıları olacağını söylemiştik, bu kişiler diyetisyen, sınav koçu, fitness hocası gibi kişiler olacak, kartları profesyonel olarak tasarlayıp kullananlar onlar olacak. Örneğin başlık ve zaman kilitleri onlar için gerekli, sıralama ve istenen bileşenleri tasarlayıp koyma da onların işi. Burada ilk sorgulamamız gereken, normal kullanıcıların ne kadar esnekliğe ihtitacı olduğu. Bir sonraki adımda, örneğin diyetisyenler için, aynı supabase üzerinde bir web uygulaması kurmayı, orada istediğimiz esnekliği vererek kartları, paket programları oluşturmasını konuşabiliriz" Seçimler: Kur gizli dursun; kilitler yalnız uzmanda; Uzman görünümü web gelene kadar kalsın; önce telefondaki sadeleşme.
+Nerede: Kart → ⋯ → Kur; uzman
+Sonuç: → kararlar.md (Normal kullanıcının esnekliği ve uzmanın yeri).

@@ -28,7 +28,7 @@ import {
   type SabitAlan,
 } from '@/mantik/kart';
 import { SERIT_PARCALARI, seritOgeleri, type SeritOgesi } from '@/mantik/parcaSecimi';
-import { ayarliParcaMi, sabitDegistir } from '@/mantik/gorunumDegisimi';
+import { ayarliParcaMi, kilitAyariGorunur, sabitDegistir } from '@/mantik/gorunumDegisimi';
 import { katalog, type KartCesidi } from '@/mantik/katalog';
 import {
   blokKopyasi,
@@ -505,7 +505,8 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
       return { ...d, bloklar };
     });
   /** Görünümde sabit ayarı yalnız ajanda kartında ve kütüphanede (program ve çeşit tasarımında yok). */
-  const sabitAyari = !tasarim && !sablon;
+  // P-109: kilitler uzmanın; normal kullanıcıda yalnız kartta kilit varsa (açabilsin diye).
+  const sabitAyari = !tasarim && !sablon && kilitAyariGorunur(uzman, durum.sabitler, durum.bloklar);
   // P-67: eski 'zaman' (tarih ve saat birlikte) ayrı iki alana açılır.
   const acilmisSabitler = (): SabitAlan[] =>
     durum.sabitler.includes('zaman')
@@ -962,7 +963,7 @@ export function KartFormu({ hedef, gorunur, onKapat, onSonuc }: Ozellikler) {
               <Dugme
                 tur="ikincil"
                 yaziRengi={renk.ana}
-                etiket="Kur: ayarlar ve sıra"
+                etiket={uzman ? 'Kur: ayarlar ve sıra' : 'Gelişmiş ayarlar'}
                 erisimIpucu="Neyin kart açıkken değişebileceği, parçaların sırası"
                 onPress={() => {
                   Keyboard.dismiss();

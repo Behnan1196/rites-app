@@ -23,7 +23,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AcilirMenu } from '@/bilesen/AcilirMenu';
+import { AcilirMenu, type MenuOgesi } from '@/bilesen/AcilirMenu';
 import { useBulusmalar } from '@/bilesen/gruplar/Bulusmalar';
 import { GorusmeyeKatil } from '@/bilesen/gruplar/BulusmaKarti';
 import { useKartVer } from '@/bilesen/gruplar/KartVerSayfasi';
@@ -67,7 +67,14 @@ import { gorunurMu } from '@/mantik/gorunurluk';
 import { ARAC_BLOKLARI, bosKayit, maddeliListeMi, type BlokTuru, type Kayit, type SabitAlan } from '@/mantik/kart';
 import { bagCoz } from '@/mantik/bulusma';
 import { verilenBagCoz } from '@/mantik/kartVerme';
-import { aciklamaDegisir, ayarliParcaMi, baslikDegisir, parcaDegisir, sabitDegistir } from '@/mantik/gorunumDegisimi';
+import {
+  aciklamaDegisir,
+  ayarliParcaMi,
+  baslikDegisir,
+  kilitAyariGorunur,
+  parcaDegisir,
+  sabitDegistir,
+} from '@/mantik/gorunumDegisimi';
 import { kartPaketi } from '@/mantik/paylasim';
 import { useOturum } from '@/sunucu/oturum';
 import { type Gun } from '@/mantik/tarih';
@@ -273,9 +280,16 @@ export default function KartGorunumu() {
     // P-105: listesi olan (ya da bir listenin maddesi olan) karta ikinci liste eklenmez.
     mevcut: [...bloklar.map((b) => b.tur), ...(kart.rutin || kart.ust ? (['liste'] as const) : [])],
   });
-  /** P-104: rutinin adımının menüsü sade: yalnız Kur ve Rutinden kaldır. */
-  const menuOgeleri = <T extends { etiket: string }>(ogeler: T[]): T[] =>
-    kart.ust ? ogeler.filter((o) => o.etiket === 'Kur: ayarlar ve sıra' || o.etiket === 'Rutinden kaldır') : ogeler;
+  /**
+   * P-109: Kur menünün sonunda (silmeden önce); normal kullanıcıda adı "Gelişmiş".
+   * P-104: rutinin adımının menüsü sade: yalnız Kur ve Rutinden kaldır.
+   */
+  const KUR = uzman ? 'Kur: ayarlar ve sıra' : 'Gelişmiş ayarlar';
+  const menuOgeleri = (ogeler: MenuOgesi[], kur: MenuOgesi | null): MenuOgesi[] => {
+    const i = ogeler.findIndex((o) => o.tehlike);
+    const hepsi = !kur ? ogeler : i < 0 ? [...ogeler, kur] : [...ogeler.slice(0, i), kur, ...ogeler.slice(i)];
+    return kart.ust ? hepsi.filter((o) => o.etiket === KUR || o.etiket === 'Rutinden kaldır') : hepsi;
+  };
   const kayitDegis = (degistir: (k: Kayit) => Kayit) => void kayitDegistir(kapi, kart.id, gun, degistir);
 
   return (
@@ -702,129 +716,132 @@ export default function KartGorunumu() {
         <AcilirMenu
           ust={kenar.top + 52}
           onKapat={() => setMenuAcik(false)}
-          ogeler={menuOgeleri([
-            // P-87: ölçümlerin gidişatı (son 4 hafta, yan yana).
-            ...(olcumParcalariMi(bloklar)
-              ? [
-                  {
-                    etiket: 'Gidişat',
-                    ikon: 'stats-chart-outline' as const,
-                    onPress: () => router.push({ pathname: '/kart/gidisat/[id]', params: { id: kart.id } }),
-                  },
-                ]
-              : []),
-            {
-              etiket: 'Kütüphaneye kaydet',
-              ikon: 'bookmark-outline',
-              onPress: () => kutuphane.ac({ tur: 'kart', kart, bloklar: disaBloklar, alanlar: program?.alanlar ?? [] }),
-            },
-            // P-78: tekrarlı kart alışkanlık olarak izlenir (Giriş → Devam edenler); programın kartı zaten öyle.
-            ...(duzenlenir && kart.tekrar && !programKartiMi(kart) && !kart.olcumlerim && !kart.ust
-              ? [
-                  {
-                    etiket: kart.aliskanlik ? 'Alışkanlıktan çıkar' : 'Alışkanlık olarak izle',
-                    ikon: 'leaf-outline' as const,
-                    onPress: () =>
-                      icerikKaydet(
-                        aliskanlikYaz(kapi, kart.id, !kart.aliskanlik).then(() =>
-                          kisaMesaj(
-                            kart.aliskanlik
-                              ? 'Artık alışkanlık değil; ajandada görünür'
-                              : 'Alışkanlık: Giriş → Devam edenler’de; ajandada görünmez',
+          ogeler={menuOgeleri(
+            [
+              // P-87: ölçümlerin gidişatı (son 4 hafta, yan yana).
+              ...(olcumParcalariMi(bloklar)
+                ? [
+                    {
+                      etiket: 'Gidişat',
+                      ikon: 'stats-chart-outline' as const,
+                      onPress: () => router.push({ pathname: '/kart/gidisat/[id]', params: { id: kart.id } }),
+                    },
+                  ]
+                : []),
+              {
+                etiket: 'Kütüphaneye kaydet',
+                ikon: 'bookmark-outline',
+                onPress: () =>
+                  kutuphane.ac({ tur: 'kart', kart, bloklar: disaBloklar, alanlar: program?.alanlar ?? [] }),
+              },
+              // P-78: tekrarlı kart alışkanlık olarak izlenir (Giriş → Devam edenler); programın kartı zaten öyle.
+              ...(duzenlenir && kart.tekrar && !programKartiMi(kart) && !kart.olcumlerim && !kart.ust
+                ? [
+                    {
+                      etiket: kart.aliskanlik ? 'Alışkanlıktan çıkar' : 'Alışkanlık olarak izle',
+                      ikon: 'leaf-outline' as const,
+                      onPress: () =>
+                        icerikKaydet(
+                          aliskanlikYaz(kapi, kart.id, !kart.aliskanlik).then(() =>
+                            kisaMesaj(
+                              kart.aliskanlik
+                                ? 'Artık alışkanlık değil; ajandada görünür'
+                                : 'Alışkanlık: Giriş → Devam edenler’de; ajandada görünmez',
+                            ),
                           ),
                         ),
-                      ),
-                  },
-                ]
-              : []),
-            ...(aliskanlikMi(kart) || kart.olcumlerim
-              ? [
-                  {
-                    etiket: ajandadaMi(kart) ? 'Ajandada gösterme' : 'Ajandada göster',
-                    ikon: 'calendar-outline' as const,
-                    onPress: () => icerikKaydet(ajandadaYaz(kapi, kart.id, !ajandadaMi(kart))),
-                  },
-                ]
-              : []),
-            // P-83: Kur üstten menüye (parça ekle, sırala, bütün ayarlar).
-            ...(duzenlenir
-              ? [
-                  { etiket: 'Kur: ayarlar ve sıra', ikon: 'construct-outline' as const, onPress: () => duzenleAc() },
-                  {
-                    etiket: 'Başlık ve zaman izinleri',
-                    ikon: 'lock-open-outline' as const,
-                    onPress: () => setZamanMenusu(true),
-                  },
-                ]
-              : []),
-            ...(!kart.planId && !kart.bag && !kart.kilitli && !kart.olcumlerim && !kart.ust
-              ? [
-                  {
-                    etiket: 'Programa ekle',
-                    ikon: 'albums-outline' as const,
-                    onPress: () => setProgramSec((n) => n + 1),
-                  },
-                ]
-              : []),
-            ...(verilenId
-              ? [
-                  {
-                    etiket: 'Bırak',
-                    ikon: 'close-circle-outline' as const,
-                    tehlike: true,
-                    onPress: () => setBirakSorusu(true),
-                  },
-                ]
-              : []),
-            ...(!kart.kilitli && !kart.bag && oturum.durum === 'var'
-              ? [
-                  {
-                    etiket: 'Birine ver',
-                    ikon: 'gift-outline' as const,
-                    onPress: () => kartVer.ac({ paket: kartPaketi(kart, disaBloklar) }),
-                  },
-                ]
-              : []),
-            ...(kart.kilitli
-              ? []
-              : [
-                  {
-                    etiket: 'Paylaş',
-                    ikon: 'share-outline' as const,
-                    onPress: () => paylas.ac({ kart, bloklar: disaBloklar }),
-                  },
-                  // P-98: Ölçümlerim yalnız Giriş → Ölçümlerim → Düzenle'den silinir (ajandadan değil).
-                  ...(kart.olcumlerim && olcumlerimden !== '1'
-                    ? []
-                    : kart.ust
-                      ? [
-                          // P-101: rutinin adımı doğrudan rutinden kaldırılır (sıralama sürüklemeyle).
-                          {
-                            etiket: 'Rutinden kaldır',
-                            ikon: 'trash-outline' as const,
-                            tehlike: true,
-                            onPress: () =>
-                              void kartlariSil(kapi, [kart.id])
-                                .then(() => {
-                                  kisaMesaj(`Rutinden kaldırıldı: ${kart.baslik}`);
-                                  router.back();
-                                })
-                                .catch((e: unknown) => {
-                                  console.error(e);
-                                  kisaMesaj('Kaydedilemedi. Yeniden dene.');
-                                }),
-                          },
-                        ]
-                      : [
-                          {
-                            etiket: 'Sil',
-                            ikon: 'trash-outline' as const,
-                            tehlike: true,
-                            onPress: () => kartSil.baslat(kart, gun),
-                          },
-                        ]),
-                ]),
-          ])}
+                    },
+                  ]
+                : []),
+              ...(aliskanlikMi(kart) || kart.olcumlerim
+                ? [
+                    {
+                      etiket: ajandadaMi(kart) ? 'Ajandada gösterme' : 'Ajandada göster',
+                      ikon: 'calendar-outline' as const,
+                      onPress: () => icerikKaydet(ajandadaYaz(kapi, kart.id, !ajandadaMi(kart))),
+                    },
+                  ]
+                : []),
+              // P-83: Kur üstten menüye (parça ekle, sırala, bütün ayarlar); P-109: kilitler uzmanın.
+              ...(duzenlenir && kilitAyariGorunur(uzman, kart.sabitler, bloklar)
+                ? [
+                    {
+                      etiket: 'Başlık ve zaman izinleri',
+                      ikon: 'lock-open-outline' as const,
+                      onPress: () => setZamanMenusu(true),
+                    },
+                  ]
+                : []),
+              ...(!kart.planId && !kart.bag && !kart.kilitli && !kart.olcumlerim && !kart.ust
+                ? [
+                    {
+                      etiket: 'Programa ekle',
+                      ikon: 'albums-outline' as const,
+                      onPress: () => setProgramSec((n) => n + 1),
+                    },
+                  ]
+                : []),
+              ...(verilenId
+                ? [
+                    {
+                      etiket: 'Bırak',
+                      ikon: 'close-circle-outline' as const,
+                      tehlike: true,
+                      onPress: () => setBirakSorusu(true),
+                    },
+                  ]
+                : []),
+              ...(!kart.kilitli && !kart.bag && oturum.durum === 'var'
+                ? [
+                    {
+                      etiket: 'Birine ver',
+                      ikon: 'gift-outline' as const,
+                      onPress: () => kartVer.ac({ paket: kartPaketi(kart, disaBloklar) }),
+                    },
+                  ]
+                : []),
+              ...(kart.kilitli
+                ? []
+                : [
+                    {
+                      etiket: 'Paylaş',
+                      ikon: 'share-outline' as const,
+                      onPress: () => paylas.ac({ kart, bloklar: disaBloklar }),
+                    },
+                    // P-98: Ölçümlerim yalnız Giriş → Ölçümlerim → Düzenle'den silinir (ajandadan değil).
+                    ...(kart.olcumlerim && olcumlerimden !== '1'
+                      ? []
+                      : kart.ust
+                        ? [
+                            // P-101: rutinin adımı doğrudan rutinden kaldırılır (sıralama sürüklemeyle).
+                            {
+                              etiket: 'Rutinden kaldır',
+                              ikon: 'trash-outline' as const,
+                              tehlike: true,
+                              onPress: () =>
+                                void kartlariSil(kapi, [kart.id])
+                                  .then(() => {
+                                    kisaMesaj(`Rutinden kaldırıldı: ${kart.baslik}`);
+                                    router.back();
+                                  })
+                                  .catch((e: unknown) => {
+                                    console.error(e);
+                                    kisaMesaj('Kaydedilemedi. Yeniden dene.');
+                                  }),
+                            },
+                          ]
+                        : [
+                            {
+                              etiket: 'Sil',
+                              ikon: 'trash-outline' as const,
+                              tehlike: true,
+                              onPress: () => kartSil.baslat(kart, gun),
+                            },
+                          ]),
+                  ]),
+            ],
+            duzenlenir ? { etiket: KUR, ikon: 'construct-outline' as const, onPress: () => duzenleAc() } : null,
+          )}
         />
       )}
       {form.oge}

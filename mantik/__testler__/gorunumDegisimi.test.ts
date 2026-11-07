@@ -1,4 +1,11 @@
-import { baslikDegisir, parcaDegisir, saatDegisir, sabitDegistir, tarihDegisir } from '../gorunumDegisimi';
+import {
+  baslikDegisir,
+  kilitAyariGorunur,
+  parcaDegisir,
+  saatDegisir,
+  sabitDegistir,
+  tarihDegisir,
+} from '../gorunumDegisimi';
 import { verilenKarti } from '../kartVerme';
 import { kartIcerigi, kutuphanedenKart } from '../kutuphane';
 import { kartPaketi } from '../paylasim';
@@ -69,5 +76,14 @@ describe('Sabitler kartla taşınır (P-65)', () => {
     const geri = kutuphanedenKart(c, '2026-10-29', () => 'x');
     expect(geri.kart.sabitler).toEqual(['zaman']);
     expect(geri.bloklar.map((b) => !!b.sabit)).toEqual([true, false]);
+  });
+});
+
+describe('kilit ayarı (P-109)', () => {
+  it('uzmanda her zaman; normal kullanıcıda yalnız kartta kilit varsa', () => {
+    expect(kilitAyariGorunur(true, [], [])).toBe(true);
+    expect(kilitAyariGorunur(false, null, [{ sabit: false }])).toBe(false);
+    expect(kilitAyariGorunur(false, ['baslik'], [])).toBe(true);
+    expect(kilitAyariGorunur(false, [], [{ sabit: true }])).toBe(true);
   });
 });

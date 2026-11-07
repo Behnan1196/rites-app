@@ -56,3 +56,15 @@ export function sabitDegistir(sabitler: readonly SabitAlan[], alan: SabitAlan, s
   const y = sabitler.filter((s) => s !== alan);
   return sabit ? [...y, alan].sort() : y;
 }
+
+/**
+ * P-109: kilit (başlık, zaman, açıklama ya da parça değişmesin) ayarı uzmanındır; normal
+ * kullanıcıda yalnız kartta zaten kilit varsa görünür (açabilsin diye).
+ */
+export function kilitAyariGorunur(
+  uzman: boolean,
+  sabitler: readonly SabitAlan[] | null | undefined,
+  bloklar: readonly Pick<Blok, 'sabit'>[],
+): boolean {
+  return uzman || (sabitler?.length ?? 0) > 0 || bloklar.some((b) => b.sabit);
+}
