@@ -32,7 +32,6 @@ import { KisaMesajSaglayici } from "@/bilesen/KisaMesaj";
 import { ProfilSaglayici } from "@/bilesen/Profil";
 import { renk, yaziTipiDurumu } from "@/bilesen/tema";
 import { Yazi } from "@/bilesen/Yazi";
-import { YedekSorusu } from "@/bilesen/YedekSorusu";
 import { useAyar } from "@/veri/kancalar";
 import { VeriSaglayici } from "@/veri/VeriSaglayici";
 
@@ -77,7 +76,6 @@ export default function KokDuzen() {
                       />
                       <BildirimYoneticisi />
                       <PaylasimAlici />
-                      <YedekSorusu />
                     </ProfilSaglayici>
                   </GirisAyariSaglayici>
                 </GelenBildirimiSaglayici>

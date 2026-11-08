@@ -575,3 +575,8 @@ Sonuç: → kararlar.md (listenin maddesi alışkanlık olarak izlenir).
 Ne dedi: "Kartlarda başlıktan önce yaptım check markı var, örneğin bilgi listesinin bir kartında yaptım olmayacak, burada asıl istediğim, yaptım ın yanında olunca başlık text'inin değiştirilmesi (ya da yazılması) diğer text girişlerinden farklı oluyor, acaba başlık ayrı bir text alanı gibi giriliyor olsa daha hoş olmaz mı" Seçim: dokununca çerçeveli alan.
 Nerede: Kart → başlık
 Sonuç: → kararlar.md.
+
+### P-113 · 8 Kasım 2026 · Behnan
+Ne dedi: "Rites'ı kulladıktan belirli bir süre sonra yedekleme yapmam için uyarı mesajı geliyor, ancak yedek almadığım sürece her açılışda mesaj geliyor. Bence hiç uyarı yapmasına da gerek yok, ayarlarda gerekli bilgilendirme var"
+Nerede: Açılış
+Sonuç: → kararlar.md (uyarı kalktı).
