@@ -41,7 +41,7 @@ import { AdimGunuSayfasi } from '@/bilesen/kart/AdimGunuSayfasi';
 import { ListeyiPaylas, ListeyiSilSorusu } from '@/bilesen/listeler/ListeKartiIslemleri';
 import { useOturumAc } from '@/bilesen/oturum/OturumSayfasi';
 import { adimGunuYaz, listedeYaz } from '@/veri/listeKartlari';
-import { adimlarListeParcasi, RUTIN_GUNLUK, RUTIN_KALICI, rutinCesidi } from '@/mantik/rutinAdimlari';
+import { adimlarListeParcasi, RUTIN_BILGI, RUTIN_GUNLUK, RUTIN_KALICI, rutinCesidi } from '@/mantik/rutinAdimlari';
 import { rutinAdimiIsaretle, rutinAdimlari, rutinYap } from '@/veri/rutinler';
 import { olcumParcalariMi } from '@/mantik/gidisat';
 import { SERIT_PARCALARI } from '@/mantik/parcaSecimi';
@@ -159,6 +159,8 @@ export default function KartGorunumu() {
   const [listePaylas, setListePaylas] = useState(false);
   const [listeSil, setListeSil] = useState(false);
   const [adimGunu, setAdimGunu] = useState(false);
+  /** P-112: başlık yazılırken Yaptım kutusu gizlenir. */
+  const [baslikYaziliyor, setBaslikYaziliyor] = useState(false);
   const oturumAc = useOturumAc();
   /** P-101: rutinin adımı sürüklenirken ekran kaymasın. */
   const [surukleniyor, setSurukleniyor] = useState(false);
@@ -223,6 +225,7 @@ export default function KartGorunumu() {
   const serit = kaynak === 'kendim' ? null : kaynakRenk[kaynak].serit;
   const cesit = cesitBul(kart.cesit ?? null);
   const isaretlenir = gorunurMu(kart, gun, bugunGun);
+  const bilgiMi = rutinCesidi(kart) === RUTIN_BILGI || (!!rutin && rutinCesidi(rutin) === RUTIN_BILGI);
   const duzenlenir = !kart.kilitli;
   const verilenId = verilenBagCoz(kart.bag);
   // P-62: buluşmanın görüntülü görüşme bağlantısı.
@@ -347,7 +350,8 @@ export default function KartGorunumu() {
                 </View>
               )}
               <View style={stiller.baslikSatiri}>
-                {isaretlenir && (
+                {/* P-112: Bilgi listesinde (ve maddelerinde) Yaptım yok. */}
+                {isaretlenir && !baslikYaziliyor && !bilgiMi && (
                   <Pressable
                     onPress={() =>
                       void (kart.ust
@@ -370,6 +374,7 @@ export default function KartGorunumu() {
                 {baslikDegisir(kart) ? (
                   <SatirIciBaslik
                     baslik={kart.baslik}
+                    onDuzenleme={setBaslikYaziliyor}
                     onKaydet={(baslik) => icerikKaydet(kartMetniYaz(kapi, kart.id, { baslik }))}
                   />
                 ) : (

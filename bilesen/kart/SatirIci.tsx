@@ -15,32 +15,68 @@ import { Yazi } from '../Yazi';
 import { ZenginMetin, ZenginMetinAlani } from '../ZenginMetin';
 
 /** Başlık: yazı gibi; dokununca yazılır, çıkınca kaydedilir (boş bırakılırsa eskisi kalır). */
-export function SatirIciBaslik({ baslik, onKaydet }: { baslik: string; onKaydet: (yeni: string) => void }) {
+/**
+ * P-112: başlık normal yazı görünür; dokununca tam genişlikte, öbür alanlar gibi çerçeveli yazı
+ * alanı olur. Enter ya da dışarı dokununca kaydedilir; boş bırakılırsa değişmez.
+ */
+export function SatirIciBaslik({
+  baslik,
+  onKaydet,
+  onDuzenleme,
+}: {
+  baslik: string;
+  onKaydet: (yeni: string) => void;
+  /** Yazılırken (Yaptım kutusu gizlensin diye). */
+  onDuzenleme?: (aktif: boolean) => void;
+}) {
+  const [duzenle, setDuzenle] = useState(false);
   const [metin, setMetin] = useState(baslik);
-  const [onceki, setOnceki] = useState(baslik);
-  // Kart başka yerden değişince (Kur) alan da yenilenir.
-  if (baslik !== onceki) {
-    setOnceki(baslik);
+  // Enter, odak kaybı ve gönderme birlikte gelebilir; bir kez kaydedilsin.
+  const acik = useRef(false);
+  const ac = () => {
     setMetin(baslik);
-  }
-  const bitir = () => {
-    const t = metin.trim();
-    if (!t) setMetin(baslik);
-    else if (t !== baslik) onKaydet(t);
+    acik.current = true;
+    setDuzenle(true);
+    onDuzenleme?.(true);
   };
+  const bitir = () => {
+    if (!acik.current) return;
+    acik.current = false;
+    const t = metin.trim();
+    if (t && t !== baslik) onKaydet(t);
+    setDuzenle(false);
+    onDuzenleme?.(false);
+  };
+  if (!duzenle)
+    return (
+      <Pressable
+        onPress={ac}
+        accessibilityRole="button"
+        accessibilityLabel={`${baslik}. Başlığı değiştirmek için dokun`}
+        style={({ pressed }) => [stiller.baslikDokun, pressed && { opacity: 0.6 }]}
+      >
+        <Yazi tur="bolumBasligi" accessibilityRole="header">
+          {baslik}
+        </Yazi>
+      </Pressable>
+    );
   return (
     <TextInput
       accessibilityLabel="Kartın başlığı"
       value={metin}
       onChangeText={setMetin}
-      onEndEditing={bitir}
       onBlur={bitir}
       onSubmitEditing={bitir}
+      // Web'de çok satırlı alanda Enter gönderilmez.
+      onKeyPress={(e) => {
+        if (e.nativeEvent.key === 'Enter') bitir();
+      }}
       returnKeyType="done"
       submitBehavior="blurAndSubmit"
+      autoFocus
       multiline
       selectionColor={renk.ana}
-      style={[stiller.baslik, yazi('kalin')]}
+      style={[stiller.baslikAlani, yazi('kalin')]}
     />
   );
 }
@@ -352,12 +388,19 @@ export function MaddeEkle({
 }
 
 const stiller = StyleSheet.create({
-  baslik: {
+  baslikDokun: { flex: 1, minHeight: 44, justifyContent: 'center' },
+  baslikAlani: {
     flex: 1,
+    minWidth: 0,
+    minHeight: 48,
+    borderWidth: 1.5,
+    borderColor: renk.ana,
+    borderRadius: olcu.kose.kart,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     fontSize: boyut.bolumBasligi,
     color: renk.yazi,
-    paddingVertical: 4,
-    paddingHorizontal: 0,
+    backgroundColor: renk.yuzey,
   },
   dokun: { minHeight: 32, justifyContent: 'center', alignItems: 'flex-start' },
   aciklama: { gap: 6 },

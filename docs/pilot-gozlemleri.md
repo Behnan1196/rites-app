@@ -570,3 +570,8 @@ Sonuç: → kararlar.md (Liste, rutin, alışkanlık). 1. adım yapıldı; madde
 Ne dedi: "ok devam edelim"
 Nerede: P-110 2. adım
 Sonuç: → kararlar.md (listenin maddesi alışkanlık olarak izlenir).
+
+### P-112 · 8 Kasım 2026 · Behnan
+Ne dedi: "Kartlarda başlıktan önce yaptım check markı var, örneğin bilgi listesinin bir kartında yaptım olmayacak, burada asıl istediğim, yaptım ın yanında olunca başlık text'inin değiştirilmesi (ya da yazılması) diğer text girişlerinden farklı oluyor, acaba başlık ayrı bir text alanı gibi giriliyor olsa daha hoş olmaz mı" Seçim: dokununca çerçeveli alan.
+Nerede: Kart → başlık
+Sonuç: → kararlar.md.

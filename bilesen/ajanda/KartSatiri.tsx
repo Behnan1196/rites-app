@@ -12,6 +12,8 @@ import { kaynakAnahtari, kaynakEtiketi, kaynakTuru } from '@/mantik/kaynak';
 import { maddeKartiMi } from '@/mantik/listeler';
 import type { KartOzeti } from '@/veri/kartlar';
 
+import { RUTIN_BILGI, rutinCesidi } from '@/mantik/rutinAdimlari';
+
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 import { kaynakStili } from './kaynakStili';
@@ -55,18 +57,25 @@ export function KartSatiri({
   return (
     <View style={stiller.kart}>
       {stil && <View style={[stiller.serit, { backgroundColor: stil.serit }]} />}
-      <Pressable
-        onPress={onIsaretle}
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: yapildi }}
-        accessibilityLabel={yapildi ? `${kart.baslik}: yapıldı` : `${kart.baslik}: yapıldı olarak işaretle`}
-        style={stiller.isaretAlani}
-        hitSlop={4}
-      >
-        <View style={[stiller.isaret, yapildi && stiller.isaretDolu]}>
-          {yapildi && <Ionicons name="checkmark" size={20} color={renk.yuzey} />}
+      {/* P-112: Bilgi listesinde Yaptım yok. */}
+      {rutinCesidi(kart) === RUTIN_BILGI ? (
+        <View style={stiller.isaretAlani}>
+          <Ionicons name="reader-outline" size={24} color={renk.ikincil} />
         </View>
-      </Pressable>
+      ) : (
+        <Pressable
+          onPress={onIsaretle}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: yapildi }}
+          accessibilityLabel={yapildi ? `${kart.baslik}: yapıldı` : `${kart.baslik}: yapıldı olarak işaretle`}
+          style={stiller.isaretAlani}
+          hitSlop={4}
+        >
+          <View style={[stiller.isaret, yapildi && stiller.isaretDolu]}>
+            {yapildi && <Ionicons name="checkmark" size={20} color={renk.yuzey} />}
+          </View>
+        </Pressable>
+      )}
 
       <Pressable
         onPress={onAc}
