@@ -580,3 +580,8 @@ Sonuç: → kararlar.md.
 Ne dedi: "Rites'ı kulladıktan belirli bir süre sonra yedekleme yapmam için uyarı mesajı geliyor, ancak yedek almadığım sürece her açılışda mesaj geliyor. Bence hiç uyarı yapmasına da gerek yok, ayarlarda gerekli bilgilendirme var"
 Nerede: Açılış
 Sonuç: → kararlar.md (uyarı kalktı).
+
+### P-114 · 8 Kasım 2026 · Behnan
+Ne dedi: "Kartta Açıklama alanının balığının hemen yanın aşağı ok gibi bir düğme var, ancak liste ve video da sağa dayalı olarak çıkıyor ve sağa dayalı olması daha doğru."
+Nerede: Kart → Açıklama başlığı
+Sonuç: → kararlar.md (⌄ hep sağda; listenin çeşit başlığı da).

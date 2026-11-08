@@ -281,12 +281,12 @@ export function AciklamaAlani({
           hitSlop={6}
           style={({ pressed }) => [stiller.aciklamaAdi, pressed && { opacity: 0.6 }]}
         >
-          <Yazi kalinlik="kalin" renk={renk.ikincil} numberOfLines={1}>
+          <Yazi kalinlik="kalin" renk={renk.ikincil} numberOfLines={1} style={stiller.esnek}>
             Açıklama
           </Yazi>
+          {/* P-114: ⌄ öbür parçalar gibi sağda. */}
           {!!onMenu && <Ionicons name="chevron-down" size={16} color={renk.soluk} />}
         </Pressable>
-        <View style={stiller.esnek} />
         {!degisir && (
           <Ionicons
             name="lock-closed-outline"
@@ -405,7 +405,7 @@ const stiller = StyleSheet.create({
   dokun: { minHeight: 32, justifyContent: 'center', alignItems: 'flex-start' },
   aciklama: { gap: 6 },
   aciklamaUst: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 },
-  aciklamaAdi: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32 },
+  aciklamaAdi: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32 },
   esnek: { flex: 1 },
   aa: {
     minWidth: 44,

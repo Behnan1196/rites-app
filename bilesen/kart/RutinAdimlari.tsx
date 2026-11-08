@@ -83,17 +83,17 @@ export function RutinAdimlari({
           hitSlop={6}
           style={({ pressed }) => [stiller.cesit, pressed && { opacity: 0.6 }]}
         >
-          <Yazi kalinlik="kalin" renk={renk.ikincil}>
+          <Yazi kalinlik="kalin" renk={renk.ikincil} style={stiller.esnek}>
             {rutinCesitAdi(cesit)}
           </Yazi>
+          {isaretli && adimlar.length > 0 && (
+            <Yazi kalinlik="kalin" renk={d.yapilan === d.toplam ? renk.ana : renk.ikincil}>
+              {rutinIlerlemeMetni(d)}
+            </Yazi>
+          )}
+          {/* P-114: ⌄ öbür parçalar gibi sağda. */}
           {!!onCesit && <Ionicons name="chevron-down" size={16} color={renk.soluk} />}
         </Pressable>
-        <View style={stiller.esnek} />
-        {isaretli && adimlar.length > 0 && (
-          <Yazi kalinlik="kalin" renk={d.yapilan === d.toplam ? renk.ana : renk.ikincil}>
-            {rutinIlerlemeMetni(d)}
-          </Yazi>
-        )}
       </View>
       {adimlar.length === 0 && (
         <Yazi tur="ikincil">Maddeleri sırayla ekle. Her maddeye dokunup video, zamanlayıcı ekleyebilirsin.</Yazi>
@@ -166,7 +166,7 @@ export function RutinAdimlari({
 }
 
 const stiller = StyleSheet.create({
-  cesit: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32 },
+  cesit: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 32 },
   nokta: { width: 24, alignItems: 'center' },
   kap: { gap: 4 },
   ust: { flexDirection: 'row', alignItems: 'center', minHeight: 32 },
