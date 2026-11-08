@@ -595,3 +595,8 @@ Sonuç: → kararlar.md (başlığa uzun bas → sürükle).
 Ne dedi: "Bir de kartın altındaki + Ekle, kart elemnları ile karışabiliyor, adı değiştirilebilir ya da daha iyisi ona basıldığında açılan menünün boş hali kartın altında bir şerit olarak durur orada bir simge şeklinde yer alabilir . Bu sadece öneri, belki normal kullanıcı için oldukça sadeleştirme yaptığımız için başka çözümlerde düşünülebilir" Seçim: üstte + simgesi.
 Nerede: Kart → + Ekle
 Sonuç: → kararlar.md.
+
+### P-117 · 8 Kasım 2026 · Behnan
+Ne dedi: "Fena değil, yalnız yeni kart oluştururken ekran oldukça farklı davranıyor" Seçim: önce ad, sonra kartın ekranı.
+Nerede: Ajandam → + (yeni kart)
+Sonuç: → kararlar.md.

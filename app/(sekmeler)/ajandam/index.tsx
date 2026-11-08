@@ -21,6 +21,8 @@ import { renk } from '@/bilesen/tema';
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
+import { useYeniKart } from '@/bilesen/kart/YeniKart';
+import { useUzman } from '@/bilesen/useUzman';
 import { useBanaVerilenler } from '@/bilesen/listeler/BanaVerilenler';
 import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
 import { Yazi } from '@/bilesen/Yazi';
@@ -64,6 +66,10 @@ export default function Ajandam() {
   const [takvim, setTakvim] = useState({ acik: false, acilis: 0 });
   const [surukleniyor, setSurukleniyor] = useState(false);
   const form = useKartFormu();
+  // P-117: yeni kart önce ad ve gün; sonra kartın ekranı (uzmanda eski form).
+  const yeni = useYeniKart();
+  const uzman = useUzman();
+  const yeniAc = (gun: Gun) => (uzman ? form.ac({ tur: 'yeni', gun }) : yeni.ac({ gun }));
   const kisaMesaj = useKisaMesaj();
   // Ortak listelerden bana tarihle verilen maddeler (`05` §9).
   const verilenler = useBanaVerilenler();
@@ -219,7 +225,7 @@ export default function Ajandam() {
             secili={suzuldu}
             onPress={() => setSuzgecAcik(true)}
           />
-          <SimgeDugmesi ikon="add" etiket="Kart ekle" dolu onPress={() => form.ac({ tur: 'yeni', gun: secili })} />
+          <SimgeDugmesi ikon="add" etiket="Kart ekle" dolu onPress={() => yeniAc(secili)} />
         </>
       }
     >
@@ -274,7 +280,7 @@ export default function Ajandam() {
                     tur="ikincil"
                     yaziRengi={renk.ana}
                     etiket="+ Bu güne kart ekle"
-                    onPress={() => form.ac({ tur: 'yeni', gun: secili })}
+                    onPress={() => yeniAc(secili)}
                   />
                 </View>
               ) : (
@@ -323,6 +329,7 @@ export default function Ajandam() {
         />
       )}
       {form.oge}
+      {yeni.oge}
     </EkranKabi>
   );
 }

@@ -12,6 +12,8 @@ import { Dugme } from '@/bilesen/Dugme';
 import { EkranKabi } from '@/bilesen/EkranKabi';
 import { useAliskanliklar, type AliskanlikOzeti } from '@/bilesen/giris/useAliskanliklar';
 import { useKartFormu } from '@/bilesen/kart/KartFormu';
+import { useYeniKart } from '@/bilesen/kart/YeniKart';
+import { useUzman } from '@/bilesen/useUzman';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { AcKapa } from '@/bilesen/Secim';
 import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
@@ -29,6 +31,9 @@ export default function Aliskanliklar() {
   const { yukleniyor, aliskanliklar } = useAliskanliklar();
   const bugunGun = useBugun();
   const form = useKartFormu();
+  // P-117: önce ad; sonra kartın ekranı (uzmanda eski form).
+  const yeni = useYeniKart();
+  const uzman = useUzman();
 
   return (
     <>
@@ -41,7 +46,11 @@ export default function Aliskanliklar() {
           tur="ikincil"
           yaziRengi={renk.ana}
           etiket="+ Alışkanlık ekle"
-          onPress={() => form.ac({ tur: 'yeni', gun: bugunGun, aliskanlik: true })}
+          onPress={() =>
+            uzman
+              ? form.ac({ tur: 'yeni', gun: bugunGun, aliskanlik: true })
+              : yeni.ac({ gun: bugunGun, aliskanlik: true, geri: 'Alışkanlıklar' })
+          }
         />
         {!yukleniyor && aliskanliklar.length === 0 && (
           <Yazi tur="ikincil">
@@ -55,6 +64,7 @@ export default function Aliskanliklar() {
         ))}
       </EkranKabi>
       {form.oge}
+      {yeni.oge}
     </>
   );
 }

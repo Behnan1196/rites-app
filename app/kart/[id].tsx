@@ -541,6 +541,14 @@ export default function KartGorunumu() {
               {!!gorusme && <GorusmeyeKatil baglanti={gorusme} />}
             </View>
 
+            {/* P-117: boş kartta + ipucu. */}
+            {duzenlenir && !kart.rutin && bloklar.length === 0 && !aciklamaVarMi(kart.kisa) && !aciklamaYaziliyor && (
+              <View style={[stiller.bolum, stiller.cizgili]}>
+                <Yazi tur="ikincil">
+                  Sağ üstteki + ile açıklama, liste, fotoğraf, video ya da ölçüm ekleyebilirsin.
+                </Yazi>
+              </View>
+            )}
             {/* P-93: rutinin adımları. */}
             {kart.rutin && (
               <View style={[stiller.bolum, stiller.cizgili, stiller.anaBolum]}>
