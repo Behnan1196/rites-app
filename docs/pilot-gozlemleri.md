@@ -585,3 +585,8 @@ Sonuç: → kararlar.md (uyarı kalktı).
 Ne dedi: "Kartta Açıklama alanının balığının hemen yanın aşağı ok gibi bir düğme var, ancak liste ve video da sağa dayalı olarak çıkıyor ve sağa dayalı olması daha doğru."
 Nerede: Kart → Açıklama başlığı
 Sonuç: → kararlar.md (⌄ hep sağda; listenin çeşit başlığı da).
+
+### P-115 · 8 Kasım 2026 · Behnan
+Ne dedi: "Önceden başlığa uzun bastığımızda da menü açılıyordu, o boşa çıkarsa başlığa uzun basıp taşıma işlemini yapabilir miyiz, şu an menüden yapıldığında menünün hemen kapanması ve değişiklikleri kaydetmemesi sorun olabiliyor"
+Nerede: Kart → parçanın başlığı
+Sonuç: → kararlar.md (başlığa uzun bas → sürükle).

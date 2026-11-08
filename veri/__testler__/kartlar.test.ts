@@ -9,7 +9,7 @@ import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
 import {
   blokMetinleri, gunYapilanlari, isaretle, islemleriUygula, kartAyrinti, kartKayitlari, kayitDegistir, kayitVarMi, tumKartlar,
   bagliKart, bagliKartlar, kartlariSil, kartZamaniYaz, siralariYaz, verilenYerelKartlar, yeniKartKaydet, type BlokTaslagi,
-  aliskanlikYaz, ajandadaYaz,
+  aliskanlikYaz, ajandadaYaz, blokSiralariniYaz,
 } from '../kartlar';
 import { yayinOlustur } from '../yayin';
 import { sqljsVeriTabani } from './sqljsVeriTabani';
@@ -249,5 +249,19 @@ describe('grup etkinliğine bağlı kartlar (pilot 18 Ekim)', () => {
     await aliskanlikYaz(kapi, 'a1', false);
     a = (await kartAyrinti(oku, 'a1'))!.kart;
     expect([a.aliskanlik, a.ajandada]).toEqual([undefined, undefined]);
+  });
+});
+
+describe('P-115: parçaların sırası', () => {
+  it('sürüklenen bölümün parçaları yer değiştirir, öbürleri yerinde kalır', async () => {
+    await yeniKartKaydet(
+      kapi,
+      yeniKart('k', { baslik: 'Sabah', tarih: '2026-11-08' }),
+      [blok('v', { tur: 'video' }), blok('o'), blok('t', { tur: 'talimat' })],
+      idUret,
+    );
+    const [v, , t] = (await kartAyrinti(oku, 'k'))!.bloklar;
+    await blokSiralariniYaz(kapi, 'k', [t!.id, v!.id]);
+    expect((await kartAyrinti(oku, 'k'))!.bloklar.map((b) => b.tur)).toEqual(['talimat', 'olcum', 'video']);
   });
 });

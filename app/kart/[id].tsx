@@ -24,6 +24,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AcilirMenu, type MenuOgesi } from '@/bilesen/AcilirMenu';
+import { SiraliKartlar, type SurukleIslemleri } from '@/bilesen/ajanda/SiraliKartlar';
 import { useBulusmalar } from '@/bilesen/gruplar/Bulusmalar';
 import { GorusmeyeKatil } from '@/bilesen/gruplar/BulusmaKarti';
 import { useKartVer } from '@/bilesen/gruplar/KartVerSayfasi';
@@ -68,7 +69,15 @@ import { Yazi } from '@/bilesen/Yazi';
 import { gunBasligi, kisaGoreliTarih } from '@/mantik/ajanda';
 import { cesitBul } from '@/mantik/cesit';
 import { gorunurMu } from '@/mantik/gorunurluk';
-import { ARAC_BLOKLARI, bosKayit, maddeliListeMi, type BlokTuru, type Kayit, type SabitAlan } from '@/mantik/kart';
+import {
+  ARAC_BLOKLARI,
+  bosKayit,
+  maddeliListeMi,
+  type Blok,
+  type BlokTuru,
+  type Kayit,
+  type SabitAlan,
+} from '@/mantik/kart';
 import { bagCoz } from '@/mantik/bulusma';
 import { verilenBagCoz } from '@/mantik/kartVerme';
 import {
@@ -92,6 +101,7 @@ import {
   blokSabitYaz,
   blokYaz,
   blokSil,
+  blokSiralariniYaz,
   bloklarinYeriniDegistir,
   kartSabitleriYaz,
   isaretle,
@@ -308,6 +318,93 @@ export default function KartGorunumu() {
   };
   const kayitDegis = (degistir: (k: Kayit) => Kayit) => void kayitDegistir(kapi, kart.id, gun, degistir);
 
+  /** Bir parça (başlığı, içeriği); `surukle` varsa başlığa uzun basınca sürüklenir (P-115). */
+  const parcaGoster = (b: Blok, surukle?: SurukleIslemleri) => {
+    const tur = BLOK_TURLERI[b.tur];
+    // P-69: listede simge ve "Liste" yazısı yok; yalnız varsa liste adı.
+    const listeMi = maddeliListeMi(b.tur);
+    const ad = listeMi ? b.ad : tur.ad;
+    const sabitSimge = ayarliParcaMi(b.tur) && !parcaDegisir(kart, b);
+    return (
+      <Pressable
+        key={`${b.id}-${gun}`}
+        style={[stiller.parca, !!surukle && stiller.suruklenir]}
+        onLongPress={duzenlenir ? () => setBlokMenusu(b.id) : undefined}
+        accessible={false}
+      >
+        {/* P-83: sade başlık: yalnız parçanın adı (simge, tür başlığı ve ⋯ yok). Ada dokununca
+                            ya da parçaya uzun basınca parçanın menüsü. Kayıt parçalarının (Sayarak, Ölçüm…)
+                            adı kendi içinde; başlıkları yok, menüleri uzun basınca. */}
+        {!tur.kayit && (
+          <Pressable
+            onPress={duzenlenir ? () => setBlokMenusu(b.id) : undefined}
+            // P-115: başlığa uzun basıp sürükleyerek sıra değişir (dokununca menü).
+            onLongPress={surukle ? surukle.onUzunBas : duzenlenir ? () => setBlokMenusu(b.id) : undefined}
+            delayLongPress={300}
+            onPressOut={surukle?.onBirak}
+            accessibilityActions={surukle?.eylemler}
+            onAccessibilityAction={surukle?.onEylem}
+            disabled={!duzenlenir}
+            accessibilityRole={duzenlenir ? 'button' : 'header'}
+            accessibilityLabel={duzenlenir ? `${ad || 'Liste'}: seçenekler` : ad || 'Liste'}
+            accessibilityHint={surukle ? 'Sırasını değiştirmek için uzun basıp sürükle' : undefined}
+            hitSlop={6}
+            style={({ pressed }) => [stiller.blokBasligi, pressed && { opacity: 0.6 }]}
+          >
+            <Yazi kalinlik="kalin" renk={renk.ikincil} style={stiller.blokAdi} numberOfLines={1}>
+              {ad || 'Liste'}
+            </Yazi>
+            {sabitSimge && <SabitSimgesi />}
+            {duzenlenir && <Ionicons name="chevron-down" size={16} color={renk.soluk} />}
+          </Pressable>
+        )}
+        {/* P-66: kuran açık bıraktıysa talimat ve video yerinde düzeltilir, listeye madde eklenir. */}
+        {parcaDegisir(kart, b) && b.tur === 'talimat' ? (
+          <SatirIciZengin
+            metin={b.metin}
+            etiket="Talimat"
+            bosIpucu="+ Talimat yaz"
+            onKaydet={(metin) => icerikKaydet(blokIcerikYaz(kapi, b.id, { metin }))}
+          />
+        ) : parcaDegisir(kart, b) && b.tur === 'video' ? (
+          <VideolarDuzenleyici
+            videolar={blokVideolari(b)}
+            onDegis={(v) => icerikKaydet(blokIcerikYaz(kapi, b.id, videolarBlogu(v)))}
+          />
+        ) : (
+          <BlokUygulama
+            blok={b}
+            gun={gun}
+            kayit={kayit}
+            kayitlar={kayitlar}
+            onKayit={kayitDegis}
+            onMaddeDuzelt={
+              parcaDegisir(kart, b)
+                ? (i, yeni) => {
+                    icerikKaydet(blokMaddesiYaz(kapi, b.id, i, yeni));
+                    // P-86: günlük listede silinen maddenin o günkü işareti de gider.
+                    if (yeni === null && b.tur === 'liste')
+                      kayitDegis((k) => ({
+                        ...k,
+                        isaretler: {
+                          ...k.isaretler,
+                          [b.id]: isaretleriDuzelt(k.isaretler[b.id] ?? [], i, null),
+                        },
+                      }));
+                  }
+                : undefined
+            }
+          />
+        )}
+        {parcaDegisir(kart, b) && listeMi && (
+          <MaddeEkle
+            onEkle={(madde) => icerikKaydet(blokIcerikYaz(kapi, b.id, { maddeler: [...b.maddeler, madde] }))}
+          />
+        )}
+      </Pressable>
+    );
+  };
+
   return (
     <View style={[stiller.kap, { paddingTop: kenar.top }]}>
       <View style={stiller.ust}>
@@ -471,87 +568,18 @@ export default function KartGorunumu() {
                         {bolum.baslik}
                       </Yazi>
                     )}
-                    {bolum.liste.map((b) => {
-                      const tur = BLOK_TURLERI[b.tur];
-                      // P-69: listede simge ve "Liste" yazısı yok; yalnız varsa liste adı.
-                      const listeMi = maddeliListeMi(b.tur);
-                      const ad = listeMi ? b.ad : tur.ad;
-                      const sabitSimge = ayarliParcaMi(b.tur) && !parcaDegisir(kart, b);
-                      return (
-                        <Pressable
-                          key={`${b.id}-${gun}`}
-                          style={stiller.parca}
-                          onLongPress={duzenlenir ? () => setBlokMenusu(b.id) : undefined}
-                          accessible={false}
-                        >
-                          {/* P-83: sade başlık: yalnız parçanın adı (simge, tür başlığı ve ⋯ yok). Ada dokununca
-                            ya da parçaya uzun basınca parçanın menüsü. Kayıt parçalarının (Sayarak, Ölçüm…)
-                            adı kendi içinde; başlıkları yok, menüleri uzun basınca. */}
-                          {!tur.kayit && (
-                            <Pressable
-                              onPress={duzenlenir ? () => setBlokMenusu(b.id) : undefined}
-                              onLongPress={duzenlenir ? () => setBlokMenusu(b.id) : undefined}
-                              disabled={!duzenlenir}
-                              accessibilityRole={duzenlenir ? 'button' : 'header'}
-                              accessibilityLabel={duzenlenir ? `${ad || 'Liste'}: seçenekler` : ad || 'Liste'}
-                              hitSlop={6}
-                              style={({ pressed }) => [stiller.blokBasligi, pressed && { opacity: 0.6 }]}
-                            >
-                              <Yazi kalinlik="kalin" renk={renk.ikincil} style={stiller.blokAdi} numberOfLines={1}>
-                                {ad || 'Liste'}
-                              </Yazi>
-                              {sabitSimge && <SabitSimgesi />}
-                              {duzenlenir && <Ionicons name="chevron-down" size={16} color={renk.soluk} />}
-                            </Pressable>
-                          )}
-                          {/* P-66: kuran açık bıraktıysa talimat ve video yerinde düzeltilir, listeye madde eklenir. */}
-                          {parcaDegisir(kart, b) && b.tur === 'talimat' ? (
-                            <SatirIciZengin
-                              metin={b.metin}
-                              etiket="Talimat"
-                              bosIpucu="+ Talimat yaz"
-                              onKaydet={(metin) => icerikKaydet(blokIcerikYaz(kapi, b.id, { metin }))}
-                            />
-                          ) : parcaDegisir(kart, b) && b.tur === 'video' ? (
-                            <VideolarDuzenleyici
-                              videolar={blokVideolari(b)}
-                              onDegis={(v) => icerikKaydet(blokIcerikYaz(kapi, b.id, videolarBlogu(v)))}
-                            />
-                          ) : (
-                            <BlokUygulama
-                              blok={b}
-                              gun={gun}
-                              kayit={kayit}
-                              kayitlar={kayitlar}
-                              onKayit={kayitDegis}
-                              onMaddeDuzelt={
-                                parcaDegisir(kart, b)
-                                  ? (i, yeni) => {
-                                      icerikKaydet(blokMaddesiYaz(kapi, b.id, i, yeni));
-                                      // P-86: günlük listede silinen maddenin o günkü işareti de gider.
-                                      if (yeni === null && b.tur === 'liste')
-                                        kayitDegis((k) => ({
-                                          ...k,
-                                          isaretler: {
-                                            ...k.isaretler,
-                                            [b.id]: isaretleriDuzelt(k.isaretler[b.id] ?? [], i, null),
-                                          },
-                                        }));
-                                    }
-                                  : undefined
-                              }
-                            />
-                          )}
-                          {parcaDegisir(kart, b) && listeMi && (
-                            <MaddeEkle
-                              onEkle={(madde) =>
-                                icerikKaydet(blokIcerikYaz(kapi, b.id, { maddeler: [...b.maddeler, madde] }))
-                              }
-                            />
-                          )}
-                        </Pressable>
-                      );
-                    })}
+                    {bolum.liste === yapilacaklar && duzenlenir ? (
+                      // P-115: parçalar başlığa uzun basıp sürüklenerek sıralanır.
+                      <SiraliKartlar
+                        kartlar={bolum.liste}
+                        aralik={16}
+                        onSurukleme={setSurukleniyor}
+                        onSira={(kimlikler) => icerikKaydet(blokSiralariniYaz(kapi, kart.id, kimlikler))}
+                        satir={(b, surukle) => parcaGoster(b, surukle)}
+                      />
+                    ) : (
+                      bolum.liste.map((b) => parcaGoster(b))
+                    )}
                   </View>
                 ),
             )}
@@ -623,8 +651,9 @@ export default function KartGorunumu() {
                     ]
                   : []
               }
-              onYukari={once ? () => tasi(once.id) : undefined}
-              onAsagi={sonra ? () => tasi(sonra.id) : undefined}
+              // P-115: başlığı olan parçalar sürüklenir; Yukarı / Aşağı yalnız kayıt parçalarında.
+              onYukari={once && BLOK_TURLERI[b.tur].kayit ? () => tasi(once.id) : undefined}
+              onAsagi={sonra && BLOK_TURLERI[b.tur].kayit ? () => tasi(sonra.id) : undefined}
               onSil={() => {
                 setBlokMenusu(null);
                 icerikKaydet(blokSil(kapi, b.id));
@@ -1016,4 +1045,6 @@ const stiller = StyleSheet.create({
   blokAdi: { flex: 1 },
   anaBolum: { gap: 16 },
   parca: { gap: 10 },
+  // Sürüklenirken gölgenin altı boş görünmesin.
+  suruklenir: { backgroundColor: renk.yuzey },
 });

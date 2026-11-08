@@ -764,6 +764,25 @@ export function bloklarinYeriniDegistir(kapi: Kapi, kartId: string, a: string, b
   });
 }
 
+/**
+ * P-115: sürükleyerek sıralama: verilen parçalar (kartta görünen bölümün sırasıyla) kendi
+ * yerlerinde yeni sıraya girer; öbür parçalar yerinde kalır.
+ */
+export function blokSiralariniYaz(kapi: Kapi, kartId: string, kimlikler: readonly string[]): Promise<void> {
+  return kapi.yaz(['kart'], async (y) => {
+    const ids = (await y.hepsi<{ id: string }>('SELECT id FROM blok WHERE kart_id = ? ORDER BY sira', [kartId])).map(
+      (s) => s.id,
+    );
+    const yerler = ids.flatMap((id, i) => (kimlikler.includes(id) ? [i] : []));
+    const yeni = [...ids];
+    const sirali = kimlikler.filter((id) => ids.includes(id));
+    yerler.forEach((yer, k) => {
+      yeni[yer] = sirali[k]!;
+    });
+    for (const [sira, id] of yeni.entries()) await y.calistir('UPDATE blok SET sira = ? WHERE id = ?', [sira, id]);
+  });
+}
+
 /** Parça kart açıkken değişebilir mi (`blok.sabit` tersi). */
 export function blokSabitYaz(kapi: Kapi, blokId: string, sabit: boolean): Promise<void> {
   return kapi.yaz(['kart'], (y) => y.calistir('UPDATE blok SET sabit = ? WHERE id = ?', [sabit ? 1 : 0, blokId]));
