@@ -62,6 +62,7 @@ import { useKartSil } from '@/bilesen/kart/KartSil';
 import { useKutuphaneyeKaydet } from '@/bilesen/kutuphane/KaydetSayfasi';
 import { usePaylas } from '@/bilesen/paylasim/PaylasSayfasi';
 import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
+import { AltSayfa } from '@/bilesen/AltSayfa';
 import { BLOK_TURLERI } from '@/bilesen/kart/blokTurleri';
 import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { kaynakAnahtari, kaynakTuru } from '@/mantik/kaynak';
@@ -421,6 +422,10 @@ export default function KartGorunumu() {
           </Yazi>
         </Pressable>
         <View style={stiller.ustSag}>
+          {/* P-116: "+ Ekle" kartın içinden üste: parçalarla karışmasın. */}
+          {duzenlenir && (eklenecek.ogeler.length > 0 || eklenecek.daha) && (
+            <SimgeDugmesi ikon="add" etiket="Karta ekle" onPress={() => setEkleAcik(true)} />
+          )}
           <SimgeDugmesi ikon="ellipsis-horizontal" etiket="Diğer işlemler" onPress={() => setMenuAcik(true)} />
         </View>
       </View>
@@ -583,38 +588,6 @@ export default function KartGorunumu() {
                   </View>
                 ),
             )}
-            {/* P-83: alttaki sabit şerit yerine kartın sonunda "+ Ekle"; dokununca parça seçenekleri. */}
-            {duzenlenir && (eklenecek.ogeler.length > 0 || eklenecek.daha) && (
-              <View style={[stiller.bolum, stiller.cizgili, stiller.ekleAlani]}>
-                {ekleAcik ? (
-                  <ParcaSeridi
-                    {...eklenecek}
-                    onSec={(o) => {
-                      setEkleAcik(false);
-                      void parcaEkle(o);
-                    }}
-                    onDaha={() => {
-                      setEkleAcik(false);
-                      setSeciciAcik(true);
-                    }}
-                    onKapat={() => setEkleAcik(false)}
-                  />
-                ) : (
-                  <Pressable
-                    onPress={() => setEkleAcik(true)}
-                    accessibilityRole="button"
-                    accessibilityLabel="Karta ekle: açıklama, liste, fotoğraf, video"
-                    hitSlop={8}
-                    style={({ pressed }) => [stiller.ekle, pressed && { opacity: 0.6 }]}
-                  >
-                    <Ionicons name="add" size={20} color={renk.ana} />
-                    <Yazi kalinlik="kalin" renk={renk.ana}>
-                      Ekle
-                    </Yazi>
-                  </Pressable>
-                )}
-              </View>
-            )}
           </View>
 
           {kart.kilitli && (
@@ -693,6 +666,19 @@ export default function KartGorunumu() {
             />
           );
         })()}
+      <AltSayfa gorunur={ekleAcik} onKapat={() => setEkleAcik(false)} baslik="Karta ekle" solVazgec>
+        <ParcaSeridi
+          {...eklenecek}
+          onSec={(o) => {
+            setEkleAcik(false);
+            void parcaEkle(o);
+          }}
+          onDaha={() => {
+            setEkleAcik(false);
+            setSeciciAcik(true);
+          }}
+        />
+      </AltSayfa>
       <ListeCesidiSecici
         gorunur={listeCesidi}
         secili={rutinCesidi(kart)}
@@ -1020,8 +1006,6 @@ const stiller = StyleSheet.create({
   kaynakSeridi: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 6 },
   bolum: { paddingHorizontal: olcu.kartIci + 4, paddingVertical: 16, gap: 12 },
   cizgili: { borderTopWidth: 1, borderTopColor: renk.satirCizgi },
-  ekleAlani: { paddingVertical: 8 },
-  ekle: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44, alignSelf: 'flex-start' },
   ustSatir: { flexDirection: 'row', alignItems: 'center', gap: 8, marginRight: -6 },
   cesitAdi: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   esnek: { flex: 1 },

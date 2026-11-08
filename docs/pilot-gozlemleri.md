@@ -590,3 +590,8 @@ Sonuç: → kararlar.md (⌄ hep sağda; listenin çeşit başlığı da).
 Ne dedi: "Önceden başlığa uzun bastığımızda da menü açılıyordu, o boşa çıkarsa başlığa uzun basıp taşıma işlemini yapabilir miyiz, şu an menüden yapıldığında menünün hemen kapanması ve değişiklikleri kaydetmemesi sorun olabiliyor"
 Nerede: Kart → parçanın başlığı
 Sonuç: → kararlar.md (başlığa uzun bas → sürükle).
+
+### P-116 · 8 Kasım 2026 · Behnan
+Ne dedi: "Bir de kartın altındaki + Ekle, kart elemnları ile karışabiliyor, adı değiştirilebilir ya da daha iyisi ona basıldığında açılan menünün boş hali kartın altında bir şerit olarak durur orada bir simge şeklinde yer alabilir . Bu sadece öneri, belki normal kullanıcı için oldukça sadeleştirme yaptığımız için başka çözümlerde düşünülebilir" Seçim: üstte + simgesi.
+Nerede: Kart → + Ekle
+Sonuç: → kararlar.md.
