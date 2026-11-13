@@ -98,7 +98,7 @@ export default function Listeler() {
           setYeniYerel(false);
           void (
             secim.tur === 'tablo'
-              ? tabloKartiKur(kapi, adi, secim.sutunlar, bugunGun, yeniKimlik)
+              ? tabloKartiKur(kapi, adi, secim.sutunlar, bugunGun, yeniKimlik, secim.isaret)
               : listeKartiKur(kapi, oku, adi, listeCesidindenRutin(secim.cesit), bugunGun, yeniKimlik)
           )
             .then(kartAc)

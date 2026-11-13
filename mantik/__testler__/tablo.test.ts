@@ -18,6 +18,8 @@ describe('Tablo (P-120)', () => {
       ['Çay', '1.250', ''],
       ['ıhlamur', '', 'Pazar'],
     ],
+    isaret: false,
+    isaretli: [false, false, false, false],
   };
   it('yazılır, okunur; eksik hücre boş', () => {
     const y = tabloYaz(t);
@@ -47,6 +49,26 @@ describe('Tablo (P-120)', () => {
     expect(sutunlariDuzelt(['', ' '])).toBeNull();
     const d = sutunlariDegistir(t, ['Yer', 'Ürün'], [2, 0]);
     expect(d.satirlar[0]).toEqual(['Bim', 'Süt']);
-    expect(tabloCsv({ sutunlar: ['A', 'B'], satirlar: [['x;y', 'z"q']] })).toBe('﻿A;B\r\n"x;y";"z""q"\r\n');
+    expect(tabloCsv({ sutunlar: ['A', 'B'], satirlar: [['x;y', 'z"q']], isaret: false, isaretli: [false] })).toBe(
+      '﻿A;B\r\n"x;y";"z""q"\r\n',
+    );
+  });
+  it('P-121: Aldım işareti yazılır ve okunur; eski dizi biçimi okunur; CSV’de Alındı sütunu', () => {
+    const m = {
+      sutunlar: ['Ürün', 'Fiyat'],
+      satirlar: [
+        ['Süt', '42'],
+        ['Ekmek', '15'],
+      ],
+      isaret: true,
+      isaretli: [true, false],
+    };
+    const y = tabloYaz(m);
+    expect(JSON.parse(y.metin)).toEqual({ sutunlar: ['Ürün', 'Fiyat'], isaret: true });
+    expect(y.maddeler).toEqual(['{"h":["Süt","42"],"y":true}', '["Ekmek","15"]']);
+    expect(tabloOku(y)).toEqual(m);
+    expect(tabloOku({ metin: '["A"]', maddeler: ['["x"]'] })).toMatchObject({ isaret: false, isaretli: [false] });
+    expect(tabloCsv(m)).toBe('\uFEFFAlındı;Ürün;Fiyat\r\nEvet;Süt;42\r\n;Ekmek;15\r\n');
+    expect(sutunlariDuzelt(['1', '2', '3', '4', '5', '6'])).toHaveLength(5);
   });
 });

@@ -14,17 +14,22 @@ import { Bolum, SecenekHapi } from '../Secim';
 import { renk } from '../tema';
 import { Yazi } from '../Yazi';
 
-export type YeniListeSecimi = { tur: 'liste'; cesit: ListeCesidi } | { tur: 'tablo'; sutunlar: string[] };
+export type YeniListeSecimi =
+  { tur: 'liste'; cesit: ListeCesidi } | { tur: 'tablo'; sutunlar: string[]; isaret: boolean };
 
 type Cesit = 'yapilacak' | 'not' | 'tablo';
 const CESITLER: readonly { cesit: Cesit; ad: string; aciklama: string }[] = [
   { cesit: 'yapilacak', ad: cesitTanimi('yapilacak').ad, aciklama: cesitTanimi('yapilacak').aciklama },
   { cesit: 'not', ad: cesitTanimi('not').ad, aciklama: cesitTanimi('not').aciklama },
-  { cesit: 'tablo', ad: 'Tablo', aciklama: 'İki ya da üç sütun: ürün, son fiyat, yer gibi. Sütuna göre sıralanır.' },
+  {
+    cesit: 'tablo',
+    ad: 'Tablo',
+    aciklama: 'Beş sütuna kadar: ürün, son fiyat, yer gibi. Sütuna göre sıralanır; sığmazsa sağa kayar.',
+  },
 ];
-const ORNEKLER: readonly { ad: string; cesit: Cesit; sutunlar?: string[] }[] = [
+const ORNEKLER: readonly { ad: string; cesit: Cesit; sutunlar?: string[]; isaret?: boolean }[] = [
   ...AD_ORNEKLERI.filter((o) => o.cesit !== 'gunluk').map((o) => ({ ad: o.ad, cesit: o.cesit as Cesit })),
-  ...TABLO_ORNEKLERI.map((o) => ({ ad: o.ad, cesit: 'tablo' as const, sutunlar: o.sutunlar })),
+  ...TABLO_ORNEKLERI.map((o) => ({ ad: o.ad, cesit: 'tablo' as const, sutunlar: o.sutunlar, isaret: o.isaret })),
 ];
 const BOS_SUTUNLAR = ['', ''];
 
@@ -40,10 +45,13 @@ export function YeniListe({
   const [ad, setAd] = useState('');
   const [cesit, setCesit] = useState<Cesit>('yapilacak');
   const [sutunlar, setSutunlar] = useState<string[]>(BOS_SUTUNLAR);
+  // P-121: "Aldım" işareti (Market fiyatları örneğinde açık; sonra Sütunlar'dan değişir).
+  const [isaret, setIsaret] = useState(false);
   const sifirla = () => {
     setAd('');
     setCesit('yapilacak');
     setSutunlar(BOS_SUTUNLAR);
+    setIsaret(false);
   };
   const tabloSutunlari = sutunlariDuzelt(sutunlar);
   const hazir = !!ad.trim() && (cesit !== 'tablo' || !!tabloSutunlari);
@@ -64,7 +72,7 @@ export function YeniListe({
           if (!hazir) return;
           onKaydet(
             ad.trim(),
-            cesit === 'tablo' ? { tur: 'tablo', sutunlar: tabloSutunlari! } : { tur: 'liste', cesit },
+            cesit === 'tablo' ? { tur: 'tablo', sutunlar: tabloSutunlari!, isaret } : { tur: 'liste', cesit },
           );
           sifirla();
         },
@@ -81,6 +89,7 @@ export function YeniListe({
               setAd(o.ad);
               setCesit(o.cesit);
               if (o.sutunlar) setSutunlar(o.sutunlar);
+              setIsaret(!!o.isaret);
             }}
           />
         ))}

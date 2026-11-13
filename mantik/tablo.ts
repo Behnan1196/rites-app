@@ -1,41 +1,62 @@
 // Tablo (pilot 13 Kasım, P-120): Listeler'de 2–3 sütunlu liste (Ürün · Son fiyat · Yer;
 // Ödünç verdiklerim: Ne · Kime · Ne zaman). Kartın bir parçasıdır (`blok.tur = 'tablo'`):
 // `metin` sütun adları (JSON dizi), `maddeler` her satır bir JSON dizi (sütun sırasıyla).
+// P-121: en çok 5 sütun (ekrana sığmazsa kayar); isteğe bağlı "Aldım" işareti: `metin`
+// {"sutunlar": [...], "isaret": true}, işaretli satır {"h": [...], "y": true} (eskiler dizi).
 
-export const EN_COK_SUTUN = 3;
+export const EN_COK_SUTUN = 5;
 
 export interface Tablo {
   sutunlar: string[];
   satirlar: string[][];
+  /** Satırların solunda işaret kutusu (alındı). */
+  isaret: boolean;
+  /** Satır satır işaret (yalnız `isaret` açıkken anlamlı). */
+  isaretli: boolean[];
 }
 
-function jsonDizi(s: string): unknown[] | null {
+function json(s: string): unknown {
   try {
-    const v: unknown = JSON.parse(s);
-    return Array.isArray(v) ? v : null;
+    return JSON.parse(s) as unknown;
   } catch {
     return null;
   }
 }
 
+const metne = (x: unknown) => (x === null || x === undefined ? '' : String(x));
+const nesneMi = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+
 /** Parçadan tablo; bozuk satır tek hücreli olur. */
 export function tabloOku(b: { metin: string; maddeler: readonly string[] }): Tablo {
-  const sutunlar = (jsonDizi(b.metin) ?? []).map(String).slice(0, EN_COK_SUTUN);
+  const ust = json(b.metin);
+  const ham = nesneMi(ust) ? (Array.isArray(ust.sutunlar) ? ust.sutunlar : []) : Array.isArray(ust) ? ust : [];
+  const sutunlar = ham.map(String).slice(0, EN_COK_SUTUN);
   if (sutunlar.length === 0) sutunlar.push('Ad', 'Not');
+  const isaretli: boolean[] = [];
   const satirlar = b.maddeler.map((m) => {
-    const d = jsonDizi(m);
-    const hucreler = d ? d.map((x) => (x === null || x === undefined ? '' : String(x))) : [m];
+    const v = json(m);
+    const d = nesneMi(v) ? (Array.isArray(v.h) ? v.h : []) : Array.isArray(v) ? v : null;
+    isaretli.push(nesneMi(v) && v.y === true);
+    const hucreler = d ? d.map(metne) : [m];
     return sutunlar.map((_, i) => hucreler[i] ?? '');
   });
-  return { sutunlar, satirlar };
+  return { sutunlar, satirlar, isaret: nesneMi(ust) && ust.isaret === true, isaretli };
 }
 
 /** Tablo parçanın alanlarına. */
 export function tabloYaz(t: Tablo): { metin: string; maddeler: string[] } {
   return {
-    metin: JSON.stringify(t.sutunlar),
-    maddeler: t.satirlar.map((s) => JSON.stringify(t.sutunlar.map((_, i) => (s[i] ?? '').trim()))),
+    metin: t.isaret ? JSON.stringify({ sutunlar: t.sutunlar, isaret: true }) : JSON.stringify(t.sutunlar),
+    maddeler: t.satirlar.map((s, k) => {
+      const h = t.sutunlar.map((_, i) => (s[i] ?? '').trim());
+      return JSON.stringify(t.isaretli[k] ? { h, y: true } : h);
+    }),
   };
+}
+
+/** Boş tablo. */
+export function bosTablo(sutunlar: string[], isaret = false): Tablo {
+  return { sutunlar, satirlar: [], isaret, isaretli: [] };
 }
 
 /** Sütun adlarını temizler: boşlar atılır, en çok üç; hiç yoksa null. */
@@ -53,6 +74,7 @@ export function sutunlariDuzelt(adlar: readonly string[]): string[] | null {
  */
 export function sutunlariDegistir(t: Tablo, sutunlar: string[], eskiYer: (number | null)[]): Tablo {
   return {
+    ...t,
     sutunlar,
     satirlar: t.satirlar.map((s) => sutunlar.map((_, i) => (eskiYer[i] === null ? '' : (s[eskiYer[i]!] ?? '')))),
   };
@@ -106,12 +128,14 @@ export function satirUyar(satir: readonly string[], arama: string): boolean {
 export function tabloCsv(t: Tablo): string {
   const hucre = (h: string) => (/[;"\n\r]/.test(h) ? `"${h.replace(/"/g, '""')}"` : h);
   const satir = (s: readonly string[]) => s.map(hucre).join(';');
-  return '﻿' + [satir(t.sutunlar), ...t.satirlar.map(satir)].join('\r\n') + '\r\n';
+  const ust = t.isaret ? ['Alındı', ...t.sutunlar] : t.sutunlar;
+  const satirlar = t.satirlar.map((s, k) => (t.isaret ? [t.isaretli[k] ? 'Evet' : '', ...s] : s));
+  return '\uFEFF' + [satir(ust), ...satirlar.map(satir)].join('\r\n') + '\r\n';
 }
 
 /** Yeni tablo için hazır sütunlar (ad çipleri). */
-export const TABLO_ORNEKLERI: readonly { ad: string; sutunlar: string[] }[] = [
-  { ad: 'Market fiyatları', sutunlar: ['Ürün', 'Son fiyat', 'Yer'] },
+export const TABLO_ORNEKLERI: readonly { ad: string; sutunlar: string[]; isaret?: boolean }[] = [
+  { ad: 'Market fiyatları', sutunlar: ['Ürün', 'Son fiyat', 'Yer'], isaret: true },
   { ad: 'Ödünç verdiklerim', sutunlar: ['Ne', 'Kime', 'Ne zaman'] },
   { ad: 'Telefonlar', sutunlar: ['Ad', 'Telefon', 'Not'] },
 ];

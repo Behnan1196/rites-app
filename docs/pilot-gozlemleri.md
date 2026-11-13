@@ -615,3 +615,8 @@ Sonuç: Yön: günlük (zamana bağlı) listeler yalnız ajandada; Listeler'e ta
 Ne dedi: "tamam yapalım."
 Nerede: Listeler, ajanda
 Sonuç: → kararlar.md (Günlük listeler ajandada; Listeler'de tablo).
+
+### P-121 · 13 Kasım 2026 · Behnan
+Ne dedi: "Tabloda ürünü aldın fonksiyonu olsun, ama fiyatı sormaya şimdilik gerek yok. Bir de acaba tabloyu kaydırılabilir yaparak daha geniş bir kullanım sağlasak nasıl olur" Seçimler: işaret tabloya göre açılır; işaretli satır yerinde kalır, üstü çizili; en çok 5 sütun.
+Nerede: Listeler → Tablo
+Sonuç: → kararlar.md.
