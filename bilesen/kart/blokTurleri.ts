@@ -18,6 +18,7 @@ export const BLOK_TURLERI: Record<BlokTuru, { ad: string; ikon: IkonAdi; kayit: 
   listebag: { ad: 'Bağlı liste', ikon: 'link-outline', kayit: false },
   foto: { ad: 'Fotoğraf', ikon: 'image-outline', kayit: false },
   dosya: { ad: 'Dosya', ikon: 'document-outline', kayit: false },
+  tablo: { ad: 'Tablo', ikon: 'grid-outline', kayit: false },
   sayac: { ad: 'Zamanlayıcı', ikon: 'timer-outline', kayit: true },
   kronometre: { ad: 'Kronometre', ikon: 'stopwatch-outline', kayit: true },
   olcum: { ad: 'Ölçüm', ikon: 'speedometer-outline', kayit: true },

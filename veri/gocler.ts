@@ -378,6 +378,12 @@ export const GOCLER: readonly Goc[] = [
     surum: 30,
     sql: `ALTER TABLE kart ADD COLUMN listede INTEGER NOT NULL DEFAULT 0;`,
   },
+  {
+    // P-120 (13 Kasım): zamana bağlı listeler yalnız ajandada: Listeler'de ajandada gösterilen
+    // ya da Günlük kontrol olan listeler ajandaya taşınır (alışkanlığın ajanda ayarı korunur).
+    surum: 31,
+    sql: `UPDATE kart SET listede = 0 WHERE listede = 1 AND ust IS NULL AND (ajandada = 1 OR rutin = 1);`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

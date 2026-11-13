@@ -6,6 +6,7 @@
 
 import { listeCesidindenRutin, RUTIN_BILGI, RUTIN_GUNLUK, type RutinCesidi } from '@/mantik/rutinAdimlari';
 import { yeniKart, type Kart } from '@/mantik/kart';
+import { tabloYaz } from '@/mantik/tablo';
 import type { Gun } from '@/mantik/tarih';
 
 import { ayarOku, ayarYaz } from './ayar';
@@ -27,6 +28,8 @@ export interface ListeKarti {
   kart: KartOzeti;
   yapilan: number;
   toplam: number;
+  /** P-120: tabloysa satır sayısı. */
+  tablo: number | null;
 }
 
 /** Listeler'deki listeler (sırasıyla) ve bugünkü ilerlemeleri. */
@@ -36,7 +39,17 @@ export async function listeKartlariniOku(oku: Okuyucu, gun: Gun): Promise<ListeK
   for (const k of hepsi.filter((x) => x.listede && !x.ust)) {
     const adimlar = hepsi.filter((x) => x.ust === k.id);
     const yapilanlar = await rutinYapilanlari(oku, k, gun);
-    sonuc.push({ kart: k, toplam: adimlar.length, yapilan: adimlar.filter((a) => yapilanlar.has(a.id)).length });
+    const t = k.rutin
+      ? null
+      : await oku.ilk<{ maddeler: string }>("SELECT maddeler FROM blok WHERE kart_id = ? AND tur = 'tablo' LIMIT 1", [
+          k.id,
+        ]);
+    sonuc.push({
+      kart: k,
+      toplam: adimlar.length,
+      yapilan: adimlar.filter((a) => yapilanlar.has(a.id)).length,
+      tablo: t ? (JSON.parse(t.maddeler || '[]') as unknown[]).length : null,
+    });
   }
   return sonuc;
 }
@@ -59,8 +72,8 @@ export async function listeKartiKur(
     tarih: bugunGun,
     tekrar: HER_GUN,
     rutin: cesit,
-    listede: true,
-    ajandada: false,
+    // P-120: Günlük kontrol zamana bağlıdır; Listeler'de değil ajandada durur.
+    ...(cesit === RUTIN_GUNLUK ? {} : { listede: true, ajandada: false }),
   });
   await yeniKartKaydet(kapi, kart, [], idUret);
   for (const m of maddeler) {
@@ -72,6 +85,25 @@ export async function listeKartiKur(
       if (m.yapildiGun === bugunGun) await isaretle(kapi, adim, bugunGun, true);
     } else await isaretle(kapi, adim, m.yapildiGun ?? m.tarih ?? bugunGun, true);
   }
+  return id;
+}
+
+/** P-120: Listeler'de yeni tablo (sütun adlarıyla); kimliğini döner. */
+export async function tabloKartiKur(
+  kapi: Kapi,
+  ad: string,
+  sutunlar: readonly string[],
+  bugunGun: Gun,
+  idUret: KimlikUretici,
+): Promise<string> {
+  const id = idUret();
+  const t = tabloYaz({ sutunlar: [...sutunlar], satirlar: [] });
+  await yeniKartKaydet(
+    kapi,
+    yeniKart(id, { baslik: ad.trim(), tarih: bugunGun, listede: true, ajandada: false }),
+    [{ id: idUret(), tur: 'tablo', ad: '', metin: t.metin, birim: '', dakika: null, maddeler: [], dosya: null }],
+    idUret,
+  );
   return id;
 }
 

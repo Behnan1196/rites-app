@@ -600,3 +600,18 @@ Sonuç: → kararlar.md.
 Ne dedi: "Fena değil, yalnız yeni kart oluştururken ekran oldukça farklı davranıyor" Seçim: önce ad, sonra kartın ekranı.
 Nerede: Ajandam → + (yeni kart)
 Sonuç: → kararlar.md.
+
+### P-118 · 13 Kasım 2026 · Behnan
+Ne dedi: "Liste ve ölçüm kullanımı ile ilgili fikrini alayım. Ben Sabah rutini, Takviyeler, Egzersizler gibi listeler oluşturdum. Bunları hem ana ekranda listelerde hem de ajanda da kullanabiliyorum. Ölçümlerde aynı şekilde. Bir tek Market listesini ana ekrandan kullanıyorum şu an. Acaba zamana bağlı olanları sadece ajanda da kullanmaya zorlasam daha mı kullanıcı açısından anlaşılır olur" Cevaplar: "sadece yorum yapalım"; "eğer karar verirsek, girişteki listeleri daha özel bir kullanım için geliştirmek istiyorum"; var olanlar (karar verilirse) kendiliğinden ajandaya.
+Nerede: Giriş → Listeler, Ajanda, Ölçümlerim
+Sonuç: Görüş: her şeyin tek evi ("Ne zaman?" cevabı varsa ajanda, yoksa Listeler; Ölçümlerim ve Devam edenler kısayol).
+
+### P-119 · 13 Kasım 2026 · Behnan
+Ne dedi: "Söylediğine katılıyorum, zamana bağlı olan günlük listeler sadece ajanda da olabilsin. Hazırlık listeleri ve proje adımları konusunda emin olamadım. Listelerdeki daha özel kullanım konusunda aklımdaki şey, örneğin 2-3 kolonlu tablolar yapabilmek, örneğin, kişi adı, tc no gibi bir liste hazırlamam gerektiğinde veya market kalemi, son alış fiyatı ve alındığı yer gibi."
+Nerede: Giriş → Listeler
+Sonuç: Yön: günlük (zamana bağlı) listeler yalnız ajandada; Listeler'e tablo (2–3 sütun) konuşuluyor. Hazırlık ve proje adımlarının yeri açık. → kararlar.md (not).
+
+### P-120 · 13 Kasım 2026 · Behnan
+Ne dedi: "tamam yapalım."
+Nerede: Listeler, ajanda
+Sonuç: → kararlar.md (Günlük listeler ajandada; Listeler'de tablo).

@@ -7,12 +7,14 @@ import { RUTIN_GUNLUK, RUTIN_KALICI } from '@/mantik/rutinAdimlari';
 
 import { gocleriUygula } from '../gocler';
 import { kapiOlustur, okuyucuOlustur, type Kapi, type Okuyucu } from '../kapi';
-import { ajandadaYaz, gunYapilanlari, kartAyrinti, tumKartlar } from '../kartlar';
+import { blokIcerikYaz, gunYapilanlari, kartAyrinti, tumKartlar } from '../kartlar';
 import {
   adimGunuYaz,
   listeKartiKur,
   listeKartlariniOku,
   listeKartiSil,
+  listedeYaz,
+  tabloKartiKur,
   listeMaddeleri,
   yerelListeleriKartaCevir,
 } from '../listeKartlari';
@@ -43,23 +45,29 @@ const ajandaninKartlari = async (gun: string) =>
   ).map((k) => k.baslik);
 
 describe('Listeler kart (P-110)', () => {
-  it('liste ajandada değil; Ajandada göster ile görünür; gün verilen madde o gün görünür', async () => {
-    const id = await listeKartiKur(kapi, oku, 'Takviyeler', RUTIN_GUNLUK, GUN, idUret, [
+  it('Listeler’deki liste ajandada değil; Ajandaya taşı; Günlük kontrol doğrudan ajandada; gün verilen madde o gün', async () => {
+    // P-120: Günlük kontrol zamana bağlı; Listeler'e değil ajandaya.
+    const tk = await listeKartiKur(kapi, oku, 'Takviyeler', RUTIN_GUNLUK, GUN, idUret, [
       { metin: 'D vitamini' },
       { metin: 'Omega 3' },
     ]);
-    expect(await ajandaninKartlari(GUN)).toEqual([]);
-    await ajandadaYaz(kapi, id, true);
     expect(await ajandaninKartlari(GUN)).toEqual(['Takviyeler']);
+    expect(await listeKartlariniOku(oku, GUN)).toHaveLength(0);
+    const [d] = await rutinAdimlari(oku, tk);
+    await rutinAdimiIsaretle(kapi, oku, tk, d!.id, GUN, true);
+    expect((await gunYapilanlari(oku, GUN)).has(d!.id)).toBe(true);
 
-    const [d] = await rutinAdimlari(oku, id);
-    await rutinAdimiIsaretle(kapi, oku, id, d!.id, GUN, true);
-    expect((await listeKartlariniOku(oku, GUN))[0]).toMatchObject({ yapilan: 1, toplam: 2 });
+    const bavul = await listeKartiKur(kapi, oku, 'Bavul', RUTIN_KALICI, GUN, idUret, [{ metin: 'Pasaport' }]);
+    expect(await ajandaninKartlari(GUN)).toEqual(['Takviyeler']);
+    expect((await listeKartlariniOku(oku, GUN)).map((l) => l.kart.baslik)).toEqual(['Bavul']);
+    await listedeYaz(kapi, bavul, false);
+    expect(await ajandaninKartlari(GUN)).toEqual(['Takviyeler', 'Bavul']);
+    expect(await listeKartlariniOku(oku, GUN)).toHaveLength(0);
 
     const isler = await listeKartiKur(kapi, oku, 'İşler', RUTIN_KALICI, GUN, idUret, [{ metin: 'Elektrikçiyi ara' }]);
     const [e] = await rutinAdimlari(oku, isler);
     await adimGunuYaz(kapi, oku, e!.id, '2026-11-10');
-    expect(await ajandaninKartlari('2026-11-10')).toEqual(['Takviyeler', 'Elektrikçiyi ara']);
+    expect(await ajandaninKartlari('2026-11-10')).toEqual(['Takviyeler', 'Bavul', 'Elektrikçiyi ara']);
     expect(await ajandaninKartlari('2026-11-09')).not.toContain('Elektrikçiyi ara');
     expect((await listeMaddeleri(oku, (await kartAyrinti(oku, isler))!.kart, GUN))[0]).toMatchObject({
       metin: 'Elektrikçiyi ara',
@@ -88,5 +96,14 @@ describe('Listeler kart (P-110)', () => {
     expect(l).toMatchObject({ kart: { baslik: 'Market', rutin: RUTIN_KALICI, listede: true }, yapilan: 1, toplam: 2 });
     expect((await gunYapilanlari(oku, '2026-11-05')).size).toBe(1);
     expect(await ajandaninKartlari('2026-11-09')).toEqual(['Ekmek']);
+  });
+
+  it('P-120: tablo Listeler’de, ajandada değil; satır sayısı', async () => {
+    const id = await tabloKartiKur(kapi, 'Market fiyatları', ['Ürün', 'Son fiyat'], GUN, idUret);
+    const b = (await kartAyrinti(oku, id))!.bloklar[0]!;
+    expect(b.tur).toBe('tablo');
+    await blokIcerikYaz(kapi, b.id, { maddeler: ['["Süt","42"]', '["Ekmek","15"]'] });
+    expect((await listeKartlariniOku(oku, GUN))[0]).toMatchObject({ kart: { baslik: 'Market fiyatları' }, tablo: 2 });
+    expect(await ajandaninKartlari(GUN)).toEqual([]);
   });
 });

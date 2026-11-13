@@ -14,17 +14,16 @@ import { EkranKabi } from '@/bilesen/EkranKabi';
 import { useKisaMesaj } from '@/bilesen/KisaMesaj';
 import { OrtakListeSatiri } from '@/bilesen/listeler/OrtakListeSatiri';
 import { useListeler } from '@/bilesen/listeler/useListeler';
-import { YeniYerelListe } from '@/bilesen/listeler/YerelListeEkrani';
+import { YeniListe } from '@/bilesen/listeler/YeniListe';
 import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { BAGLANAMIYOR } from '@/mantik/kisiler';
 import { cesitTanimi } from '@/mantik/listeCesidi';
-import { ajandadaMi } from '@/mantik/aliskanlik';
 import { listeCesidindenRutin, listeOzetMetni, rutinCesidi, rutindenListeCesidi } from '@/mantik/rutinAdimlari';
 import { useOturum } from '@/sunucu/oturum';
 import { useSorgu } from '@/veri/kancalar';
 import { yeniKimlik } from '@/veri/kimlik';
-import { listeKartiKur, listeKartlariniOku } from '@/veri/listeKartlari';
+import { listeKartiKur, listeKartlariniOku, tabloKartiKur } from '@/veri/listeKartlari';
 import { useBugun } from '@/veri/useBugun';
 import { useVeri } from '@/veri/VeriSaglayici';
 
@@ -40,17 +39,25 @@ export default function Listeler() {
   const kartAc = (id: string) => router.push({ pathname: '/kart/[id]', params: { id, geri: 'Listeler' } });
 
   return (
-    <EkranKabi geri="Giriş" baslik="Listeler" altBaslik="Yapılacaklar, market, günlük kontroller, notlar.">
-      {yereller.map(({ kart: l, yapilan, toplam }) => {
-        const tanim = cesitTanimi(rutindenListeCesidi(rutinCesidi(l)));
-        const ozet = listeOzetMetni(rutinCesidi(l), yapilan, toplam);
-        const ajandada = ajandadaMi(l);
+    <EkranKabi
+      geri="Giriş"
+      baslik="Listeler"
+      altBaslik="Yapılacaklar, market, notlar, tablolar. Her gün yapılacak listeler ajandada."
+    >
+      {yereller.map(({ kart: l, yapilan, toplam, tablo }) => {
+        // P-120: tablo; Listeler'deki liste ajandada değildir (zamana bağlı olan ajandaya taşınır).
+        const tanim =
+          tablo !== null
+            ? { ad: 'Tablo', ikon: 'grid-outline' as const }
+            : cesitTanimi(rutindenListeCesidi(rutinCesidi(l)));
+        const ozet =
+          tablo !== null ? (tablo ? `${tablo} satır` : 'Boş') : listeOzetMetni(rutinCesidi(l), yapilan, toplam);
         return (
           <Pressable
             key={l.id}
             onPress={() => kartAc(l.id)}
             accessibilityRole="button"
-            accessibilityLabel={`${l.baslik}, ${tanim.ad}, ${ozet}${ajandada ? ', ajandada' : ''}`}
+            accessibilityLabel={`${l.baslik}, ${tanim.ad}, ${ozet}`}
             style={({ pressed }) => [stiller.satir, pressed && { opacity: 0.75 }]}
           >
             <View style={stiller.simge}>
@@ -58,7 +65,7 @@ export default function Listeler() {
             </View>
             <View style={stiller.esnek}>
               <Yazi tur="kartBasligi">{l.baslik}</Yazi>
-              <Yazi tur="ikincil">{`${tanim.ad} · ${ozet}${ajandada ? ' · ajandada' : ''}`}</Yazi>
+              <Yazi tur="ikincil">{`${tanim.ad} · ${ozet}`}</Yazi>
             </View>
             <Ionicons name="chevron-forward" size={20} color={renk.soluk} />
           </Pressable>
@@ -84,12 +91,16 @@ export default function Listeler() {
         </>
       )}
 
-      <YeniYerelListe
+      <YeniListe
         gorunur={yeniYerel}
         onKapat={() => setYeniYerel(false)}
-        onKaydet={(adi, cesit) => {
+        onKaydet={(adi, secim) => {
           setYeniYerel(false);
-          void listeKartiKur(kapi, oku, adi, listeCesidindenRutin(cesit), bugunGun, yeniKimlik)
+          void (
+            secim.tur === 'tablo'
+              ? tabloKartiKur(kapi, adi, secim.sutunlar, bugunGun, yeniKimlik)
+              : listeKartiKur(kapi, oku, adi, listeCesidindenRutin(secim.cesit), bugunGun, yeniKimlik)
+          )
             .then(kartAc)
             .catch((e: unknown) => {
               console.warn(e);

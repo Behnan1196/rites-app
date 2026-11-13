@@ -20,9 +20,12 @@ const IKON: Record<RutinCesidi, React.ComponentProps<typeof Ionicons>['name']> =
 export function ListeCesidiSecici({
   gorunur,
   secili,
+  haric = [],
   onSec,
   onKapat,
 }: {
+  /** Gösterilmeyecek çeşitler. */
+  haric?: readonly RutinCesidi[];
   gorunur: boolean;
   /** Var olan listenin çeşidi (değiştirirken). */
   secili?: RutinCesidi | null;
@@ -31,7 +34,7 @@ export function ListeCesidiSecici({
 }) {
   return (
     <AltSayfa gorunur={gorunur} onKapat={onKapat} baslik={secili ? 'Listenin çeşidi' : 'Liste ekle'} solVazgec>
-      {RUTIN_CESITLERI.map((t) => {
+      {RUTIN_CESITLERI.filter((t) => !haric.includes(t.cesit)).map((t) => {
         const bu = secili === t.cesit;
         return (
           <Pressable

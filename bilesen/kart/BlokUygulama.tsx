@@ -30,6 +30,7 @@ import { ZenginMetin } from '../ZenginMetin';
 import { MaddeDuzeltici } from '../MaddeDuzeltici';
 import { BagliListeBlogu } from './BagliListe';
 import { BuyutulebilirFoto } from './BuyutulebilirFoto';
+import { TabloParcasi } from './TabloParcasi';
 
 interface Ozellikler {
   blok: Blok;
@@ -40,6 +41,8 @@ interface Ozellikler {
   onKayit: (degistir: (k: Kayit) => Kayit) => void;
   /** P-86: maddeye uzun basınca yerinde düzelt (`yeni`) ya da sil (null); verilmezse düzeltilmez. */
   onMaddeDuzelt?: (i: number, yeni: string | null) => void;
+  /** P-120: tablonun yeni içeriği; verilmezse tablo değiştirilemez. */
+  onTablo?: (d: { metin: string; maddeler: string[] }) => void;
 }
 
 export function BlokUygulama(o: Ozellikler) {
@@ -60,6 +63,8 @@ export function BlokUygulama(o: Ozellikler) {
       return o.blok.dosya ? <BuyutulebilirFoto uri={o.blok.dosya} style={stiller.foto} etiket="Fotoğraf" /> : null;
     case 'dosya':
       return <DosyaBlogu blok={o.blok} />;
+    case 'tablo':
+      return <TabloParcasi blok={o.blok} onDegis={o.onTablo} />;
     case 'sayac':
       return <Zamanlayici {...o} />;
     case 'olcum':

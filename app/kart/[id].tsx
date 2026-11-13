@@ -42,6 +42,7 @@ import { AdimGunuSayfasi } from '@/bilesen/kart/AdimGunuSayfasi';
 import { ListeyiPaylas, ListeyiSilSorusu } from '@/bilesen/listeler/ListeKartiIslemleri';
 import { useOturumAc } from '@/bilesen/oturum/OturumSayfasi';
 import { adimGunuYaz, listedeYaz } from '@/veri/listeKartlari';
+import { tabloyuDisaVer } from '@/veri/tabloDosyasi';
 import { adimlarListeParcasi, RUTIN_BILGI, RUTIN_GUNLUK, RUTIN_KALICI, rutinCesidi } from '@/mantik/rutinAdimlari';
 import { rutinAdimiIsaretle, rutinAdimlari, rutinYap } from '@/veri/rutinler';
 import { olcumParcalariMi } from '@/mantik/gidisat';
@@ -219,6 +220,7 @@ export default function KartGorunumu() {
 
   const { kart, bloklar, kayitlar, program, rutin, adimlar } = veri.veri;
   const disaBloklar = adimlarListeParcasi(kart, bloklar, adimlar);
+  const tabloBlogu = bloklar.find((b) => b.tur === 'tablo');
 
   const programaEkle = async (programId: string) => {
     setProgramSec(0);
@@ -236,7 +238,11 @@ export default function KartGorunumu() {
   const serit = kaynak === 'kendim' ? null : kaynakRenk[kaynak].serit;
   const cesit = cesitBul(kart.cesit ?? null);
   const isaretlenir = gorunurMu(kart, gun, bugunGun);
-  const bilgiMi = rutinCesidi(kart) === RUTIN_BILGI || (!!rutin && rutinCesidi(rutin) === RUTIN_BILGI);
+  // P-120: Listeler'deki tabloda da Yaptım yok.
+  const bilgiMi =
+    rutinCesidi(kart) === RUTIN_BILGI ||
+    (!!rutin && rutinCesidi(rutin) === RUTIN_BILGI) ||
+    (!!kart.listede && !kart.rutin);
   const duzenlenir = !kart.kilitli;
   const verilenId = verilenBagCoz(kart.bag);
   // P-62: buluşmanın görüntülü görüşme bağlantısı.
@@ -379,6 +385,7 @@ export default function KartGorunumu() {
             kayit={kayit}
             kayitlar={kayitlar}
             onKayit={kayitDegis}
+            onTablo={parcaDegisir(kart, b) ? (t) => icerikKaydet(blokIcerikYaz(kapi, b.id, t)) : undefined}
             onMaddeDuzelt={
               parcaDegisir(kart, b)
                 ? (i, yeni) => {
@@ -690,6 +697,8 @@ export default function KartGorunumu() {
       <ListeCesidiSecici
         gorunur={listeCesidi}
         secili={rutinCesidi(kart)}
+        // P-120: Listeler'de Günlük kontrol yok (zamana bağlı listeler ajandada).
+        haric={kart.listede ? [RUTIN_GUNLUK] : []}
         onKapat={() => setListeCesidi(false)}
         onSec={(c) => {
           setListeCesidi(false);
@@ -799,17 +808,19 @@ export default function KartGorunumu() {
                   ]
                 : []),
               // P-110: Listeler'e taşı (liste ajandada görünmeye devam eder).
-              ...(duzenlenir && kart.rutin && !kart.listede && !kart.ust && !kart.olcumlerim
+              // P-120: Günlük kontrol zamana bağlıdır, ajandada kalır.
+              ...(duzenlenir &&
+              kart.rutin &&
+              rutinCesidi(kart) !== RUTIN_GUNLUK &&
+              !kart.listede &&
+              !kart.ust &&
+              !kart.olcumlerim
                 ? [
                     {
                       etiket: 'Listeler’e taşı',
                       ikon: 'list-outline' as const,
                       onPress: () =>
-                        icerikKaydet(
-                          listedeYaz(kapi, kart.id, true).then(() =>
-                            kisaMesaj('Giriş → Listeler’de; ajandada da görünüyor'),
-                          ),
-                        ),
+                        icerikKaydet(listedeYaz(kapi, kart.id, true).then(() => kisaMesaj('Giriş → Listeler’de'))),
                     },
                   ]
                 : []),
@@ -834,7 +845,36 @@ export default function KartGorunumu() {
               ...(duzenlenir && kart.ust && rutin && rutinCesidi(rutin) === RUTIN_KALICI
                 ? [{ etiket: 'Gün ver', ikon: 'calendar-outline' as const, onPress: () => setAdimGunu(true) }]
                 : []),
-              ...(aliskanlikMi(kart) || kart.olcumlerim || (kart.listede && !kart.ust)
+              // P-120: tablo Excel'in açtığı dosya olarak dışa verilir.
+              ...(tabloBlogu
+                ? [
+                    {
+                      etiket: 'Excel dosyası olarak ver',
+                      ikon: 'download-outline' as const,
+                      onPress: () =>
+                        void tabloyuDisaVer(kart.baslik, tabloBlogu).catch((e: unknown) => {
+                          console.warn(e);
+                          kisaMesaj('Dosya hazırlanamadı.');
+                        }),
+                    },
+                  ]
+                : []),
+              // P-120: Listeler'deki liste ajandada gösterilmez; zamanı olacaksa ajandaya taşınır.
+              ...(duzenlenir && kart.listede && !kart.ust && kart.rutin
+                ? [
+                    {
+                      etiket: 'Ajandaya taşı',
+                      ikon: 'calendar-outline' as const,
+                      onPress: () =>
+                        icerikKaydet(
+                          listedeYaz(kapi, kart.id, false).then(() =>
+                            kisaMesaj('Ajandada; günlerini zaman satırından seçebilirsin'),
+                          ),
+                        ),
+                    },
+                  ]
+                : []),
+              ...((aliskanlikMi(kart) || kart.olcumlerim) && !kart.listede
                 ? [
                     {
                       etiket: ajandadaMi(kart) ? 'Ajandada gösterme' : 'Ajandada göster',
@@ -884,18 +924,23 @@ export default function KartGorunumu() {
               ...(kart.kilitli
                 ? []
                 : [
-                    // P-110: Listeler'deki liste gruplarla / kişilerle ortak liste olur.
-                    kart.listede
-                      ? {
-                          etiket: 'Başkalarıyla paylaş',
-                          ikon: 'people-outline' as const,
-                          onPress: () => (oturum.durum === 'var' ? setListePaylas(true) : oturumAc()),
-                        }
-                      : {
-                          etiket: 'Paylaş',
-                          ikon: 'share-outline' as const,
-                          onPress: () => paylas.ac({ kart, bloklar: disaBloklar }),
-                        },
+                    // P-110: Listeler'deki liste gruplarla / kişilerle ortak liste olur (P-120: tablo değil).
+                    // P-120: Listeler'deki tablo paylaşılmaz (kişisel bilgi olabilir); dosya olarak verilir.
+                    ...(kart.listede && !kart.rutin
+                      ? []
+                      : [
+                          kart.listede
+                            ? {
+                                etiket: 'Başkalarıyla paylaş',
+                                ikon: 'people-outline' as const,
+                                onPress: () => (oturum.durum === 'var' ? setListePaylas(true) : oturumAc()),
+                              }
+                            : {
+                                etiket: 'Paylaş',
+                                ikon: 'share-outline' as const,
+                                onPress: () => paylas.ac({ kart, bloklar: disaBloklar }),
+                              },
+                        ]),
                     // P-98: Ölçümlerim yalnız Giriş → Ölçümlerim → Düzenle'den silinir (ajandadan değil).
                     ...(kart.olcumlerim && olcumlerimden !== '1'
                       ? []
