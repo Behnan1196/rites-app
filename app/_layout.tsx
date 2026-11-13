@@ -68,12 +68,24 @@ export default function KokDuzen() {
                   <GirisAyariSaglayici>
                     <KatalogGuncelleyici />
                     <ProfilSaglayici>
+                      {/* P-124: uygulama dik; yalnız tam ekran (video, tablo) yan döner. */}
                       <Stack
                         screenOptions={{
                           headerShown: false,
                           contentStyle: { backgroundColor: renk.zemin },
+                          orientation: "portrait_up",
                         }}
-                      />
+                      >
+                        <Stack.Screen
+                          name="tam-ekran"
+                          options={{
+                            orientation: "default",
+                            // Modal değil: alttan sayfalar (Katman) bu ekranın üstünde çizilebilsin.
+                            animation: "fade",
+                            contentStyle: { backgroundColor: "#000" },
+                          }}
+                        />
+                      </Stack>
                       <BildirimYoneticisi />
                       <PaylasimAlici />
                     </ProfilSaglayici>

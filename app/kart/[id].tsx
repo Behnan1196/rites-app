@@ -362,6 +362,21 @@ export default function KartGorunumu() {
               {ad || 'Liste'}
             </Yazi>
             {sabitSimge && <SabitSimgesi />}
+            {/* P-124: video ve tablo tam ekranda açılır (yan çevrilince yatay). */}
+            {(b.tur === 'tablo' || (b.tur === 'video' && blokVideolari(b).length > 0)) && (
+              <Pressable
+                onPress={() => router.push({ pathname: '/tam-ekran', params: { kartId: kart.id, blokId: b.id } })}
+                accessibilityRole="button"
+                accessibilityLabel={`${ad || 'Parça'}: tam ekran`}
+                hitSlop={8}
+                style={({ pressed }) => [stiller.tamEkran, pressed && { opacity: 0.6 }]}
+              >
+                <Ionicons name="expand-outline" size={18} color={renk.ana} />
+                <Yazi tur="etiket" kalinlik="kalin" renk={renk.ana}>
+                  Tam ekran
+                </Yazi>
+              </Pressable>
+            )}
             {duzenlenir && <Ionicons name="chevron-down" size={16} color={renk.soluk} />}
           </Pressable>
         )}
@@ -1082,6 +1097,7 @@ const stiller = StyleSheet.create({
   blokAdi: { flex: 1 },
   anaBolum: { gap: 16 },
   parca: { gap: 10 },
+  tamEkran: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 6, minHeight: 32 },
   // Sürüklenirken gölgenin altı boş görünmesin.
   suruklenir: { backgroundColor: renk.yuzey },
 });

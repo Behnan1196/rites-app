@@ -630,3 +630,8 @@ Sonuç: → kararlar.md (Tablo sütunlarının türü).
 Ne dedi: "İlginç son güncelleme telefona gelmedi, hala eski sütun yapısı. Bu arada yeni liste eklerken iki kısım var, ilk önce ad seçtiğimiz bir bölüm brada ada göre alttaki liste tipini de seçiyor, ancak benim önerim, doğrudan 3 tür liste seçimi olsun, her liste tipinin hemen altında bu tipe uygun örnekleri sadece yazalım, böylece ekran da toparlanmış olur."
 Nerede: Listeler → + Yeni liste
 Sonuç: → kararlar.md (Yeni liste sayfası). Güncellemenin gelmemesi: P-122 dosyaları bilgisayara açılmamıştı (bağlantı kopuktu).
+
+### P-124 · 13 Kasım 2026 · Behnan
+Ne dedi: "Merak ediyorum, acaba telefonu yan çevirince tablo tam ekran olabilir mi, asıl bunu video olan kartta isteyeceğim" → "Tam ekran düğmesiyle olsun. Bu arada git komutlarını (git push dahil) sen ver, ben çalıştırayım"
+Nerede: Kart → video, tablo
+Sonuç: → kararlar.md (Tam ekran). Git komutları bundan sonra push dahil verilir.
