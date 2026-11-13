@@ -99,7 +99,16 @@ describe('Listeler kart (P-110)', () => {
   });
 
   it('P-120: tablo Listeler’de, ajandada değil; satır sayısı', async () => {
-    const id = await tabloKartiKur(kapi, 'Market fiyatları', ['Ürün', 'Son fiyat'], GUN, idUret);
+    const id = await tabloKartiKur(
+      kapi,
+      'Market fiyatları',
+      [
+        { ad: 'Ürün', tur: 'yazi' },
+        { ad: 'Son fiyat', tur: 'sayi' },
+      ],
+      GUN,
+      idUret,
+    );
     const b = (await kartAyrinti(oku, id))!.bloklar[0]!;
     expect(b.tur).toBe('tablo');
     await blokIcerikYaz(kapi, b.id, { maddeler: ['["Süt","42"]', '["Ekmek","15"]'] });

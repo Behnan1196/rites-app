@@ -620,3 +620,13 @@ Sonuç: → kararlar.md (Günlük listeler ajandada; Listeler'de tablo).
 Ne dedi: "Tabloda ürünü aldın fonksiyonu olsun, ama fiyatı sormaya şimdilik gerek yok. Bir de acaba tabloyu kaydırılabilir yaparak daha geniş bir kullanım sağlasak nasıl olur" Seçimler: işaret tabloya göre açılır; işaretli satır yerinde kalır, üstü çizili; en çok 5 sütun.
 Nerede: Listeler → Tablo
 Sonuç: → kararlar.md.
+
+### P-122 · 13 Kasım 2026 · Behnan
+Ne dedi: "Şunu düşünüyorum, acaba sütunları tanımlarken, checkbox, text, number gibi tanımlamaya izin versek daha esnek olmaz mı" Seçimler: Yazı · Sayı · Tarih · İşaret; "Bence sütun tanımlarken, sayı ise toplam al olabilir, ancak adetxbirim fiyat gibi bir hesaplama yakında gerekebilir"; tek işaret kutusu işaret sütununa dönüşsün.
+Nerede: Listeler → Tablo → Sütunlar
+Sonuç: → kararlar.md (Tablo sütunlarının türü).
+
+### P-123 · 13 Kasım 2026 · Behnan
+Ne dedi: "İlginç son güncelleme telefona gelmedi, hala eski sütun yapısı. Bu arada yeni liste eklerken iki kısım var, ilk önce ad seçtiğimiz bir bölüm brada ada göre alttaki liste tipini de seçiyor, ancak benim önerim, doğrudan 3 tür liste seçimi olsun, her liste tipinin hemen altında bu tipe uygun örnekleri sadece yazalım, böylece ekran da toparlanmış olur."
+Nerede: Listeler → + Yeni liste
+Sonuç: → kararlar.md (Yeni liste sayfası). Güncellemenin gelmemesi: P-122 dosyaları bilgisayara açılmamıştı (bağlantı kopuktu).

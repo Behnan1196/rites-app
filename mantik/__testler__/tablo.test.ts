@@ -1,74 +1,111 @@
 import {
+  hucreMetni,
+  satirIsaretliMi,
   satirlariSirala,
   satirUyar,
   sayiMi,
+  sayiMetni,
   sutunlariDegistir,
   sutunlariDuzelt,
+  sutunToplami,
   tabloCsv,
   tabloOku,
   tabloYaz,
+  type Tablo,
 } from '../tablo';
 
-describe('Tablo (P-120)', () => {
-  const t = {
-    sutunlar: ['Ürün', 'Son fiyat', 'Yer'],
-    satirlar: [
-      ['Süt', '42,50', 'Bim'],
-      ['Ekmek', '15', 'Fırın'],
-      ['Çay', '1.250', ''],
-      ['ıhlamur', '', 'Pazar'],
+const yazi = (ad: string) => ({ ad, tur: 'yazi' as const });
+
+describe('Tablo (P-120, P-122)', () => {
+  const t: Tablo = {
+    sutunlar: [
+      { ad: 'Alındı', tur: 'isaret' },
+      yazi('Ürün'),
+      { ad: 'Son fiyat', tur: 'sayi', toplam: true },
+      { ad: 'Tarih', tur: 'tarih' },
     ],
-    isaret: false,
-    isaretli: [false, false, false, false],
+    satirlar: [
+      ['1', 'Süt', '42,50', '2026-11-10'],
+      ['', 'Ekmek', '15', '2026-11-12'],
+      ['', 'Çay', '1.250', ''],
+      ['', 'ıhlamur', '', '2026-11-01'],
+    ],
   };
-  it('yazılır, okunur; eksik hücre boş', () => {
+  it('yazılır, okunur', () => {
     const y = tabloYaz(t);
+    expect(JSON.parse(y.metin)).toEqual({
+      sutunlar: [
+        { ad: 'Alındı', tur: 'isaret' },
+        { ad: 'Ürün', tur: 'yazi' },
+        { ad: 'Son fiyat', tur: 'sayi', toplam: true },
+        { ad: 'Tarih', tur: 'tarih' },
+      ],
+    });
     expect(tabloOku(y)).toEqual(t);
-    expect(tabloOku({ metin: '["A","B"]', maddeler: ['["x"]', 'düz'] }).satirlar).toEqual([
-      ['x', ''],
-      ['düz', ''],
+  });
+  it('eski biçimler okunur: ad dizisi (P-120) ve tek işaret kutusu (P-121)', () => {
+    expect(tabloOku({ metin: '["A","B"]', maddeler: ['["x"]', 'düz'] })).toEqual({
+      sutunlar: [yazi('A'), yazi('B')],
+      satirlar: [
+        ['x', ''],
+        ['düz', ''],
+      ],
+    });
+    const eski = tabloOku({
+      metin: '{"sutunlar":["Ürün","Fiyat"],"isaret":true}',
+      maddeler: ['{"h":["Süt","42"],"y":true}', '["Ekmek","15"]'],
+    });
+    expect(eski.sutunlar).toEqual([{ ad: 'Alındı', tur: 'isaret' }, yazi('Ürün'), yazi('Fiyat')]);
+    expect(eski.satirlar).toEqual([
+      ['1', 'Süt', '42'],
+      ['', 'Ekmek', '15'],
     ]);
   });
-  it('sayılar Türkçe biçimde', () => {
+  it('sayılar Türkçe biçimde; toplam', () => {
     expect(sayiMi('42,50')).toBe(42.5);
     expect(sayiMi('1.250')).toBe(1250);
     expect(sayiMi('12.5')).toBe(12.5);
     expect(sayiMi('15 TL')).toBe(15);
     expect(sayiMi('Bim')).toBeNull();
+    expect(sayiMetni(sutunToplami(t.satirlar, 2))).toBe('1.307,5');
   });
-  it('sütuna göre sıralanır; sayılar sayı gibi, boşlar sonda', () => {
-    const f = satirlariSirala(t.satirlar, { sutun: 1, artan: true }).map((x) => x.satir[0]);
-    expect(f).toEqual(['Ekmek', 'Süt', 'Çay', 'ıhlamur']);
-    const a = satirlariSirala(t.satirlar, { sutun: 0, artan: false }).map((x) => x.satir[0]);
-    expect(a).toEqual(['Süt', 'ıhlamur', 'Ekmek', 'Çay']);
+  it('türe göre sıralama; boşlar sonda', () => {
+    const ad = (s: { satir: string[] }[]) => s.map((x) => x.satir[1]);
+    expect(ad(satirlariSirala(t.satirlar, { sutun: 2, artan: true }, 'sayi'))).toEqual([
+      'Ekmek',
+      'Süt',
+      'Çay',
+      'ıhlamur',
+    ]);
+    expect(ad(satirlariSirala(t.satirlar, { sutun: 1, artan: false }, 'yazi'))).toEqual([
+      'Süt',
+      'ıhlamur',
+      'Ekmek',
+      'Çay',
+    ]);
+    expect(ad(satirlariSirala(t.satirlar, { sutun: 3, artan: true }, 'tarih'))).toEqual([
+      'ıhlamur',
+      'Süt',
+      'Ekmek',
+      'Çay',
+    ]);
+    expect(ad(satirlariSirala(t.satirlar, { sutun: 0, artan: true }, 'isaret'))[0]).toBe('Süt');
     expect(satirlariSirala(t.satirlar, null).map((x) => x.i)).toEqual([0, 1, 2, 3]);
   });
-  it('arama, sütun değişikliği, CSV', () => {
-    expect(t.satirlar.filter((s) => satirUyar(s, 'bİm')).length).toBe(1);
-    expect(sutunlariDuzelt([' Ad ', '', 'Not', 'Fazla'])).toEqual(['Ad', 'Not', 'Fazla']);
-    expect(sutunlariDuzelt(['', ' '])).toBeNull();
-    const d = sutunlariDegistir(t, ['Yer', 'Ürün'], [2, 0]);
-    expect(d.satirlar[0]).toEqual(['Bim', 'Süt']);
-    expect(tabloCsv({ sutunlar: ['A', 'B'], satirlar: [['x;y', 'z"q']], isaret: false, isaretli: [false] })).toBe(
-      '﻿A;B\r\n"x;y";"z""q"\r\n',
-    );
-  });
-  it('P-121: Aldım işareti yazılır ve okunur; eski dizi biçimi okunur; CSV’de Alındı sütunu', () => {
-    const m = {
-      sutunlar: ['Ürün', 'Fiyat'],
-      satirlar: [
-        ['Süt', '42'],
-        ['Ekmek', '15'],
-      ],
-      isaret: true,
-      isaretli: [true, false],
-    };
-    const y = tabloYaz(m);
-    expect(JSON.parse(y.metin)).toEqual({ sutunlar: ['Ürün', 'Fiyat'], isaret: true });
-    expect(y.maddeler).toEqual(['{"h":["Süt","42"],"y":true}', '["Ekmek","15"]']);
-    expect(tabloOku(y)).toEqual(m);
-    expect(tabloOku({ metin: '["A"]', maddeler: ['["x"]'] })).toMatchObject({ isaret: false, isaretli: [false] });
-    expect(tabloCsv(m)).toBe('\uFEFFAlındı;Ürün;Fiyat\r\nEvet;Süt;42\r\n;Ekmek;15\r\n');
-    expect(sutunlariDuzelt(['1', '2', '3', '4', '5', '6'])).toHaveLength(5);
+  it('görünüş, arama, işaret, sütun değişikliği, CSV', () => {
+    expect(hucreMetni('tarih', '2026-11-13')).toBe('13 Kasım');
+    expect(satirIsaretliMi(t, t.satirlar[0]!)).toBe(true);
+    expect(satirIsaretliMi(t, t.satirlar[1]!)).toBe(false);
+    expect(t.satirlar.filter((s) => satirUyar(t, s, 'kasım')).length).toBe(3);
+    expect(t.satirlar.filter((s) => satirUyar(t, s, 'süt')).length).toBe(1);
+    expect(sutunlariDuzelt([yazi(' Ad '), yazi(''), ...'12345'.split('').map(yazi)])).toHaveLength(5);
+    expect(sutunlariDuzelt([yazi(' ')])).toBeNull();
+    const d = sutunlariDegistir(t, [yazi('Ürün'), { ad: 'Alındı', tur: 'isaret' }], [1, 0]);
+    expect(d.satirlar[0]).toEqual(['Süt', '1']);
+    expect(tabloCsv(t).split('\r\n').slice(0, 2)).toEqual([
+      '﻿Alındı;Ürün;Son fiyat;Tarih',
+      'Evet;Süt;42,50;10.11.2026',
+    ]);
+    expect(tabloCsv({ sutunlar: [yazi('A')], satirlar: [['x;"y']] })).toBe('﻿A\r\n"x;""y"\r\n');
   });
 });

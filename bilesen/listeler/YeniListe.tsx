@@ -1,37 +1,57 @@
-// Listeler'de yeni liste (pilot 13 Kasım, P-120): ad, örnek adlar ve çeşit: Adımlar · Bilgi
-// listesi · Tablo (2–3 sütun). Günlük kontrol burada yok: her gün yapılacak listeler ajandada.
+// Listeler'de yeni liste (pilot 13 Kasım, P-120). P-123: önce üç tür (Adımlar · Bilgi listesi ·
+// Tablo), her birinin altında kısa açıklaması ve örnek adları (yalnız yazı); sonra listenin adı,
+// tabloda sütunlar. Günlük kontrol burada yok: her gün yapılacak listeler ajandada.
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { AD_ORNEKLERI, cesitTanimi, type ListeCesidi } from '@/mantik/listeCesidi';
-import { EN_COK_SUTUN, sutunlariDuzelt, TABLO_ORNEKLERI } from '@/mantik/tablo';
+import type { ListeCesidi } from '@/mantik/listeCesidi';
+import { sutunlariDuzelt, type Sutun } from '@/mantik/tablo';
 
 import { AltSayfa } from '../AltSayfa';
-import { Dugme } from '../Dugme';
+import { SutunDuzenleyici } from '../kart/TabloParcasi';
 import { GirisAlani } from '../GirisAlani';
-import { Bolum, SecenekHapi } from '../Secim';
-import { renk } from '../tema';
+import { Bolum } from '../Secim';
+import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 
-export type YeniListeSecimi =
-  { tur: 'liste'; cesit: ListeCesidi } | { tur: 'tablo'; sutunlar: string[]; isaret: boolean };
+export type YeniListeSecimi = { tur: 'liste'; cesit: ListeCesidi } | { tur: 'tablo'; sutunlar: Sutun[] };
 
 type Cesit = 'yapilacak' | 'not' | 'tablo';
-const CESITLER: readonly { cesit: Cesit; ad: string; aciklama: string }[] = [
-  { cesit: 'yapilacak', ad: cesitTanimi('yapilacak').ad, aciklama: cesitTanimi('yapilacak').aciklama },
-  { cesit: 'not', ad: cesitTanimi('not').ad, aciklama: cesitTanimi('not').aciklama },
+const CESITLER: readonly {
+  cesit: Cesit;
+  ad: string;
+  ikon: React.ComponentProps<typeof Ionicons>['name'];
+  aciklama: string;
+  ornek: string;
+}[] = [
+  {
+    cesit: 'yapilacak',
+    ad: 'Adımlar',
+    ikon: 'checkbox-outline',
+    aciklama: 'İşaretlediğin kalır. Bir maddeye gün verirsen o gün ajandanda görünür.',
+    ornek: 'Yapılacaklar · Market · Bavul · Taşınma',
+  },
+  {
+    cesit: 'not',
+    ad: 'Bilgi listesi',
+    ikon: 'reader-outline',
+    aciklama: 'İşaret kutusu yok; yalnız maddeler.',
+    ornek: 'Okunacak kitaplar · Hediye fikirleri · İzlenecek filmler',
+  },
   {
     cesit: 'tablo',
     ad: 'Tablo',
-    aciklama: 'Beş sütuna kadar: ürün, son fiyat, yer gibi. Sütuna göre sıralanır; sığmazsa sağa kayar.',
+    ikon: 'grid-outline',
+    aciklama: 'Beş sütuna kadar; her sütun yazı, sayı, tarih ya da işaret.',
+    ornek: 'Market fiyatları · Ödünç verdiklerim · Telefonlar',
   },
 ];
-const ORNEKLER: readonly { ad: string; cesit: Cesit; sutunlar?: string[]; isaret?: boolean }[] = [
-  ...AD_ORNEKLERI.filter((o) => o.cesit !== 'gunluk').map((o) => ({ ad: o.ad, cesit: o.cesit as Cesit })),
-  ...TABLO_ORNEKLERI.map((o) => ({ ad: o.ad, cesit: 'tablo' as const, sutunlar: o.sutunlar, isaret: o.isaret })),
+const BOS_SUTUNLAR: Sutun[] = [
+  { ad: '', tur: 'yazi' },
+  { ad: '', tur: 'yazi' },
 ];
-const BOS_SUTUNLAR = ['', ''];
 
 export function YeniListe({
   gorunur,
@@ -44,14 +64,12 @@ export function YeniListe({
 }) {
   const [ad, setAd] = useState('');
   const [cesit, setCesit] = useState<Cesit>('yapilacak');
-  const [sutunlar, setSutunlar] = useState<string[]>(BOS_SUTUNLAR);
-  // P-121: "Aldım" işareti (Market fiyatları örneğinde açık; sonra Sütunlar'dan değişir).
-  const [isaret, setIsaret] = useState(false);
+  // P-122: sütunların adı ve türü (Yazı · Sayı · Tarih · İşaret).
+  const [sutunlar, setSutunlar] = useState<Sutun[]>(BOS_SUTUNLAR);
   const sifirla = () => {
     setAd('');
     setCesit('yapilacak');
     setSutunlar(BOS_SUTUNLAR);
-    setIsaret(false);
   };
   const tabloSutunlari = sutunlariDuzelt(sutunlar);
   const hazir = !!ad.trim() && (cesit !== 'tablo' || !!tabloSutunlari);
@@ -72,57 +90,46 @@ export function YeniListe({
           if (!hazir) return;
           onKaydet(
             ad.trim(),
-            cesit === 'tablo' ? { tur: 'tablo', sutunlar: tabloSutunlari!, isaret } : { tur: 'liste', cesit },
+            cesit === 'tablo' ? { tur: 'tablo', sutunlar: tabloSutunlari! } : { tur: 'liste', cesit },
           );
           sifirla();
         },
       }}
     >
-      <GirisAlani etiket="Listenin adı" value={ad} onChangeText={setAd} returnKeyType="done" autoFocus />
-      <View style={stiller.cipler}>
-        {ORNEKLER.map((o) => (
-          <SecenekHapi
-            key={o.ad}
-            etiket={o.ad}
-            secili={ad === o.ad}
-            onPress={() => {
-              setAd(o.ad);
-              setCesit(o.cesit);
-              if (o.sutunlar) setSutunlar(o.sutunlar);
-              setIsaret(!!o.isaret);
-            }}
-          />
-        ))}
+      <View style={stiller.turler} accessibilityRole="radiogroup">
+        {CESITLER.map((c) => {
+          const bu = cesit === c.cesit;
+          return (
+            <Pressable
+              key={c.cesit}
+              onPress={() => setCesit(c.cesit)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: bu }}
+              accessibilityLabel={`${c.ad}. ${c.aciklama} Örnek: ${c.ornek}`}
+              style={({ pressed }) => [stiller.tur, bu && stiller.turSecili, pressed && { opacity: 0.7 }]}
+            >
+              <Ionicons name={c.ikon} size={24} color={bu ? renk.ana : renk.ikincil} />
+              <View style={stiller.esnek}>
+                <Yazi kalinlik="kalin" renk={bu ? renk.ana : renk.yazi}>
+                  {c.ad}
+                </Yazi>
+                <Yazi tur="ikincil">{c.aciklama}</Yazi>
+                <Yazi tur="etiket">{c.ornek}</Yazi>
+              </View>
+              <Ionicons
+                name={bu ? 'radio-button-on' : 'radio-button-off'}
+                size={22}
+                color={bu ? renk.ana : renk.soluk}
+              />
+            </Pressable>
+          );
+        })}
       </View>
-      <Bolum>
-        <Yazi kalinlik="kalin">Ne tür bir liste?</Yazi>
-        <View style={stiller.cipler}>
-          {CESITLER.map((c) => (
-            <SecenekHapi key={c.cesit} etiket={c.ad} secili={cesit === c.cesit} onPress={() => setCesit(c.cesit)} />
-          ))}
-        </View>
-        <Yazi tur="ikincil">{CESITLER.find((c) => c.cesit === cesit)!.aciklama}</Yazi>
-      </Bolum>
+      <GirisAlani etiket="Listenin adı" value={ad} onChangeText={setAd} returnKeyType="done" />
       {cesit === 'tablo' && (
         <Bolum>
           <Yazi kalinlik="kalin">Sütunlar</Yazi>
-          {sutunlar.map((s, i) => (
-            <GirisAlani
-              key={i}
-              etiket={`${i + 1}. sütun`}
-              value={s}
-              placeholder={['Ürün', 'Son fiyat', 'Yer'][i]}
-              onChangeText={(t) => setSutunlar((l) => l.map((x, j) => (j === i ? t : x)))}
-            />
-          ))}
-          {sutunlar.length < EN_COK_SUTUN && (
-            <Dugme
-              tur="ikincil"
-              yaziRengi={renk.ana}
-              etiket="+ Sütun ekle"
-              onPress={() => setSutunlar((l) => [...l, ''])}
-            />
-          )}
+          <SutunDuzenleyici liste={sutunlar} onDegis={setSutunlar} />
         </Bolum>
       )}
       <Yazi tur="ikincil">
@@ -135,5 +142,19 @@ export function YeniListe({
 }
 
 const stiller = StyleSheet.create({
-  cipler: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  turler: { gap: 8 },
+  tur: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 64,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: olcu.kose.kart,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    backgroundColor: renk.yuzey,
+  },
+  turSecili: { borderColor: renk.ana, borderWidth: 2 },
+  esnek: { flex: 1, gap: 2 },
 });

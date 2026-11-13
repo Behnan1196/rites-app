@@ -1,37 +1,49 @@
-// Tablo (pilot 13 Kasım, P-120): 2–5 sütunlu liste. P-121: ilk sütun (ve isteğe bağlı "Aldım"
-// işaret kutusu) solda sabit, öbürleri sığmazsa sağa kayar; işaretli satır yerinde kalır, üstü
-// çizilir, altta "İşaretleri kaldır (N)". Sütun başlığına dokununca o sütuna göre
-// sıralanır (yeniden dokununca ters; üçüncüde eklenme sırası). Satıra dokununca satırın sayfası
-// (her sütun bir alan; Kaydet · Satırı sil). Altta "+ Satır ekle" ve "Sütunlar". Satır çoksa
-// üstte arama. Değiştirilemeyen tabloda yalnız okunur ve sıralanır.
+// Tablo (pilot 13 Kasım, P-120): 2–5 sütunlu liste. Sütun başlığına dokununca o sütuna göre
+// sıralanır (yeniden dokununca ters; üçüncüde eklenme sırası). Satıra dokununca satırın sayfası.
+// P-121: soldaki sütunlar (baştaki işaret sütunları ve ilk yazı sütunu) sabit, öbürleri sığmazsa
+// sağa kayar. P-122: sütun türleri: Yazı · Sayı (sağa yaslı; istenirse altta toplam) · Tarih
+// ("13 Kasım"; takvimden seçilir) · İşaret (kutuya dokununca işaretlenir; ilk işaret sütunu
+// işaretli satırın üstünü çizer; altta "İşaretleri kaldır (N)").
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { kisaGoreliTarih } from '@/mantik/ajanda';
+import { gunEkle } from '@/mantik/tarih';
 import {
   EN_COK_SUTUN,
+  hucreMetni,
+  isaretliMi,
+  satirIsaretliMi,
   satirlariSirala,
   satirUyar,
+  sayiMetni,
+  SUTUN_TURLERI,
   sutunlariDegistir,
   sutunlariDuzelt,
+  sutunToplami,
   tabloOku,
   tabloYaz,
   type Siralama,
+  type Sutun,
+  type SutunTuru,
   type Tablo,
 } from '@/mantik/tablo';
+import { useBugun } from '@/veri/useBugun';
 
 import { AltSayfa } from '../AltSayfa';
+import { AyTakvimi } from '../AyTakvimi';
 import { Dugme } from '../Dugme';
 import { GirisAlani } from '../GirisAlani';
-import { AcKapa } from '../Secim';
+import { AcKapa, SecenekHapi } from '../Secim';
 import { olcu, renk } from '../tema';
 import { Yazi } from '../Yazi';
 
 const ARAMA_ESIGI = 8;
-/** Kayan sütunun en dar genişliği; işaret kutusunun genişliği. */
+/** Kayan sütunun en dar genişliği; işaret sütununun genişliği. */
 const EN_DAR_SUTUN = 88;
-const KUTU = 44;
+const ISARET_GENISLIGI = 64;
 
 export function TabloParcasi({
   blok,
@@ -49,50 +61,155 @@ export function TabloParcasi({
   const [sutunSayfasi, setSutunSayfasi] = useState(false);
   const [genislik, setGenislik] = useState(0);
   const yaz = (t: Tablo) => onDegis?.(tabloYaz(t));
+  const { sutunlar } = tablo;
 
   const sutunaBas = (i: number) =>
     setSiralama((s) => (!s || s.sutun !== i ? { sutun: i, artan: true } : s.artan ? { sutun: i, artan: false } : null));
-  const gorunen = satirlariSirala(tablo.satirlar, siralama).filter((x) => satirUyar(x.satir, arama));
-  const isaretSayisi = tablo.isaret ? tablo.isaretli.filter(Boolean).length : 0;
-  const isaretle = (i: number) =>
-    yaz({ ...tablo, isaretli: tablo.satirlar.map((_, k) => (k === i ? !tablo.isaretli[k] : !!tablo.isaretli[k])) });
+  const gorunen = satirlariSirala(tablo.satirlar, siralama, siralama ? sutunlar[siralama.sutun]?.tur : 'yazi').filter(
+    (x) => satirUyar(tablo, x.satir, arama),
+  );
+  const isaretSayisi = tablo.satirlar.reduce(
+    (n, s) => n + sutunlar.filter((c, i) => c.tur === 'isaret' && isaretliMi(s[i] ?? '')).length,
+    0,
+  );
+  const hucreYaz = (satir: number, sutun: number, deger: string) =>
+    yaz({
+      ...tablo,
+      satirlar: tablo.satirlar.map((s, k) => (k === satir ? s.map((h, j) => (j === sutun ? deger : h)) : s)),
+    });
+  const toplamVar = sutunlar.some((c) => c.tur === 'sayi' && c.toplam);
 
-  // P-121: ilk sütun (ve işaret kutusu) solda sabit; öbür sütunlar ekrana sığmazsa sağa kayar.
-  const kutu = tablo.isaret ? KUTU : 0;
-  const n = tablo.sutunlar.length;
-  const sutunGenisligi = genislik ? Math.max(EN_DAR_SUTUN, (genislik - kutu) / n) : EN_DAR_SUTUN;
-  const kayar = !!genislik && kutu + n * sutunGenisligi > genislik + 1;
+  // Solda sabit: baştaki işaret sütunları ve ilk öbür sütun; kalanlar sığmazsa kayar.
+  const ilkYazi = sutunlar.findIndex((c) => c.tur !== 'isaret');
+  const sabitSayi = ilkYazi < 0 ? sutunlar.length : ilkYazi + 1;
+  const isaretSutunu = sutunlar.filter((c) => c.tur === 'isaret').length;
+  const genisSutun = sutunlar.length - isaretSutunu;
+  const sutunGenisligi =
+    genislik && genisSutun
+      ? Math.max(EN_DAR_SUTUN, (genislik - isaretSutunu * ISARET_GENISLIGI) / genisSutun)
+      : EN_DAR_SUTUN;
+  const genislikOf = (c: Sutun) => (c.tur === 'isaret' ? ISARET_GENISLIGI : sutunGenisligi);
+  const kayar = !!genislik && sutunlar.reduce((t, c) => t + genislikOf(c), 0) > genislik + 1;
 
-  const baslik = (s: string, i: number) => {
+  const baslik = (c: Sutun, i: number) => {
     const bu = siralama?.sutun === i;
     return (
       <Pressable
         key={i}
         onPress={() => sutunaBas(i)}
         accessibilityRole="button"
-        accessibilityLabel={`${s}: ${bu ? (siralama.artan ? 'artan sırada' : 'azalan sırada') : 'bu sütuna göre sırala'}`}
+        accessibilityLabel={`${c.ad}: ${bu ? (siralama.artan ? 'artan sırada' : 'azalan sırada') : 'bu sütuna göre sırala'}`}
         hitSlop={4}
-        style={[stiller.hucre, stiller.baslikHucre, { width: sutunGenisligi }]}
+        style={[stiller.hucre, stiller.baslikHucre, { width: genislikOf(c) }, c.tur === 'sayi' && stiller.sagda]}
       >
-        <Yazi kalinlik="kalin" renk={bu ? renk.ana : renk.ikincil} numberOfLines={1} style={stiller.esnek}>
-          {s}
+        <Yazi
+          tur={c.tur === 'isaret' ? 'etiket' : undefined}
+          kalinlik="kalin"
+          renk={bu ? renk.ana : renk.ikincil}
+          numberOfLines={1}
+          style={c.tur === 'sayi' ? undefined : stiller.esnek}
+        >
+          {c.ad}
         </Yazi>
         {bu && <Ionicons name={siralama.artan ? 'arrow-up' : 'arrow-down'} size={14} color={renk.ana} />}
       </Pressable>
     );
   };
-  const hucre = (h: string, j: number, isaretli: boolean) => (
-    <View key={j} style={[stiller.hucre, { width: sutunGenisligi }]}>
-      <Yazi
-        numberOfLines={1}
-        renk={!h ? renk.soluk : isaretli ? renk.ikincil : renk.yazi}
-        style={[stiller.esnek, isaretli && !!h && stiller.cizili]}
+
+  const hucre = (satir: string[], i: number, j: number, cizili: boolean) => {
+    const c = sutunlar[j]!;
+    const h = satir[j] ?? '';
+    if (c.tur === 'isaret') {
+      const isaretli = isaretliMi(h);
+      return (
+        <Pressable
+          key={j}
+          onPress={() => hucreYaz(i, j, isaretli ? '' : '1')}
+          disabled={!onDegis}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: isaretli }}
+          accessibilityLabel={`${satir[ilkYazi] || 'Satır'}: ${c.ad}`}
+          hitSlop={2}
+          style={[stiller.isaretHucre, { width: ISARET_GENISLIGI }]}
+        >
+          <View style={[stiller.kare, isaretli && stiller.kareDolu]}>
+            {isaretli && <Ionicons name="checkmark" size={16} color={renk.yuzey} />}
+          </View>
+        </Pressable>
+      );
+    }
+    const metin = hucreMetni(c.tur, h);
+    return (
+      <Pressable
+        key={j}
+        onPress={() => setAcik(i)}
+        accessible={j === ilkYazi}
+        accessibilityRole={onDegis ? 'button' : 'text'}
+        accessibilityLabel={sutunlar
+          .map(
+            (s, k) =>
+              `${s.ad}: ${s.tur === 'isaret' ? (isaretliMi(satir[k] ?? '') ? 'evet' : 'hayır') : hucreMetni(s.tur, satir[k] ?? '') || 'boş'}`,
+          )
+          .join(', ')}
+        style={({ pressed }) => [
+          stiller.hucre,
+          { width: genislikOf(c) },
+          c.tur === 'sayi' && stiller.sagda,
+          pressed && { opacity: 0.6 },
+        ]}
       >
-        {h || '–'}
-      </Yazi>
+        <Yazi
+          numberOfLines={1}
+          renk={!metin ? renk.soluk : cizili ? renk.ikincil : renk.yazi}
+          style={[c.tur !== 'sayi' && stiller.esnek, cizili && !!metin && stiller.cizili]}
+        >
+          {metin || '–'}
+        </Yazi>
+      </Pressable>
+    );
+  };
+
+  const toplamHucre = (c: Sutun, j: number) => (
+    <View
+      key={j}
+      style={[stiller.hucre, stiller.toplamHucre, { width: genislikOf(c) }, c.tur === 'sayi' && stiller.sagda]}
+    >
+      {c.tur === 'sayi' && c.toplam ? (
+        <Yazi kalinlik="kalin" numberOfLines={1}>
+          {sayiMetni(
+            sutunToplami(
+              gorunen.map((x) => x.satir),
+              j,
+            ),
+          )}
+        </Yazi>
+      ) : j === ilkYazi ? (
+        <Yazi kalinlik="kalin" renk={renk.ikincil} numberOfLines={1}>
+          Toplam
+        </Yazi>
+      ) : null}
     </View>
   );
-  const satirAc = (i: number) => setAcik(i);
+
+  const kisim = (bas: number, son: number) => {
+    const aralik = sutunlar.map((c, j) => ({ c, j })).slice(bas, son);
+    return (
+      <View>
+        <View style={[stiller.satir, stiller.baslikSatiri]}>{aralik.map(({ c, j }) => baslik(c, j))}</View>
+        {gorunen.map(({ satir, i }, k) => {
+          const cizili = satirIsaretliMi(tablo, satir);
+          return (
+            <View key={i} style={[stiller.satir, k % 2 === 1 && stiller.ciftSatir]}>
+              {aralik.map(({ j }) => hucre(satir, i, j, cizili))}
+            </View>
+          );
+        })}
+        {toplamVar && (
+          <View style={[stiller.satir, stiller.toplamSatiri]}>{aralik.map(({ c, j }) => toplamHucre(c, j))}</View>
+        )}
+      </View>
+    );
+  };
 
   return (
     <View style={stiller.kap}>
@@ -100,65 +217,10 @@ export function TabloParcasi({
         <GirisAlani etiket="Tabloda ara" etiketGizli placeholder="Ara" value={arama} onChangeText={setArama} />
       )}
       <View style={stiller.tablo} onLayout={(e) => setGenislik(e.nativeEvent.layout.width - 2)}>
-        {/* Solda sabit: işaret kutusu ve ilk sütun. */}
-        <View>
-          <View style={[stiller.satir, stiller.baslikSatiri]}>
-            {tablo.isaret && <View style={stiller.kutuHucre} />}
-            {baslik(tablo.sutunlar[0]!, 0)}
-          </View>
-          {gorunen.map(({ satir, i }, k) => {
-            const isaretli = tablo.isaret && !!tablo.isaretli[i];
-            return (
-              <View key={i} style={[stiller.satir, k % 2 === 1 && stiller.ciftSatir]}>
-                {tablo.isaret && (
-                  <Pressable
-                    onPress={() => isaretle(i)}
-                    disabled={!onDegis}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: isaretli }}
-                    accessibilityLabel={`${satir[0] || 'Satır'}: alındı`}
-                    hitSlop={4}
-                    style={stiller.kutuHucre}
-                  >
-                    <View style={[stiller.kare, isaretli && stiller.kareDolu]}>
-                      {isaretli && <Ionicons name="checkmark" size={16} color={renk.yuzey} />}
-                    </View>
-                  </Pressable>
-                )}
-                <Pressable
-                  onPress={() => satirAc(i)}
-                  accessibilityRole={onDegis ? 'button' : 'text'}
-                  accessibilityLabel={tablo.sutunlar.map((s, j) => `${s}: ${satir[j] || 'boş'}`).join(', ')}
-                  style={({ pressed }) => pressed && { opacity: 0.6 }}
-                >
-                  {hucre(satir[0] ?? '', 0, isaretli)}
-                </Pressable>
-              </View>
-            );
-          })}
-        </View>
-        {/* Sağda öbür sütunlar; sığmazsa kayar. */}
-        {n > 1 && (
+        {kisim(0, sabitSayi)}
+        {sabitSayi < sutunlar.length && (
           <ScrollView horizontal showsHorizontalScrollIndicator style={stiller.esnek} nestedScrollEnabled>
-            <View>
-              <View style={[stiller.satir, stiller.baslikSatiri]}>
-                {tablo.sutunlar.slice(1).map((s, j) => baslik(s, j + 1))}
-              </View>
-              {gorunen.map(({ satir, i }, k) => (
-                <Pressable
-                  key={i}
-                  onPress={() => satirAc(i)}
-                  accessible={false}
-                  style={({ pressed }) => [
-                    stiller.satir,
-                    k % 2 === 1 && stiller.ciftSatir,
-                    pressed && { opacity: 0.6 },
-                  ]}
-                >
-                  {satir.slice(1).map((h, j) => hucre(h, j + 1, tablo.isaret && !!tablo.isaretli[i]))}
-                </Pressable>
-              ))}
-            </View>
+            {kisim(sabitSayi, sutunlar.length)}
           </ScrollView>
         )}
       </View>
@@ -195,7 +257,12 @@ export function TabloParcasi({
       )}
       {!!onDegis && isaretSayisi > 0 && (
         <Pressable
-          onPress={() => yaz({ ...tablo, isaretli: tablo.satirlar.map(() => false) })}
+          onPress={() =>
+            yaz({
+              ...tablo,
+              satirlar: tablo.satirlar.map((s) => s.map((h, j) => (sutunlar[j]?.tur === 'isaret' ? '' : h))),
+            })
+          }
           accessibilityRole="button"
           hitSlop={6}
           style={({ pressed }) => [stiller.ekle, pressed && { opacity: 0.6 }]}
@@ -206,30 +273,22 @@ export function TabloParcasi({
       )}
       {acik !== null && (
         <SatirSayfasi
-          sutunlar={tablo.sutunlar}
+          sutunlar={sutunlar}
           satir={acik >= 0 ? tablo.satirlar[acik]! : null}
           degisir={!!onDegis}
           onKapat={() => setAcik(null)}
           onKaydet={(yeni) => {
             setAcik(null);
             const satirlar = [...tablo.satirlar];
-            const isaretli = tablo.satirlar.map((_, k) => !!tablo.isaretli[k]);
             if (acik >= 0) satirlar[acik] = yeni;
-            else {
-              satirlar.push(yeni);
-              isaretli.push(false);
-            }
-            yaz({ ...tablo, satirlar, isaretli });
+            else satirlar.push(yeni);
+            yaz({ ...tablo, satirlar });
           }}
           onSil={
             acik >= 0
               ? () => {
                   setAcik(null);
-                  yaz({
-                    ...tablo,
-                    satirlar: tablo.satirlar.filter((_, j) => j !== acik),
-                    isaretli: tablo.satirlar.map((_, j) => !!tablo.isaretli[j]).filter((_, j) => j !== acik),
-                  });
+                  yaz({ ...tablo, satirlar: tablo.satirlar.filter((_, j) => j !== acik) });
                 }
               : undefined
           }
@@ -237,13 +296,12 @@ export function TabloParcasi({
       )}
       {sutunSayfasi && (
         <SutunSayfasi
-          sutunlar={tablo.sutunlar}
-          isaret={tablo.isaret}
+          sutunlar={sutunlar}
           onKapat={() => setSutunSayfasi(false)}
-          onKaydet={(adlar, eskiYer, isaret) => {
+          onKaydet={(yeni, eskiYer) => {
             setSutunSayfasi(false);
             setSiralama(null);
-            yaz({ ...sutunlariDegistir(tablo, adlar, eskiYer), isaret });
+            yaz(sutunlariDegistir(tablo, yeni, eskiYer));
           }}
         />
       )}
@@ -259,7 +317,7 @@ function SatirSayfasi({
   onSil,
   onKapat,
 }: {
-  sutunlar: readonly string[];
+  sutunlar: readonly Sutun[];
   /** Düzeltilen satır; yeni satırda null. */
   satir: readonly string[] | null;
   degisir: boolean;
@@ -267,9 +325,13 @@ function SatirSayfasi({
   onSil?: () => void;
   onKapat: () => void;
 }) {
+  const bugunGun = useBugun();
   const [degerler, setDegerler] = useState(() => sutunlar.map((_, i) => satir?.[i] ?? ''));
-  const dolu = degerler.some((d) => d.trim());
+  const [takvim, setTakvim] = useState<number | null>(null);
+  const dolu = degerler.some((d, i) => d.trim() && sutunlar[i]?.tur !== 'isaret');
   const degisti = degerler.some((d, i) => d !== (satir?.[i] ?? ''));
+  const degistir = (i: number, t: string) => setDegerler((d) => d.map((x, j) => (j === i ? t : x)));
+  const ilkYazi = sutunlar.findIndex((c) => c.tur === 'yazi' || c.tur === 'sayi');
   return (
     <AltSayfa
       gorunur
@@ -284,76 +346,126 @@ function SatirSayfasi({
           : undefined
       }
     >
-      {sutunlar.map((s, i) => (
-        <GirisAlani
-          key={i}
-          etiket={s}
-          value={degerler[i]}
-          editable={degisir}
-          autoFocus={degisir && !satir && i === 0}
-          onChangeText={(t) => setDegerler((d) => d.map((x, j) => (j === i ? t : x)))}
-          returnKeyType={i === sutunlar.length - 1 ? 'done' : 'next'}
-        />
-      ))}
+      {sutunlar.map((c, i) =>
+        c.tur === 'isaret' ? (
+          <View key={i} style={stiller.anahtarSatiri}>
+            <Yazi style={stiller.esnek}>{c.ad}</Yazi>
+            {degisir ? (
+              <AcKapa acik={isaretliMi(degerler[i]!)} onDegis={(a) => degistir(i, a ? '1' : '')} etiket={c.ad} />
+            ) : (
+              <Yazi kalinlik="kalin">{isaretliMi(degerler[i]!) ? 'Evet' : 'Hayır'}</Yazi>
+            )}
+          </View>
+        ) : c.tur === 'tarih' ? (
+          <View key={i} style={stiller.tarihBolumu}>
+            <Yazi kalinlik="kalin">{c.ad}</Yazi>
+            {degisir ? (
+              <>
+                <View style={stiller.cipler}>
+                  {[bugunGun, gunEkle(bugunGun, 1)].map((g) => (
+                    <SecenekHapi
+                      key={g}
+                      etiket={kisaGoreliTarih(g, bugunGun)}
+                      secili={degerler[i] === g}
+                      onPress={() => {
+                        degistir(i, g);
+                        setTakvim(null);
+                      }}
+                    />
+                  ))}
+                  <SecenekHapi
+                    etiket={
+                      degerler[i] && degerler[i] !== bugunGun && degerler[i] !== gunEkle(bugunGun, 1)
+                        ? hucreMetni('tarih', degerler[i]!)
+                        : 'Gün seç'
+                    }
+                    secili={
+                      takvim === i ||
+                      (!!degerler[i] && degerler[i] !== bugunGun && degerler[i] !== gunEkle(bugunGun, 1))
+                    }
+                    onPress={() => setTakvim(takvim === i ? null : i)}
+                  />
+                  {!!degerler[i] && <SecenekHapi etiket="Tarih yok" secili={false} onPress={() => degistir(i, '')} />}
+                </View>
+                {takvim === i && (
+                  <AyTakvimi
+                    secili={degerler[i] || null}
+                    bugunGun={bugunGun}
+                    onSec={(g) => {
+                      degistir(i, g);
+                      setTakvim(null);
+                    }}
+                  />
+                )}
+              </>
+            ) : (
+              <Yazi>{hucreMetni('tarih', degerler[i]!) || '–'}</Yazi>
+            )}
+          </View>
+        ) : (
+          <GirisAlani
+            key={i}
+            etiket={c.ad}
+            value={degerler[i]}
+            editable={degisir}
+            keyboardType={c.tur === 'sayi' ? 'decimal-pad' : 'default'}
+            autoFocus={degisir && !satir && i === ilkYazi}
+            onChangeText={(t) => degistir(i, t)}
+            returnKeyType="done"
+          />
+        ),
+      )}
       {degisir && onSil && <Dugme tur="tehlike" etiket="Satırı sil" onPress={onSil} />}
     </AltSayfa>
   );
 }
 
-function SutunSayfasi({
-  sutunlar,
-  isaret: ilkIsaret,
-  onKaydet,
-  onKapat,
+/** Sütunlar: ad, tür (Yazı · Sayı · Tarih · İşaret), sayıda "Altta toplam"; ekle, kaldır. */
+export function SutunDuzenleyici({
+  liste,
+  onDegis,
 }: {
-  sutunlar: readonly string[];
-  isaret: boolean;
-  /** Yeni adlar, her yeni sütunun eski yeri (yeni sütunsa null) ve işaret kutusu. */
-  onKaydet: (adlar: string[], eskiYer: (number | null)[], isaret: boolean) => void;
-  onKapat: () => void;
+  liste: readonly (Sutun & { eski?: number | null })[];
+  onDegis: (l: (Sutun & { eski?: number | null })[]) => void;
 }) {
-  const [liste, setListe] = useState(() => sutunlar.map((ad, i) => ({ ad, eski: i as number | null })));
-  const [isaret, setIsaret] = useState(ilkIsaret);
-  const sonuc = sutunlariDuzelt(liste.map((x) => x.ad));
+  const degistir = (i: number, d: Partial<Sutun>) => onDegis(liste.map((y, j) => (j === i ? { ...y, ...d } : y)));
   return (
-    <AltSayfa
-      gorunur
-      onKapat={onKapat}
-      baslik="Sütunlar"
-      solVazgec
-      degisti={isaret !== ilkIsaret || liste.length !== sutunlar.length || liste.some((x, i) => x.ad !== sutunlar[i])}
-      sagEylem={{
-        etiket: 'Kaydet',
-        pasif: !sonuc,
-        onPress: () => {
-          const dolu = liste.filter((x) => x.ad.trim());
-          onKaydet(
-            dolu.map((x) => x.ad.trim()),
-            dolu.map((x) => x.eski),
-            isaret,
-          );
-        },
-      }}
-    >
+    <>
       {liste.map((x, i) => (
-        <View key={i} style={stiller.sutunSatiri}>
-          <View style={stiller.esnek}>
-            <GirisAlani
-              etiket={`${i + 1}. sütun`}
-              value={x.ad}
-              onChangeText={(ad) => setListe((l) => l.map((y, j) => (j === i ? { ...y, ad } : y)))}
-            />
+        <View key={i} style={stiller.sutunKutusu}>
+          <View style={stiller.sutunSatiri}>
+            <View style={stiller.esnek}>
+              <GirisAlani etiket={`${i + 1}. sütun`} value={x.ad} onChangeText={(ad) => degistir(i, { ad })} />
+            </View>
+            {liste.length > 1 && (
+              <Pressable
+                onPress={() => onDegis(liste.filter((_, j) => j !== i))}
+                accessibilityRole="button"
+                accessibilityLabel={`${x.ad || `${i + 1}. sütun`}: sütunu kaldır`}
+                hitSlop={6}
+                style={stiller.kaldir}
+              >
+                <Ionicons name="trash-outline" size={22} color={renk.hata} />
+              </Pressable>
+            )}
           </View>
-          {liste.length > 1 && (
-            <Pressable
-              onPress={() => setListe((l) => l.filter((_, j) => j !== i))}
-              accessibilityRole="button"
-              accessibilityLabel={`${x.ad || `${i + 1}. sütun`}: sütunu kaldır`}
-              hitSlop={6}
-              style={stiller.kaldir}
-            >
-              <Ionicons name="trash-outline" size={22} color={renk.hata} />
-            </Pressable>
+          <View style={stiller.cipler}>
+            {SUTUN_TURLERI.map((t) => (
+              <SecenekHapi
+                key={t.tur}
+                etiket={t.ad}
+                secili={x.tur === t.tur}
+                onPress={() =>
+                  degistir(i, { tur: t.tur as SutunTuru, toplam: t.tur === 'sayi' ? x.toplam : undefined })
+                }
+              />
+            ))}
+          </View>
+          {x.tur === 'sayi' && (
+            <View style={stiller.anahtarSatiri}>
+              <Yazi style={stiller.esnek}>Altta toplam</Yazi>
+              <AcKapa acik={!!x.toplam} onDegis={(a) => degistir(i, { toplam: a })} etiket={`${x.ad}: altta toplam`} />
+            </View>
           )}
         </View>
       ))}
@@ -362,18 +474,56 @@ function SutunSayfasi({
           tur="ikincil"
           yaziRengi={renk.ana}
           etiket="+ Sütun ekle"
-          onPress={() => setListe((l) => [...l, { ad: '', eski: null }])}
+          onPress={() => onDegis([...liste, { ad: '', tur: 'yazi', eski: null }])}
         />
       )}
-      <Yazi tur="ikincil">En çok beş sütun; sığmazsa tablo sağa kayar. Kaldırılan sütunun değerleri silinir.</Yazi>
-      {/* P-121: "Aldım" işareti (market gibi); satır yerinde kalır, üstü çizilir. */}
-      <View style={stiller.anahtarSatiri}>
-        <View style={stiller.esnek}>
-          <Yazi>İşaret kutusu</Yazi>
-          <Yazi tur="etiket">Alınanı işaretle: satır yerinde kalır, üstü çizilir.</Yazi>
-        </View>
-        <AcKapa acik={isaret} onDegis={setIsaret} etiket="Satırlarda işaret kutusu" />
-      </View>
+    </>
+  );
+}
+
+function SutunSayfasi({
+  sutunlar,
+  onKaydet,
+  onKapat,
+}: {
+  sutunlar: readonly Sutun[];
+  /** Yeni sütunlar ve her yeni sütunun eski yeri (yeni sütunsa null). */
+  onKaydet: (sutunlar: Sutun[], eskiYer: (number | null)[]) => void;
+  onKapat: () => void;
+}) {
+  const [liste, setListe] = useState<(Sutun & { eski?: number | null })[]>(() =>
+    sutunlar.map((s, i) => ({ ...s, eski: i })),
+  );
+  const sonuc = sutunlariDuzelt(liste);
+  const degisti =
+    liste.length !== sutunlar.length ||
+    liste.some(
+      (x, i) => x.ad !== sutunlar[i]?.ad || x.tur !== sutunlar[i]?.tur || !!x.toplam !== !!sutunlar[i]?.toplam,
+    );
+  return (
+    <AltSayfa
+      gorunur
+      onKapat={onKapat}
+      baslik="Sütunlar"
+      solVazgec
+      degisti={degisti}
+      sagEylem={{
+        etiket: 'Kaydet',
+        pasif: !sonuc,
+        onPress: () => {
+          const dolu = liste.filter((x) => x.ad.trim());
+          onKaydet(
+            dolu.map(({ eski: _e, ...s }) => ({ ...s, ad: s.ad.trim() })),
+            dolu.map((x) => x.eski ?? null),
+          );
+        },
+      }}
+    >
+      <SutunDuzenleyici liste={liste} onDegis={setListe} />
+      <Yazi tur="ikincil">
+        En çok beş sütun; sığmazsa tablo sağa kayar. İlk İşaret sütunu işaretli satırın üstünü çizer. Kaldırılan sütunun
+        değerleri silinir.
+      </Yazi>
     </AltSayfa>
   );
 }
@@ -390,8 +540,9 @@ const stiller = StyleSheet.create({
   // Sabit ve kayan kısımlar hizalı kalsın diye satırlar sabit yükseklikte.
   satir: { flexDirection: 'row', height: 48, borderTopWidth: 1, borderTopColor: renk.satirCizgi },
   baslikSatiri: { borderTopWidth: 0, height: 44, backgroundColor: renk.zemin },
+  toplamSatiri: { height: 44, backgroundColor: renk.zemin },
   ciftSatir: { backgroundColor: renk.zemin },
-  kutuHucre: { width: KUTU, alignItems: 'center', justifyContent: 'center' },
+  isaretHucre: { height: 47, alignItems: 'center', justifyContent: 'center' },
   kare: {
     width: 24,
     height: 24,
@@ -404,8 +555,11 @@ const stiller = StyleSheet.create({
   kareDolu: { backgroundColor: renk.ana, borderColor: renk.ana },
   cizili: { textDecorationLine: 'line-through' },
   sagaYasli: { alignSelf: 'flex-end', marginTop: -4 },
-  anahtarSatiri: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  anahtarSatiri: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 },
+  tarihBolumu: { gap: 8 },
+  cipler: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   baslikHucre: { height: 44 },
+  toplamHucre: { height: 43 },
   hucre: {
     height: 47,
     flexDirection: 'row',
@@ -414,9 +568,17 @@ const stiller = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
+  sagda: { justifyContent: 'flex-end' },
   esnek: { flex: 1 },
   dugmeler: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   ekle: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44 },
+  sutunKutusu: {
+    gap: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: renk.cizgi,
+    borderRadius: olcu.kose.kart,
+  },
   sutunSatiri: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   kaldir: { width: 44, height: 48, alignItems: 'center', justifyContent: 'center' },
 });

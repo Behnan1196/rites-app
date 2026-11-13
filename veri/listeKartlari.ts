@@ -6,7 +6,7 @@
 
 import { listeCesidindenRutin, RUTIN_BILGI, RUTIN_GUNLUK, type RutinCesidi } from '@/mantik/rutinAdimlari';
 import { yeniKart, type Kart } from '@/mantik/kart';
-import { bosTablo, tabloYaz } from '@/mantik/tablo';
+import { bosTablo, tabloYaz, type Sutun } from '@/mantik/tablo';
 import type { Gun } from '@/mantik/tarih';
 
 import { ayarOku, ayarYaz } from './ayar';
@@ -92,13 +92,12 @@ export async function listeKartiKur(
 export async function tabloKartiKur(
   kapi: Kapi,
   ad: string,
-  sutunlar: readonly string[],
+  sutunlar: readonly Sutun[],
   bugunGun: Gun,
   idUret: KimlikUretici,
-  isaret = false,
 ): Promise<string> {
   const id = idUret();
-  const t = tabloYaz(bosTablo([...sutunlar], isaret));
+  const t = tabloYaz(bosTablo([...sutunlar]));
   await yeniKartKaydet(
     kapi,
     yeniKart(id, { baslik: ad.trim(), tarih: bugunGun, listede: true, ajandada: false }),
