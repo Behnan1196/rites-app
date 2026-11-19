@@ -651,3 +651,8 @@ Sonuç: Türkçe yerli ürünler zayıf. Türkçe danışan uygulaması olan yab
 Ne dedi: "Hubfit fena değil, arkadaşımdan incelemesini isteyeceğim. Ancak takıldığım nokta, biz Rites'ı koçluk planformlarının teslimat noktası olarak düşünüyorduk en başından beri, hatta beslenme için web de bir uygulama yapıp Rites üzerinden beslenme danışmanlığını başlatma planımız vardı. Diğer yandan, ben günlük egzersiz listesi yapıyorum kendimce ve videolar koyarak takip etmeye çalışıyorum, şu an için eksiğim kaç set ve tekrar yaptığımı kaydetmekti ve onu yapmaya başlayacaktım, tam da everfit de bunun için yapıyı görünce heyecanlanmıştım." Seçimler: tekrar ve ağırlık; setler hedefle dolu gelsin; geçen sefer + gidişat; dinlenme sayacı başlasın.
 Nerede: Kart → + → Setler (egzersiz listesinin maddesinde de)
 Sonuç: → kararlar.md (Rites teslimat noktası; Setler).
+
+### P-128 · 19 Kasım 2026 · Behnan
+Ne dedi: "Tamam, setler görünüyor ancak bizim planlama yapmamız gereken şey, Rites'ın, örneğimiz everyfit olsun, nasıl bir fitness ve beslenme için danışan uygulaması haline gelebileceği." Seçimler: fitness ve beslenme birlikte; danışan verisinin koça gitmesine şimdilik karar verilmesin; ayrı web paneli; ilk adım plan belgesi.
+Nerede: Genel (ürün yönü)
+Sonuç: `danisan-uygulamasi.md` (plan taslağı). → kararlar.md.

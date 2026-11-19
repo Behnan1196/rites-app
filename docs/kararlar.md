@@ -847,3 +847,10 @@ Kart modelinin bir sonraki adımı. Çeşitler alan alan tasarlanır; pilotta il
 - **Gidişat:** kartın ⋯ → Gidişat (listenin maddesinde de): Setler bölümünde son 4 haftanın günleri ("11 · 9 · 11 tekrar · 20 kg", toplam tekrar), üstte en ağır. — Ürün sahibi (P-127); biçim: Öneri
 - Saklama: hedef `blok.metin` (JSON), günün setleri kayıtta `degerler[blok.id]` (JSON dizi); veritabanı değişmedi, yeni derleme gerekmez (EAS güncellemesi). — Not
 - Sonra: listede maddenin yanında set özeti; koça set özeti gönderme (danışan izniyle); kapalıyken dinlenme bildirimi. — Not
+
+## Danışan uygulaması planı (19 Kasım, P-128)
+
+- **Plan belgesi `danisan-uygulamasi.md`:** Everfit örneğinde Rites danışan uygulaması, koç / diyetisyen paneli ayrı web. Everfit'in danışan uygulamasıyla karşılaştırma, veri ilkesi önerisi, yapı, aşamalar, açık sorular. İlk adım belge; kod yok. — Ürün sahibi (P-128: önce plan belgesi)
+- **Fitness ve beslenme birlikte:** ortak altyapı (koç bağı, program / plan gönderme, web paneli) bir kez kurulur. — Ürün sahibi (P-128)
+- **Koç paneli ayrı web uygulaması** (aynı Supabase); telefon danışana sade kalır. — Ürün sahibi (P-128)
+- **Danışan verisinin koça gitmesi: karar yok,** önce hukuki görüş (KVKK özel nitelikli veri, açık rıza, yurt dışına aktarım). O zamana kadar koça yalnız Yaptım günleri gider (bugünkü kart verme gibi). Öneri belgede: danışan neyin gideceğini seçer, ham kayıt değil özet gider. — Ürün sahibi (P-128); öneri: Öneri
