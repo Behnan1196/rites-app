@@ -55,7 +55,8 @@ export function kaynakEtiketi(k: KaynakliKart, planAdlari: ReadonlyMap<string, s
     case 'plan':
       return kaynakAdi(anahtar, planAdlari);
     case 'koc':
-      return `Veren: ${k.gelenKimden ?? ''}`.trim();
+      // P-134: koç paketinden gelen kart "Koç: …" (verilen kart "Veren: …").
+      return `${k.bag?.startsWith('ornekkoc:') ? 'Koç' : 'Veren'}: ${k.gelenKimden ?? ''}`.trim();
     case 'gelen':
       return `Gelen: ${k.gelenKimden ?? ''}`.trim();
     case 'liste':

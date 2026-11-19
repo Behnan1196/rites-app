@@ -25,7 +25,9 @@ export function secilebilirParcalar({
   // P-51: tek Liste; "Proje adımları" ayrı seçenek değil.
   // P-83: Bilgi listesi ve Listelerimden de Liste'nin biçimleri.
   // P-87: ölçüm parçaları (Sayarak, Ölçüm, Puan) bir kartta birden çok olur.
-  const goster = (t: BlokTuru) => !haric.includes(t) && esi(t) === t && (!kartta.has(t) || COKLU_PARCALAR.includes(t));
+  // P-134: beslenme planı yalnız koçtan gelir; kişi eklemez.
+  const goster = (t: BlokTuru) =>
+    t !== 'beslenme' && !haric.includes(t) && esi(t) === t && (!kartta.has(t) || COKLU_PARCALAR.includes(t));
   if (!uzman) return { gorunen: NORMAL_BLOKLAR.filter(goster), kayit: [] };
   return {
     gorunen: [...ICERIK_BLOKLARI, ...ARAC_BLOKLARI].filter(goster),

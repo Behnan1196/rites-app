@@ -3,7 +3,7 @@
 // set ve tekrar, yeni rekorlar, "Nasıl geçti?" (1–5) ve not. Özet rutinin o günkü kaydına yazılır
 // (`degerler.antrenman`, JSON).
 
-import type { Blok, Kayit } from './kart';
+import type { Blok, Bolum, Kayit } from './kart';
 import { setGecmisi, setHedefiOku, setleriOku, type SetHedefi } from './setler';
 import type { Gun } from './tarih';
 
@@ -14,6 +14,23 @@ export interface AntrenmanAdimi {
   kayitlar: readonly Kayit[];
   /** O gün yapıldı mı (listenin işareti). */
   yapildi: boolean;
+  /** P-134: Isınma · Ana bölüm · Soğuma. */
+  bolum?: Bolum;
+}
+
+const BOLUM_SIRASI: Record<Bolum, number> = { isinma: 0, ana: 1, soguma: 2 };
+
+/** Adımları bölümlerine göre dizer (bölüm içinde listedeki sıra korunur). */
+export function bolumeGoreSirala<T extends Pick<AntrenmanAdimi, 'bolum'>>(adimlar: readonly T[]): T[] {
+  return adimlar
+    .map((a, i) => ({ a, i }))
+    .sort((x, y) => BOLUM_SIRASI[x.a.bolum ?? 'ana'] - BOLUM_SIRASI[y.a.bolum ?? 'ana'] || x.i - y.i)
+    .map((x) => x.a);
+}
+
+/** Antrenmanda bölüm başlıkları gösterilsin mi (ısınma ya da soğuma varsa). */
+export function bolumluMu(adimlar: readonly Pick<AntrenmanAdimi, 'bolum'>[]): boolean {
+  return adimlar.some((a) => a.bolum === 'isinma' || a.bolum === 'soguma');
 }
 
 export const ANTRENMAN_DEGERI = 'antrenman';

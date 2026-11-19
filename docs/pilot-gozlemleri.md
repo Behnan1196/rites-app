@@ -681,3 +681,8 @@ Sonuç: `danisan-uygulamasi.md` §4c; beslenmenin dört ekranı çizildi. Açık
 Ne dedi: "sanırım artık uygulama da görme zamanı geldi, görsellikle ilgili (örneğin play tuşunun egzersizin küçük bir caption u ile olması gibi) daha sonra ayarlamalar yapılır" Seçimler: önce sekmeler ve antrenman akışı; yaşam alanlarının verileri silinsin.
 Nerede: Sekmeler, Programlar, Koçum, listenin ekranı → Antrenman
 Sonuç: → kararlar.md (Sekmeler ve antrenman akışı uygulamada). Görsel ayarlar (ör. oynat düğmesinin egzersizin küçük bir yazısıyla durması) sonraya.
+
+### P-134 · 19 Kasım 2026 · Behnan
+Ne dedi: "Güzel, tabi bizim liste yapımızla oluşturulan egzersiz setleri everfitden farklı. Devam edelim, sanırım koçun yollayacağı egzersiz setini seed olarak tanımlamak gerekecek" Seçimler: Koçum'da "Örnek koçla dene"; antrenmanda Isınma · Ana bölüm · Soğuma; örnek fitness + beslenme.
+Nerede: Koçum, antrenman, beslenme
+Sonuç: → kararlar.md (Koç paketi ve örnek koç).

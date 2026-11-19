@@ -27,4 +27,5 @@ export const BLOK_TURLERI: Record<BlokTuru, { ad: string; ikon: IkonAdi; kayit: 
   gunnot: { ad: 'Günün notu', ikon: 'chatbox-ellipses-outline', kayit: true },
   gelfoto: { ad: 'Gelişim fotoğrafı', ikon: 'camera-outline', kayit: true },
   setler: { ad: 'Setler', ikon: 'barbell-outline', kayit: true },
+  beslenme: { ad: 'Beslenme planı', ikon: 'restaurant-outline', kayit: true },
 };

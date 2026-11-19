@@ -390,6 +390,11 @@ export const GOCLER: readonly Goc[] = [
     surum: 32,
     sql: `DELETE FROM alan_durumu; UPDATE program SET alanlar = '[]';`,
   },
+  {
+    // P-134 (19 Kasım): listenin adımı (egzersiz) hangi bölümde: 'isinma' · 'ana' · 'soguma'; NULL: ana.
+    surum: 33,
+    sql: `ALTER TABLE kart ADD COLUMN bolum TEXT;`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

@@ -1,6 +1,7 @@
 // Ayarlar: anahtar–değer, değer JSON olarak saklanır (`03` → ayar).
 
 import type { KutuAyari } from '@/mantik/giris';
+import type { KocBilgisi } from '@/mantik/kocPaketi';
 import { adHatasi, adTemizle } from '@/mantik/metin';
 import type { Gun } from '@/mantik/tarih';
 
@@ -46,6 +47,8 @@ export interface Ayarlar {
   alisveris_gecmisi: string[];
   /** P-88: son kurulan anımsatıcının "Nasıl uyarsın?", sesi ve ertelemesi; yeni anımsatıcı bunlarla açılır. */
   son_animsatici: { alarm: boolean; ses: string | null; erteleDk: number };
+  /** P-134: bağlı koç ve diyetisyen (şimdilik yalnız örnek; `mantik/kocPaketi`). */
+  koc: KocBilgisi;
 }
 
 export type AyarAnahtari = keyof Ayarlar;

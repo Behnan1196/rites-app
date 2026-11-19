@@ -145,7 +145,17 @@ export interface Kart {
   listede?: boolean;
   /** P-93: rutindeki sırası. */
   ustSira?: number | null;
+  /** P-134: listenin adımıysa antrenmandaki bölümü; yok / null: ana bölüm. */
+  bolum?: Bolum | null;
 }
+
+/** P-134: antrenmanın bölümleri. */
+export type Bolum = 'isinma' | 'ana' | 'soguma';
+export const BOLUMLER: readonly { bolum: Bolum; ad: string }[] = [
+  { bolum: 'isinma', ad: 'Isınma' },
+  { bolum: 'ana', ad: 'Ana bölüm' },
+  { bolum: 'soguma', ad: 'Soğuma' },
+];
 
 /**
  * P-83 (1 Kasım): `bilgi` işaretsiz madde listesi (malzemeler, notlar); `listebag` Listeler'deki bir
@@ -170,7 +180,18 @@ export function maddeliListeMi(tur: BlokTuru): boolean {
   return tur === 'liste' || tur === 'adimlar' || tur === 'bilgi';
 }
 // P-127: `setler` egzersizde set set tekrar ve ağırlık (`mantik/setler`).
-export const KAYIT_BLOKLARI = ['sayac', 'kronometre', 'olcum', 'adet', 'puan', 'gunnot', 'gelfoto', 'setler'] as const;
+// P-134: `beslenme` diyetisyenin öğün planı (`mantik/beslenme`); yalnız koçtan gelir, kişi eklemez.
+export const KAYIT_BLOKLARI = [
+  'sayac',
+  'kronometre',
+  'olcum',
+  'adet',
+  'puan',
+  'gunnot',
+  'gelfoto',
+  'setler',
+  'beslenme',
+] as const;
 /**
  * Kayıt üreten ama kartta "Ne yapacaksın" bölümünde duran araçlar (P-38): zamanlayıcı ve
  * kronometre süreyi kaydeder. Öbür kayıt blokları "Bugün" bölümündedir.

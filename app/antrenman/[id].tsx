@@ -6,7 +6,7 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -23,12 +23,13 @@ import {
   adimHedefi,
   antrenmanOzeti,
   antrenmanSuresi,
+  bolumluMu,
   gecenSure,
   setBlogu,
   siradakiAdim,
   type AntrenmanAdimi,
 } from '@/mantik/antrenman';
-import { bosKayit, type Kayit } from '@/mantik/kart';
+import { BOLUMLER, bosKayit, type Kayit } from '@/mantik/kart';
 import { dinlenmeMetni, hedefMetni, setleriOku, setOzeti, setHedefiOku } from '@/mantik/setler';
 import { metinDoluMu } from '@/mantik/zenginMetin';
 import { blokVideolari } from '@/mantik/video';
@@ -80,6 +81,7 @@ export default function Antrenman() {
   const { rutin, adimlar } = veri.veri;
   const aktif = secili ?? siradakiAdim(adimlar);
   const ozet = antrenmanOzeti(adimlar, gun);
+  const bolumlu = bolumluMu(adimlar);
 
   const isaretle = (a: AntrenmanAdimi, yapildi: boolean) =>
     void rutinAdimiIsaretle(kapi, oku, rutin.id, a.id, gun, yapildi)
@@ -135,75 +137,85 @@ export default function Antrenman() {
         keyboardShouldPersistTaps="handled"
       >
         {adimlar.length === 0 && <Yazi tur="ikincil">Bu listede egzersiz yok.</Yazi>}
-        {adimlar.map((a, i) => {
-          const b = setBlogu(a);
-          const hedef = adimHedefi(a);
-          if (i !== aktif) {
-            const k = a.kayitlar.find((x) => x.tarih === gun);
-            const ozetMetni = b && k ? setOzeti(setleriOku(k, setHedefiOku(b), b.id)) : '';
-            return (
-              <Pressable
-                key={a.id}
-                onPress={() => setSecili(i)}
-                accessibilityRole="button"
-                accessibilityLabel={`${a.baslik}${a.yapildi ? ', yapıldı' : ''}. Açmak için dokun.`}
-                style={({ pressed }) => [stiller.kapali, pressed && { opacity: 0.7 }]}
-              >
-                {a.yapildi ? (
-                  <Ionicons name="checkmark-circle" size={24} color={renk.ana} />
-                ) : (
-                  <View style={stiller.bosDaire} />
-                )}
-                <Yazi
-                  renk={a.yapildi ? renk.ikincil : renk.yazi}
-                  kalinlik={a.yapildi ? 'normal' : 'yariKalin'}
-                  numberOfLines={1}
-                  style={stiller.esnek}
-                >
-                  {a.baslik}
-                </Yazi>
-                <Yazi tur="ikincil" numberOfLines={1}>
-                  {a.yapildi ? ozetMetni || 'Yapıldı' : hedef ? hedefMetni(hedef) : ''}
-                </Yazi>
-              </Pressable>
-            );
-          }
-          const kayit: Kayit = a.kayitlar.find((x) => x.tarih === gun) ?? bosKayit(a.id, gun);
-          const video = a.bloklar.find((x) => x.tur === 'video');
-          return (
-            <View key={a.id} style={stiller.acik}>
-              {video && blokVideolari(video).length > 0 && <VideolarGorunumu videolar={blokVideolari(video)} />}
-              <Pressable
-                onPress={() => setAciklama(a)}
-                accessibilityRole="button"
-                accessibilityHint="Nasıl yapıldığını gösterir"
-                hitSlop={6}
-                style={stiller.adSatiri}
-              >
-                <Yazi tur="bolumBasligi" style={stiller.esnek}>
-                  {a.baslik}
-                </Yazi>
-                <Ionicons name="information-circle-outline" size={24} color={renk.ana} />
-              </Pressable>
-              {b ? (
-                <SetlerParcasi
-                  blok={b}
-                  gun={gun}
-                  kayit={kayit}
-                  kayitlar={a.kayitlar}
-                  onKayit={(degistir) => void kayitDegistir(kapi, a.id, gun, degistir).catch(hata)}
-                  onYapildi={(y) => isaretle(a, y)}
-                />
-              ) : (
-                <Dugme
-                  tur={a.yapildi ? 'ikincil' : 'ana'}
-                  etiket={a.yapildi ? 'Yapıldı · geri al' : 'Yaptım'}
-                  onPress={() => isaretle(a, !a.yapildi)}
-                />
-              )}
-            </View>
-          );
-        })}
+        {adimlar.map((a, i) => (
+          <Fragment key={a.id}>
+            {/* P-134: Isınma · Ana bölüm · Soğuma başlıkları. */}
+            {bolumlu && (i === 0 || (adimlar[i - 1]!.bolum ?? 'ana') !== (a.bolum ?? 'ana')) && (
+              <Yazi tur="kutuBasligi" accessibilityRole="header" style={stiller.bolumBasligi}>
+                {(BOLUMLER.find((x) => x.bolum === (a.bolum ?? 'ana'))?.ad ?? '').toLocaleUpperCase('tr')}
+              </Yazi>
+            )}
+            {(() => {
+              const b = setBlogu(a);
+              const hedef = adimHedefi(a);
+              if (i !== aktif) {
+                const k = a.kayitlar.find((x) => x.tarih === gun);
+                const ozetMetni = b && k ? setOzeti(setleriOku(k, setHedefiOku(b), b.id)) : '';
+                return (
+                  <Pressable
+                    key={a.id}
+                    onPress={() => setSecili(i)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${a.baslik}${a.yapildi ? ', yapıldı' : ''}. Açmak için dokun.`}
+                    style={({ pressed }) => [stiller.kapali, pressed && { opacity: 0.7 }]}
+                  >
+                    {a.yapildi ? (
+                      <Ionicons name="checkmark-circle" size={24} color={renk.ana} />
+                    ) : (
+                      <View style={stiller.bosDaire} />
+                    )}
+                    <Yazi
+                      renk={a.yapildi ? renk.ikincil : renk.yazi}
+                      kalinlik={a.yapildi ? 'normal' : 'yariKalin'}
+                      numberOfLines={1}
+                      style={stiller.esnek}
+                    >
+                      {a.baslik}
+                    </Yazi>
+                    <Yazi tur="ikincil" numberOfLines={1}>
+                      {a.yapildi ? ozetMetni || 'Yapıldı' : hedef ? hedefMetni(hedef) : ''}
+                    </Yazi>
+                  </Pressable>
+                );
+              }
+              const kayit: Kayit = a.kayitlar.find((x) => x.tarih === gun) ?? bosKayit(a.id, gun);
+              const video = a.bloklar.find((x) => x.tur === 'video');
+              return (
+                <View key={a.id} style={stiller.acik}>
+                  {video && blokVideolari(video).length > 0 && <VideolarGorunumu videolar={blokVideolari(video)} />}
+                  <Pressable
+                    onPress={() => setAciklama(a)}
+                    accessibilityRole="button"
+                    accessibilityHint="Nasıl yapıldığını gösterir"
+                    hitSlop={6}
+                    style={stiller.adSatiri}
+                  >
+                    <Yazi tur="bolumBasligi" style={stiller.esnek}>
+                      {a.baslik}
+                    </Yazi>
+                    <Ionicons name="information-circle-outline" size={24} color={renk.ana} />
+                  </Pressable>
+                  {b ? (
+                    <SetlerParcasi
+                      blok={b}
+                      gun={gun}
+                      kayit={kayit}
+                      kayitlar={a.kayitlar}
+                      onKayit={(degistir) => void kayitDegistir(kapi, a.id, gun, degistir).catch(hata)}
+                      onYapildi={(y) => isaretle(a, y)}
+                    />
+                  ) : (
+                    <Dugme
+                      tur={a.yapildi ? 'ikincil' : 'ana'}
+                      etiket={a.yapildi ? 'Yapıldı · geri al' : 'Yaptım'}
+                      onPress={() => isaretle(a, !a.yapildi)}
+                    />
+                  )}
+                </View>
+              );
+            })()}
+          </Fragment>
+        ))}
         {adimlar.length > 0 && <Dugme tur="vurgu" etiket="Antrenmanı bitir" onPress={() => setOzetAcik(true)} />}
       </ScrollView>
 
@@ -297,6 +309,7 @@ function Sayi({ deger, ad }: { deger: string; ad: string }) {
 
 const stiller = StyleSheet.create({
   kap: { flex: 1, backgroundColor: renk.zemin },
+  bolumBasligi: { marginTop: 6 },
   ust: {
     flexDirection: 'row',
     alignItems: 'center',

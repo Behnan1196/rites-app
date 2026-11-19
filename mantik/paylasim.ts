@@ -82,6 +82,7 @@ const BLOK_ADI: Record<BlokTuru, string> = {
   gunnot: 'Günün notu',
   gelfoto: 'Gelişim fotoğrafı',
   setler: 'Setler',
+  beslenme: 'Beslenme planı',
 };
 
 /** Gelenler'deki blok özeti: ["Liste", "Talimat", "Zamanlayıcı"]. */

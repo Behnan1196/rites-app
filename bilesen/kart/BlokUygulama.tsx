@@ -30,6 +30,7 @@ import { ZenginMetin } from '../ZenginMetin';
 import { MaddeDuzeltici } from '../MaddeDuzeltici';
 import { BagliListeBlogu } from './BagliListe';
 import { BuyutulebilirFoto } from './BuyutulebilirFoto';
+import { BeslenmeParcasi } from './BeslenmeParcasi';
 import { SetlerParcasi } from './SetlerParcasi';
 import { TabloParcasi } from './TabloParcasi';
 
@@ -84,6 +85,8 @@ export function BlokUygulama(o: Ozellikler) {
       return <PuanBlogu {...o} />;
     case 'setler':
       return <SetlerParcasi {...o} />;
+    case 'beslenme':
+      return <BeslenmeParcasi blok={o.blok} gun={o.gun} kayit={o.kayit} onKayit={o.onKayit} />;
   }
 }
 

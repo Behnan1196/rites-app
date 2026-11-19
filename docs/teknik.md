@@ -256,3 +256,11 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - `app/(sekmeler)/_layout.tsx`: giris · ajandam · kocum · yasam (başlık "Programlar") · gruplar. `bilesen/AltMenu.tsx` simgeleri (`kocum` person, `yasam` grid). `app/(sekmeler)/kocum/` (yalnız `index`).
 - Yerel göç 32: `DELETE FROM alan_durumu; UPDATE program SET alanlar = '[]'`. `app/(sekmeler)/yasam/index.tsx` alansız; `ProgramFormu` alan sormaz. `alan/[alan]` ekranı duruyor, bağlantısı yok.
 - `mantik/antrenman.ts`: `setBlogu`, `antrenmanMi`, `adimHedefi`, `siradakiAdim`, `antrenmanOzeti` (set, tekrar, rekor), `gecenSure`, `antrenmanSuresi`, `antrenmanKaydiYaz` (`degerler.antrenman` = `{sure, puan, not}`). `veri/antrenman.ts`: `antrenmanAdimlari` (adımlar, parçaları, kayıtları, o günkü işaret), `antrenmanVarMi` (adımlarda `setler` parçası), `antrenmaniKaydet`. Ekran `app/antrenman/[id].tsx` (`id` listenin kartı, `gun`); setler `SetlerParcasi` ile, işaret `rutinAdimiIsaretle`.
+
+## Koç paketi, beslenme planı, bölümler (P-134, 19 Kasım)
+
+- Yerel göç 33: `kart.bolum` ('isinma' · 'soguma'; NULL = ana). `Kart.bolum`, `BOLUMLER` (`mantik/kart`). `veri/rutinler.ts` `adimBolumuYaz`. `mantik/antrenman.ts` `bolumeGoreSirala`, `bolumluMu`; `antrenmanAdimlari` bölüme göre dizer.
+- `mantik/kocPaketi.ts`: `KocPaketi` (surum 1), `paketKartlari` (liste kartı + adımlar + beslenme kartı; bağ `ornekkoc:antrenman:<A>`, `ornekkoc:egzersiz:<A>:<i>`, `ornekkoc:beslenme`), `kocBilgisi`, `ORNEK_PAKET`. `veri/kocPaketi.ts`: `paketiKur`, `ornegiKaldir`, `kocKartKimlikleri`. Ayar `koc` (`KocBilgisi`).
+- Kayıt parçası `beslenme` (`KAYIT_BLOKLARI`; `parcaSecimi`'nde seçilemez). `mantik/beslenme.ts`: plan `blok.metin` (`planOku`/`planYaz`; `gunler` 7 ya da 1), `gununOgunleri`, kayıt `degerler[blok.id]` = `{<öğün>: {d:'yedi'} | {d:'farkli', ne, m}}` (`ogunYaz`: hepsi işaretlenince Yaptım), fotoğraf `fotolar["<blok>:<öğün>"]`. Bileşen `bilesen/kart/BeslenmeParcasi.tsx` (öğün sayfası, tarifler, `listeKartiKur` ile "Market").
+- `kaynakEtiketi`: bağı `ornekkoc:` olan koç kartında "Koç: …".
+- `app/(sekmeler)/kocum/index.tsx`: ayar yoksa koçsuz ekran ve "Örnek koçla dene"; varsa koçlar, Program (haftanın antrenmanları, Başla → `/antrenman/[id]?gun=`), Beslenme (hafta şeridi + `BeslenmeParcasi`), "Örneği kaldır".

@@ -45,7 +45,7 @@ import { useOturumAc } from '@/bilesen/oturum/OturumSayfasi';
 import { adimGunuYaz, listedeYaz } from '@/veri/listeKartlari';
 import { tabloyuDisaVer } from '@/veri/tabloDosyasi';
 import { adimlarListeParcasi, RUTIN_BILGI, RUTIN_GUNLUK, RUTIN_KALICI, rutinCesidi } from '@/mantik/rutinAdimlari';
-import { rutinAdimiIsaretle, rutinAdimlari, rutinYap } from '@/veri/rutinler';
+import { rutinAdimiIsaretle, rutinAdimlari, rutinYap , adimBolumuYaz } from '@/veri/rutinler';
 import { olcumParcalariMi } from '@/mantik/gidisat';
 import { setHedefiYaz, VARSAYILAN_HEDEF } from '@/mantik/setler';
 import { antrenmanVarMi } from '@/veri/antrenman';
@@ -67,6 +67,7 @@ import { useKutuphaneyeKaydet } from '@/bilesen/kutuphane/KaydetSayfasi';
 import { usePaylas } from '@/bilesen/paylasim/PaylasSayfasi';
 import { SimgeDugmesi } from '@/bilesen/SimgeDugmesi';
 import { AltSayfa } from '@/bilesen/AltSayfa';
+import { SecenekHapi } from '@/bilesen/Secim';
 import { BLOK_TURLERI } from '@/bilesen/kart/blokTurleri';
 import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { kaynakAnahtari, kaynakTuru } from '@/mantik/kaynak';
@@ -75,6 +76,7 @@ import { gunBasligi, kisaGoreliTarih } from '@/mantik/ajanda';
 import { cesitBul } from '@/mantik/cesit';
 import { gorunurMu } from '@/mantik/gorunurluk';
 import {
+  BOLUMLER,
   ARAC_BLOKLARI,
   bosKayit,
   maddeliListeMi,
@@ -175,6 +177,8 @@ export default function KartGorunumu() {
   const [listePaylas, setListePaylas] = useState(false);
   const [listeSil, setListeSil] = useState(false);
   const [adimGunu, setAdimGunu] = useState(false);
+  /** P-134: egzersizin bölümü. */
+  const [bolumSec, setBolumSec] = useState(false);
   /** P-112: başlık yazılırken Yaptım kutusu gizlenir. */
   const [baslikYaziliyor, setBaslikYaziliyor] = useState(false);
   const oturumAc = useOturumAc();
@@ -343,9 +347,15 @@ export default function KartGorunumu() {
     const hepsi = !kur ? ogeler : i < 0 ? [...ogeler, kur] : [...ogeler.slice(0, i), kur, ...ogeler.slice(i)];
     return kart.ust
       ? hepsi.filter((o) =>
-          [KUR, 'Gidişat', 'Listeden kaldır', 'Gün ver', 'Alışkanlık olarak izle', 'Alışkanlıktan çıkar'].includes(
-            o.etiket,
-          ),
+          [
+            KUR,
+            'Gidişat',
+            'Bölüm',
+            'Listeden kaldır',
+            'Gün ver',
+            'Alışkanlık olarak izle',
+            'Alışkanlıktan çıkar',
+          ].includes(o.etiket),
         )
       : hepsi;
   };
@@ -748,6 +758,22 @@ export default function KartGorunumu() {
           }}
         />
       </AltSayfa>
+      <AltSayfa gorunur={bolumSec} onKapat={() => setBolumSec(false)} baslik="Antrenmandaki bölümü" sagKapat="Kapat">
+        <View style={stiller.bolumler}>
+          {BOLUMLER.map((x) => (
+            <SecenekHapi
+              key={x.bolum}
+              etiket={x.ad}
+              secili={(kart.bolum ?? 'ana') === x.bolum}
+              onPress={() => {
+                setBolumSec(false);
+                icerikKaydet(adimBolumuYaz(kapi, kart.id, x.bolum));
+              }}
+            />
+          ))}
+        </View>
+        <Yazi tur="ikincil">Antrenmanda egzersizler Isınma · Ana bölüm · Soğuma başlıklarıyla sıralanır.</Yazi>
+      </AltSayfa>
       <ListeCesidiSecici
         gorunur={listeCesidi}
         secili={rutinCesidi(kart)}
@@ -1000,6 +1026,16 @@ export default function KartGorunumu() {
                       ? []
                       : kart.ust
                         ? [
+                            // P-134: egzersizin antrenmandaki bölümü (Isınma · Ana bölüm · Soğuma).
+                            ...(duzenlenir
+                              ? [
+                                  {
+                                    etiket: 'Bölüm',
+                                    ikon: 'layers-outline' as const,
+                                    onPress: () => setBolumSec(true),
+                                  },
+                                ]
+                              : []),
                             // P-101: rutinin adımı doğrudan rutinden kaldırılır (sıralama sürüklemeyle).
                             {
                               etiket: 'Listeden kaldır',
@@ -1077,6 +1113,7 @@ function SabitSimgesi() {
 }
 
 const stiller = StyleSheet.create({
+  bolumler: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   ustSag: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   planEtiketi: {
     alignSelf: 'flex-start',

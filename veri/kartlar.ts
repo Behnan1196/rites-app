@@ -66,6 +66,7 @@ interface KartSatiri {
   ust?: string | null;
   ust_sira?: number | null;
   listede?: number | null;
+  bolum?: string | null;
   ajandada?: number | null;
   blok_sayisi?: number;
   adim_maddeler?: string | null;
@@ -139,6 +140,7 @@ export function kartSatirdan(s: KartSatiri): KartOzeti {
     ...(s.rutin ? { rutin: s.rutin } : {}),
     ...(s.ust ? { ust: s.ust, ustSira: s.ust_sira ?? 0 } : {}),
     ...(s.listede ? { listede: true } : {}),
+    ...(s.bolum === 'isinma' || s.bolum === 'soguma' || s.bolum === 'ana' ? { bolum: s.bolum } : {}),
     ...(s.ajandada === 0 || s.ajandada === 1 ? { ajandada: s.ajandada === 1 } : {}),
     blokSayisi: s.blok_sayisi ?? 0,
     adimlar: s.adim_maddeler
@@ -178,7 +180,7 @@ function kayitSatirdan(s: KayitSatiri): Kayit {
 }
 
 const KART_ALANLARI =
-  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, seri_say, cesit, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag, sabitler, aliskanlik, ajandada, olcumlerim, rutin, ust, ust_sira, listede';
+  'baslik, kisa, tarih, tarihsiz, saat, hatirlatma, alarm, alarm_sesi, seri_say, cesit, tekrar, bitis, atlanan, plan_id, kaynak, gelen_kimden, kilitli, yapildi, birakildi, sira, bag, sabitler, aliskanlik, ajandada, olcumlerim, rutin, ust, ust_sira, listede, bolum';
 
 function kartDegerleri(k: Kart): SqlDeger[] {
   return [
@@ -211,6 +213,7 @@ function kartDegerleri(k: Kart): SqlDeger[] {
     k.ust ?? null,
     k.ust ? (k.ustSira ?? 0) : null,
     k.listede ? 1 : 0,
+    k.bolum ?? null,
   ];
 }
 

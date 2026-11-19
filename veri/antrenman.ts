@@ -1,7 +1,7 @@
 // Antrenman akışı (P-133): listenin adımlarını parçaları, kayıtları ve o günkü işaretiyle okur;
 // bitince özeti rutinin o günkü kaydına yazar.
 
-import { antrenmanKaydiYaz, type AntrenmanAdimi, type AntrenmanKaydi } from '@/mantik/antrenman';
+import { antrenmanKaydiYaz, bolumeGoreSirala, type AntrenmanAdimi, type AntrenmanKaydi } from '@/mantik/antrenman';
 import type { Kart } from '@/mantik/kart';
 import type { Gun } from '@/mantik/tarih';
 
@@ -16,14 +16,17 @@ export async function antrenmanAdimlari(
 ): Promise<AntrenmanAdimi[]> {
   const adimlar = await rutinAdimlari(oku, rutin.id);
   const yapilanlar = await rutinYapilanlari(oku, rutin, gun);
-  return Promise.all(
-    adimlar.map(async (k) => ({
-      id: k.id,
-      baslik: k.baslik,
-      bloklar: (await kartAyrinti(oku, k.id))?.bloklar ?? [],
-      kayitlar: await kartKayitlari(oku, k.id),
-      yapildi: yapilanlar.has(k.id),
-    })),
+  return bolumeGoreSirala(
+    await Promise.all(
+      adimlar.map(async (k) => ({
+        id: k.id,
+        baslik: k.baslik,
+        bloklar: (await kartAyrinti(oku, k.id))?.bloklar ?? [],
+        kayitlar: await kartKayitlari(oku, k.id),
+        yapildi: yapilanlar.has(k.id),
+        ...(k.bolum ? { bolum: k.bolum } : {}),
+      })),
+    ),
   );
 }
 

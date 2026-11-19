@@ -180,6 +180,7 @@ const BLOK_ADI: Record<BlokTuru, string> = {
   gunnot: 'Günün notu',
   gelfoto: 'Gelişim fotoğrafı',
   setler: 'Setler',
+  beslenme: 'Beslenme planı',
 };
 
 export function blokBasligi(b: Pick<KutuphaneBlogu, 'tur' | 'ad'>): string {

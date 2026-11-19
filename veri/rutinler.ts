@@ -1,7 +1,7 @@
 // Rutin (pilot 5 Kasım, P-93): adımları okuma, ekleme, sıralama, işaretleme ve listeden çevirme.
 
 import { adimDurumu } from '@/mantik/adimlar';
-import { yeniKart, type Kart } from '@/mantik/kart';
+import { yeniKart, type Bolum, type Kart } from '@/mantik/kart';
 import {
   adimSirasi,
   listedenCesit,
@@ -163,4 +163,11 @@ export function adimSiralariniYaz(kapi: Kapi, kimlikler: readonly string[]): Pro
     for (const [i, id] of kimlikler.entries())
       await y.calistir('UPDATE kart SET ust_sira = ? WHERE id = ?', [i + 1, id]);
   });
+}
+
+/** P-134: egzersizin (adımın) antrenmandaki bölümü. */
+export function adimBolumuYaz(kapi: Kapi, adimId: string, bolum: Bolum): Promise<void> {
+  return kapi.yaz(['kart'], (y) =>
+    y.calistir('UPDATE kart SET bolum = ? WHERE id = ?', [bolum === 'ana' ? null : bolum, adimId]),
+  );
 }
