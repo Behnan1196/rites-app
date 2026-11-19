@@ -666,3 +666,8 @@ Sonuç: `danisan-uygulamasi.md` §4a (taslak; boş kalmasın diye Koçum ve Prog
 Ne dedi: "Tamam böyle ilerleyelim"
 Nerede: Genel (sekmeler)
 Sonuç: Ekran yapısı (P-129 taslağı ve varsayımları) onaylandı. → kararlar.md. Koçum ekranlarının çizimi yapıldı.
+
+### P-131 · 19 Kasım 2026 · Behnan
+Ne dedi: "Güzel, mockup da kalalım, everfit'in antreman ekranına ulaşabiliyorsan, gayet sade tasarımla ısınma, setler, ada basılınca açıklama olan, kişinin antreman sırasında odaklandığı ekran var. Bana güzel göründü ve yaklaşık kullanabiliriz, bu arada everfit in kötü bir yorum da, 2025 yılında appstore sayfasında, aslında daha iyi olması için verdiği ipuçları var gibi, ona da bakalım" (App Store yorumu, 16 Ekim 2025: yavaş ve çöküyor; değeri yazdıktan sonra ayrıca işaretlemek; her ekranda tek egzersiz; otomatik doldurma yok; takvimde taşıma ve isteğe bağlı günü silme zor; kendi etkinliklerini koç görmüyor; geri bildirim mesajlarda kayboluyor.)
+Nerede: Antrenman akışı (çizim)
+Sonuç: `danisan-uygulamasi.md` §4b; antrenman akışının dört ekranı çizildi. Açık karar: değer girmek işi bitirsin mi.

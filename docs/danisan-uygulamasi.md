@@ -1,6 +1,6 @@
 # Rites: fitness ve beslenme danışan uygulaması (plan)
 
-_19 Kasım 2026 · taslak · P-127–P-130_
+_19 Kasım 2026 · taslak · P-127–P-131_
 
 Örnek: Everfit. Everfit'in iki parçası var: **koçun web paneli** (program kurar, danışanı yönetir, ödeme alır) ve **danışanın telefon uygulaması** (programı uygular, kaydeder, koçla konuşur). Bu planda Rites ikincisi olur; koçun paneli ayrı bir web uygulamasıdır (aynı Supabase). Rites koçsuz kişisel kullanımda da aynen sürer; koça bağlanan kişide yalnız **Koçum** bölümü ve koçtan gelenler görünür.
 
@@ -83,6 +83,25 @@ Kaynak: ürün sahibinin görüşü (P-129). Everfit'in danışan uygulaması d�
 - Mesajlar Koçum'un içinde; okunmamış sayısı sekmede rozet ve Giriş'teki Koçum kutusunda. Gelenler (paylaşılan videolar, verilen kartlar) Giriş'te kalır.
 - Ücretsiz: kartlar, listeler, anımsatıcılar, ölçümler, alışkanlıklar, hazır öneriler, koç bağı. Ücretli: kendi programını kurma, gruplar ve paylaşım. Ayrım ödeme altyapısıyla birlikte netleşir (Aşama 4); o zamana kadar hepsi açık.
 
+## 4b. Antrenman akışı ve Everfit'e gelen bir şikâyetten dersler (P-131)
+
+Everfit'in danışan uygulamasında antrenman: "Başla"dan önce egzersizler ve açıklamalar; egzersizin videosu ya da resmine dokununca nasıl yapılacağı; set bitince kutu, ⋯ ile set ekle / sil; isteğe bağlı otomatik dinlenme sayacı; bitirmek için son ekranda kaydır; sonunda özet, zorluk puanı ve not.
+
+App Store'da Everfit'e 2025'te yazılmış bir şikâyet (16 Ekim 2025, bir yıldız) Rites için ipucu:
+
+| Şikâyet | Rites'ta karşılığı |
+|---|---|
+| Yavaş, sık çöküyor, açılmıyor; kişi ayrıca başka uygulamada kayıt tutuyor | Kayıt telefonda (yerel veritabanı); internetsiz çalışır, sunucuya sonra gider |
+| Değeri yazdım, ayrıca işaretlemem gerekiyor (tartı, setler) | Değer girmek o işi bitmiş sayar: tartıya kilo yazılınca kart Yaptım; setteki sayı değiştirilince o set işaretlenir. (P-38'deki "Yaptım'ı kişi işaretler" kuralının koçtan gelen kartlar için değişmesi önerisi) |
+| Her ekranda tek egzersiz | Tek kayan sayfa: biten egzersizler tek satır özet, sıradaki açık, sonrakiler kapalı |
+| Otomatik doldurma yok, tekrarı kaydırarak seçiyor | Setler hedefle dolu gelir, sayı klavyeyle yazılır (Setler, P-127); "Geçen sefer" üstte |
+| Antrenmanı takvimde taşımak zor, isteğe bağlı günü silemiyor | Kartın günü zaman satırından değişir; isteğe bağlı antrenmanda "Bu hafta atla" |
+| Kendi eklediği etkinlikleri koç göremiyor | Paylaşım kapsamında "kendi eklediklerim" seçeneği (veri kararından sonra) |
+| Koçun hareket geri bildirimi bildirimlerin içinde kayboluyor | Koçun notu egzersizin kendisinde (başlamadan, sırasında, açıklamada); "Bu egzersiz için koçuna yaz" mesajı o egzersize bağlar |
+| Çok düğme, karışık arayüz | Rites'ın sade ilkesi: büyük düğmeler, az adım |
+
+Çizimler (Antrenman satırı): başlamadan (koçun notu, Isınma · Ana bölüm · Soğuma, "Bu hafta atla", Başla) · sırasında (tek kayan sayfa, sıradaki egzersiz açık, set satırları, altta dinlenme şeridi +15 sn / Atla, Bitir her an üstte) · egzersizin açıklaması (ada dokununca alttan sayfa: video, nasıl yapılır, koçun notu, "Hareketini çek, koçuna gönder") · bitince (süre, egzersiz, set, tekrar, yeni rekor, "Nasıl geçti?" 1–5, koçuna not, Kaydet).
+
 ## 5. Kararlar ve açık sorular
 
 **Verildi (P-128):** fitness ve beslenme birlikte; koç ve diyetisyen programı **ayrı web panelinde** hazırlar; ilk adım bu plan belgesi (kod yok).
@@ -91,11 +110,12 @@ Kaynak: ürün sahibinin görüşü (P-129). Everfit'in danışan uygulaması d�
 
 1. Danışan verisinin koça gitmesi (yukarıdaki öneri): hukuki görüşten sonra karar.
 2. Beslenme paneli NutriCore mu olacak, yoksa ortak web paneline mi eklenecek?
-3. Ekran yapısı (4a) onaylandı (P-130). Ekran çizimleri: claude.ai'deki "Rites Koçum ekranları" tasarımı (Giriş, Ajandam · Koçumdan, Koçum koçsuz ve koçlu, Mesajlar, Programlar).
-4. Tasarım ortaklarına sorulacaklar: Everfit'te en çok neyi kullanıyorlar, danışandan ne görmek istiyorlar, Türkiye'de danışanları nasıl takip ediyorlar (WhatsApp, Excel…)?
-5. Tek uygulama mı (kişisel + danışan), ayrı danışan uygulaması mı? (Öneri: tek uygulama, koça bağlanınca Koçum görünür.)
-6. Yemek veritabanı ve makro sayımı: hangi kaynak, lisansı ne? (Aşama 3'te.)
-7. Sunucunun yeri (yurt dışı aktarım) ve ticari sürümde paket kimliği ve ad.
+3. Değer girmek işi bitirsin mi (4b): koçtan gelen kartlarda tartıya yazılan kilo kartı Yaptım yapsın, sette sayı değişince set işaretlensin. Ürün sahibinin kararı bekleniyor.
+4. Ekran yapısı (4a) onaylandı (P-130). Ekran çizimleri: claude.ai'deki "Rites Koçum ekranları" tasarımı (Giriş, Ajandam · Koçumdan, Koçum koçsuz ve koçlu, Mesajlar, Programlar).
+5. Tasarım ortaklarına sorulacaklar: Everfit'te en çok neyi kullanıyorlar, danışandan ne görmek istiyorlar, Türkiye'de danışanları nasıl takip ediyorlar (WhatsApp, Excel…)?
+6. Tek uygulama mı (kişisel + danışan), ayrı danışan uygulaması mı? (Öneri: tek uygulama, koça bağlanınca Koçum görünür.)
+7. Yemek veritabanı ve makro sayımı: hangi kaynak, lisansı ne? (Aşama 3'te.)
+8. Sunucunun yeri (yurt dışı aktarım) ve ticari sürümde paket kimliği ve ad.
 
 ## Kaynaklar
 
@@ -103,4 +123,5 @@ Kaynak: ürün sahibinin görüşü (P-129). Everfit'in danışan uygulaması d�
 - Everfit beslenme: https://everfit.io/nutrition
 - Everfit incelemesi (beslenme zayıf, antrenman güçlü; rakip sitesinden): https://www.promealplan.com/en/blog/everfit-review-2026
 - Everfit fiyatları: https://toolradar.com/tools/everfit/pricing
+- Everfit'te antrenman kaydı: https://help.everfit.io/en/articles/5829094-client-app-track-a-workout
 - KVKK sağlık verisi düzenlemesi: https://www.erdem-erdem.av.tr/bilgi-bankasi/saglik-verilerinin-islenmesine-iliskin-yeni-duzenleme
