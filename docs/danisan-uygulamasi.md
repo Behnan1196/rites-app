@@ -1,6 +1,6 @@
 # Rites: fitness ve beslenme danışan uygulaması (plan)
 
-_19 Kasım 2026 · taslak · P-127, P-128_
+_19 Kasım 2026 · taslak · P-127–P-129_
 
 Örnek: Everfit. Everfit'in iki parçası var: **koçun web paneli** (program kurar, danışanı yönetir, ödeme alır) ve **danışanın telefon uygulaması** (programı uygular, kaydeder, koçla konuşur). Bu planda Rites ikincisi olur; koçun paneli ayrı bir web uygulamasıdır (aynı Supabase). Rites koçsuz kişisel kullanımda da aynen sürer; koça bağlanan kişide yalnız **Koçum** bölümü ve koçtan gelenler görünür.
 
@@ -66,6 +66,23 @@ Aşama 3, danışan verisinin koça gitmesi kararına bağlı (karar hukuki gör
 
 Her aşama pilotla biter: tasarım ortakları (fitness koçu arkadaş, diyetisyen) gerçek danışanlarla dener, gözlemler `pilot-gozlemleri.md`ye yazılır.
 
+## 4a. Ekran yapısı (taslak, P-129)
+
+Kaynak: ürün sahibinin görüşü (P-129). Everfit'in danışan uygulaması dört bölüm (Bugün · Koçluk · Mesajlar · Sen), HubFit beş sekme (Ana sayfa · Antrenman · Alışkanlıklar · Beslenme · Profil; koçun kapattığı sekme görünmez). İkisinde de danışan kendi işini giremez; Rites'ın farkı bu.
+
+| Sekme | Kimde | İçinde |
+|---|---|---|
+| **Giriş** | herkes | Koçum kutusu (bugünün antrenmanı ve öğünleri, okunmamış mesaj, bekleyen check-in) · Anımsatıcılar ve zamanlayıcı · Hızlı not · Listeler · Ölçümlerim · Alışkanlıklar |
+| **Ajandam** | herkes | Kendi işleri ve koçtan gelenler; üstte **Hepsi · Koçumdan** geçişi (yalnız koçun antrenman ve öğünleri) |
+| **Koçum** | herkes | Bağlıysa: Program (önümüzdeki günler, geçmiş, rekorlar) · Beslenme (öğün planı, tarifler) · Mesajlar (yazı, sesli not, görüntülü görüşme bağlantısı) · Check-in · Gelişim. Bağlı değilse: koçla bağlanma (davet kodu) ve ne işe yaradığı |
+| **Programlar** | herkes | Rites önerileri (ücretsiz uygulanır) · Kütüphanem · **Kendi programını kur** (ücretli; örnek: Gelenler'deki videolardan cilt bakımı programı) |
+| **Gruplar** | ücretli | Gruplar, paylaşım, kart verme |
+
+- İlk açılışta boş kalmasın diye (P-129: "ücretsiz ilk açtığında çok mu boş kalıyor") Koçum ve Programlar herkeste görünür; koçsuz kişide Koçum bağlanmayı anlatır, Programlar'da hazır öneriler uygulanır. Ücretli olan düğme kilitli görünür, ne açtığı yazar.
+- Yaşam Tarzım ve yaşam alanları kalkar (P-129: tam oturmadı; hareket ve beslenme koçluktan gelir). Programlar etiketsiz. Kütüphanem Programlar'a girer.
+- Mesajlar Koçum'un içinde; okunmamış sayısı sekmede rozet ve Giriş'teki Koçum kutusunda. Gelenler (paylaşılan videolar, verilen kartlar) Giriş'te kalır.
+- Ücretsiz: kartlar, listeler, anımsatıcılar, ölçümler, alışkanlıklar, hazır öneriler, koç bağı. Ücretli: kendi programını kurma, gruplar ve paylaşım. Ayrım ödeme altyapısıyla birlikte netleşir (Aşama 4); o zamana kadar hepsi açık.
+
 ## 5. Kararlar ve açık sorular
 
 **Verildi (P-128):** fitness ve beslenme birlikte; koç ve diyetisyen programı **ayrı web panelinde** hazırlar; ilk adım bu plan belgesi (kod yok).
@@ -74,10 +91,11 @@ Her aşama pilotla biter: tasarım ortakları (fitness koçu arkadaş, diyetisye
 
 1. Danışan verisinin koça gitmesi (yukarıdaki öneri): hukuki görüşten sonra karar.
 2. Beslenme paneli NutriCore mu olacak, yoksa ortak web paneline mi eklenecek?
-3. Tasarım ortaklarına sorulacaklar: Everfit'te en çok neyi kullanıyorlar, danışandan ne görmek istiyorlar, Türkiye'de danışanları nasıl takip ediyorlar (WhatsApp, Excel…)?
-4. Tek uygulama mı (kişisel + danışan), ayrı danışan uygulaması mı? (Öneri: tek uygulama, koça bağlanınca Koçum görünür.)
-5. Yemek veritabanı ve makro sayımı: hangi kaynak, lisansı ne? (Aşama 3'te.)
-6. Sunucunun yeri (yurt dışı aktarım) ve ticari sürümde paket kimliği ve ad.
+3. Ekran yapısı (4a): ürün sahibinin onayı bekleniyor; mesajın yeri, ücretsiz kapsam ve alanların kalkması varsayım.
+4. Tasarım ortaklarına sorulacaklar: Everfit'te en çok neyi kullanıyorlar, danışandan ne görmek istiyorlar, Türkiye'de danışanları nasıl takip ediyorlar (WhatsApp, Excel…)?
+5. Tek uygulama mı (kişisel + danışan), ayrı danışan uygulaması mı? (Öneri: tek uygulama, koça bağlanınca Koçum görünür.)
+6. Yemek veritabanı ve makro sayımı: hangi kaynak, lisansı ne? (Aşama 3'te.)
+7. Sunucunun yeri (yurt dışı aktarım) ve ticari sürümde paket kimliği ve ad.
 
 ## Kaynaklar
 
