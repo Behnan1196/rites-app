@@ -1,6 +1,6 @@
 # Rites: fitness ve beslenme danışan uygulaması (plan)
 
-_19 Kasım 2026 · taslak · P-127–P-129_
+_19 Kasım 2026 · taslak · P-127–P-130_
 
 Örnek: Everfit. Everfit'in iki parçası var: **koçun web paneli** (program kurar, danışanı yönetir, ödeme alır) ve **danışanın telefon uygulaması** (programı uygular, kaydeder, koçla konuşur). Bu planda Rites ikincisi olur; koçun paneli ayrı bir web uygulamasıdır (aynı Supabase). Rites koçsuz kişisel kullanımda da aynen sürer; koça bağlanan kişide yalnız **Koçum** bölümü ve koçtan gelenler görünür.
 
@@ -66,7 +66,7 @@ Aşama 3, danışan verisinin koça gitmesi kararına bağlı (karar hukuki gör
 
 Her aşama pilotla biter: tasarım ortakları (fitness koçu arkadaş, diyetisyen) gerçek danışanlarla dener, gözlemler `pilot-gozlemleri.md`ye yazılır.
 
-## 4a. Ekran yapısı (taslak, P-129)
+## 4a. Ekran yapısı (P-129, onay P-130)
 
 Kaynak: ürün sahibinin görüşü (P-129). Everfit'in danışan uygulaması dört bölüm (Bugün · Koçluk · Mesajlar · Sen), HubFit beş sekme (Ana sayfa · Antrenman · Alışkanlıklar · Beslenme · Profil; koçun kapattığı sekme görünmez). İkisinde de danışan kendi işini giremez; Rites'ın farkı bu.
 
@@ -91,7 +91,7 @@ Kaynak: ürün sahibinin görüşü (P-129). Everfit'in danışan uygulaması d�
 
 1. Danışan verisinin koça gitmesi (yukarıdaki öneri): hukuki görüşten sonra karar.
 2. Beslenme paneli NutriCore mu olacak, yoksa ortak web paneline mi eklenecek?
-3. Ekran yapısı (4a): ürün sahibinin onayı bekleniyor; mesajın yeri, ücretsiz kapsam ve alanların kalkması varsayım.
+3. Ekran yapısı (4a) onaylandı (P-130). Ekran çizimleri: claude.ai'deki "Rites Koçum ekranları" tasarımı (Giriş, Ajandam · Koçumdan, Koçum koçsuz ve koçlu, Mesajlar, Programlar).
 4. Tasarım ortaklarına sorulacaklar: Everfit'te en çok neyi kullanıyorlar, danışandan ne görmek istiyorlar, Türkiye'de danışanları nasıl takip ediyorlar (WhatsApp, Excel…)?
 5. Tek uygulama mı (kişisel + danışan), ayrı danışan uygulaması mı? (Öneri: tek uygulama, koça bağlanınca Koçum görünür.)
 6. Yemek veritabanı ve makro sayımı: hangi kaynak, lisansı ne? (Aşama 3'te.)

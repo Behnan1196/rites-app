@@ -661,3 +661,8 @@ Sonuç: `danisan-uygulamasi.md` (plan taslağı). → kararlar.md.
 Ne dedi: "Bence ilk irdelememiz gereken, rites ın mobil ekranında hangi sekme ve alt bölümlerin olacağı. Benim Rites'da korunması gerektiğini düşündüğüm yerler; Giriş ekranı: … anımsatıcılar, hızlı notlar, listeler. Alışkanlıklar Everfit'de içeride ama belki biz yine girişden ilerleyip, sekme açısından tasarruf sağlayabiliriz. Ajanda: Kendi günlük işlerini girebilmesi için bir şekilde kalmalı … Sadece koç'tan gelenler için sade bir ekrana hızlı bir geçiş sağlanabilir. … Rites'ın danışan olarak kullanımı ücretsiz olacak ama ücretli de bazı özellikler açılabilir … örneğin cilt bakımı için kendine everfit workout benzeri bir programı kendisi gelenlerdeki videolardan oluşturabilse bu bence değerli olur ücretli versiyon için. Yaşam tarzı: Bu bölümde özellikle yaşam alanlarından vazgeçebiliriz … Kütüphane bir şekilde sekmelerden biri içine yerleştirilebilir. Grup ve paylaşım: Sanki paylaşım yapması da artık ücretli versiyon için düşünülebilir … koçluk öne çıktığı için, chat gerekecek en azından, belki video bağlantısı." Sekme önerisine: "Tam emin olamadım, ücretsiz ilk açtığında çok mu boş kalıyor"; mesaj yeri, ücretsiz kapsam ve alanlar sorularını cevaplamadı.
 Nerede: Genel (sekmeler)
 Sonuç: `danisan-uygulamasi.md` §4a (taslak; boş kalmasın diye Koçum ve Programlar herkeste). Onay bekliyor.
+
+### P-130 · 19 Kasım 2026 · Behnan
+Ne dedi: "Tamam böyle ilerleyelim"
+Nerede: Genel (sekmeler)
+Sonuç: Ekran yapısı (P-129 taslağı ve varsayımları) onaylandı. → kararlar.md. Koçum ekranlarının çizimi yapıldı.
