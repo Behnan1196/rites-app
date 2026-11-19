@@ -242,3 +242,11 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 
 - `app.json`: `orientation` "default", `ios.requireFullScreen`, eklenti `expo-screen-orientation` (`initialOrientation` PORTRAIT_UP), sürüm 1.6.0 (`runtimeVersion` appVersion: yeni derleme). Kök `Stack` `screenOptions.orientation` "portrait_up"; `tam-ekran` ekranı `orientation: "default"` (modal değil, Katman üstünde çizilsin diye). `app/tam-ekran.tsx` (`kartId`, `blokId`): video `VideolarGorunumu` (genişlik yüksekliğe göre 16:9), tablo `TabloParcasi` (`parcaDegisir` ise `blokIcerikYaz`). Kart ekranında parça başlığında "Tam ekran" (tablo ya da videolu video parçası).
 
+
+## Setler (P-127, 19 Kasım)
+
+- Kayıt parçası `setler` (`KAYIT_BLOKLARI`; `BLOK_TURLERI`: "Setler", `barbell-outline`); `SERIT_PARCALARI`nda (normal kullanıcıda da, karta bir kez).
+- `mantik/setler.ts`: hedef `blok.metin` = `{"set","tekrar","agirlik","dinlenme"}` (`setHedefiOku` / `setHedefiYaz`, varsayılan 3 × 10, 60 sn; ağırlık "12,5" metni, boş olabilir). Günün setleri `kayit.degerler[blok.id]` = `[{"t","a","y"}]` (`setleriOku` kayıt yoksa hedefle dolu; `setleriYaz` bütün setler bitince `yapildi = true`, sınırdan dönünce false). `setOzeti`, `gecenSefer`, `setGecmisi` (yeniden eskiye; `toplamTekrar`, `enAgir`).
+- `bilesen/kart/SetlerParcasi.tsx`: satırlar (işaret, set, tekrar, kg; `onBlur` ile kaydeder), "+ Set ekle" / "Son seti sil", dinlenme sayacı (`expo-audio` ile `bip.wav`, `Vibration`; yalnız uygulama açıkken). `onYapildi` listenin maddesinde `rutinAdimiIsaretle` çağırır.
+- Ayar: `BlokDuzenleyici` `SetAyari` (kart görünümünde `ParcaAyarSayfasi`, `AYARLI`da). Gidişat ekranında Setler bölümü (son 4 hafta); kartın ⋯ menüsünde Gidişat setler varsa da çıkar, listenin maddesinde de.
+- Veritabanı değişmedi; yeni yerel modül yok (EAS güncellemesi).

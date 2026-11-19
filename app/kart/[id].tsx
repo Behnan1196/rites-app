@@ -46,6 +46,7 @@ import { tabloyuDisaVer } from '@/veri/tabloDosyasi';
 import { adimlarListeParcasi, RUTIN_BILGI, RUTIN_GUNLUK, RUTIN_KALICI, rutinCesidi } from '@/mantik/rutinAdimlari';
 import { rutinAdimiIsaretle, rutinAdimlari, rutinYap } from '@/veri/rutinler';
 import { olcumParcalariMi } from '@/mantik/gidisat';
+import { setHedefiYaz, VARSAYILAN_HEDEF } from '@/mantik/setler';
 import { SERIT_PARCALARI } from '@/mantik/parcaSecimi';
 import { ajandadaMi, aliskanlikMi, programKartiMi } from '@/mantik/aliskanlik';
 import type { ParcaTaslagi } from '@/mantik/blokTaslak';
@@ -133,6 +134,7 @@ const AYARLI: readonly BlokTuru[] = [
   'sayac',
   'dosya',
   'foto',
+  'setler',
 ];
 
 export default function KartGorunumu() {
@@ -293,6 +295,23 @@ export default function KartGorunumu() {
       icerikKaydet(blokEkle(kapi, kart.id, { id: yeniKimlik(), tur: 'foto', dosya }));
       return;
     }
+    // P-127: setler önce kurulur (kaç set, tekrar, ağırlık, dinlenme).
+    if (o === 'setler') {
+      setParcaAyari({
+        blok: {
+          id: yeniKimlik(),
+          tur: 'setler',
+          ad: '',
+          metin: setHedefiYaz(VARSAYILAN_HEDEF),
+          birim: '',
+          dakika: null,
+          maddeler: [],
+          dosya: null,
+        },
+        yeni: true,
+      });
+      return;
+    }
     // P-105: listenin maddeleri kart olur; önce çeşidi sorulur (Adımlar · Günlük kontrol · Bilgi listesi).
     if (o === 'liste') {
       setListeCesidi(true);
@@ -319,7 +338,9 @@ export default function KartGorunumu() {
     const hepsi = !kur ? ogeler : i < 0 ? [...ogeler, kur] : [...ogeler.slice(0, i), kur, ...ogeler.slice(i)];
     return kart.ust
       ? hepsi.filter((o) =>
-          [KUR, 'Listeden kaldır', 'Gün ver', 'Alışkanlık olarak izle', 'Alışkanlıktan çıkar'].includes(o.etiket),
+          [KUR, 'Gidişat', 'Listeden kaldır', 'Gün ver', 'Alışkanlık olarak izle', 'Alışkanlıktan çıkar'].includes(
+            o.etiket,
+          ),
         )
       : hepsi;
   };
@@ -400,6 +421,12 @@ export default function KartGorunumu() {
             kayit={kayit}
             kayitlar={kayitlar}
             onKayit={kayitDegis}
+            // P-127: listenin maddesinde (egzersiz) setler bitince liste de güncellenir.
+            onYapildi={
+              kart.ust && isaretlenir
+                ? (y) => void rutinAdimiIsaretle(kapi, oku, kart.ust!, kart.id, gun, y)
+                : undefined
+            }
             onTablo={parcaDegisir(kart, b) ? (t) => icerikKaydet(blokIcerikYaz(kapi, b.id, t)) : undefined}
             onMaddeDuzelt={
               parcaDegisir(kart, b)
@@ -788,7 +815,7 @@ export default function KartGorunumu() {
           ogeler={menuOgeleri(
             [
               // P-87: ölçümlerin gidişatı (son 4 hafta, yan yana).
-              ...(olcumParcalariMi(bloklar)
+              ...(olcumParcalariMi(bloklar) || bloklar.some((b) => b.tur === 'setler')
                 ? [
                     {
                       etiket: 'Gidişat',

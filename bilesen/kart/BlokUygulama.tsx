@@ -30,6 +30,7 @@ import { ZenginMetin } from '../ZenginMetin';
 import { MaddeDuzeltici } from '../MaddeDuzeltici';
 import { BagliListeBlogu } from './BagliListe';
 import { BuyutulebilirFoto } from './BuyutulebilirFoto';
+import { SetlerParcasi } from './SetlerParcasi';
 import { TabloParcasi } from './TabloParcasi';
 
 interface Ozellikler {
@@ -43,6 +44,8 @@ interface Ozellikler {
   onMaddeDuzelt?: (i: number, yeni: string | null) => void;
   /** P-120: tablonun yeni içeriği; verilmezse tablo değiştirilemez. */
   onTablo?: (d: { metin: string; maddeler: string[] }) => void;
+  /** P-127: setler bitince ya da biri geri alınınca kartın Yaptım'ı değişti. */
+  onYapildi?: (yapildi: boolean) => void;
 }
 
 export function BlokUygulama(o: Ozellikler) {
@@ -79,6 +82,8 @@ export function BlokUygulama(o: Ozellikler) {
       return <AdetBlogu {...o} />;
     case 'puan':
       return <PuanBlogu {...o} />;
+    case 'setler':
+      return <SetlerParcasi {...o} />;
   }
 }
 

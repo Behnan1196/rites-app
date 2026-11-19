@@ -7,6 +7,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
 import { Image, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { dosyayiSakla } from '@/veri/dosyalar';
@@ -22,6 +23,15 @@ import { boyut, olcu, renk, yazi } from '../tema';
 import { Yazi } from '../Yazi';
 import { maddeliListeMi, type BlokTuru } from '@/mantik/kart';
 import { olcumGunu, siklikDegistir } from '@/mantik/olcumHazirlari';
+import {
+  agirlikDuzelt,
+  DINLENME_SECENEKLERI,
+  dinlenmeMetni,
+  EN_COK_SET,
+  setHedefiOku,
+  setHedefiYaz,
+  type SetHedefi,
+} from '@/mantik/setler';
 import { GUN_KISA } from '@/mantik/tarih';
 
 import { BagliListeSecici } from './BagliListe';
@@ -292,6 +302,9 @@ export function BlokDuzenleyici({
         </>
       )}
       {blok.tur === 'gelfoto' && <Yazi tur="ikincil">Kartı uygularken fotoğraf çekip gelişimini kaydedeceksin.</Yazi>}
+      {blok.tur === 'setler' && (
+        <SetAyari hedef={setHedefiOku(blok)} onDegis={(h) => degis({ metin: setHedefiYaz(h) })} />
+      )}
       {!onMenu && !basliksiz && (
         <Pressable
           onPress={onKaldir}
@@ -306,6 +319,70 @@ export function BlokDuzenleyici({
         </Pressable>
       )}
     </Kap>
+  );
+}
+
+/** P-127: setlerin hedefi: kaç set, kaç tekrar, ağırlık (isteğe bağlı), setler arası dinlenme. */
+function SetAyari({ hedef, onDegis }: { hedef: SetHedefi; onDegis: (h: SetHedefi) => void }) {
+  const [agirlik, setAgirlik] = useState(hedef.agirlik);
+  const degis = (a: Partial<SetHedefi>) => onDegis({ ...hedef, ...a });
+  return (
+    <>
+      <View style={stiller.satir}>
+        <Yazi>Kaç set?</Yazi>
+        <ArtiEksi
+          deger={String(hedef.set)}
+          onEksi={() => degis({ set: Math.max(1, hedef.set - 1) })}
+          onArti={() => degis({ set: Math.min(EN_COK_SET, hedef.set + 1) })}
+          eksiEtiket="Bir set azalt"
+          artiEtiket="Bir set artır"
+        />
+      </View>
+      <View style={stiller.satir}>
+        <Yazi>Kaç tekrar?</Yazi>
+        <ArtiEksi
+          deger={String(hedef.tekrar)}
+          onEksi={() => degis({ tekrar: Math.max(1, hedef.tekrar - 1) })}
+          onArti={() => degis({ tekrar: hedef.tekrar + 1 })}
+          eksiEtiket="Bir tekrar azalt"
+          artiEtiket="Bir tekrar artır"
+        />
+      </View>
+      <View style={stiller.satir}>
+        <Yazi>Ağırlık (kg)</Yazi>
+        <TextInput
+          accessibilityLabel="Ağırlık, kilo"
+          value={agirlik}
+          onChangeText={(t) => {
+            setAgirlik(t);
+            // Kaydet klavye açıkken de doğru değeri alsın.
+            const d = agirlikDuzelt(t);
+            if (d !== hedef.agirlik) degis({ agirlik: d });
+          }}
+          onEndEditing={() => setAgirlik(agirlikDuzelt(agirlik))}
+          keyboardType="decimal-pad"
+          placeholder="Yok"
+          placeholderTextColor={renk.soluk}
+          selectionColor={renk.ana}
+          style={[stiller.alan, stiller.agirlik, yazi('kalin')]}
+        />
+      </View>
+      <Yazi kalinlik="kalin">Setler arası dinlenme</Yazi>
+      <View style={stiller.turler} accessibilityRole="radiogroup" accessibilityLabel="Setler arası dinlenme">
+        {DINLENME_SECENEKLERI.map((sn) => (
+          <SecenekHapi
+            key={sn}
+            etiket={dinlenmeMetni(sn)}
+            secili={hedef.dinlenme === sn}
+            onPress={() => degis({ dinlenme: sn })}
+          />
+        ))}
+      </View>
+      <Yazi tur="ikincil">
+        Her gün setler bu değerlerle dolu gelir; yaptıkça işaretlersin, farklıysa sayıya dokunup düzeltirsin. Bir set
+        işaretlenince dinlenme sayacı başlar.
+      </Yazi>
+    </>
   );
 }
 
@@ -376,6 +453,7 @@ const stiller = StyleSheet.create({
   yanYana: { flexDirection: 'row', gap: 10 },
   esit: { flex: 1 },
   birim: { width: 130 },
+  agirlik: { width: 110, textAlign: 'center' },
   satir: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' },
   foto: { width: '100%', aspectRatio: 4 / 3, borderRadius: 14, backgroundColor: renk.satirCizgi },
   dosyaSatiri: { flexDirection: 'row', alignItems: 'center', gap: 8 },

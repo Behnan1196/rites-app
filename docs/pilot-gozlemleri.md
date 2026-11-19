@@ -635,3 +635,19 @@ Sonuç: → kararlar.md (Yeni liste sayfası). Güncellemenin gelmemesi: P-122 d
 Ne dedi: "Merak ediyorum, acaba telefonu yan çevirince tablo tam ekran olabilir mi, asıl bunu video olan kartta isteyeceğim" → "Tam ekran düğmesiyle olsun. Bu arada git komutlarını (git push dahil) sen ver, ben çalıştırayım"
 Nerede: Kart → video, tablo
 Sonuç: → kararlar.md (Tam ekran). Git komutları bundan sonra push dahil verilir.
+
+### P-125 · 19 Kasım 2026 · Behnan
+Ne dedi: "Uygulamayı bir iki haftadır kullanıyorum… takviye, egzersiz listesi ve ölçümler ön planda… Ajandaya notlar alıyorum, anımsatıcılarda ilaç hatırlatmalarını da etkin kullanıyorum… belirli fonksiyonlardan vazgeçilebilir. … Kanada'dan gelen ve fitness konusuna kendini adamış arkadaşım, Türkiyede bu işe devam etmek için bir program arayışında, bana Everfit'in yazılımını gösterdi, ihtiyacını karşılıyor ama türkçe değil… Sen de bir araştırır mısın, acaba Rites'ı bu yönde geliştirmek mi uygun yoksa Everfit benzeri ayrı bir uygulama mı daha doğru olur."
+Nerede: Genel (ürün yönü)
+Sonuç: Araştırma ve yorum verildi (Everfit ve benzerleri; Türkçe rakipler kocha.co, KoçPro, NextCoach; KVKK sağlık verisi). Öneri: Rites'ı koçluk yazılımına çevirmemek; ayrı ürün ya da Rites'a sonradan "koçumdan program al" köprüsü. Karar ürün sahibinde. → kararlar.md (Not).
+Asıl kullanım (ürün sahibi): takviye, egzersiz listesi, ölçümler, ajanda notları, ilaç anımsatıcıları.
+
+### P-126 · 19 Kasım 2026 · Behnan
+Ne dedi: "verdiğin örneklere baktım, nextcoach ve koçpro sanki çok genel koçluk yazılımı, kocha.co için davet gerekiyor ama appstore ekranları ve yorumlar gayet kötü. Everfit'le alakası yok gibi"
+Nerede: Genel (koçluk yönü)
+Sonuç: Türkçe yerli ürünler zayıf. Türkçe danışan uygulaması olan yabancı platformlar araştırıldı (HubFit, Trainero); arkadaşın önce bunları denemesi önerildi. Yön kararı yine açık.
+
+### P-127 · 19 Kasım 2026 · Behnan
+Ne dedi: "Hubfit fena değil, arkadaşımdan incelemesini isteyeceğim. Ancak takıldığım nokta, biz Rites'ı koçluk planformlarının teslimat noktası olarak düşünüyorduk en başından beri, hatta beslenme için web de bir uygulama yapıp Rites üzerinden beslenme danışmanlığını başlatma planımız vardı. Diğer yandan, ben günlük egzersiz listesi yapıyorum kendimce ve videolar koyarak takip etmeye çalışıyorum, şu an için eksiğim kaç set ve tekrar yaptığımı kaydetmekti ve onu yapmaya başlayacaktım, tam da everfit de bunun için yapıyı görünce heyecanlanmıştım." Seçimler: tekrar ve ağırlık; setler hedefle dolu gelsin; geçen sefer + gidişat; dinlenme sayacı başlasın.
+Nerede: Kart → + → Setler (egzersiz listesinin maddesinde de)
+Sonuç: → kararlar.md (Rites teslimat noktası; Setler).

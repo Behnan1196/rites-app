@@ -41,7 +41,8 @@ export function eklenecekParcaVarMi(a: Parameters<typeof secilebilirParcalar>[0]
 
 /** P-68: kartın altındaki şeritte doğrudan duran parçalar (açıklama ayrıca). */
 /** P-87: şeritteki "Ölçüm" hazır ölçümleri ve Sayarak · Sayı · Puan'ı açar; hep durur. */
-export const SERIT_PARCALARI: readonly BlokTuru[] = ['liste', 'foto', 'video', 'olcum'];
+/** P-127: Setler (egzersizde set set tekrar ve ağırlık) herkeste. */
+export const SERIT_PARCALARI: readonly BlokTuru[] = ['liste', 'foto', 'video', 'olcum', 'setler'];
 
 export type SeritOgesi = 'aciklama' | BlokTuru;
 

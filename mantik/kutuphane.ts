@@ -179,6 +179,7 @@ const BLOK_ADI: Record<BlokTuru, string> = {
   puan: 'Puan',
   gunnot: 'Günün notu',
   gelfoto: 'Gelişim fotoğrafı',
+  setler: 'Setler',
 };
 
 export function blokBasligi(b: Pick<KutuphaneBlogu, 'tur' | 'ad'>): string {

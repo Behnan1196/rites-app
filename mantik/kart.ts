@@ -152,14 +152,25 @@ export interface Kart {
  * listeye bağlantı (`metin`: listenin kimliği, `ad`: son bilinen adı); liste kartta değil Listeler'de durur.
  */
 // P-120: `tablo` 2–3 sütunlu liste (Listeler'de; uzmanda kartta da).
-export const ICERIK_BLOKLARI = ['talimat', 'video', 'liste', 'adimlar', 'bilgi', 'listebag', 'foto', 'dosya', 'tablo'] as const;
+export const ICERIK_BLOKLARI = [
+  'talimat',
+  'video',
+  'liste',
+  'adimlar',
+  'bilgi',
+  'listebag',
+  'foto',
+  'dosya',
+  'tablo',
+] as const;
 /** P-83: kartta "Liste" denen dört kullanım. */
 export const LISTE_BLOKLARI: readonly BlokTuru[] = ['adimlar', 'liste', 'bilgi', 'listebag'];
 /** Maddeleri kartın içinde olan listeler. */
 export function maddeliListeMi(tur: BlokTuru): boolean {
   return tur === 'liste' || tur === 'adimlar' || tur === 'bilgi';
 }
-export const KAYIT_BLOKLARI = ['sayac', 'kronometre', 'olcum', 'adet', 'puan', 'gunnot', 'gelfoto'] as const;
+// P-127: `setler` egzersizde set set tekrar ve ağırlık (`mantik/setler`).
+export const KAYIT_BLOKLARI = ['sayac', 'kronometre', 'olcum', 'adet', 'puan', 'gunnot', 'gelfoto', 'setler'] as const;
 /**
  * Kayıt üreten ama kartta "Ne yapacaksın" bölümünde duran araçlar (P-38): zamanlayıcı ve
  * kronometre süreyi kaydeder. Öbür kayıt blokları "Bugün" bölümündedir.

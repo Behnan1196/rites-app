@@ -10,7 +10,8 @@ import { kaynakRenk, olcu, renk } from '@/bilesen/tema';
 import { Yazi } from '@/bilesen/Yazi';
 import { programDonemleri } from '@/mantik/deneme';
 import { gidisatTablosu, sayiMetni } from '@/mantik/gidisat';
-import { gunKisa, haftaGunu, kisaTarih } from '@/mantik/tarih';
+import { setGecmisi } from '@/mantik/setler';
+import { gunEkle, gunKisa, haftaGunu, kisaTarih } from '@/mantik/tarih';
 import { useSorgu } from '@/veri/kancalar';
 import { kartAyrinti, kartKayitlari } from '@/veri/kartlar';
 import { programlariOku } from '@/veri/programlar';
@@ -49,6 +50,11 @@ export default function Gidisat() {
   const kullanilabilir = width - olcu.ekranKenari * 2 - GUN_SUTUNU;
   const sutun = Math.max(SUTUN, t.sutunlar.length ? Math.floor(kullanilabilir / t.sutunlar.length) : SUTUN);
   const girilenGun = t.satirlar.filter((s) => s.hucreler.some((h) => h.deger !== null)).length;
+  // P-127: setler gün gün (son 4 hafta): yapılan setler, toplam tekrar; üstte en ağır.
+  const ilkGun = gunEkle(bugunGun, -27);
+  const setBolumleri = bloklar
+    .filter((b) => b.tur === 'setler')
+    .map((b) => ({ blok: b, gunler: setGecmisi(kayitlar, b).filter((g) => g.gun >= ilkGun) }));
 
   const tablo = (
     <View accessibilityRole="list">
@@ -111,10 +117,50 @@ export default function Gidisat() {
 
   return (
     <EkranKabi geri={geri} baslik="Gidişat" altBaslik={`${kart.baslik} · son 4 hafta`}>
+      {setBolumleri.map(({ blok, gunler }) => {
+        const enAgir = gunler.reduce<{ kg: number; gun: string } | null>(
+          (e, g) => (g.enAgir !== null && (!e || g.enAgir > e.kg) ? { kg: g.enAgir, gun: g.gun } : e),
+          null,
+        );
+        return (
+          <View key={blok.id} style={stiller.setBolumu}>
+            <Yazi kalinlik="kalin" accessibilityRole="header">
+              {blok.ad || 'Setler'}
+            </Yazi>
+            {gunler.length === 0 ? (
+              <Yazi tur="ikincil">Son 4 haftada işaretlenmiş set yok.</Yazi>
+            ) : (
+              <>
+                <Yazi tur="ikincil">
+                  {`${gunler.length} gün${enAgir ? ` · En ağır: ${sayiMetni(enAgir.kg)} kg (${kisaTarih(enAgir.gun)})` : ''}`}
+                </Yazi>
+                {gunler.map((g) => (
+                  <View
+                    key={g.gun}
+                    style={stiller.setSatiri}
+                    accessible
+                    accessibilityLabel={`${kisaTarih(g.gun)}: ${g.ozet}, toplam ${g.toplamTekrar} tekrar`}
+                  >
+                    <Yazi kalinlik={g.gun === bugunGun ? 'kalin' : undefined} style={{ width: GUN_SUTUNU }}>
+                      {g.gun === bugunGun ? 'Bugün' : `${gunKisa(g.gun)} ${kisaTarih(g.gun).split(' ')[0]}`}
+                    </Yazi>
+                    <Yazi kalinlik="yariKalin" style={stiller.esnek}>
+                      {g.ozet}
+                    </Yazi>
+                    <Yazi tur="etiket" renk={renk.ikincil}>{`${g.toplamTekrar} tekrar`}</Yazi>
+                  </View>
+                ))}
+              </>
+            )}
+          </View>
+        );
+      })}
       {t.sutunlar.length === 0 ? (
-        <Yazi tur="ikincil">
-          {'Bu kartta ölçüm yok. Karta "+ Ekle → Ölçüm" ile su, kahve, enerji gibi ölçümler ekle.'}
-        </Yazi>
+        setBolumleri.length > 0 ? null : (
+          <Yazi tur="ikincil">
+            {'Bu kartta ölçüm yok. Karta "+ Ekle → Ölçüm" ile su, kahve, enerji gibi ölçümler ekle.'}
+          </Yazi>
+        )
       ) : (
         <>
           {girilenGun < 7 && (
@@ -173,4 +219,13 @@ const stiller = StyleSheet.create({
   },
   dolgu: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: renk.ana },
   orta: { textAlign: 'center' },
+  setBolumu: { gap: 6 },
+  setSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 40,
+    borderBottomWidth: 1,
+    borderBottomColor: renk.satirCizgi,
+  },
 });

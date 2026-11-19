@@ -28,7 +28,7 @@ describe('Her parça karta bir kez (P-67)', () => {
 describe('Kartın altındaki şerit (P-68)', () => {
   it('varsayılan: açıklama kartta, şeritte Liste · Fotoğraf · Video; normal kullanıcıda Daha yok', () => {
     expect(seritOgeleri({ aciklamaVar: true, uzman: false })).toEqual({
-      ogeler: ['liste', 'foto', 'video', 'olcum'],
+      ogeler: ['liste', 'foto', 'video', 'olcum', 'setler'],
       daha: false,
     });
   });
@@ -38,6 +38,7 @@ describe('Kartın altındaki şerit (P-68)', () => {
       'liste',
       'foto',
       'olcum',
+      'setler',
     ]);
   });
   it('uzmanda Daha, öbür parçalar bitince yok', () => {
@@ -49,7 +50,7 @@ describe('Kartın altındaki şerit (P-68)', () => {
   it('çeşit tasarımında açıklama ve fotoğraf yok', () => {
     expect(
       seritOgeleri({ aciklamaVar: false, aciklamaOlur: false, uzman: true, haric: ['foto', 'dosya'] }).ogeler,
-    ).toEqual(['liste', 'video', 'olcum']);
+    ).toEqual(['liste', 'video', 'olcum', 'setler']);
   });
 });
 
@@ -62,11 +63,13 @@ describe('P-83: listenin biçimleri', () => {
       'foto',
       'video',
       'olcum',
+      'setler',
     ]);
     expect(seritOgeleri({ aciklamaVar: true, uzman: false, mevcut: ['bilgi'] }).ogeler).toEqual([
       'foto',
       'video',
       'olcum',
+      'setler',
     ]);
   });
 });
