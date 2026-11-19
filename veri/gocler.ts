@@ -384,6 +384,12 @@ export const GOCLER: readonly Goc[] = [
     surum: 31,
     sql: `UPDATE kart SET listede = 0 WHERE listede = 1 AND ust IS NULL AND (ajandada = 1 OR rutin = 1);`,
   },
+  {
+    // P-133 (19 Kasım): yaşam alanları kalktı; alan puanları, kişinin alanları ve programların
+    // alan etiketleri silinir (Yaşam Tarzım yerine Programlar sekmesi).
+    surum: 32,
+    sql: `DELETE FROM alan_durumu; UPDATE program SET alanlar = '[]';`,
+  },
 ];
 
 /** Göç listesi 1'den başlayıp birer birer artıyor mu? (Yazım hatasına karşı.) */

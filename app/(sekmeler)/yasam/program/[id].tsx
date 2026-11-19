@@ -112,10 +112,10 @@ export default function ProgramEkrani() {
     };
   }, [veri.veri, bugunGun]);
 
-  if (veri.yukleniyor) return <EkranKabi geri="Yaşam Tarzım" />;
+  if (veri.yukleniyor) return <EkranKabi geri="Programlar" />;
   if (!veri.veri) {
     return (
-      <EkranKabi geri="Yaşam Tarzım">
+      <EkranKabi geri="Programlar">
         <Yazi tur="ikincil">Bu program bulunamadı.</Yazi>
       </EkranKabi>
     );
@@ -194,7 +194,7 @@ export default function ProgramEkrani() {
   return (
     <>
       <EkranKabi
-        geri="Yaşam Tarzım"
+        geri="Programlar"
         baslikSag={
           <View style={stiller.ustSag}>
             <Dugme tur="yazi" etiket="Düzenle" onPress={() => programFormu.ac({ tur: 'duzenle', program })} />

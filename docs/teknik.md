@@ -250,3 +250,9 @@ Yeni bir ürünün pilot kullanıcılarının verisini taşıyabilmesi için bu 
 - `bilesen/kart/SetlerParcasi.tsx`: satırlar (işaret, set, tekrar, kg; `onBlur` ile kaydeder), "+ Set ekle" / "Son seti sil", dinlenme sayacı (`expo-audio` ile `bip.wav`, `Vibration`; yalnız uygulama açıkken). `onYapildi` listenin maddesinde `rutinAdimiIsaretle` çağırır.
 - Ayar: `BlokDuzenleyici` `SetAyari` (kart görünümünde `ParcaAyarSayfasi`, `AYARLI`da). Gidişat ekranında Setler bölümü (son 4 hafta); kartın ⋯ menüsünde Gidişat setler varsa da çıkar, listenin maddesinde de.
 - Veritabanı değişmedi; yeni yerel modül yok (EAS güncellemesi).
+
+## Sekmeler ve antrenman (P-133, 19 Kasım)
+
+- `app/(sekmeler)/_layout.tsx`: giris · ajandam · kocum · yasam (başlık "Programlar") · gruplar. `bilesen/AltMenu.tsx` simgeleri (`kocum` person, `yasam` grid). `app/(sekmeler)/kocum/` (yalnız `index`).
+- Yerel göç 32: `DELETE FROM alan_durumu; UPDATE program SET alanlar = '[]'`. `app/(sekmeler)/yasam/index.tsx` alansız; `ProgramFormu` alan sormaz. `alan/[alan]` ekranı duruyor, bağlantısı yok.
+- `mantik/antrenman.ts`: `setBlogu`, `antrenmanMi`, `adimHedefi`, `siradakiAdim`, `antrenmanOzeti` (set, tekrar, rekor), `gecenSure`, `antrenmanSuresi`, `antrenmanKaydiYaz` (`degerler.antrenman` = `{sure, puan, not}`). `veri/antrenman.ts`: `antrenmanAdimlari` (adımlar, parçaları, kayıtları, o günkü işaret), `antrenmanVarMi` (adımlarda `setler` parçası), `antrenmaniKaydet`. Ekran `app/antrenman/[id].tsx` (`id` listenin kartı, `gun`); setler `SetlerParcasi` ile, işaret `rutinAdimiIsaretle`.

@@ -1,6 +1,6 @@
 # Rites: fitness ve beslenme danışan uygulaması (plan)
 
-_19 Kasım 2026 · taslak · P-127–P-132_
+_19 Kasım 2026 · taslak · P-127–P-133_
 
 Örnek: Everfit. Everfit'in iki parçası var: **koçun web paneli** (program kurar, danışanı yönetir, ödeme alır) ve **danışanın telefon uygulaması** (programı uygular, kaydeder, koçla konuşur). Bu planda Rites ikincisi olur; koçun paneli ayrı bir web uygulamasıdır (aynı Supabase). Rites koçsuz kişisel kullanımda da aynen sürer; koça bağlanan kişide yalnız **Koçum** bölümü ve koçtan gelenler görünür.
 
@@ -115,6 +115,10 @@ Rites'taki yer (çizimler, Beslenme satırı):
 - **Tarifler ve alışveriş:** haftanın malzemeleri tek dokunuşla Listeler'e "Market" listesi olarak eklenir (paylaşılabilir); diyetisyenin tarifleri (süre, değişimler).
 
 Neden makro değil değişim: Türkiye'de diyetisyenler planı çoğunlukla **besin değişimleriyle** yazar (et, süt, ekmek, sebze, meyve, yağ); NutriCore'un eşdeğerlik motoru da bu mantıkta. 50+ danışana kalori ve makro saydırmak yerine "Yedim / Farklı yedim / fotoğraf" yeter; makro günlüğü (yemek veritabanı, barkod) sonraya ya da yalnız isteyen diyetisyene.
+
+## 4d. Uygulamada (P-133)
+
+Sekmeler (Giriş · Ajandam · Koçum · Programlar · Gruplar), yaşam alanlarının kalkması ve antrenman akışı uygulamaya girdi (kararlar.md, P-133). Koçum, koç bağı gelene kadar ne geleceğini anlatır. Beslenme ekranları diyetisyen tarafı ve sunucu gelince.
 
 ## 5. Kararlar ve açık sorular
 

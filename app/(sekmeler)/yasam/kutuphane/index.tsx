@@ -88,7 +88,7 @@ export default function Kutuphanem() {
     !veri.yukleniyor && !hicKayitYok && kartSonuc.length === 0 && (!tursuz || programSonuc.length === 0);
 
   return (
-    <EkranKabi geri="Yaşam Tarzım" baslik="Kütüphanem" altBaslik="Programların ve kaydettiğin kartlar.">
+    <EkranKabi geri="Programlar" baslik="Kütüphanem" altBaslik="Programların ve kaydettiğin kartlar.">
       <GirisAlani
         etiket="Kütüphanede ara"
         etiketGizli

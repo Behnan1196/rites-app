@@ -1,4 +1,5 @@
-// Dört sekmeli alt menü (İS-1). Başka sekmeye geçince açık alt ekranlar kapanır.
+// Alt menü (İS-1). Başka sekmeye geçince açık alt ekranlar kapanır.
+// P-133: Giriş · Ajandam · Koçum · Programlar (eski Yaşam Tarzım; yol `yasam`) · Gruplar.
 
 import { Tabs } from 'expo-router/js-tabs';
 
@@ -17,7 +18,8 @@ export default function SekmeDuzeni() {
     >
       <Tabs.Screen name="giris" options={{ title: 'Giriş' }} />
       <Tabs.Screen name="ajandam" options={{ title: 'Ajandam' }} />
-      <Tabs.Screen name="yasam" options={{ title: 'Yaşam Tarzım' }} />
+      <Tabs.Screen name="kocum" options={{ title: 'Koçum' }} />
+      <Tabs.Screen name="yasam" options={{ title: 'Programlar' }} />
       <Tabs.Screen name="gruplar" options={{ title: 'Gruplar' }} />
     </Tabs>
   );

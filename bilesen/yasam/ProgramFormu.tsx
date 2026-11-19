@@ -5,10 +5,10 @@
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { alanAdiHatasi, tumAlanlar, type AlanAnahtari } from '@/mantik/alanlar';
+import { type AlanAnahtari } from '@/mantik/alanlar';
 import { KENDIM, programFormuHatasi, SURELER, type Program } from '@/mantik/program';
 import { yeniKimlik } from '@/veri/kimlik';
-import { ozelAlanEkle, programBilgisiYaz, programKur } from '@/veri/programlar';
+import { programBilgisiYaz, programKur } from '@/veri/programlar';
 import { useVeri } from '@/veri/VeriSaglayici';
 
 import { AltSayfa } from '../AltSayfa';
@@ -16,9 +16,7 @@ import { Dugme } from '../Dugme';
 import { GirisAlani } from '../GirisAlani';
 import { useKisaMesaj } from '../KisaMesaj';
 import { Bolum, SecenekHapi } from '../Secim';
-import { renk } from '../tema';
 import { Yazi } from '../Yazi';
-import { useAlanlar } from './useProgramlar';
 
 export type ProgramFormuHedefi = { tur: 'yeni'; alan?: AlanAnahtari } | { tur: 'duzenle'; program: Program };
 
@@ -33,7 +31,6 @@ interface Ozellikler {
 function ProgramFormu({ hedef, gorunur, onKapat, onKuruldu }: Ozellikler) {
   const { kapi } = useVeri();
   const kisaMesaj = useKisaMesaj();
-  const { alanlar } = useAlanlar();
   const eski = hedef.tur === 'duzenle' ? hedef.program : null;
   const [ilk] = useState(() => ({
     ad: eski?.ad ?? '',
@@ -43,29 +40,8 @@ function ProgramFormu({ hedef, gorunur, onKapat, onKuruldu }: Ozellikler) {
   }));
   const [form, setForm] = useState(ilk);
   const [hata, setHata] = useState<string | null>(null);
-  const [yeniAlan, setYeniAlan] = useState<string | null>(null);
-  const [alanHatasi, setAlanHatasi] = useState<string | null>(null);
   const [calisiyor, setCalisiyor] = useState(false);
   const degisti = JSON.stringify(form) !== JSON.stringify(ilk);
-
-  const alanSec = (a: AlanAnahtari) =>
-    setForm((f) => ({ ...f, alanlar: f.alanlar.includes(a) ? f.alanlar.filter((x) => x !== a) : [...f.alanlar, a] }));
-
-  const alanEkle = async () => {
-    const h = alanAdiHatasi(yeniAlan ?? '', tumAlanlar());
-    if (h) {
-      setAlanHatasi(h);
-      return;
-    }
-    try {
-      const anahtar = await ozelAlanEkle(kapi, yeniAlan ?? '', '', yeniKimlik);
-      setForm((f) => ({ ...f, alanlar: [...f.alanlar, anahtar] }));
-      setYeniAlan(null);
-    } catch (e) {
-      console.warn(e);
-      kisaMesaj('Kaydedilemedi. Yeniden dene.');
-    }
-  };
 
   const kaydet = async () => {
     const h = programFormuHatasi(form.ad);
@@ -127,42 +103,7 @@ function ProgramFormu({ hedef, gorunur, onKapat, onKuruldu }: Ozellikler) {
         autoFocus={!eski}
       />
 
-      <Bolum>
-        <Yazi kalinlik="kalin">Hangi alanlarla ilgili?</Yazi>
-        <View style={stiller.cipler}>
-          {alanlar.map((a) => (
-            <SecenekHapi
-              key={a.anahtar}
-              etiket={a.ad}
-              secili={form.alanlar.includes(a.anahtar)}
-              onPress={() => alanSec(a.anahtar)}
-            />
-          ))}
-          {yeniAlan === null && <SecenekHapi etiket="+ Yeni alan" secili={false} onPress={() => setYeniAlan('')} />}
-        </View>
-        {yeniAlan !== null && (
-          <View style={stiller.yeniAlan}>
-            <GirisAlani
-              etiket="Yeni alanın adı"
-              value={yeniAlan}
-              onChangeText={(t) => {
-                setYeniAlan(t);
-                setAlanHatasi(null);
-              }}
-              placeholder="Örneğin: Bahçe, Aile bütçesi"
-              hata={alanHatasi}
-              returnKeyType="done"
-              onSubmitEditing={() => void alanEkle()}
-              autoFocus
-            />
-            <View style={stiller.satir}>
-              <Dugme tur="yazi" etiket="Vazgeç" onPress={() => setYeniAlan(null)} />
-              <Dugme tur="ikincil" yaziRengi={renk.ana} etiket="Alanı ekle" onPress={() => void alanEkle()} />
-            </View>
-          </View>
-        )}
-        <Yazi tur="ikincil">Birden çok alan seçebilirsin; hiçbiri de olabilir.</Yazi>
-      </Bolum>
+      {/* P-133: yaşam alanları kalktı; programın alanı sorulmaz. */}
 
       <GirisAlani
         etiket="Neden? (isteğe bağlı)"

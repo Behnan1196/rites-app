@@ -36,10 +36,10 @@ export default function AlanEkrani() {
   const { alan: anahtar } = useLocalSearchParams<{ alan: string }>();
   const p = useProgramlar();
   const alan = p.alanlar.find((a) => a.anahtar === anahtar);
-  if (p.yukleniyor) return <EkranKabi geri="Yaşam Tarzım" />;
+  if (p.yukleniyor) return <EkranKabi geri="Programlar" />;
   if (!alan) {
     return (
-      <EkranKabi geri="Yaşam Tarzım">
+      <EkranKabi geri="Programlar">
         <Yazi tur="ikincil">Bu alan bulunamadı.</Yazi>
       </EkranKabi>
     );
@@ -100,7 +100,7 @@ function AlanIcerigi({ alan, p }: { alan: Alan; p: ReturnType<typeof usePrograml
   };
 
   return (
-    <EkranKabi geri="Yaşam Tarzım">
+    <EkranKabi geri="Programlar">
       <View style={stiller.ust}>
         <AlanSimgesi alan={alan.anahtar} buyuk />
         <View style={stiller.esnek}>

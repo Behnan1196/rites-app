@@ -315,7 +315,7 @@ export function siradakiMetni(
 }
 
 export const DEVAM_EN_COK = 3;
-export const PROGRAM_YOK_METNI = "Uygulanan programın yok. Yaşam Tarzım'dan başlayabilirsin.";
+export const PROGRAM_YOK_METNI = "Uygulanan programın yok. Programlar'dan başlayabilirsin.";
 
 export function fazlaProgramMetni(adet: number): string {
   return `+${adet} program daha`;

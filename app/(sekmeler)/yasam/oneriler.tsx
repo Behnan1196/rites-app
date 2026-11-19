@@ -39,7 +39,7 @@ export default function Oneriler() {
 
   return (
     <EkranKabi
-      geri="Yaşam Tarzım"
+      geri="Programlar"
       baslik="Rites önerileri"
       altBaslik="Ajandana ekleyip deneyebileceğin kartlar. Eklediğin kart senindir."
     >

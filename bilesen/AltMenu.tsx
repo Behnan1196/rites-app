@@ -14,16 +14,14 @@ type IkonAdi = ComponentProps<typeof Ionicons>['name'];
 const IKONLAR: Record<string, IkonAdi> = {
   giris: 'home-outline',
   ajandam: 'calendar-outline',
-  yasam: 'leaf-outline',
+  kocum: 'person-outline',
+  yasam: 'grid-outline',
   gruplar: 'people-outline',
 };
 
 export function AltMenu({ state, descriptors, navigation, insets }: BottomTabBarProps) {
   return (
-    <View
-      style={[stiller.cubuk, { paddingBottom: Math.max(insets.bottom, 8) }]}
-      accessibilityRole="tablist"
-    >
+    <View style={[stiller.cubuk, { paddingBottom: Math.max(insets.bottom, 8) }]} accessibilityRole="tablist">
       {state.routes.map((route, sira) => {
         const secili = state.index === sira;
         const etiket = descriptors[route.key]?.options.title ?? route.name;
@@ -85,5 +83,6 @@ const stiller = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  etiket: { fontSize: 15 },
+  // P-133: beş sekme; yazı "Programlar" sığsın.
+  etiket: { fontSize: 13 },
 });

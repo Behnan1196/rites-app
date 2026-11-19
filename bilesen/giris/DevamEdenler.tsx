@@ -39,7 +39,7 @@ export function DevamEdenler() {
     <View style={stiller.kutu}>
       <View style={stiller.baslik}>
         <ModulDugmesi
-          etiket="Yaşam Tarzım'ı aç"
+          etiket="Programlar'ı aç"
           onPress={() => router.navigate('/yasam')}
           simge={<KutuSimgesi k="devam" />}
         />

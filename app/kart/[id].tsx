@@ -23,6 +23,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Dugme } from '@/bilesen/Dugme';
 import { AcilirMenu, type MenuOgesi } from '@/bilesen/AcilirMenu';
 import { SiraliKartlar, type SurukleIslemleri } from '@/bilesen/ajanda/SiraliKartlar';
 import { useBulusmalar } from '@/bilesen/gruplar/Bulusmalar';
@@ -47,6 +48,7 @@ import { adimlarListeParcasi, RUTIN_BILGI, RUTIN_GUNLUK, RUTIN_KALICI, rutinCesi
 import { rutinAdimiIsaretle, rutinAdimlari, rutinYap } from '@/veri/rutinler';
 import { olcumParcalariMi } from '@/mantik/gidisat';
 import { setHedefiYaz, VARSAYILAN_HEDEF } from '@/mantik/setler';
+import { antrenmanVarMi } from '@/veri/antrenman';
 import { SERIT_PARCALARI } from '@/mantik/parcaSecimi';
 import { ajandadaMi, aliskanlikMi, programKartiMi } from '@/mantik/aliskanlik';
 import type { ParcaTaslagi } from '@/mantik/blokTaslak';
@@ -191,6 +193,9 @@ export default function KartGorunumu() {
   const kutuphane = useKutuphaneyeKaydet(({ kaldirildi }) => {
     if (kaldirildi) router.back();
   });
+  // P-133: listede setli egzersiz var mı.
+  const antrenmanSorgusu = useSorgu(['kart'], (o) => antrenmanVarMi(o, id), [id]);
+  const antrenman = !!antrenmanSorgusu.veri;
   const veri = useSorgu(
     ['kart', 'plan'],
     async (oku) => {
@@ -601,6 +606,13 @@ export default function KartGorunumu() {
             {/* P-93: rutinin adımları. */}
             {kart.rutin && (
               <View style={[stiller.bolum, stiller.cizgili, stiller.anaBolum]}>
+                {/* P-133: setli egzersizler varsa antrenman akışı. */}
+                {antrenman && isaretlenir && (
+                  <Dugme
+                    etiket="Antrenmana başla"
+                    onPress={() => router.push({ pathname: '/antrenman/[id]', params: { id: kart.id, gun } })}
+                  />
+                )}
                 <RutinAdimlari
                   rutin={kart}
                   gun={gun}
