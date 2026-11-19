@@ -671,3 +671,8 @@ Sonuç: Ekran yapısı (P-129 taslağı ve varsayımları) onaylandı. → karar
 Ne dedi: "Güzel, mockup da kalalım, everfit'in antreman ekranına ulaşabiliyorsan, gayet sade tasarımla ısınma, setler, ada basılınca açıklama olan, kişinin antreman sırasında odaklandığı ekran var. Bana güzel göründü ve yaklaşık kullanabiliriz, bu arada everfit in kötü bir yorum da, 2025 yılında appstore sayfasında, aslında daha iyi olması için verdiği ipuçları var gibi, ona da bakalım" (App Store yorumu, 16 Ekim 2025: yavaş ve çöküyor; değeri yazdıktan sonra ayrıca işaretlemek; her ekranda tek egzersiz; otomatik doldurma yok; takvimde taşıma ve isteğe bağlı günü silme zor; kendi etkinliklerini koç görmüyor; geri bildirim mesajlarda kayboluyor.)
 Nerede: Antrenman akışı (çizim)
 Sonuç: `danisan-uygulamasi.md` §4b; antrenman akışının dört ekranı çizildi. Açık karar: değer girmek işi bitirsin mi.
+
+### P-132 · 19 Kasım 2026 · Behnan
+Ne dedi: "Peki, bir de everfit içinden beslenme programı var, onu nasıl yerleştiririz"
+Nerede: Koçum › Beslenme (çizim)
+Sonuç: `danisan-uygulamasi.md` §4c; beslenmenin dört ekranı çizildi. Açık: makro sayımı yerine değişimler.

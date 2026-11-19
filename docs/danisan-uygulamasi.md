@@ -1,6 +1,6 @@
 # Rites: fitness ve beslenme danışan uygulaması (plan)
 
-_19 Kasım 2026 · taslak · P-127–P-131_
+_19 Kasım 2026 · taslak · P-127–P-132_
 
 Örnek: Everfit. Everfit'in iki parçası var: **koçun web paneli** (program kurar, danışanı yönetir, ödeme alır) ve **danışanın telefon uygulaması** (programı uygular, kaydeder, koçla konuşur). Bu planda Rites ikincisi olur; koçun paneli ayrı bir web uygulamasıdır (aynı Supabase). Rites koçsuz kişisel kullanımda da aynen sürer; koça bağlanan kişide yalnız **Koçum** bölümü ve koçtan gelenler görünür.
 
@@ -102,6 +102,20 @@ App Store'da Everfit'e 2025'te yazılmış bir şikâyet (16 Ekim 2025, bir yıl
 
 Çizimler (Antrenman satırı): başlamadan (koçun notu, Isınma · Ana bölüm · Soğuma, "Bu hafta atla", Başla) · sırasında (tek kayan sayfa, sıradaki egzersiz açık, set satırları, altta dinlenme şeridi +15 sn / Atla, Bitir her an üstte) · egzersizin açıklaması (ada dokununca alttan sayfa: video, nasıl yapılır, koçun notu, "Hareketini çek, koçuna gönder") · bitince (süre, egzersiz, set, tekrar, yeni rekor, "Nasıl geçti?" 1–5, koçuna not, Kaydet).
 
+## 4c. Beslenme (P-132)
+
+Everfit'te danışan: bugünün öğünleri Bugün ekranında; Koçluk ekranında haftanın planı (gün gün, Kahvaltı · Öğle · Akşam · Ara öğün); öğüne dokununca tarif, açıklama ve makrolar; "Log Meal" ile porsiyonu ayarlayıp kaydeder (koça bildirim gider); koç izin verdiyse "Replace Meal" ile tarif kitabından değiştirir; haftanın alışveriş listesi; makro günlüğü (arama, barkod, elle) ve daha sade "Food Journal" (fotoğraf ya da yazı, koç yorumlar). Esnek planda koç seçenekler verir, danışan seçer.
+
+Rites'taki yer (çizimler, Beslenme satırı):
+
+- **Giriş:** Koçum kutusunda bugünün sıradaki öğünü (var). **Ajandam:** "Beslenme planı" kartı, öğünler işaretlenir (var).
+- **Koçum › Beslenme:** haftanın günleri, seçili günün öğünleri saatleriyle (Kahvaltı · Öğle · Ara öğün · Akşam); yenen işaretli, sıradaki vurgulu. Altta su ve "Tarifler ve alışveriş".
+- **Öğün:** ne kadar yenecek (gram ve ev ölçüsü: avuç içi, yemek kaşığı, kase), **değişimler** (3 et · 2 ekmek · 1 sebze · 1 yağ), diyetisyenin notu, tarif bağlantısı. Altta **Yedim** (tek dokunuş, porsiyon sorulmaz), **Farklı yedim**, **Tabağım** (fotoğraf).
+- **Farklı yedim:** önce diyetisyenin aynı değişimlerdeki seçenekleri (tek dokunuş); yoksa "Başka bir şey yedim": ne yediğini yaz, Az · Normal · Çok, isteğe bağlı tabağın fotoğrafı. Hesap yok; diyetisyen ne yendiğini görür.
+- **Tarifler ve alışveriş:** haftanın malzemeleri tek dokunuşla Listeler'e "Market" listesi olarak eklenir (paylaşılabilir); diyetisyenin tarifleri (süre, değişimler).
+
+Neden makro değil değişim: Türkiye'de diyetisyenler planı çoğunlukla **besin değişimleriyle** yazar (et, süt, ekmek, sebze, meyve, yağ); NutriCore'un eşdeğerlik motoru da bu mantıkta. 50+ danışana kalori ve makro saydırmak yerine "Yedim / Farklı yedim / fotoğraf" yeter; makro günlüğü (yemek veritabanı, barkod) sonraya ya da yalnız isteyen diyetisyene.
+
 ## 5. Kararlar ve açık sorular
 
 **Verildi (P-128):** fitness ve beslenme birlikte; koç ve diyetisyen programı **ayrı web panelinde** hazırlar; ilk adım bu plan belgesi (kod yok).
@@ -111,11 +125,12 @@ App Store'da Everfit'e 2025'te yazılmış bir şikâyet (16 Ekim 2025, bir yıl
 1. Danışan verisinin koça gitmesi (yukarıdaki öneri): hukuki görüşten sonra karar.
 2. Beslenme paneli NutriCore mu olacak, yoksa ortak web paneline mi eklenecek?
 3. Değer girmek işi bitirsin mi (4b): koçtan gelen kartlarda tartıya yazılan kilo kartı Yaptım yapsın, sette sayı değişince set işaretlensin. Ürün sahibinin kararı bekleniyor.
-4. Ekran yapısı (4a) onaylandı (P-130). Ekran çizimleri: claude.ai'deki "Rites Koçum ekranları" tasarımı (Giriş, Ajandam · Koçumdan, Koçum koçsuz ve koçlu, Mesajlar, Programlar).
-5. Tasarım ortaklarına sorulacaklar: Everfit'te en çok neyi kullanıyorlar, danışandan ne görmek istiyorlar, Türkiye'de danışanları nasıl takip ediyorlar (WhatsApp, Excel…)?
-6. Tek uygulama mı (kişisel + danışan), ayrı danışan uygulaması mı? (Öneri: tek uygulama, koça bağlanınca Koçum görünür.)
-7. Yemek veritabanı ve makro sayımı: hangi kaynak, lisansı ne? (Aşama 3'te.)
-8. Sunucunun yeri (yurt dışı aktarım) ve ticari sürümde paket kimliği ve ad.
+4. Beslenmede makro sayımı (4c): başta yok, değişim + Yedim / Farklı yedim / fotoğraf. Diyetisyenle konuşulacak; NutriCore'un planı Rites'a değişimlerle mi inecek?
+5. Ekran yapısı (4a) onaylandı (P-130). Ekran çizimleri: claude.ai'deki "Rites Koçum ekranları" tasarımı (Giriş, Ajandam · Koçumdan, Koçum koçsuz ve koçlu, Mesajlar, Programlar).
+6. Tasarım ortaklarına sorulacaklar: Everfit'te en çok neyi kullanıyorlar, danışandan ne görmek istiyorlar, Türkiye'de danışanları nasıl takip ediyorlar (WhatsApp, Excel…)?
+7. Tek uygulama mı (kişisel + danışan), ayrı danışan uygulaması mı? (Öneri: tek uygulama, koça bağlanınca Koçum görünür.)
+8. Yemek veritabanı ve makro sayımı: hangi kaynak, lisansı ne? (Aşama 3'te.)
+9. Sunucunun yeri (yurt dışı aktarım) ve ticari sürümde paket kimliği ve ad.
 
 ## Kaynaklar
 
@@ -124,4 +139,5 @@ App Store'da Everfit'e 2025'te yazılmış bir şikâyet (16 Ekim 2025, bir yıl
 - Everfit incelemesi (beslenme zayıf, antrenman güçlü; rakip sitesinden): https://www.promealplan.com/en/blog/everfit-review-2026
 - Everfit fiyatları: https://toolradar.com/tools/everfit/pricing
 - Everfit'te antrenman kaydı: https://help.everfit.io/en/articles/5829094-client-app-track-a-workout
+- Everfit'te beslenme (danışan): https://help.everfit.io/en/articles/9423729-client-app-structured-meal-plans · https://help.everfit.io/en/articles/9896107-client-app-flexible-meal-plan · https://help.everfit.io/en/articles/12078816-client-app-macros
 - KVKK sağlık verisi düzenlemesi: https://www.erdem-erdem.av.tr/bilgi-bankasi/saglik-verilerinin-islenmesine-iliskin-yeni-duzenleme
