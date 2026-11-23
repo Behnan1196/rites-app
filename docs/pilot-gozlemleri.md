@@ -686,3 +686,13 @@ Sonuç: → kararlar.md (Sekmeler ve antrenman akışı uygulamada). Görsel aya
 Ne dedi: "Güzel, tabi bizim liste yapımızla oluşturulan egzersiz setleri everfitden farklı. Devam edelim, sanırım koçun yollayacağı egzersiz setini seed olarak tanımlamak gerekecek" Seçimler: Koçum'da "Örnek koçla dene"; antrenmanda Isınma · Ana bölüm · Soğuma; örnek fitness + beslenme.
 Nerede: Koçum, antrenman, beslenme
 Sonuç: → kararlar.md (Koç paketi ve örnek koç).
+
+### P-135 · 23 Kasım 2026 · Behnan
+Ne dedi: "Fitness koçu arkadaşım şu an Hubfit'i kullanıyor, Türkçe desteği yeterli ancak tabi bazı yerler tam türkçeleştirilememiş, sanırım yakında kendi yazılımımızı yapmamız gerekecek"
+Nerede: Genel (koçluk yönü)
+Sonuç: Tasarım ortağı HubFit'i kullanıyor; gözlemleri koç panelinin ihtiyaç listesine girdi olacak. Koç paneli kapsamı konuşulacak.
+
+### P-136 · 23 Kasım 2026 · Behnan
+Ne dedi: "Seninde daha önce önerdiğin gibi, ben everfit ve hubfit benzeri bir uygulamayı rites'dan bağımsız ayrı bir proje olarak geliştirmeye karar verdim, bunu da öncelikle web sürümü olarak ve pwa ile mobilde deneyecek şekilde ilerletmeyi düşünüyorum. Soracağım, bunun için ayrı bir claude projesi mi başlatsam, yoksa aynı supabase üzerinden burada mı geliştirsek"
+Nerede: Genel (ürün yönü)
+Sonuç: → kararlar.md (Koçluk uygulaması ayrı proje).
